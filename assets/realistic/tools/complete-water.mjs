@@ -1,0 +1,10 @@
+import {writeFile} from 'node:fs/promises';
+const source='https://www.openstreetmap.org/api/0.6/relation/152336/full.json';
+const response=await fetch(source,{headers:{'User-Agent':'GwanakHiking/1.0 (local landscape integration)'},signal:AbortSignal.timeout(60000)});
+if(!response.ok)throw new Error(`${response.status} ${source}`);
+const data=await response.json(),nodes=new Map(data.elements.filter(e=>e.type==='node').map(e=>[e.id,e])),ways=new Map(data.elements.filter(e=>e.type==='way').map(e=>[e.id,e]));
+const relation=data.elements.find(e=>e.type==='relation'&&e.id===152336);
+relation.members=relation.members.filter(m=>m.type==='way').map(m=>({...m,geometry:ways.get(m.ref)?.nodes.map(id=>{const p=nodes.get(id);if(!p)throw new Error('한강 노드 누락');return {lat:p.lat,lon:p.lon};})}));
+if(!relation.members.some(m=>m.geometry))throw new Error('한강 윤곽 누락');
+await writeFile(new URL('../generated/han-river-water.json',import.meta.url),JSON.stringify({elements:[relation],license:'ODbL-1.0',attribution:'© OpenStreetMap contributors',source,downloadedAt:new Date().toISOString()}));
+console.log(JSON.stringify({members:relation.members.length,nodes:nodes.size}));

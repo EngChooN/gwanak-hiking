@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "origin": {"lat":37.46803,"lon":126.946528},
+  "observation":{"lat":37.445184,"lon":126.964135,"ground":629,"eyeHeight":1.6,"source":"data/서울원경-기준표.md"},
+  "atmosphere":{"haze":"#C9D6E3","contrastStops":[[0,1],[2000,0.85],[5000,0.60],[8000,0.45],[12000,0.35],[15000,0.25],[25000,0.12],[40000,0.03]],"sunBearing":142,"sunAltitude":29},
+  "directionCaptures":{"bearings":[0,60,340,200],"verticalFovs":[55,70],"width":1440,"height":900,"pitch":-3},
+  "dem": {
+    "url":"https://copernicus-dem-30m.s3.amazonaws.com/Copernicus_DSM_COG_10_N37_00_E126_00_DEM/Copernicus_DSM_COG_10_N37_00_E126_00_DEM.tif",
+    "sourceResolutionMetres":30,
+    "verticalDatum":"EGM2008 orthometric DSM",
+    "nearSpacing":8,
+    "routeBuffer":1000,
+    "farSpacing":160,
+    "farHalfExtent":30000
+  },
+  "materials": {
+    "soil":{"id":"brown_mud_leaves_01","metres":1.3},
+    "stone":{"id":"rocky_terrain","metres":3},
+    "granite":{"id":"rock_face_03","metres":2.7,"note":"회색 화강암 대체 후보. 원본 암종 확인 전 최종 승인 불가"},
+    "leaves":{"id":"forest_floor","metres":2.14},
+    "grass":{"id":"aerial_grass_rock","metres":4},
+    "wood":{"id":"wood_planks","metres":2},
+    "bark":{"id":"bark_brown_02","metres":1}
+  },
+  "hdri":"kloppenheim_06_puresky",
+  "overpass":"https://overpass-api.de/api/interpreter",
+  "overpassMirrors":["https://overpass.private.coffee/api/interpreter","https://overpass.kumi.systems/api/interpreter"],
+  "cityTileDegrees":0.03,
+  "cityBboxes":[
+    {"id":"seoul-west","bbox":[37.49,126.80,37.61,126.98]},
+    {"id":"seoul-east","bbox":[37.49,126.98,37.61,127.14]},
+    {"id":"anyang","bbox":[37.35,126.90,37.43,126.99]},
+    {"id":"gwacheon","bbox":[37.40,126.99,37.48,127.06]}
+  ],
+  "landmarks":[
+    {"id":"n-seoul-tower","name":"남산·N서울타워","lat":37.551216,"lon":126.988276,"bearing":10,"distance":12000,"height":236.7,"ground":243,"shape":"tower","radius":6},
+    {"id":"63-building","name":"63빌딩","lat":37.51972,"lon":126.94000,"bearing":346,"distance":8600,"height":249,"ground":15,"shape":"box","width":50,"depth":35},
+    {"id":"lotte-world-tower","name":"롯데월드타워","lat":37.51250,"lon":127.10278,"bearing":59,"distance":14300,"height":555,"ground":20,"shape":"taper","radius":32},
+    {"id":"dongjak-bridge","name":"동작대교","bearing":12.2,"distance":7510,"ground":5,"shape":"reference"},
+    {"id":"hangang-bridge","name":"한강대교","bearing":356,"distance":7900,"ground":5,"shape":"reference"},
+    {"id":"yeouido","name":"여의도","bearing":339.3,"distance":9360,"ground":10,"shape":"reference"},
+    {"id":"sadang","name":"사당역 일대 · 임시","bearing":24,"distance":3800,"shape":"reference"},
+    {"id":"gwacheon","name":"과천시","bearing":113.2,"distance":3440,"shape":"reference"},
+    {"id":"anyang","name":"안양시","bearing":201.7,"distance":7440,"shape":"reference"},
+    {"id":"cheonggyesan","name":"청계산","bearing":115.8,"distance":7580,"ground":620,"shape":"reference"},
+    {"id":"bukhansan","name":"북한산 대표 지점","bearing":6,"distance":24100,"ground":836.5,"shape":"reference"}
+  ],
+  "budget":{"firstLoadBytes":30000000,"textureSize":512,"cityChunkLimit":5000},
+  "capturePoints":[{"id":"summit","label":"정상","routeIndex":336},{"id":"pass","label":"깔딱고개 · 임시","routeIndex":315},{"id":"valley","label":"계곡 · 제4쉼터 참고","routeIndex":198}]
+}

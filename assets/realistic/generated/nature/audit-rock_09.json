@@ -1,0 +1,32 @@
+[
+  {
+    "id": "rock_09",
+    "level": 0,
+    "initial": 12416,
+    "triangles": 12000,
+    "bytes": 500476,
+    "height": 0.03286941419355571,
+    "source": "https://polyhaven.com/a/rock_09",
+    "license": "CC0"
+  },
+  {
+    "id": "rock_09",
+    "level": 1,
+    "initial": 12416,
+    "triangles": 3000,
+    "bytes": 427812,
+    "height": 0.03286941419355571,
+    "source": "https://polyhaven.com/a/rock_09",
+    "license": "CC0"
+  },
+  {
+    "id": "rock_09",
+    "level": 2,
+    "initial": 12416,
+    "triangles": 500,
+    "bytes": 405348,
+    "height": 0.03286941419355571,
+    "source": "https://polyhaven.com/a/rock_09",
+    "license": "CC0"
+  }
+]

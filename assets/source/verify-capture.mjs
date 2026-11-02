@@ -1,0 +1,21 @@
+import {chromium} from '@playwright/test';
+import assert from 'node:assert/strict';
+import {readFileSync,writeFileSync} from 'node:fs';
+import {fileURLToPath} from 'node:url';
+const base=process.env.BASE_URL||'http://127.0.0.1:5173';
+const root=new URL('../',import.meta.url);
+const manifest=JSON.parse(readFileSync(new URL('manifest.json',root)));
+const walk=JSON.parse(readFileSync(new URL('data/walkable-corridor.json',root)));
+const errors=[];const checks=[];
+// GLB 컨테이너와 바이너리 accessor를 직접 검사하고 출력 후 치수를 확인한다.
+function parse(file){const b=readFileSync(new URL(file,root));assert.equal(b.readUInt32LE(0),0x46546c67);assert.equal(b.readUInt32LE(4),2);assert.equal(b.readUInt32LE(8),b.length);const len=b.readUInt32LE(12),json=JSON.parse(b.subarray(20,20+len).toString());const start=20+len;return {json,bin:b.subarray(start+8,start+8+b.readUInt32LE(start))};}
+for(const file of manifest.files){const {json,bin}=parse(file.file);assert.ok(json.meshes.length>0);for(const a of json.accessors){assert.ok(a.count>0);const bv=json.bufferViews[a.bufferView];assert.ok(bv.byteOffset+bv.byteLength<=bin.length);}checks.push(`${file.file}: GLB 헤더·버퍼 범위 정상`);}
+const char=parse('hiker-170-lod0.glb').json;assert.deepEqual(char.animations.map(a=>a.name),['Idle','Walk','Climb','SidestepLeft','SidestepRight']);for(const clip of char.animations){assert.equal(clip.channels.length,6);for(const c of clip.channels)assert.ok(char.nodes[c.target.node].name.match(/Hip|Knee|Arm/));}checks.push('동작 5개 · 각각 6개 관절 quaternion 트랙');
+assert.equal(walk.steps.length,112);for(const s of walk.steps){assert.equal(s.rise,.18);assert.ok(s.tread>0);assert.ok(s.width>=1.8);}for(let i=1;i<walk.steps.length;i++){assert.ok(Math.abs(walk.steps[i].top-walk.steps[i-1].top-.18)<1e-8);assert.ok(Math.abs(walk.steps[i].start-walk.steps[i-1].end)<1e-8);}for(const s of walk.sections){assert.ok(s.avatarCenterLimit>0);assert.ok(Math.abs(Math.hypot(...s.leftStart.map((v,i)=>v-s.rightStart[i]))-s.width)<1e-6);}checks.push('계단 112개 · 18cm 연속 단높이 · 보행 폭 경계 수치 일치');
+const browser=await chromium.launch({channel:'chrome',headless:true,args:['--enable-webgl','--ignore-gpu-blocklist']});
+const captures=[];try{const page=await browser.newPage({viewport:{width:1440,height:1000},deviceScaleFactor:1});page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});await page.goto(`${base}/assets/검토.html`);await page.waitForFunction(()=>window.assetReview?.ready);const bounds=await page.evaluate(()=>window.assetReview.characterBounds());assert.ok(Math.abs(bounds[1]-1.7)<1e-6,JSON.stringify(bounds));checks.push(`불러온 캐릭터 높이 ${bounds[1].toFixed(6)}m`);
+// 실제 GLB 애니메이션을 샘플링해 관절 변형과 루트 고정을 확인한다.
+const animation=await page.evaluate(async()=>{const {loadHiker}=await import('/assets/source/load-assets.js');const h=await loadHiker();const result={};for(const clip of ['Idle','Walk','Climb','SidestepLeft','SidestepRight']){h.update({clip,distance:0,idleSeconds:0});const a=h.scene.getObjectByName('HipL').quaternion.toArray();h.update({clip,distance:.175,stride:.7,idleSeconds:.25});const b=h.scene.getObjectByName('HipL').quaternion.toArray();result[clip]={changed:a.some((v,i)=>Math.abs(v-b[i])>1e-5),root:h.scene.position.toArray()};}return result;});for(const a of Object.values(animation)){assert.ok(a.changed);assert.deepEqual(a.root,[0,0,0]);}checks.push('동작 5개 실제 샘플링 · 관절 변화 · 루트 위치 고정');
+for(const [index,width,height,name]of [[0,1440,1000,'01-정면-스케일'],[1,1440,1000,'02-계단-측면'],[2,390,844,'03-모바일-세로'],[3,1440,1000,'04-정상접근-띠'],[4,1440,1000,'05-인증구도-시범']]){await page.setViewportSize({width,height});await page.evaluate(i=>window.assetReview.setView(i),index);await page.waitForTimeout(600);const path=fileURLToPath(new URL(`captures/${name}.png`,root));await page.screenshot({path});captures.push({index,width,height,path,stats:await page.evaluate(()=>window.assetReview.stats())});}assert.equal(errors.length,0,JSON.stringify(errors));checks.push('비교 캡처 5장 · 페이지 오류 없음');
+}finally{await browser.close();writeFileSync(new URL('verification.json',root),JSON.stringify({date:new Date().toISOString(),checks,errors,captures,environment:'이 Mac의 headless Chrome. 모바일은 화면 크기만 검증하며 실기기 성능 검증 아님.',notVerified:manifest.blockedAcceptance},null,2));}
+console.log(JSON.stringify({checks,captures,errors},null,2));

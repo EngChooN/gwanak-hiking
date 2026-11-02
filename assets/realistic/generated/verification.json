@@ -1,0 +1,198 @@
+{
+  "date": "2026-11-02T09:10:58.676Z",
+  "results": [
+    {
+      "name": "기준점과 동·북 방향",
+      "passed": true
+    },
+    {
+      "name": "평면 고도 격자의 중심·경계·범위 밖",
+      "passed": true
+    },
+    {
+      "name": "중심 고도·횡단 수평·원본 보존",
+      "passed": true
+    },
+    {
+      "name": "고도 기준 보정·수평거리 보간·GPX 수직 기준 독립성",
+      "passed": true
+    },
+    {
+      "name": "방위각: 북 0·동 90·남 180",
+      "passed": true
+    },
+    {
+      "name": "서울 원경 확정 기준·네 방향·헤이즈",
+      "passed": true
+    },
+    {
+      "name": "동서남북 배치축과 연주대 기준 독립성",
+      "passed": true
+    },
+    {
+      "name": "정상 632m±10m·원시 DEM 보존·입구 잠정 상태 명시",
+      "passed": true
+    },
+    {
+      "name": "생성된 실제 배치·원경 범위·대기 프리셋",
+      "passed": true
+    },
+    {
+      "name": "337점·폭·유한 좌표·누적 거리",
+      "passed": true
+    },
+    {
+      "name": "near 격자 크기·NoData",
+      "passed": true
+    },
+    {
+      "name": "far 격자 크기·NoData",
+      "passed": true
+    },
+    {
+      "name": "첫 로딩 30MB 예산(런타임 예약 포함)",
+      "passed": true
+    },
+    {
+      "name": "서울 원경 별도 청크·필수 랜드마크",
+      "passed": true
+    },
+    {
+      "name": "seoul-west-0 OSM 건물·높이",
+      "passed": true
+    },
+    {
+      "name": "seoul-west-1 OSM 건물·높이",
+      "passed": true
+    },
+    {
+      "name": "seoul-west-2 OSM 건물·높이",
+      "passed": true
+    },
+    {
+      "name": "seoul-west-3 OSM 건물·높이",
+      "passed": true
+    },
+    {
+      "name": "seoul-west-4 OSM 건물·높이",
+      "passed": true
+    },
+    {
+      "name": "seoul-west-5 OSM 건물·높이",
+      "passed": true
+    },
+    {
+      "name": "seoul-west-6 OSM 건물·높이",
+      "passed": true
+    },
+    {
+      "name": "seoul-west-7 OSM 건물·높이",
+      "passed": true
+    },
+    {
+      "name": "seoul-west-8 OSM 건물·높이",
+      "passed": true
+    },
+    {
+      "name": "seoul-west-9 OSM 건물·높이",
+      "passed": true
+    },
+    {
+      "name": "seoul-west-10 OSM 건물·높이",
+      "passed": true
+    },
+    {
+      "name": "seoul-west-11 OSM 건물·높이",
+      "passed": true
+    },
+    {
+      "name": "seoul-west-12 OSM 건물·높이",
+      "passed": true
+    },
+    {
+      "name": "seoul-west-13 OSM 건물·높이",
+      "passed": true
+    },
+    {
+      "name": "seoul-east-0 OSM 건물·높이",
+      "passed": true
+    },
+    {
+      "name": "seoul-east-1 OSM 건물·높이",
+      "passed": true
+    },
+    {
+      "name": "seoul-east-2 OSM 건물·높이",
+      "passed": true
+    },
+    {
+      "name": "seoul-east-3 OSM 건물·높이",
+      "passed": true
+    },
+    {
+      "name": "seoul-east-4 OSM 건물·높이",
+      "passed": true
+    },
+    {
+      "name": "seoul-east-5 OSM 건물·높이",
+      "passed": true
+    },
+    {
+      "name": "seoul-east-6 OSM 건물·높이",
+      "passed": true
+    },
+    {
+      "name": "seoul-east-7 OSM 건물·높이",
+      "passed": true
+    },
+    {
+      "name": "seoul-east-8 OSM 건물·높이",
+      "passed": true
+    },
+    {
+      "name": "seoul-east-9 OSM 건물·높이",
+      "passed": true
+    },
+    {
+      "name": "seoul-east-10 OSM 건물·높이",
+      "passed": true
+    },
+    {
+      "name": "seoul-east-11 OSM 건물·높이",
+      "passed": true
+    },
+    {
+      "name": "seoul-east-12 OSM 건물·높이",
+      "passed": true
+    },
+    {
+      "name": "seoul-east-13 OSM 건물·높이",
+      "passed": true
+    },
+    {
+      "name": "anyang-0 OSM 건물·높이",
+      "passed": true
+    },
+    {
+      "name": "anyang-1 OSM 건물·높이",
+      "passed": true
+    },
+    {
+      "name": "anyang-2 OSM 건물·높이",
+      "passed": true
+    },
+    {
+      "name": "gwacheon-0 OSM 건물·높이",
+      "passed": true
+    }
+  ],
+  "firstLoadBytes": 7954729,
+  "elevation": {
+    "summitAligned": 632,
+    "summitRawDem": 605.5792816191797,
+    "actualEntranceVerified": false
+  },
+  "renderVerified": false,
+  "mobileVerified": false,
+  "releaseApproved": false
+}

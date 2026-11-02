@@ -1,0 +1,65 @@
+entrance 60.002489729864365 {
+  source: 'manifest',
+  cityChunks: 32,
+  buildings: 153534,
+  waterPolygons: 380,
+  errors: [],
+  ready: true,
+  natureVisibleChunks: 1120,
+  natureReady: true,
+  natureCounts: { trees: 134888, rocks: 982, understory: 7651 },
+  nearDetail: { instances: 5212, grass: 5039, understoryMinimumScale: 0.28 },
+  natureChunks: 5674
+}
+ridge 56.7658409062617 {
+  source: 'manifest',
+  cityChunks: 32,
+  buildings: 153534,
+  waterPolygons: 380,
+  errors: [],
+  ready: true,
+  natureVisibleChunks: 1394,
+  natureReady: true,
+  natureCounts: { trees: 134888, rocks: 982, understory: 7651 },
+  nearDetail: { instances: 5212, grass: 5039, understoryMinimumScale: 0.28 },
+  natureChunks: 5674
+}
+summit-north 56.26789493339973 {
+  source: 'manifest',
+  cityChunks: 32,
+  buildings: 153534,
+  waterPolygons: 380,
+  errors: [],
+  ready: true,
+  natureVisibleChunks: 1390,
+  natureReady: true,
+  natureCounts: { trees: 134888, rocks: 982, understory: 7651 },
+  nearDetail: { instances: 5212, grass: 5039, understoryMinimumScale: 0.28 },
+  natureChunks: 5674
+}
+summit-east 56.267894933399795 {
+  source: 'manifest',
+  cityChunks: 32,
+  buildings: 153534,
+  waterPolygons: 380,
+  errors: [],
+  ready: true,
+  natureVisibleChunks: 1390,
+  natureReady: true,
+  natureCounts: { trees: 134888, rocks: 982, understory: 7651 },
+  nearDetail: { instances: 5212, grass: 5039, understoryMinimumScale: 0.28 },
+  natureChunks: 5674
+}
+third 41.4073541444547 {
+  source: 'manifest',
+  cityChunks: 32,
+  buildings: 153534,
+  waterPolygons: 380,
+  errors: [],
+  ready: true,
+  natureVisibleChunks: 1387,
+  natureReady: true,
+  natureCounts: { trees: 134888, rocks: 982, understory: 7651 },
+  nearDetail: { instances: 5212, grass: 5039, understoryMinimumScale: 0.28 },
+  natureChunks: 5674
+}

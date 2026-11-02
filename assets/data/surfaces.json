@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "units": "meter",
+  "surfaces": {
+    "soil": {
+      "label": "흙",
+      "speedFactor": 1,
+      "footstep": "soil",
+      "friction": null
+    },
+    "rock": {
+      "label": "돌길",
+      "speedFactor": 0.85,
+      "footstep": "stone",
+      "friction": null
+    },
+    "stairs": {
+      "label": "계단",
+      "speedFactor": 0.75,
+      "footstep": "stair",
+      "friction": null
+    },
+    "deck": {
+      "label": "데크",
+      "speedFactor": 0.95,
+      "footstep": "wood",
+      "friction": null
+    },
+    "ridge": {
+      "label": "암릉",
+      "speedFactor": 0.65,
+      "footstep": "ridge",
+      "friction": null
+    },
+    "deck_stairs": {
+      "label": "데크 계단",
+      "speedFactor": 0.75,
+      "footstep": "wood",
+      "friction": null
+    }
+  },
+  "notes": "footstep는 오디오 이벤트 키이며 녹음 파일이 아님. friction은 미측정. speedFactor와 구분."
+}

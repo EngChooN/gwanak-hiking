@@ -1,0 +1,80 @@
+{
+  "date": "2026-11-02T06:00:30.814Z",
+  "checks": [
+    "summit-approach-lod0.glb: GLB 헤더·버퍼 범위 정상",
+    "summit-approach-lod1.glb: GLB 헤더·버퍼 범위 정상",
+    "summit-approach-lod2.glb: GLB 헤더·버퍼 범위 정상",
+    "hiker-170-lod0.glb: GLB 헤더·버퍼 범위 정상",
+    "hiker-170-lod1.glb: GLB 헤더·버퍼 범위 정상",
+    "scale-kit.glb: GLB 헤더·버퍼 범위 정상",
+    "yeonjudae-proxy-lod0.glb: GLB 헤더·버퍼 범위 정상",
+    "yeonjudae-proxy-lod1.glb: GLB 헤더·버퍼 범위 정상",
+    "portrait-sky.glb: GLB 헤더·버퍼 범위 정상",
+    "동작 5개 · 각각 6개 관절 quaternion 트랙",
+    "계단 112개 · 18cm 연속 단높이 · 보행 폭 경계 수치 일치",
+    "불러온 캐릭터 높이 1.700000m",
+    "동작 5개 실제 샘플링 · 관절 변화 · 루트 위치 고정",
+    "비교 캡처 5장 · 페이지 오류 없음"
+  ],
+  "errors": [],
+  "captures": [
+    {
+      "index": 0,
+      "width": 1440,
+      "height": 1000,
+      "path": "/Users/pc-2311001/gwanak-hiking/assets/captures/01-정면-스케일.png",
+      "stats": {
+        "calls": 66,
+        "triangles": 1830
+      }
+    },
+    {
+      "index": 1,
+      "width": 1440,
+      "height": 1000,
+      "path": "/Users/pc-2311001/gwanak-hiking/assets/captures/02-계단-측면.png",
+      "stats": {
+        "calls": 66,
+        "triangles": 1830
+      }
+    },
+    {
+      "index": 2,
+      "width": 390,
+      "height": 844,
+      "path": "/Users/pc-2311001/gwanak-hiking/assets/captures/03-모바일-세로.png",
+      "stats": {
+        "calls": 67,
+        "triangles": 1910
+      }
+    },
+    {
+      "index": 3,
+      "width": 1440,
+      "height": 1000,
+      "path": "/Users/pc-2311001/gwanak-hiking/assets/captures/04-정상접근-띠.png",
+      "stats": {
+        "calls": 24,
+        "triangles": 19462
+      }
+    },
+    {
+      "index": 4,
+      "width": 1440,
+      "height": 1000,
+      "path": "/Users/pc-2311001/gwanak-hiking/assets/captures/05-인증구도-시범.png",
+      "stats": {
+        "calls": 20,
+        "triangles": 1476
+      }
+    }
+  ],
+  "environment": "이 Mac의 headless Chrome. 모바일은 화면 크기만 검증하며 실기기 성능 검증 아님.",
+  "notVerified": [
+    "실제 DEM보다 상세하다는 비교",
+    "주요 바위·시설의 실제 치수 일치",
+    "연주대 실경과 인증 구도 합의 일치",
+    "관악산 경험자 스케일 승인",
+    "모바일 실기기 fps·첫 로딩 기준"
+  ]
+}

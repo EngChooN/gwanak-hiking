@@ -1,0 +1,13 @@
+third 48.550941141320585 {
+  source: 'manifest',
+  cityChunks: 32,
+  buildings: 153534,
+  waterPolygons: 380,
+  errors: [],
+  ready: true,
+  natureVisibleChunks: 1387,
+  natureReady: true,
+  natureCounts: { trees: 134888, rocks: 982, understory: 7651 },
+  nearDetail: { instances: 5212, grass: 5039, understoryMinimumScale: 0.28 },
+  natureChunks: 5674
+}

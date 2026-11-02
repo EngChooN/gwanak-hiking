@@ -1,0 +1,32 @@
+[
+  {
+    "id": "rock_face_01",
+    "level": 0,
+    "initial": 20174,
+    "triangles": 11998,
+    "bytes": 755136,
+    "height": 3.5640490017831326,
+    "source": "https://polyhaven.com/a/rock_face_01",
+    "license": "CC0"
+  },
+  {
+    "id": "rock_face_01",
+    "level": 1,
+    "initial": 20174,
+    "triangles": 2999,
+    "bytes": 678316,
+    "height": 3.5640490017831326,
+    "source": "https://polyhaven.com/a/rock_face_01",
+    "license": "CC0"
+  },
+  {
+    "id": "rock_face_01",
+    "level": 2,
+    "initial": 20174,
+    "triangles": 500,
+    "bytes": 654720,
+    "height": 3.5640490017831326,
+    "source": "https://polyhaven.com/a/rock_face_01",
+    "license": "CC0"
+  }
+]

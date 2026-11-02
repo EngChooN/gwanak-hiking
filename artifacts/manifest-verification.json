@@ -1,0 +1,20 @@
+{
+  "status": "통과",
+  "note": "최종 manifest를 네트워크 fixture로 제공해 실제 30초 폴링·전환·중복 방지를 검사함. 실제 파일 생성 완료를 뜻하지 않음.",
+  "before": {
+    "source": "파일 목록",
+    "cityChunks": 28,
+    "buildings": 136437,
+    "waterPolygons": 364,
+    "errors": [],
+    "ready": true
+  },
+  "after": {
+    "source": "manifest",
+    "cityChunks": 28,
+    "buildings": 136437,
+    "waterPolygons": 364,
+    "errors": [],
+    "ready": true
+  }
+}

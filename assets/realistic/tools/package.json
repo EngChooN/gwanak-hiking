@@ -1,0 +1,20 @@
+{
+  "name": "gwanak-assets-preparation",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@gltf-transform/core": "^4.5.1",
+    "@gltf-transform/extensions": "^4.5.1",
+    "@gltf-transform/functions": "^4.5.1",
+    "geotiff": "2.1.3",
+    "meshoptimizer": "^1.3.0",
+    "sharp": "0.33.5"
+  },
+  "scripts": {
+    "prepare": "node prepare.mjs",
+    "verify": "node verify.mjs",
+    "nature:models": "node --max-old-space-size=10000 build-nature.mjs",
+    "nature:place": "node place-nature.mjs",
+    "nature:verify": "node verify-nature.mjs"
+  }
+}

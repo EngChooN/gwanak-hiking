@@ -1,0 +1,43 @@
+{
+  "ds": 0.1,
+  "frames": 50660,
+  "planted": 37512,
+  "plantedFrames": 65793,
+  "plantedErrOver3cm": 54,
+  "unanchoredStance": 10770,
+  "trueN": 25330,
+  "maxTruePen": 0.012035065368479536,
+  "truePenOver1cm": 4,
+  "floatOver3cm": 0,
+  "maxFloat": 0.02916227654247905,
+  "slipOver3cm": 473,
+  "maxSlip": 0.13432342899023317,
+  "maxPen": 0.0009997219368642618,
+  "maxPlantedErr": 0.04336882583868373,
+  "byMat": {
+    "soil": {
+      "planted": 18707,
+      "slip3": 231,
+      "maxSlip": 0.08853869164870276,
+      "maxPen": 0.000999553743710635
+    },
+    "rock": {
+      "planted": 14228,
+      "slip3": 154,
+      "maxSlip": 0.1207023188869991,
+      "maxPen": 0.0009997219368642618
+    },
+    "stairs": {
+      "planted": 2169,
+      "slip3": 2,
+      "maxSlip": 0.08593884693106264,
+      "maxPen": 0.0009640011372766821
+    },
+    "ridge": {
+      "planted": 2408,
+      "slip3": 86,
+      "maxSlip": 0.13432342899023317,
+      "maxPen": 0.000983325510674149
+    }
+  }
+}

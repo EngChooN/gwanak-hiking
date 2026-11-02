@@ -1,0 +1,4 @@
+import {chromium} from '@playwright/test';
+import {writeFileSync} from 'node:fs';
+const browser=await chromium.launch({channel:'chrome',headless:true});
+try{const page=await browser.newPage({viewport:{width:1024,height:1024}});page.on('pageerror',e=>console.error(e));await page.goto('http://127.0.0.1:5176/assets/realistic/tools/bake-nature.html');await page.waitForFunction(()=>window.bake);const data={};for(const id of ['pine_tree_01','pine_sapling_medium','tree_small_02','island_tree_01']){const {url,...meta}=await page.evaluate(id=>window.bake(id),id);writeFileSync(`assets/realistic/generated/nature/${id}-impostor.png`,Buffer.from(url.split(',')[1],'base64'));data[id]=meta;console.log(id,meta);}writeFileSync('assets/realistic/generated/nature/impostor-audit.json',JSON.stringify(data,null,2));}finally{await browser.close();}

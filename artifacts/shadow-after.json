@@ -1,0 +1,110 @@
+{
+  "phase": "after",
+  "capturedAt": "2026-11-02T07:35:47.643Z",
+  "buildHash": "d4d30ef4190128b832306fd4ff98651115f971d3c12fc7a8347bbc23ca0ed281",
+  "viewport": {
+    "width": 1366,
+    "height": 768
+  },
+  "rendering": {
+    "indirectLight": {
+      "skyColor": "#D5D6D3",
+      "groundColor": "#ABA8A2",
+      "hemisphereIntensity": 0.45,
+      "retainedChroma": 0.01,
+      "terrainChroma": 0.25
+    },
+    "profile": "autumn-10am-neutral-v1",
+    "toneMapping": "Neutral",
+    "sunElevation": 29.00000000000002,
+    "sunAzimuth": 141.99999999999983,
+    "shadowAzimuth": 322,
+    "shadowLengthPerHeight": 1.8040477552714238,
+    "sunColor": "#FFF1DE",
+    "hazeColor": "#C9D6E3",
+    "skyZenith": "#5B8FC7",
+    "far": 30000,
+    "hdri": "Poly Haven Kiara 4 Mid-Morning 1K · CC0",
+    "ao": true,
+    "shadows": true,
+    "shaderErrors": [],
+    "calibration": {
+      "environmentIntensity": 0.8686785260549842,
+      "hemisphereIntensity": 0.39090533672474287,
+      "directContribution": [
+        0.1196015253663063,
+        0.10520417988300323,
+        0.08736421167850494
+      ],
+      "indirectContribution": [
+        0.026609208434820175,
+        0.02684931643307209,
+        0.026101119816303253
+      ],
+      "exposure": 1.6561020054747133,
+      "ratio": 4.000000415817857,
+      "grayCard": [
+        124.16638765306044,
+        117.2469244757257,
+        107.30229362768776
+      ],
+      "grayCardLuma": 117.99999999999874,
+      "fogSamples": [
+        {
+          "distance": 1000,
+          "contrast": 0.9047806427821516
+        },
+        {
+          "distance": 8000,
+          "contrast": 0.4499911367893218
+        },
+        {
+          "distance": 10000,
+          "contrast": 0.39685641006231315
+        },
+        {
+          "distance": 12000,
+          "contrast": 0.3499939463198185
+        },
+        {
+          "distance": 25000,
+          "contrast": 0.11999899148941051
+        }
+      ],
+      "precision": "float32",
+      "calibrated": true
+    },
+    "fov": 70,
+    "exposure": 1.6561020054747133
+  },
+  "orientation": {
+    "yaw": 0,
+    "pitch": -0.04,
+    "orbit": 4.5,
+    "reset": null,
+    "camera": [
+      1550.7455762424877,
+      578.5099520038398,
+      2868.3184754962795
+    ],
+    "avatarHeading": -1.9536554323768873,
+    "routeHeading": -1.9536554323768873
+  },
+  "snapshot": {
+    "version": 1,
+    "routeId": "gpx-valley-up-337-v1",
+    "s": 4537.310475642683,
+    "lateral": 0,
+    "elapsed": 0,
+    "distance": 0,
+    "ascent": 0,
+    "steps": 0,
+    "stepPhase": 0,
+    "checkpoints": [],
+    "paused": true,
+    "auto": false,
+    "view": "third",
+    "sessions": 2
+  },
+  "errors": []
+}

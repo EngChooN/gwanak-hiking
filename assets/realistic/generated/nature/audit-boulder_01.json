@@ -1,0 +1,32 @@
+[
+  {
+    "id": "boulder_01",
+    "level": 0,
+    "initial": 66122,
+    "triangles": 54100,
+    "bytes": 1599824,
+    "height": 1.0038301944732666,
+    "source": "https://polyhaven.com/a/boulder_01",
+    "license": "CC0"
+  },
+  {
+    "id": "boulder_01",
+    "level": 1,
+    "initial": 66122,
+    "triangles": 51512,
+    "bytes": 1566900,
+    "height": 1.0038301944732666,
+    "source": "https://polyhaven.com/a/boulder_01",
+    "license": "CC0"
+  },
+  {
+    "id": "boulder_01",
+    "level": 2,
+    "initial": 66122,
+    "triangles": 50724,
+    "bytes": 1556752,
+    "height": 1.0038301944732666,
+    "source": "https://polyhaven.com/a/boulder_01",
+    "license": "CC0"
+  }
+]

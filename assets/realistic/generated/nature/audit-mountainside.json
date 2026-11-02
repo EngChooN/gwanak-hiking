@@ -1,0 +1,32 @@
+[
+  {
+    "id": "mountainside",
+    "level": 0,
+    "initial": 153472,
+    "triangles": 11999,
+    "bytes": 903612,
+    "height": 10.522143810987473,
+    "source": "https://polyhaven.com/a/mountainside",
+    "license": "CC0"
+  },
+  {
+    "id": "mountainside",
+    "level": 1,
+    "initial": 153472,
+    "triangles": 3000,
+    "bytes": 825280,
+    "height": 10.522143810987473,
+    "source": "https://polyhaven.com/a/mountainside",
+    "license": "CC0"
+  },
+  {
+    "id": "mountainside",
+    "level": 2,
+    "initial": 153472,
+    "triangles": 927,
+    "bytes": 805412,
+    "height": 10.522143810987473,
+    "source": "https://polyhaven.com/a/mountainside",
+    "license": "CC0"
+  }
+]

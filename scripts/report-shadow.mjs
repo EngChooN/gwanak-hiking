@@ -1,0 +1,12 @@
+import {readFileSync,writeFileSync} from 'node:fs';import {createHash} from 'node:crypto';import {shadowSection} from './shadow-report-section.mjs';
+const hash=createHash('sha256').update(readFileSync('dist/index.html')).digest('hex'),audio=JSON.parse(readFileSync('artifacts/audio-verification.json','utf8'));
+const audioCurrent=audio.buildHash===hash&&audio.status==='통과';
+const html=`<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>관악산 그늘 색 교정 · 전후 비교</title><style>*{box-sizing:border-box}body{margin:0;background:#eff2e9;color:#213e33;font:15px/1.8 -apple-system,BlinkMacSystemFont,sans-serif}main{max-width:1100px;margin:auto;padding:28px 20px}h1{font-size:29px;line-height:1.4}h2{font-size:22px}h3{font-size:17px;margin-top:26px}table{border-collapse:collapse;width:100%;background:white}td,th{text-align:left;padding:9px;border-bottom:1px solid #d7dfce;font-size:12px}code{overflow-wrap:anywhere}.notice{padding:18px;background:#e0efdc;border-left:4px solid #38764c}.pending{background:#fff1d2;padding:16px}pre{padding:14px;background:#173e36;color:#f5eedc;overflow:auto;font-size:12px}@media(max-width:650px){main{padding:20px 12px}h1{font-size:24px}th,td{padding:6px;font-size:11px}}</style><main><p>산개발 · 2026-11-02</p><h1>그늘의 남색 편향 교정</h1><div class="notice">테스트 <b>29개·빌드 통과</b>. 수정 전후 동일 구도 캡처·고정 영역 픽셀 검사. 소리 카드도 현재 빌드에서 ${audioCurrent?'재검증 통과':'검증 대기'}했습니다.</div>${shadowSection(hash)}<h2>이어 진행한 발소리 카드</h2><p>현재 src/footstep-audio.js에 AudioContext 생성·재생 구현이 있고 src/main.js에서 실제 걸음 이벤트에 연결되어 있습니다. 최초 입력 전에는 자동재생 정책에 맞춰 AudioContext를 생성하지 않습니다. 상단 ♪가 켜진 상태에서 R 또는 W로 이동하면 시작합니다.</p><p>현재 빌드 재검증: <b>${audioCurrent?'통과':'미완료'}</b>. 35개 음원 디코딩·실제 출력 분석기 파형·실제 돌계단 12걸음=12회·약 0.833초 간격·돌 6개/통나무 7개·직전 2개 제외·6재질 전환·음소거 저장/복구를 확인했습니다. 통나무는 GPX에 해당 재질 구간이 없어 이벤트 하네스로 검사했습니다. 상세 변형 번호/시간 로그와 미리 듣기는 ‘발소리 검증 보고’에 있습니다.</p><h2>대표 확인 필요</h2><div class="pending">실제 사진·재질·관악산 경험자 및 보급형 모바일 실기기 성능 검증, 스피커·이어폰 귀 검수는 남아 있습니다. 이번 표본 검사와 자동 음원 출력 확인을 현장 실사·귀 검수 통과로 취급하지 않습니다.<br>삭제·push·배포·업로드 없음. 대기 중인 위험 명령 없음.</div><h2>재검증</h2><pre>export PATH=/Users/pc-2311001/.nvm/versions/node/v22.17.1/bin:$PATH
+npm test
+npm run build
+# 수정 전 before PNG/JSON은 보존. after만 새로 생성.
+PHASE=after node scripts/capture-shadow.mjs
+python3 scripts/measure-shadows.py --assert
+BASE_URL=http://127.0.0.1:4173 node scripts/capture-audio.mjs
+node scripts/report-shadow.mjs</pre></main></html>`;
+writeFileSync('artifacts/그늘-색-교정-보고.html',html);console.log('그늘 전후 보고 저장 · '+Buffer.byteLength(html)+' bytes');

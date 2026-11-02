@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.DS_Store
+playwright-report/
+test-results/
+assets/realistic/models-raw/
+# 원본 자료(재다운로드 가능·대용량)
+assets/realistic/raw/
+assets/realistic/tools/node_modules/
+# 재배포 조건 미확인 모델(Mixamo 유래) — 공개 저장소 제외
+assets/realistic/models/hiker/Soldier.glb

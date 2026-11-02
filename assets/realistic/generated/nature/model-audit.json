@@ -1,0 +1,272 @@
+[
+  {
+    "id": "pine_tree_01",
+    "level": -1,
+    "initial": 6951524,
+    "triangles": 334061,
+    "bytes": 10766664,
+    "height": 12,
+    "source": "https://polyhaven.com/a/pine_tree_01",
+    "license": "CC0"
+  },
+  {
+    "id": "pine_tree_01",
+    "level": 0,
+    "initial": 6951524,
+    "triangles": 23400,
+    "bytes": 2518028,
+    "height": 12,
+    "source": "https://polyhaven.com/a/pine_tree_01",
+    "license": "CC0"
+  },
+  {
+    "id": "pine_tree_01",
+    "level": 1,
+    "initial": 6951524,
+    "triangles": 4992,
+    "bytes": 1878980,
+    "height": 12,
+    "source": "https://polyhaven.com/a/pine_tree_01",
+    "license": "CC0"
+  },
+  {
+    "id": "pine_sapling_medium",
+    "level": -1,
+    "initial": 2662894,
+    "triangles": 349422,
+    "bytes": 9000772,
+    "height": 5,
+    "source": "https://polyhaven.com/a/pine_sapling_medium",
+    "license": "CC0"
+  },
+  {
+    "id": "pine_sapling_medium",
+    "level": 0,
+    "initial": 2662894,
+    "triangles": 22775,
+    "bytes": 1669024,
+    "height": 5,
+    "source": "https://polyhaven.com/a/pine_sapling_medium",
+    "license": "CC0"
+  },
+  {
+    "id": "pine_sapling_medium",
+    "level": 1,
+    "initial": 2662894,
+    "triangles": 4968,
+    "bytes": 1204600,
+    "height": 5,
+    "source": "https://polyhaven.com/a/pine_sapling_medium",
+    "license": "CC0"
+  },
+  {
+    "id": "tree_small_02",
+    "level": -1,
+    "initial": 2062487,
+    "triangles": 348110,
+    "bytes": 7462432,
+    "height": 9,
+    "source": "https://polyhaven.com/a/tree_small_02",
+    "license": "CC0"
+  },
+  {
+    "id": "tree_small_02",
+    "level": 0,
+    "initial": 2062487,
+    "triangles": 23870,
+    "bytes": 1945692,
+    "height": 9,
+    "source": "https://polyhaven.com/a/tree_small_02",
+    "license": "CC0"
+  },
+  {
+    "id": "tree_small_02",
+    "level": 1,
+    "initial": 2062487,
+    "triangles": 4986,
+    "bytes": 1566736,
+    "height": 9,
+    "source": "https://polyhaven.com/a/tree_small_02",
+    "license": "CC0"
+  },
+  {
+    "id": "island_tree_01",
+    "level": -1,
+    "initial": 1599403,
+    "triangles": 346753,
+    "bytes": 7530824,
+    "height": 10,
+    "source": "https://polyhaven.com/a/island_tree_01",
+    "license": "CC0"
+  },
+  {
+    "id": "island_tree_01",
+    "level": 0,
+    "initial": 1599403,
+    "triangles": 23914,
+    "bytes": 2240588,
+    "height": 10,
+    "source": "https://polyhaven.com/a/island_tree_01",
+    "license": "CC0"
+  },
+  {
+    "id": "island_tree_01",
+    "level": 1,
+    "initial": 1599403,
+    "triangles": 4854,
+    "bytes": 1608564,
+    "height": 10,
+    "source": "https://polyhaven.com/a/island_tree_01",
+    "license": "CC0"
+  },
+  {
+    "id": "rock_09",
+    "level": 0,
+    "initial": 12416,
+    "triangles": 6000,
+    "bytes": 452340,
+    "height": 0.03286941419355571,
+    "source": "https://polyhaven.com/a/rock_09",
+    "license": "CC0"
+  },
+  {
+    "id": "rock_09",
+    "level": 1,
+    "initial": 12416,
+    "triangles": 1400,
+    "bytes": 413388,
+    "height": 0.03286941419355571,
+    "source": "https://polyhaven.com/a/rock_09",
+    "license": "CC0"
+  },
+  {
+    "id": "rock_09",
+    "level": 2,
+    "initial": 12416,
+    "triangles": 280,
+    "bytes": 402720,
+    "height": 0.03286941419355571,
+    "source": "https://polyhaven.com/a/rock_09",
+    "license": "CC0"
+  },
+  {
+    "id": "rock_face_01",
+    "level": 0,
+    "initial": 20174,
+    "triangles": 6000,
+    "bytes": 704088,
+    "height": 3.5640490017831326,
+    "source": "https://polyhaven.com/a/rock_face_01",
+    "license": "CC0"
+  },
+  {
+    "id": "rock_face_01",
+    "level": 1,
+    "initial": 20174,
+    "triangles": 1400,
+    "bytes": 663404,
+    "height": 3.5640490017831326,
+    "source": "https://polyhaven.com/a/rock_face_01",
+    "license": "CC0"
+  },
+  {
+    "id": "rock_face_01",
+    "level": 2,
+    "initial": 20174,
+    "triangles": 280,
+    "bytes": 651956,
+    "height": 3.5640490017831326,
+    "source": "https://polyhaven.com/a/rock_face_01",
+    "license": "CC0"
+  },
+  {
+    "id": "rock_face_02",
+    "level": 0,
+    "initial": 29566,
+    "triangles": 6000,
+    "bytes": 773668,
+    "height": 2.471966937184334,
+    "source": "https://polyhaven.com/a/rock_face_02",
+    "license": "CC0"
+  },
+  {
+    "id": "rock_face_02",
+    "level": 1,
+    "initial": 29566,
+    "triangles": 1398,
+    "bytes": 731256,
+    "height": 2.471966937184334,
+    "source": "https://polyhaven.com/a/rock_face_02",
+    "license": "CC0"
+  },
+  {
+    "id": "rock_face_02",
+    "level": 2,
+    "initial": 29566,
+    "triangles": 280,
+    "bytes": 718816,
+    "height": 2.471966937184334,
+    "source": "https://polyhaven.com/a/rock_face_02",
+    "license": "CC0"
+  },
+  {
+    "id": "boulder_01",
+    "level": 0,
+    "initial": 66122,
+    "triangles": 6000,
+    "bytes": 790656,
+    "height": 1.0038301944732666,
+    "source": "https://polyhaven.com/a/boulder_01",
+    "license": "CC0"
+  },
+  {
+    "id": "boulder_01",
+    "level": 1,
+    "initial": 66122,
+    "triangles": 1400,
+    "bytes": 734260,
+    "height": 1.0038301944732666,
+    "source": "https://polyhaven.com/a/boulder_01",
+    "license": "CC0"
+  },
+  {
+    "id": "boulder_01",
+    "level": 2,
+    "initial": 66122,
+    "triangles": 280,
+    "bytes": 720920,
+    "height": 1.0038301944732666,
+    "source": "https://polyhaven.com/a/boulder_01",
+    "license": "CC0"
+  },
+  {
+    "id": "mountainside",
+    "level": 0,
+    "initial": 153472,
+    "triangles": 6000,
+    "bytes": 850024,
+    "height": 10.522143810987473,
+    "source": "https://polyhaven.com/a/mountainside",
+    "license": "CC0"
+  },
+  {
+    "id": "mountainside",
+    "level": 1,
+    "initial": 153472,
+    "triangles": 1399,
+    "bytes": 808404,
+    "height": 10.522143810987473,
+    "source": "https://polyhaven.com/a/mountainside",
+    "license": "CC0"
+  },
+  {
+    "id": "mountainside",
+    "level": 2,
+    "initial": 153472,
+    "triangles": 280,
+    "bytes": 795932,
+    "height": 10.522143810987473,
+    "source": "https://polyhaven.com/a/mountainside",
+    "license": "CC0"
+  }
+]

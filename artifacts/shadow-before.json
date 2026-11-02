@@ -1,0 +1,92 @@
+{
+  "phase": "before",
+  "capturedAt": "2026-11-02T07:26:00.982Z",
+  "buildHash": "ce57bc3dfae6348ffe6fe784137f67e1d9a43e83eaa14d56e72404faa9f7aa0d",
+  "viewport": {
+    "width": 1366,
+    "height": 768
+  },
+  "rendering": {
+    "profile": "autumn-10am-neutral-v1",
+    "toneMapping": "Neutral",
+    "sunElevation": 29.00000000000002,
+    "sunAzimuth": 141.99999999999983,
+    "shadowAzimuth": 322,
+    "shadowLengthPerHeight": 1.8040477552714238,
+    "sunColor": "#FFF1DE",
+    "hazeColor": "#C9D6E3",
+    "skyZenith": "#5B8FC7",
+    "far": 30000,
+    "hdri": "Poly Haven Kiara 4 Mid-Morning 1K · CC0",
+    "ao": true,
+    "shadows": true,
+    "shaderErrors": [],
+    "calibration": {
+      "environmentIntensity": 1.9771951362660436,
+      "exposure": 1.6547247189895096,
+      "ratio": 3.999999700798406,
+      "grayCard": [
+        119.78581791106225,
+        116.6957493494989,
+        125.66115204080732
+      ],
+      "grayCardLuma": 117.99999999999973,
+      "fogSamples": [
+        {
+          "distance": 1000,
+          "contrast": 0.9047806427821516
+        },
+        {
+          "distance": 8000,
+          "contrast": 0.4499911367893218
+        },
+        {
+          "distance": 10000,
+          "contrast": 0.39685641006231315
+        },
+        {
+          "distance": 12000,
+          "contrast": 0.3499939463198185
+        },
+        {
+          "distance": 25000,
+          "contrast": 0.11999899148941051
+        }
+      ],
+      "precision": "float32",
+      "calibrated": true
+    },
+    "fov": 70,
+    "exposure": 1.6547247189895096
+  },
+  "orientation": {
+    "yaw": 0,
+    "pitch": -0.04,
+    "orbit": 4.5,
+    "reset": null,
+    "camera": [
+      1550.7455762424877,
+      578.5099520038398,
+      2868.3184754962795
+    ],
+    "avatarHeading": -1.9536554323768873,
+    "routeHeading": -1.9536554323768873
+  },
+  "snapshot": {
+    "version": 1,
+    "routeId": "gpx-valley-up-337-v1",
+    "s": 4537.310475642683,
+    "lateral": 0,
+    "elapsed": 0,
+    "distance": 0,
+    "ascent": 0,
+    "steps": 0,
+    "stepPhase": 0,
+    "checkpoints": [],
+    "paused": true,
+    "auto": false,
+    "view": "third",
+    "sessions": 2
+  },
+  "errors": []
+}

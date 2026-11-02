@@ -1,0 +1,195 @@
+
+> gwanak-hiking@0.1.0 test
+> node --test tests/*.test.mjs
+
+TAP version 13
+# Subtest: 걸으며 뒤를 봐도 yaw·pitch 유지, W의 진행은 경로 앞쪽
+ok 1 - 걸으며 뒤를 봐도 yaw·pitch 유지, W의 진행은 경로 앞쪽
+  ---
+  duration_ms: 1.768125
+  type: 'test'
+  ...
+# Subtest: 정면 복귀는 F 명령 이후 0.4초, 사용자 회전 시 중단
+ok 2 - 정면 복귀는 F 명령 이후 0.4초, 사용자 회전 시 중단
+  ---
+  duration_ms: 0.207792
+  type: 'test'
+  ...
+# Subtest: 3인칭 직접·자동·계단 이동 및 마지막 시점 이어하기
+ok 3 - 3인칭 직접·자동·계단 이동 및 마지막 시점 이어하기
+  ---
+  duration_ms: 0.197875
+  type: 'test'
+  ...
+# Subtest: 계단·데크 계단 0.35~0.5m/s, 초당 1.2걸음, 전체 135~165분
+ok 4 - 계단·데크 계단 0.35~0.5m/s, 초당 1.2걸음, 전체 135~165분
+  ---
+  duration_ms: 0.717792
+  type: 'test'
+  ...
+# Subtest: 3인칭 카메라 붐: 지형·계단 벽 앞에서 당김, 장애물 없으면 거리 유지
+ok 5 - 3인칭 카메라 붐: 지형·계단 벽 앞에서 당김, 장애물 없으면 거리 유지
+  ---
+  duration_ms: 2.471583
+  type: 'test'
+  ...
+# Subtest: 돌 6·통나무 7: 112단×1000회 직전 두 변형 제외·사용률 균형
+ok 6 - 돌 6·통나무 7: 112단×1000회 직전 두 변형 제외·사용률 균형
+  ---
+  duration_ms: 131.517333
+  type: 'test'
+  ...
+# Subtest: 모든 재질 대응·즉시 변경·피치/음량 범위·좌우 팬 교대
+ok 7 - 모든 재질 대응·즉시 변경·피치/음량 범위·좌우 팬 교대
+  ---
+  duration_ms: 2.730916
+  type: 'test'
+  ...
+# Subtest: 앱 음원 35개는 design 원본과 바이트가 동일하며 계단은 정확히 13개
+ok 8 - 앱 음원 35개는 design 원본과 바이트가 동일하며 계단은 정확히 13개
+  ---
+  duration_ms: 10.173417
+  type: 'test'
+  ...
+# Subtest: 실제 계단 걸음 이벤트: 단마다 한 번·1/1.2초·정지하면 발생하지 않음
+ok 9 - 실제 계단 걸음 이벤트: 단마다 한 번·1/1.2초·정지하면 발생하지 않음
+  ---
+  duration_ms: 1.473375
+  type: 'test'
+  ...
+# Subtest: 재질 경계에 닿은 걸음은 이전 프레임 재질이 아닌 접지 위치 재질
+ok 10 - 재질 경계에 닿은 걸음은 이전 프레임 재질이 아닌 접지 위치 재질
+  ---
+  duration_ms: 0.175667
+  type: 'test'
+  ...
+# Subtest: 간접광 색 교정은 어두운 값·HDR 값의 선형 휘도를 보존한다
+ok 11 - 간접광 색 교정은 어두운 값·HDR 값의 선형 휘도를 보존한다
+  ---
+  duration_ms: 0.672042
+  type: 'test'
+  ...
+# Subtest: 푸른 HDRI 색 편향 감소와 회갈색 지면 반사
+ok 12 - 푸른 HDRI 색 편향 감소와 회갈색 지면 반사
+  ---
+  duration_ms: 0.129125
+  type: 'test'
+  ...
+# Subtest: 환경맵 상하 방향과 알파 보존·정상 갱신
+ok 13 - 환경맵 상하 방향과 알파 보존·정상 갱신
+  ---
+  duration_ms: 0.12175
+  type: 'test'
+  ...
+# Subtest: 지면 정점색의 휘도는 보존하고 중복된 녹색 채도만 낮춤
+ok 14 - 지면 정점색의 휘도는 보존하고 중복된 녹색 채도만 낮춤
+  ---
+  duration_ms: 0.747042
+  type: 'test'
+  ...
+# {"contacts":5067,"maxCenterError":0.03204177408065334,"maxFootError":7.451143452241737e-10,"maxLateralRoadDifference":0.8242370265804766}
+# Subtest: 150분 목표·경사 급변 제한·데크 계수
+ok 15 - 150분 목표·경사 급변 제한·데크 계수
+  ---
+  duration_ms: 0.583625
+  type: 'test'
+  ...
+# Subtest: GPX 수평 337점 보존·DSM 정렬 고도·첫 점 원점·1:1 거리
+ok 16 - GPX 수평 337점 보존·DSM 정렬 고도·첫 점 원점·1:1 거리
+  ---
+  duration_ms: 1.6
+  type: 'test'
+  ...
+# Subtest: 5곳 최근접 경로점·임시 표시·통과 저장 복구 및 이전 경로 저장 분리
+ok 17 - 5곳 최근접 경로점·임시 표시·통과 저장 복구 및 이전 경로 저장 분리
+  ---
+  duration_ms: 2.013583
+  type: 'test'
+  ...
+# Subtest: 새 DSM 경로 전체 노면 raycast와 5동작 발바닥 접지 0.3m 이내
+ok 18 - 새 DSM 경로 전체 노면 raycast와 5동작 발바닥 접지 0.3m 이내
+  ---
+  duration_ms: 4205.617291
+  type: 'test'
+  ...
+# Subtest: 실제 격자 크기·경로 바닥·OSM relation 연결과 섬 구멍
+ok 19 - 실제 격자 크기·경로 바닥·OSM relation 연결과 섬 구멍
+  ---
+  duration_ms: 24.220583
+  type: 'test'
+  ...
+# Subtest: 태양 29°·142°, 북서 322° 그림자와 1.7m 캐릭터 약 3.1m
+ok 20 - 태양 29°·142°, 북서 322° 그림자와 1.7m 캐릭터 약 3.1m
+  ---
+  duration_ms: 0.460459
+  type: 'test'
+  ...
+# Subtest: 원경 8~12km 대비 35~45%, 거리순 연속 감쇠·근경 보존
+ok 21 - 원경 8~12km 대비 35~45%, 거리순 연속 감쇠·근경 보존
+  ---
+  duration_ms: 0.843209
+  type: 'test'
+  ...
+# Subtest: Neutral 고정 노출 기준: 18% 회색 모델 sRGB 118
+ok 22 - Neutral 고정 노출 기준: 18% 회색 모델 sRGB 118
+  ---
+  duration_ms: 0.297209
+  type: 'test'
+  ...
+# Subtest: EPSG:5186 미터 변환 왕복과 북쪽 방향
+ok 23 - EPSG:5186 미터 변환 왕복과 북쪽 방향
+  ---
+  duration_ms: 0.806834
+  type: 'test'
+  ...
+# Subtest: 멈춤·일시정지는 거리·시간·걸음 불변
+ok 24 - 멈춤·일시정지는 거리·시간·걸음 불변
+  ---
+  duration_ms: 0.240417
+  type: 'test'
+  ...
+# Subtest: 대각선·자동+전진 입력은 실제 속도를 넘지 않음
+ok 25 - 대각선·자동+전진 입력은 실제 속도를 넘지 않음
+  ---
+  duration_ms: 0.369875
+  type: 'test'
+  ...
+# Subtest: 좌우 입력이 등산로 폭을 벗어나지 않음
+ok 26 - 좌우 입력이 등산로 폭을 벗어나지 않음
+  ---
+  duration_ms: 11.593125
+  type: 'test'
+  ...
+# Subtest: 재질별 걸음 이벤트 개수·저장 복구·손상 저장 처리
+ok 27 - 재질별 걸음 이벤트 개수·저장 복구·손상 저장 처리
+  ---
+  duration_ms: 1.105209
+  type: 'test'
+  ...
+# Subtest: DSM 경로 거리·정상 기준 632m, 후진 자동 걷기 해제
+ok 28 - DSM 경로 거리·정상 기준 632m, 후진 자동 걷기 해제
+  ---
+  duration_ms: 0.209792
+  type: 'test'
+  ...
+# Subtest: 실제 좌표 이동도 대각선 속도 한도 이내
+ok 29 - 실제 좌표 이동도 대각선 속도 한도 이내
+  ---
+  duration_ms: 0.196375
+  type: 'test'
+  ...
+# Subtest: 실제 이동 루프와 해석적 시뮬레이션 시간·걸음 수 일치
+ok 30 - 실제 이동 루프와 해석적 시뮬레이션 시간·걸음 수 일치
+  ---
+  duration_ms: 67.909625
+  type: 'test'
+  ...
+1..30
+# tests 30
+# suites 0
+# pass 30
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 4327.293959

@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>관악산 발소리 청취 검수</title>
+<style>
+:root{--bg:#f4f1ea;--card:#fff;--ink:#222;--sub:#666;--ac:#2f6b4f;--line:#ddd6c8;--warn:#a5521a}
+*{box-sizing:border-box}body{margin:0;font:15px/1.5 -apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;background:var(--bg);color:var(--ink);padding:16px;max-width:980px;margin:auto}
+h1{font-size:20px;margin:4px 0}h2{font-size:17px;margin:0 0 6px}p.s{color:var(--sub);margin:2px 0 8px;font-size:13px}
+section{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin:14px 0}
+button{font:inherit;min-height:44px;padding:6px 14px;border-radius:8px;border:1px solid var(--ac);background:#fff;color:var(--ac);cursor:pointer}
+button.p{background:var(--ac);color:#fff}button:active{opacity:.7}button.on{background:#e3f0e8}
+.q{background:#fff6e8;border:1px solid #ecd2a8;border-radius:8px;padding:8px 12px;margin:8px 0;font-size:13.5px}.q b{color:var(--warn)}
+.q ul{margin:4px 0 0 18px;padding:0}
+.row{display:grid;grid-template-columns:150px 1fr;gap:8px 12px;align-items:center;padding:8px 0;border-top:1px solid #eee}
+.row.pl{outline:2px solid var(--ac);outline-offset:-2px;border-radius:6px}
+.ck{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center}.ck label{display:flex;align-items:center;gap:4px;min-height:32px;white-space:nowrap}
+.ck input[type=text]{flex:1 1 160px;min-width:120px;min-height:36px;padding:4px 8px;border:1px solid var(--line);border-radius:6px;font:inherit}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0}
+.dots{display:flex;flex-wrap:wrap;gap:3px;margin:6px 0}.dots i{width:22px;height:22px;border-radius:4px;background:#e7e2d6;font:11px/22px sans-serif;text-align:center;font-style:normal;color:#555}.dots i.a{background:var(--ac);color:#fff}
+.t{font-size:12px;color:var(--sub)}#st{position:sticky;top:0;background:#fffbe6;border:1px solid #e6dc9c;padding:6px 10px;border-radius:8px;font-size:13px;z-index:5}
+textarea{width:100%;min-height:100px;font:12px monospace}
+@media(max-width:560px){.row{grid-template-columns:1fr}}
+</style></head><body>
+<h1>관악산 발소리 청취 검수</h1>
+<p class="s">헤드폰으로 들어 주세요. 소리 파일은 수정하지 않고, 이 페이지의 체크·메모가 귀 검수 결과(JSON)로 나갑니다. 파일은 <code>sounds/</code>를 상대경로로 읽고, 막히면(파일 직접 열기 등) 이 HTML에 내장된 같은 소리로 재생합니다.</p>
+<div id="st">준비 중…</div>
+
+<section id="stone-sec"><h2>① 돌계단 (6변형)</h2>
+<div class="q"><b>검수 질문</b><ul>
+<li>돌 계단은 돌길 소리라 계단 특유의 울림이 없습니다. 아래 "실외 리버브(0.1초)"를 켜면 더 계단답게 들립니까? 켠 쪽을 쓸까요?</li>
+<li>변형마다 딛는 느낌이 있는 소리인지, 너무 가볍거나 퉁하지 않은지 확인해 주세요.</li></ul></div>
+<div class="bar"><button id="rev" class="">실외 리버브 꺼짐 (눌러서 켜기)</button><span class="t">리버브는 0.1초 이내 꼬리, 음량 약 25% 섞음. 개별 재생·연속 재생 모두에 적용됩니다.</span></div>
+<div class="bar"><button class="p" data-seq="stone">▶ 돌계단 30걸음 연속</button><button data-stop>■ 정지</button></div>
+<div class="dots" id="dots-stone"></div><div id="list-stone"></div></section>
+
+<section id="log-sec"><h2>② 통나무계단 (7변형)</h2>
+<div class="q"><b>검수 질문</b><ul>
+<li><b>01~03</b> (두꺼운 나무판): 저역이 95% 이상이라 "퉁" 소리만 남는지 — 딛는 소리가 들립니까, 아니면 둔탁한 울림뿐입니까? 너무 퉁하면 "너무 퉁"에 체크.</li>
+<li><b>04~07</b> (실내 나무 계단 클립 기반): 슬리퍼·실내 계단 같아 가볍지 않은지, 등산로 통나무 계단으로 들립니까? 가벼우면 "가벼움"에 체크.</li>
+<li>01~03과 04~07을 섞어 쓸 때 서로 어색하게 튀는 소리가 있는지 연속 재생으로 확인해 주세요.</li></ul></div>
+<div class="bar"><button class="p" data-seq="log">▶ 통나무계단 30걸음 연속</button><button data-stop>■ 정지</button></div>
+<div class="dots" id="dots-log"></div><div id="list-log"></div></section>
+
+<section><h2>③ 연속 재생 공통 확인</h2>
+<p class="s">0.83초 간격(1.2걸음/초), 직전 2개 변형 제외, 음높이 ±4%, 음량 ±1.5dB, 좌우 팬 ±8% 교대. 같은 소리 연속 · 기계적 박자 · 한 걸음만 튀는 소리가 있는지 들어 보세요.</p>
+<div class="ck"><label><input type="checkbox" id="o_same"> 같은 소리가 연속으로 들렸다</label><label><input type="checkbox" id="o_mech"> 박자가 기계 같다</label><label><input type="checkbox" id="o_jump"> 튀는 소리가 있다</label><input type="text" id="o_memo" placeholder="연속 재생 메모(몇 번째 걸음, 어떤 소리)"></div></section>
+
+<section><h2>④ 다른 재질 (참고, 변형 개별 재생)</h2>
+<p class="s">흙 9 · 돌길 8 · 데크 3 · 암릉 2. 계단과 질감이 어긋나지 않는지 비교용입니다.</p>
+<div id="list-other"></div></section>
+
+<section><h2>⑤ 결과 내보내기</h2>
+<div class="bar"><button class="p" id="copy">결과 JSON 복사</button><span class="t" id="cm"></span></div>
+<textarea id="out" readonly placeholder="복사 버튼을 누르면 여기에도 표시됩니다."></textarea></section>
+
+<script>
+const EMB=__DATA__;
+const GROUPS={
+ stone:{files:[1,2,3,4,5,6].map(i=>`stairs/stone-stair-0${i}.ogg`),label:'돌계단'},
+ log:{files:[1,2,3,4,5,6,7].map(i=>`stairs/log-stair-0${i}.ogg`),label:'통나무계단'}};
+const OTHER=[['흙','dirt',Object.keys(EMB).filter(k=>k.startsWith('dirt/'))],['돌길','stone',Object.keys(EMB).filter(k=>k.startsWith('stone/'))],['데크','deck',Object.keys(EMB).filter(k=>k.startsWith('deck/'))],['암릉','rock',Object.keys(EMB).filter(k=>k.startsWith('rock/'))]];
+const ACT=['좋음','가벼움','너무 퉁','부자연'];
+let live=[],ctx,buf={},revOn=false,conv,wet,dry,timers=[],playing=null,src='';
+const st=document.getElementById('st');
+function setSt(t){st.textContent=t}
+function ensure(){if(!ctx){ctx=new (window.AudioContext||window.webkitAudioContext)();
+ conv=ctx.createConvolver();const n=Math.floor(ctx.sampleRate*0.1),ir=ctx.createBuffer(2,n,ctx.sampleRate);
+ for(let c=0;c<2;c++){const d=ir.getChannelData(c);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.exp(-i/(n*0.22));}
+ conv.buffer=ir;wet=ctx.createGain();wet.gain.value=0;dry=ctx.createGain();conv.connect(wet);wet.connect(ctx.destination);dry.connect(ctx.destination);}
+ if(ctx.state!=='running')ctx.resume();}
+function b64buf(s){const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u.buffer}
+async function load(f){ensure();let ab;
+ try{const r=await fetch('sounds/'+f);if(!r.ok)throw 0;ab=await r.arrayBuffer();src='sounds/ 상대경로'}catch(e){ab=b64buf(EMB[f]);src='내장 데이터'}
+ buf[f]=await new Promise((ok,ng)=>ctx.decodeAudioData(ab,ok,ng));return buf[f]}
+async function play(f,opt={}){const b=buf[f]||await load(f);ensure();
+ const s=ctx.createBufferSource();s.buffer=b;s.playbackRate.value=opt.rate||1;
+ const g=ctx.createGain();g.gain.value=opt.gain||1;const p=ctx.createStereoPanner?ctx.createStereoPanner():null;
+ s.connect(g);if(p){p.pan.value=opt.pan||0;g.connect(p);p.connect(dry);if(f.startsWith('stairs/stone'))p.connect(conv)}else{g.connect(dry);if(f.startsWith('stairs/stone'))g.connect(conv)}
+ const w=opt.at||ctx.currentTime;s.start(w);if(opt.at){live.push(s);s.onended=()=>{live=live.filter(x=>x!==s)}};return b.duration/(opt.rate||1)}
+function applyRev(){ensure();wet.gain.value=revOn?0.25:0;
+ const b=document.getElementById('rev');b.textContent=revOn?'실외 리버브 켜짐 (눌러서 끄기)':'실외 리버브 꺼짐 (눌러서 켜기)';b.classList.toggle('on',revOn)}
+document.getElementById('rev').onclick=()=>{revOn=!revOn;applyRev()};
+
+const data={};const memoKey=f=>f;
+function row(f,label,box){const d=document.createElement('div');d.className='row';d.id='r-'+f.replace(/\W/g,'_');
+ d.innerHTML=`<div><button class="p" data-f="${f}">▶ ${label}</button></div><div class="ck">`+
+ ACT.map(a=>`<label><input type="checkbox" data-f="${f}" data-a="${a}">${a}</label>`).join('')+`<input type="text" data-f="${f}" data-m="1" placeholder="메모"></div>`;
+ box.appendChild(d)}
+for(const k in GROUPS){const box=document.getElementById('list-'+k);
+ GROUPS[k].files.forEach((f,i)=>{row(f,`${GROUPS[k].label} ${String(i+1).padStart(2,'0')}`,box);
+  const dp=document.createElement('i');dp.textContent=i+1;dp.id='d-'+k+'-'+i;document.getElementById('dots-'+k).appendChild(dp)})}
+// 30걸음 점은 변형 번호가 아닌 걸음 순서
+for(const k in GROUPS){const dp=document.getElementById('dots-'+k);dp.innerHTML='';for(let i=0;i<30;i++){const e=document.createElement('i');e.textContent=i+1;dp.appendChild(e)}}
+const ob=document.getElementById('list-other');
+OTHER.forEach(([n,dir,fs])=>{const h=document.createElement('div');h.innerHTML=`<b>${n}</b> <span class="t">(${fs.length}개)</span>`;h.style.marginTop='8px';ob.appendChild(h);
+ fs.forEach(f=>row(f,f.split('/')[1].replace(/\.\w+$/,''),ob))});
+
+document.addEventListener('click',async e=>{const t=e.target.closest('button');if(!t)return;
+ if(t.dataset.f){try{await play(t.dataset.f);setSt('재생: '+t.dataset.f+' (읽기: '+src+')')}catch(x){setSt('재생 실패: '+t.dataset.f+' — '+x)}}
+ else if(t.dataset.seq)seq(t.dataset.seq);
+ else if('stop' in t.dataset)stop()});
+
+function stop(){timers.forEach(clearTimeout);timers=[];live.forEach(x=>{try{x.stop()}catch(e){}});live=[];
+ document.querySelectorAll('.dots i').forEach(d=>d.classList.remove('a'));document.querySelectorAll('.row.pl').forEach(r=>r.classList.remove('pl'));playing=null;setSt('정지')}
+async function seq(k){stop();ensure();const fs=GROUPS[k].files;await Promise.all(fs.map(f=>buf[f]||load(f)));
+ const hist=[],step=0.83,n=30,t0=ctx.currentTime+0.15,dots=document.getElementById('dots-'+k).children;playing=k;
+ const log=[];
+ for(let i=0;i<n;i++){const cand=fs.map((_,j)=>j).filter(j=>!hist.slice(-2).includes(j));const j=cand[Math.floor(Math.random()*cand.length)];hist.push(j);
+  const rate=1+(Math.random()*2-1)*0.04,gain=Math.pow(10,((Math.random()*2-1)*1.5)/20),pan=(i%2?1:-1)*0.08;log.push(j+1);
+  play(fs[j],{rate,gain,pan,at:t0+i*step});
+  timers.push(setTimeout(()=>{if(playing!==k)return;[...dots].forEach(d=>d.classList.remove('a'));dots[i].classList.add('a');
+   document.querySelectorAll('.row.pl').forEach(r=>r.classList.remove('pl'));const r=document.getElementById('r-'+fs[j].replace(/\W/g,'_'));r&&r.classList.add('pl');setSt(`${GROUPS[k].label} ${i+1}/30걸음 — 변형 ${String(j+1).padStart(2,'0')}${k==='stone'?(revOn?' · 리버브 켜짐':' · 리버브 꺼짐'):''}`)},(0.15+i*step)*1000))}
+ timers.push(setTimeout(()=>{if(playing===k){[...dots].forEach(d=>d.classList.remove('a'));document.querySelectorAll('.row.pl').forEach(r=>r.classList.remove('pl'));playing=null;setSt('끝났습니다. 변형 순서: '+log.join(' '))}},(0.15+n*step+0.4)*1000))}
+
+function collect(){const r={page:'sounds-check',variants:{},sequence:{same_consecutive:o_same.checked,mechanical_rhythm:o_mech.checked,sticking_out:o_jump.checked,memo:o_memo.value},stone_reverb_preferred:revOn?'on(검수 종료 시 켜 둠)':'off(검수 종료 시 꺼 둠)',source:src};
+ document.querySelectorAll('.row').forEach(rw=>{const f=rw.querySelector('button').dataset.f;const c=[...rw.querySelectorAll('input[type=checkbox]:checked')].map(x=>x.dataset.a);const m=rw.querySelector('input[type=text]').value.trim();if(c.length||m)r.variants[f]={marks:c,memo:m}});return r}
+copy.onclick=async()=>{const j=JSON.stringify(collect(),null,2);out.value=j;try{await navigator.clipboard.writeText(j);cm.textContent='복사했습니다.'}catch(e){out.select();document.execCommand('copy');cm.textContent='복사했습니다(또는 아래 칸에서 직접 복사).'}};
+(async()=>{try{ensure();await load('stairs/stone-stair-01.ogg');setSt('준비됨 — 소리 읽기: '+src+'. 버튼을 눌러 재생하세요.')}catch(e){setSt('소리 디코딩 실패: '+e+' (이 브라우저가 ogg/flac를 지원하는지 확인)')}})();
+</script></body></html>

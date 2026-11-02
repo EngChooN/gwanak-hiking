@@ -1,0 +1,19 @@
+{
+  "date":"2026-11-02",
+  "releaseApproved":false,
+  "state":"source-written-not-executed",
+  "downloads":"blocked: curl exit 6, DNS resolution unavailable",
+  "scriptExecution":"not-authorized-by-current-autonomy-instruction",
+  "demPresent":false,
+  "pbrPresent":false,
+  "osmPresent":false,
+  "hdriPresent":false,
+  "newCaptures":[],
+  "dimensionTests":"not-run",
+  "firstLoadMeasuredBytes":null,
+  "skylineReference":"산기획 확정 방위·거리와 data/서울원경-기준표.md 반영",
+  "skylineDirections":[0,60,340,200],
+  "skylineCaptureState":"하네스 작성, 스크립트 실행 금지·generated 자료 없음으로 미촬영",
+  "atmosphereTarget":{"haze":"#C9D6E3","retainedAt8km":0.45,"retainedAt12km":0.35},
+  "limitations":["실사풍 최종 자산 미생성","실제 관악산 수종·화강암 스캔 및 인체 모델 미확보","게임 미통합","경험자·모바일 미검증"]
+}

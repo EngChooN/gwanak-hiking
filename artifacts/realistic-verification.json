@@ -1,0 +1,939 @@
+{
+  "environment": "이 Mac headless Chrome, 1440×900, deviceScaleFactor 1. 실기기 모바일 검증 아님.",
+  "captures": [
+    {
+      "id": "entrance",
+      "label": "입구",
+      "s": 1,
+      "bearing": null,
+      "metrics": {
+        "landscape": {
+          "source": "manifest",
+          "cityChunks": 32,
+          "buildings": 153534,
+          "waterPolygons": 380,
+          "errors": [],
+          "ready": true,
+          "natureVisibleChunks": 570,
+          "natureReady": true,
+          "natureCounts": {
+            "trees": 8066,
+            "rocks": 337
+          },
+          "natureChunks": 2377
+        },
+        "rendering": {
+          "indirectLight": {
+            "skyColor": "#D5D6D3",
+            "groundColor": "#ABA8A2",
+            "hemisphereIntensity": 0.45,
+            "retainedChroma": 0.01,
+            "terrainChroma": 0.25
+          },
+          "profile": "autumn-10am-neutral-v1",
+          "toneMapping": "Neutral",
+          "sunElevation": 28.999999999999996,
+          "sunAzimuth": 142,
+          "shadowAzimuth": 322,
+          "shadowLengthPerHeight": 1.8040477552714238,
+          "sunColor": "#FFF1DE",
+          "hazeColor": "#C9D6E3",
+          "skyZenith": "#5B8FC7",
+          "far": 30000,
+          "hdri": "Poly Haven Kloppenheim 06 PureSky 1K · CC0",
+          "ao": false,
+          "shadows": true,
+          "shaderErrors": [],
+          "calibration": {
+            "environmentIntensity": 0.19025671504749112,
+            "hemisphereIntensity": 0.08561552177137101,
+            "directContribution": [
+              0.1196015253663063,
+              0.10520417988300323,
+              0.08736421167850494
+            ],
+            "indirectContribution": [
+              0.026651568710803986,
+              0.026847971603274345,
+              0.025989754125475883
+            ],
+            "exposure": 1.6561216376008554,
+            "ratio": 3.999999911855317,
+            "grayCard": [
+              124.18718823325746,
+              117.24703062205111,
+              107.23999280771878
+            ],
+            "grayCardLuma": 117.99999999999878,
+            "fogSamples": [
+              {
+                "distance": 1000,
+                "contrast": 0.9047806427821516
+              },
+              {
+                "distance": 8000,
+                "contrast": 0.4499911367893218
+              },
+              {
+                "distance": 10000,
+                "contrast": 0.39685641006231315
+              },
+              {
+                "distance": 12000,
+                "contrast": 0.3499939463198185
+              },
+              {
+                "distance": 25000,
+                "contrast": 0.11999899148941051
+              }
+            ],
+            "precision": "float32",
+            "calibrated": true
+          }
+        },
+        "footContact": [
+          {
+            "side": "왼발",
+            "support": 49.66078869601132,
+            "bottom": 49.66105201702038,
+            "lift": 0.0002632405645428548,
+            "planted": true,
+            "error": 0.0002633210090579041,
+            "foot": [
+              0.6519518229411853,
+              1.0895333320629068
+            ],
+            "penetration": 0
+          },
+          {
+            "side": "오른발",
+            "support": 49.66073491006154,
+            "bottom": 49.66073498159691,
+            "lift": 0,
+            "planted": true,
+            "error": 7.153536785153847e-8,
+            "foot": [
+              0.2946930352852093,
+              0.6744307371316292
+            ],
+            "penetration": 0
+          }
+        ],
+        "assetsLoaded": true,
+        "fps": 60.00248972986434,
+        "quality": 1,
+        "loadedChunks": 50,
+        "drawCalls": 277,
+        "triangles": 1454768,
+        "firstFrameMs": 126.40000009536743
+      },
+      "rendering": {
+        "indirectLight": {
+          "skyColor": "#D5D6D3",
+          "groundColor": "#ABA8A2",
+          "hemisphereIntensity": 0.45,
+          "retainedChroma": 0.01,
+          "terrainChroma": 0.25
+        },
+        "profile": "autumn-10am-neutral-v1",
+        "toneMapping": "Neutral",
+        "sunElevation": 28.999999999999996,
+        "sunAzimuth": 142,
+        "shadowAzimuth": 322,
+        "shadowLengthPerHeight": 1.8040477552714238,
+        "sunColor": "#FFF1DE",
+        "hazeColor": "#C9D6E3",
+        "skyZenith": "#5B8FC7",
+        "far": 30000,
+        "hdri": "Poly Haven Kloppenheim 06 PureSky 1K · CC0",
+        "ao": false,
+        "shadows": true,
+        "shaderErrors": [],
+        "calibration": {
+          "environmentIntensity": 0.19025671504749112,
+          "hemisphereIntensity": 0.08561552177137101,
+          "directContribution": [
+            0.1196015253663063,
+            0.10520417988300323,
+            0.08736421167850494
+          ],
+          "indirectContribution": [
+            0.026651568710803986,
+            0.026847971603274345,
+            0.025989754125475883
+          ],
+          "exposure": 1.6561216376008554,
+          "ratio": 3.999999911855317,
+          "grayCard": [
+            124.18718823325746,
+            117.24703062205111,
+            107.23999280771878
+          ],
+          "grayCardLuma": 117.99999999999878,
+          "fogSamples": [
+            {
+              "distance": 1000,
+              "contrast": 0.9047806427821516
+            },
+            {
+              "distance": 8000,
+              "contrast": 0.4499911367893218
+            },
+            {
+              "distance": 10000,
+              "contrast": 0.39685641006231315
+            },
+            {
+              "distance": 12000,
+              "contrast": 0.3499939463198185
+            },
+            {
+              "distance": 25000,
+              "contrast": 0.11999899148941051
+            }
+          ],
+          "precision": "float32",
+          "calibrated": true
+        },
+        "fov": 65,
+        "exposure": 1.6561216376008554
+      },
+      "coordinates": {
+        "x": 0.4535957966808185,
+        "y": 49.64574242785738,
+        "z": 0.8912075197748656
+      },
+      "orientation": {
+        "yaw": 0,
+        "pitch": -0.04,
+        "orbit": 4.5,
+        "reset": null,
+        "camera": [
+          0.4535957966808185,
+          51.260741494527295,
+          0.8912075197748656
+        ],
+        "avatarHeading": -2.6707966886552104,
+        "routeHeading": -2.6707966886552104
+      },
+      "ground": [
+        {
+          "surface": 49.660742241180074,
+          "visible": 49.660742241180074,
+          "error": 0
+        },
+        {
+          "surface": 49.660741494527294,
+          "visible": 49.6607414945273,
+          "error": 7.105427357601002e-15
+        },
+        {
+          "surface": 49.66074074787453,
+          "visible": 49.66074074787453,
+          "error": 0
+        }
+      ]
+    },
+    {
+      "id": "ridge",
+      "label": "능선 중간",
+      "s": 4599.452468725973,
+      "bearing": null,
+      "metrics": {
+        "landscape": {
+          "source": "manifest",
+          "cityChunks": 32,
+          "buildings": 153534,
+          "waterPolygons": 380,
+          "errors": [],
+          "ready": true,
+          "natureVisibleChunks": 736,
+          "natureReady": true,
+          "natureCounts": {
+            "trees": 8066,
+            "rocks": 337
+          },
+          "natureChunks": 2377
+        },
+        "rendering": {
+          "indirectLight": {
+            "skyColor": "#D5D6D3",
+            "groundColor": "#ABA8A2",
+            "hemisphereIntensity": 0.45,
+            "retainedChroma": 0.01,
+            "terrainChroma": 0.25
+          },
+          "profile": "autumn-10am-neutral-v1",
+          "toneMapping": "Neutral",
+          "sunElevation": 29.00000000000002,
+          "sunAzimuth": 141.99999999999983,
+          "shadowAzimuth": 322,
+          "shadowLengthPerHeight": 1.8040477552714238,
+          "sunColor": "#FFF1DE",
+          "hazeColor": "#C9D6E3",
+          "skyZenith": "#5B8FC7",
+          "far": 30000,
+          "hdri": "Poly Haven Kloppenheim 06 PureSky 1K · CC0",
+          "ao": false,
+          "shadows": true,
+          "shaderErrors": [],
+          "calibration": {
+            "environmentIntensity": 0.19025671504749112,
+            "hemisphereIntensity": 0.08561552177137101,
+            "directContribution": [
+              0.1196015253663063,
+              0.10520417988300323,
+              0.08736421167850494
+            ],
+            "indirectContribution": [
+              0.026651568710803986,
+              0.026847971603274345,
+              0.025989754125475883
+            ],
+            "exposure": 1.6561216376008554,
+            "ratio": 3.999999911855317,
+            "grayCard": [
+              124.18718823325746,
+              117.24703062205111,
+              107.23999280771878
+            ],
+            "grayCardLuma": 117.99999999999878,
+            "fogSamples": [
+              {
+                "distance": 1000,
+                "contrast": 0.9047806427821516
+              },
+              {
+                "distance": 8000,
+                "contrast": 0.4499911367893218
+              },
+              {
+                "distance": 10000,
+                "contrast": 0.39685641006231315
+              },
+              {
+                "distance": 12000,
+                "contrast": 0.3499939463198185
+              },
+              {
+                "distance": 25000,
+                "contrast": 0.11999899148941051
+              }
+            ],
+            "precision": "float32",
+            "calibrated": true
+          }
+        },
+        "footContact": [
+          {
+            "side": "왼발",
+            "support": 569.8944325436619,
+            "bottom": 569.8946890879232,
+            "lift": 0.0002565829984177981,
+            "planted": true,
+            "error": 0.000256544261333147,
+            "foot": [
+              1645.4381486295176,
+              2868.0983318401336
+            ],
+            "penetration": 0
+          },
+          {
+            "side": "오른발",
+            "support": 569.8684482467879,
+            "bottom": 569.8684481988422,
+            "lift": 0,
+            "planted": true,
+            "error": 4.7945718506525736e-8,
+            "foot": [
+              1645.7017386424832,
+              2868.5783895786026
+            ],
+            "penetration": 4.7945718506525736e-8
+          }
+        ],
+        "assetsLoaded": true,
+        "fps": 60.00248972986433,
+        "quality": 1,
+        "loadedChunks": 50,
+        "drawCalls": 333,
+        "triangles": 5803096,
+        "firstFrameMs": 118.70000004768372
+      },
+      "rendering": {
+        "indirectLight": {
+          "skyColor": "#D5D6D3",
+          "groundColor": "#ABA8A2",
+          "hemisphereIntensity": 0.45,
+          "retainedChroma": 0.01,
+          "terrainChroma": 0.25
+        },
+        "profile": "autumn-10am-neutral-v1",
+        "toneMapping": "Neutral",
+        "sunElevation": 29.00000000000002,
+        "sunAzimuth": 141.99999999999983,
+        "shadowAzimuth": 322,
+        "shadowLengthPerHeight": 1.8040477552714238,
+        "sunColor": "#FFF1DE",
+        "hazeColor": "#C9D6E3",
+        "skyZenith": "#5B8FC7",
+        "far": 30000,
+        "hdri": "Poly Haven Kloppenheim 06 PureSky 1K · CC0",
+        "ao": false,
+        "shadows": true,
+        "shaderErrors": [],
+        "calibration": {
+          "environmentIntensity": 0.19025671504749112,
+          "hemisphereIntensity": 0.08561552177137101,
+          "directContribution": [
+            0.1196015253663063,
+            0.10520417988300323,
+            0.08736421167850494
+          ],
+          "indirectContribution": [
+            0.026651568710803986,
+            0.026847971603274345,
+            0.025989754125475883
+          ],
+          "exposure": 1.6561216376008554,
+          "ratio": 3.999999911855317,
+          "grayCard": [
+            124.18718823325746,
+            117.24703062205111,
+            107.23999280771878
+          ],
+          "grayCardLuma": 117.99999999999878,
+          "fogSamples": [
+            {
+              "distance": 1000,
+              "contrast": 0.9047806427821516
+            },
+            {
+              "distance": 8000,
+              "contrast": 0.4499911367893218
+            },
+            {
+              "distance": 10000,
+              "contrast": 0.39685641006231315
+            },
+            {
+              "distance": 12000,
+              "contrast": 0.3499939463198185
+            },
+            {
+              "distance": 25000,
+              "contrast": 0.11999899148941051
+            }
+          ],
+          "precision": "float32",
+          "calibrated": true
+        },
+        "fov": 65,
+        "exposure": 1.6561216376008554
+      },
+      "coordinates": {
+        "x": 1645.5911472750074,
+        "y": 569.8698652193466,
+        "z": 2868.3334177389524
+      },
+      "orientation": {
+        "yaw": 0,
+        "pitch": -0.04,
+        "orbit": 4.5,
+        "reset": null,
+        "camera": [
+          1645.5911472750074,
+          571.4848633763379,
+          2868.3334177389524
+        ],
+        "avatarHeading": 0.26229851402602494,
+        "routeHeading": 0.26229851402602494
+      },
+      "ground": [
+        {
+          "surface": 569.7667348848348,
+          "visible": 569.7667348848348,
+          "error": 0
+        },
+        {
+          "surface": 569.8848633763379,
+          "visible": 569.8848633763379,
+          "error": 0
+        },
+        {
+          "surface": 569.8914631496015,
+          "visible": 569.8914631496015,
+          "error": 0
+        }
+      ]
+    },
+    {
+      "id": "summit-north",
+      "label": "정상 북쪽 · 서울·한강",
+      "s": 5066.907963768509,
+      "bearing": 0,
+      "metrics": {
+        "landscape": {
+          "source": "manifest",
+          "cityChunks": 32,
+          "buildings": 153534,
+          "waterPolygons": 380,
+          "errors": [],
+          "ready": true,
+          "natureVisibleChunks": 741,
+          "natureReady": true,
+          "natureCounts": {
+            "trees": 8066,
+            "rocks": 337
+          },
+          "natureChunks": 2377
+        },
+        "rendering": {
+          "indirectLight": {
+            "skyColor": "#D5D6D3",
+            "groundColor": "#ABA8A2",
+            "hemisphereIntensity": 0.45,
+            "retainedChroma": 0.01,
+            "terrainChroma": 0.25
+          },
+          "profile": "autumn-10am-neutral-v1",
+          "toneMapping": "Neutral",
+          "sunElevation": 29.00000000000002,
+          "sunAzimuth": 141.99999999999983,
+          "shadowAzimuth": 322,
+          "shadowLengthPerHeight": 1.8040477552714238,
+          "sunColor": "#FFF1DE",
+          "hazeColor": "#C9D6E3",
+          "skyZenith": "#5B8FC7",
+          "far": 30000,
+          "hdri": "Poly Haven Kloppenheim 06 PureSky 1K · CC0",
+          "ao": false,
+          "shadows": true,
+          "shaderErrors": [],
+          "calibration": {
+            "environmentIntensity": 0.19025671504749112,
+            "hemisphereIntensity": 0.08561552177137101,
+            "directContribution": [
+              0.1196015253663063,
+              0.10520417988300323,
+              0.08736421167850494
+            ],
+            "indirectContribution": [
+              0.026651568710803986,
+              0.026847971603274345,
+              0.025989754125475883
+            ],
+            "exposure": 1.6561216376008554,
+            "ratio": 3.999999911855317,
+            "grayCard": [
+              124.18718823325746,
+              117.24703062205111,
+              107.23999280771878
+            ],
+            "grayCardLuma": 117.99999999999878,
+            "fogSamples": [
+              {
+                "distance": 1000,
+                "contrast": 0.9047806427821516
+              },
+              {
+                "distance": 8000,
+                "contrast": 0.4499911367893218
+              },
+              {
+                "distance": 10000,
+                "contrast": 0.39685641006231315
+              },
+              {
+                "distance": 12000,
+                "contrast": 0.3499939463198185
+              },
+              {
+                "distance": 25000,
+                "contrast": 0.11999899148941051
+              }
+            ],
+            "precision": "float32",
+            "calibrated": true
+          }
+        },
+        "footContact": [
+          {
+            "side": "왼발",
+            "support": 632,
+            "bottom": 632.0002572915873,
+            "lift": 0.00025736330087511305,
+            "planted": true,
+            "error": 0.0002572915873315651,
+            "foot": [
+              1557.3819267734618,
+              2535.4138340217687
+            ],
+            "penetration": 0
+          },
+          {
+            "side": "오른발",
+            "support": 632.1140951505986,
+            "bottom": 632.1140951963981,
+            "lift": 0,
+            "planted": true,
+            "error": 4.579953838401707e-8,
+            "foot": [
+              1557.7365408538458,
+              2535.8311908764335
+            ],
+            "penetration": 0
+          }
+        ],
+        "assetsLoaded": true,
+        "fps": 60.00099586715137,
+        "quality": 1,
+        "loadedChunks": 50,
+        "drawCalls": 258,
+        "triangles": 5323216,
+        "firstFrameMs": 125.60000014305115
+      },
+      "rendering": {
+        "indirectLight": {
+          "skyColor": "#D5D6D3",
+          "groundColor": "#ABA8A2",
+          "hemisphereIntensity": 0.45,
+          "retainedChroma": 0.01,
+          "terrainChroma": 0.25
+        },
+        "profile": "autumn-10am-neutral-v1",
+        "toneMapping": "Neutral",
+        "sunElevation": 29.00000000000002,
+        "sunAzimuth": 141.99999999999983,
+        "shadowAzimuth": 322,
+        "shadowLengthPerHeight": 1.8040477552714238,
+        "sunColor": "#FFF1DE",
+        "hazeColor": "#C9D6E3",
+        "skyZenith": "#5B8FC7",
+        "far": 30000,
+        "hdri": "Poly Haven Kloppenheim 06 PureSky 1K · CC0",
+        "ao": false,
+        "shadows": true,
+        "shaderErrors": [],
+        "calibration": {
+          "environmentIntensity": 0.19025671504749112,
+          "hemisphereIntensity": 0.08561552177137101,
+          "directContribution": [
+            0.1196015253663063,
+            0.10520417988300323,
+            0.08736421167850494
+          ],
+          "indirectContribution": [
+            0.026651568710803986,
+            0.026847971603274345,
+            0.025989754125475883
+          ],
+          "exposure": 1.6561216376008554,
+          "ratio": 3.999999911855317,
+          "grayCard": [
+            124.18718823325746,
+            117.24703062205111,
+            107.23999280771878
+          ],
+          "grayCardLuma": 117.99999999999878,
+          "fogSamples": [
+            {
+              "distance": 1000,
+              "contrast": 0.9047806427821516
+            },
+            {
+              "distance": 8000,
+              "contrast": 0.4499911367893218
+            },
+            {
+              "distance": 10000,
+              "contrast": 0.39685641006231315
+            },
+            {
+              "distance": 12000,
+              "contrast": 0.3499939463198185
+            },
+            {
+              "distance": 25000,
+              "contrast": 0.11999899148941051
+            }
+          ],
+          "precision": "float32",
+          "calibrated": true
+        },
+        "fov": 65,
+        "exposure": 1.6561216376008554
+      },
+      "coordinates": {
+        "x": 1557.579013606258,
+        "y": 632.0049426533374,
+        "z": 2535.6134132437005
+      },
+      "orientation": {
+        "yaw": 0,
+        "pitch": -0.04,
+        "orbit": 4.5,
+        "reset": null,
+        "camera": [
+          1557.579013606258,
+          633.6201109952905,
+          2535.6134132437005
+        ],
+        "avatarHeading": 0.4644558765010156,
+        "routeHeading": 0.4644558765010156
+      },
+      "ground": [
+        {
+          "surface": 632.0201056260696,
+          "visible": 632.1134825116688,
+          "error": 0.09337688559924118
+        },
+        {
+          "surface": 632.0201109952905,
+          "visible": 632.1231596429662,
+          "error": 0.10304864767579147
+        },
+        {
+          "surface": 632.0201163645112,
+          "visible": 632.1328367742635,
+          "error": 0.11272040975234177
+        }
+      ]
+    },
+    {
+      "id": "summit-east",
+      "label": "정상 동쪽 · 롯데월드타워",
+      "s": 5066.907963768509,
+      "bearing": 59,
+      "metrics": {
+        "landscape": {
+          "source": "manifest",
+          "cityChunks": 32,
+          "buildings": 153534,
+          "waterPolygons": 380,
+          "errors": [],
+          "ready": true,
+          "natureVisibleChunks": 741,
+          "natureReady": true,
+          "natureCounts": {
+            "trees": 8066,
+            "rocks": 337
+          },
+          "natureChunks": 2377
+        },
+        "rendering": {
+          "indirectLight": {
+            "skyColor": "#D5D6D3",
+            "groundColor": "#ABA8A2",
+            "hemisphereIntensity": 0.45,
+            "retainedChroma": 0.01,
+            "terrainChroma": 0.25
+          },
+          "profile": "autumn-10am-neutral-v1",
+          "toneMapping": "Neutral",
+          "sunElevation": 29.00000000000002,
+          "sunAzimuth": 141.99999999999983,
+          "shadowAzimuth": 322,
+          "shadowLengthPerHeight": 1.8040477552714238,
+          "sunColor": "#FFF1DE",
+          "hazeColor": "#C9D6E3",
+          "skyZenith": "#5B8FC7",
+          "far": 30000,
+          "hdri": "Poly Haven Kloppenheim 06 PureSky 1K · CC0",
+          "ao": false,
+          "shadows": true,
+          "shaderErrors": [],
+          "calibration": {
+            "environmentIntensity": 0.19025671504749112,
+            "hemisphereIntensity": 0.08561552177137101,
+            "directContribution": [
+              0.1196015253663063,
+              0.10520417988300323,
+              0.08736421167850494
+            ],
+            "indirectContribution": [
+              0.026651568710803986,
+              0.026847971603274345,
+              0.025989754125475883
+            ],
+            "exposure": 1.6561216376008554,
+            "ratio": 3.999999911855317,
+            "grayCard": [
+              124.18718823325746,
+              117.24703062205111,
+              107.23999280771878
+            ],
+            "grayCardLuma": 117.99999999999878,
+            "fogSamples": [
+              {
+                "distance": 1000,
+                "contrast": 0.9047806427821516
+              },
+              {
+                "distance": 8000,
+                "contrast": 0.4499911367893218
+              },
+              {
+                "distance": 10000,
+                "contrast": 0.39685641006231315
+              },
+              {
+                "distance": 12000,
+                "contrast": 0.3499939463198185
+              },
+              {
+                "distance": 25000,
+                "contrast": 0.11999899148941051
+              }
+            ],
+            "precision": "float32",
+            "calibrated": true
+          }
+        },
+        "footContact": [
+          {
+            "side": "왼발",
+            "support": 632,
+            "bottom": 632.0002571994922,
+            "lift": 0.0002571915327962415,
+            "planted": true,
+            "error": 0.0002571994922391241,
+            "foot": [
+              1557.381928118545,
+              2535.4138339261644
+            ],
+            "penetration": 0
+          },
+          {
+            "side": "오른발",
+            "support": 632.114095048092,
+            "bottom": 632.1140950511572,
+            "lift": 0,
+            "planted": true,
+            "error": 3.0651108318124898e-9,
+            "foot": [
+              1557.7365393015575,
+              2535.8311912191934
+            ],
+            "penetration": 0
+          }
+        ],
+        "assetsLoaded": true,
+        "fps": 60.003983666965496,
+        "quality": 1,
+        "loadedChunks": 50,
+        "drawCalls": 234,
+        "triangles": 4082458,
+        "firstFrameMs": 119.89999985694885
+      },
+      "rendering": {
+        "indirectLight": {
+          "skyColor": "#D5D6D3",
+          "groundColor": "#ABA8A2",
+          "hemisphereIntensity": 0.45,
+          "retainedChroma": 0.01,
+          "terrainChroma": 0.25
+        },
+        "profile": "autumn-10am-neutral-v1",
+        "toneMapping": "Neutral",
+        "sunElevation": 29.00000000000002,
+        "sunAzimuth": 141.99999999999983,
+        "shadowAzimuth": 322,
+        "shadowLengthPerHeight": 1.8040477552714238,
+        "sunColor": "#FFF1DE",
+        "hazeColor": "#C9D6E3",
+        "skyZenith": "#5B8FC7",
+        "far": 30000,
+        "hdri": "Poly Haven Kloppenheim 06 PureSky 1K · CC0",
+        "ao": false,
+        "shadows": true,
+        "shaderErrors": [],
+        "calibration": {
+          "environmentIntensity": 0.19025671504749112,
+          "hemisphereIntensity": 0.08561552177137101,
+          "directContribution": [
+            0.1196015253663063,
+            0.10520417988300323,
+            0.08736421167850494
+          ],
+          "indirectContribution": [
+            0.026651568710803986,
+            0.026847971603274345,
+            0.025989754125475883
+          ],
+          "exposure": 1.6561216376008554,
+          "ratio": 3.999999911855317,
+          "grayCard": [
+            124.18718823325746,
+            117.24703062205111,
+            107.23999280771878
+          ],
+          "grayCardLuma": 117.99999999999878,
+          "fogSamples": [
+            {
+              "distance": 1000,
+              "contrast": 0.9047806427821516
+            },
+            {
+              "distance": 8000,
+              "contrast": 0.4499911367893218
+            },
+            {
+              "distance": 10000,
+              "contrast": 0.39685641006231315
+            },
+            {
+              "distance": 12000,
+              "contrast": 0.3499939463198185
+            },
+            {
+              "distance": 25000,
+              "contrast": 0.11999899148941051
+            }
+          ],
+          "precision": "float32",
+          "calibrated": true
+        },
+        "fov": 65,
+        "exposure": 1.6561216376008554
+      },
+      "coordinates": {
+        "x": 1557.579013606258,
+        "y": 632.0049426533374,
+        "z": 2535.6134132437005
+      },
+      "orientation": {
+        "yaw": 0,
+        "pitch": -0.04,
+        "orbit": 4.5,
+        "reset": null,
+        "camera": [
+          1557.579013606258,
+          633.6201109952905,
+          2535.6134132437005
+        ],
+        "avatarHeading": 0.4644558765010156,
+        "routeHeading": 0.4644558765010156
+      },
+      "ground": [
+        {
+          "surface": 632.0201056260696,
+          "visible": 632.1134825116688,
+          "error": 0.09337688559924118
+        },
+        {
+          "surface": 632.0201109952905,
+          "visible": 632.1231596429662,
+          "error": 0.10304864767579147
+        },
+        {
+          "surface": 632.0201163645112,
+          "visible": 632.1328367742635,
+          "error": 0.11272040975234177
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "status": "통과"
+}

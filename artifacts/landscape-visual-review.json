@@ -1,0 +1,43 @@
+{
+  "reviewedAt": "2026-11-02T12:33:04.657Z",
+  "reviewer": "산풍경",
+  "method": "5개 전체 화면 육안 검토",
+  "captures": [
+    {
+      "id": "entrance",
+      "path": "artifacts/landscape-entrance.png",
+      "sha256": "b9bf179b3810a7a3c95ae6967a616157380f9d1a0d44272b1e8977a89fe1a8ca",
+      "brokenBoxes": false,
+      "blackVegetationBlobs": false
+    },
+    {
+      "id": "ridge",
+      "path": "artifacts/landscape-ridge.png",
+      "sha256": "32902028b83725ad233f08fc8c947be8ecea0db2ba4b394dbfa36f7018cc0d0d",
+      "brokenBoxes": false,
+      "blackVegetationBlobs": false
+    },
+    {
+      "id": "summit-north",
+      "path": "artifacts/landscape-summit-north.png",
+      "sha256": "90bb564fe1c6a0477f2630350885685dfad0601e3ab831db01a949730b764bb6",
+      "brokenBoxes": false,
+      "blackVegetationBlobs": false
+    },
+    {
+      "id": "summit-east",
+      "path": "artifacts/landscape-summit-east.png",
+      "sha256": "9139490172a6bfe5b835f6a9f96e50fb7597663fb8d5d92c5ce7d0b053da9e10",
+      "brokenBoxes": false,
+      "blackVegetationBlobs": false
+    },
+    {
+      "id": "third",
+      "path": "artifacts/landscape-third.png",
+      "sha256": "aa6e7a0ddca21e51a2167b9aedd7da9fc5c54f110c12f710e07069a879c113c2",
+      "brokenBoxes": false,
+      "blackVegetationBlobs": false
+    }
+  ],
+  "limitations": "사실적 현장 풍경 검수와 성능 동등성 승인은 아님"
+}
