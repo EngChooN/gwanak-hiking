@@ -35,7 +35,7 @@ const env=(h,look)=>composeEnvironment({sun:sunPosition(seoul(h)),moon:moonPosit
 test('시각별 환경: 낮 맑음은 기준값, 밤은 별·달·야경·방향광 약함, 노을은 낮은 태양',()=>{
  const d=env(12),n=env(23),e=env(17,5);
  assert.ok(d.light.intensity>.95&&d.ambient>.95&&d.night===0&&d.stars===0&&d.exposureMul===1);
- assert.ok(n.night===1&&n.stars>.9&&n.city>.9&&n.light.intensity<.15&&n.ambient<.12&&n.exposureMul>1.5);
+ assert.ok(n.night===1&&n.stars>.9&&n.city>.9&&n.light.intensity<.15&&n.ambient<.2&&n.ambient>.1&&n.exposureMul>1.5);
  assert.ok(e.light.elevation<8&&e.light.intensity<d.light.intensity&&e.light.color[0]>e.light.color[2]);
 });
 test('날씨가 하늘을 바꾼다: 흐림은 직사광↓·구름↑·별↓, 비·눈 입자',()=>{
@@ -135,4 +135,12 @@ test('UI 모델: 앉았을 때만 차 마시기 버튼, 스테미너 가득=흐�
  assert.equal(staminaView({stamina:100}).level,'full');assert.equal(staminaView({stamina:70}).level,'normal');assert.equal(staminaView({stamina:20}).level,'low');
  assert.equal(staminaView({stamina:0}).level,'empty');assert.equal(staminaView({stamina:20,runExhausted:true}).level,'empty');assert.equal(staminaView({stamina:NaN}).percent,100);
  const v=environmentView({kind:'rain',level:'heavy',icon:'🌧',weatherLabel:'비',timeLabel:'14:00',source:'manual'});assert.match(v.text,/비\(강\)/);assert.match(v.title,/수동/);
+});
+
+test('해가 진 뒤 배지: 맑음은 달, 흐림·비는 날씨 아이콘 그대로, 낮에는 해', async()=>{
+ const {iconFor}=await import('../src/weather.js');
+ assert.equal(iconFor('clear',false),'☀');assert.equal(iconFor('clear',true),'🌙');
+ assert.equal(iconFor('overcast',true),'☁');assert.equal(iconFor('rain',true),'🌧');assert.equal(iconFor('rain',false),'🌧');
+ const mk=time=>createEnvironment({search:`?time=${time}&weather=clear`,weather:{state:{kind:'clear',level:null,source:'manual',look:{}}}});
+ for(const [time,icon] of [['15:00','☀'],['17:10','☀'],['18:30','🌙'],['20:30','🌙']]){const env=mk(time);env.update(1);assert.equal(env.info.icon,icon,time);}
 });

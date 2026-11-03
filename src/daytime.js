@@ -74,26 +74,34 @@ export function skyKeyframe(elevation){
 export const nightAmount=elevation=>smooth(-2,-12,elevation);
 
 const NEUTRAL_WEATHER={rain:0,snow:0,windSpeed:2,windSound:.2,cloud:0.05,sunMul:1,ambientMul:1,gray:0,fogDistance:Infinity,fogTint:0,starsMul:1};
+// 반구광(그늘을 채우는 하늘빛): 맑은 낮은 푸른 하늘색 그대로, 흐림·비·안개일수록 중성 회색, 해가 낮으면(14° 이하) 따뜻하게. 밤은 기존 푸른 색.
+const HEMI_CLEAR=hexToRgb('#CFE0F5'),HEMI_OVERCAST=hexToRgb('#D9D8D3'),HEMI_WARM=hexToRgb('#EBCDAA');
+export function hemiColor(elevation,night,gray){
+ const day=mixRgb(HEMI_CLEAR,HEMI_OVERCAST,smooth(0,.9,gray)),low=1-smooth(3,14,elevation);
+ return mixRgb(mixRgb(day,HEMI_WARM,low*(1-.5*gray)*.8),[.36,.43,.64],night);
+}
+// 구워 둔 푸른 환경광(IBL) 대신 중성·따뜻한 반구광으로 채울 비율(0~1). 흐림이면 회색도, 해가 낮은 오후·노을(14° 이하)이면 그만큼, 밤은 푸른 박명 그대로(0).
+export const iblNeutral=(elevation,night,gray)=>clamp(gray+(1-gray)*(1-smooth(3,14,elevation))*(1-night)*.75);
 // 시각 + 날씨 → 화면 매개변수. 모두 렌더 쪽에서 프레임마다 부드럽게 따라가는 목표값이다.
 export function composeEnvironment({sun,moon,weather=NEUTRAL_WEATHER}){
  const k=skyKeyframe(sun.elevation),night=nightAmount(sun.elevation),w={...NEUTRAL_WEATHER,...weather};
  // 날씨가 나쁠수록 하늘을 밝기가 같은 회색 쪽으로 보내 채도를 죽인다.
  const grayOf=c=>{const l=c[0]*.2126+c[1]*.7152+c[2]*.0722;return [l,l,l];};
- const dim=lerp(1,.62,w.gray);
+ const dim=lerp(1,.8,w.gray);
  const sky=c=>mixRgb(c,grayOf(c).map(v=>v*dim),w.gray);
- const moonUp=smooth(-2,8,moon.elevation),moonLight=night*moonUp*(.25+.75*moon.illumination)*.12;
+ const moonUp=smooth(-2,8,moon.elevation),moonLight=night*moonUp*(.25+.75*moon.illumination)*.14;
  // 낮 태양이 지면 위일 때는 태양, 지면 아래면 달이 방향광이 된다.
  const useSun=sun.elevation>-1.5,lightElevation=useSun?sun.elevation:moon.elevation,lightAzimuth=useSun?sun.azimuth:moon.azimuth;
  const sunIntensity=useSun?k.sun*w.sunMul:moonLight*w.sunMul;
  const lightColor=useSun?k.sunColor:[.62,.72,.95];
- const nightAmbient=.075+.06*moonUp*moon.illumination;
+ const nightAmbient=.12+.06*moonUp*moon.illumination;
  const ambient=Math.max(k.amb*w.ambientMul,night*nightAmbient);
  const haze=sky(k.haze),horizon=sky(k.horizon),zenith=sky(k.zenith);
  return {
   elevation:sun.elevation,azimuth:sun.azimuth,night,
   light:{elevation:lightElevation,azimuth:lightAzimuth,color:lightColor,intensity:sunIntensity,castShadow:sunIntensity>.03&&lightElevation>1},
-  ambient,exposureMul:lerp(1,1.9,night)*lerp(1,1.12,smooth(.5,1,w.gray)),
-  hemiColor:mixRgb(hexToRgb('#CFE0F5'),[.30,.36,.55],night),
+  gray:w.gray,neutral:iblNeutral(sun.elevation,night,w.gray),ambient,exposureMul:lerp(1,1.9,night)*lerp(1,1.3,smooth(.3,1,w.gray)),
+  hemiColor:hemiColor(sun.elevation,night,w.gray),
   zenith,horizon,haze,fogColor:haze,
   cloud:w.cloud,cloudColor:mixRgb([.97,.98,1],[.55,.58,.64],w.gray).map(v=>v*lerp(.04,1,smooth(-12,4,sun.elevation))),
   sunGlow:clamp((1-w.cloud*1.1))*Math.max(.15,k.sun)*(useSun?1:0),

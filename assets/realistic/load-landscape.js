@@ -8,7 +8,7 @@ import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {MeshoptDecoder} from 'three/addons/libs/meshopt_decoder.module.js';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {gridHeight,nearestRoute,indexRoute,cutHeight,project,mix} from './geo.js';
-import {terrainMaterial,trailMaterial,pavedMaterial} from './terrain-material.js';
+import {terrainMaterial,trailMaterial,pavedMaterial,rockTrailMaterial} from './terrain-material.js';
 import {LOOK_PROFILE} from '../../src/look-profile.js';
 import {applyAtmosphere} from './skyline-reference.js';
 import {grassClumps,updateGroundCover} from './near-detail.js';
@@ -81,19 +81,28 @@ export function gridMesh(x0,z0,size,step,height,material,metres){
   g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(indices);g.computeVertexNormals();
   const mesh=new THREE.Mesh(g,material);mesh.receiveShadow=true;return mesh;
 }
+// 계단이 아닌 두 노면이 바뀌는 곳은 뒤 노면을 앞 노면 위로 1.6m 겹쳐 깔고(4mm 위) 노이즈 마스크로 서서히 드러낸다.
+export const SURFACE_OVERLAP_METRES=1.6;
+const SURFACE_OVERLAP_LIFT=.004;
 export function ribbon(route,material,metres){
- const group=new THREE.Group();let start=0;for(let i=1;i<route.length;i++)if(route[i].s-route[start].s>=100||route[i].material!==route[start].material||i===route.length-1){const selected=material.isMaterial?material:material[route[start].material];group.add(ribbonPart(route.slice(start,i+1),selected,metres));start=i;}return group;
+ const group=new THREE.Group();let start=0;for(let i=1;i<route.length;i++)if(route[i].s-route[start].s>=100||route[i].material!==route[start].material||i===route.length-1){
+  const kind=route[start].material,selected=material.isMaterial?material:material[kind];let from=start;
+  const blend=start>0&&route[start-1].material!==kind&&!isStairSurface(kind)&&!isStairSurface(route[start-1].material);
+  if(blend)while(from>0&&route[start].s-route[from-1].s<=SURFACE_OVERLAP_METRES+1e-6)from--;
+  group.add(ribbonPart(route.slice(from,i+1),selected,metres,kind,blend?route[start].s:-Infinity));start=i;
+ }return group;
 }
-function ribbonPart(route,material,metres){
-  if(isStairSurface(route[0].material))return stairRibbonPart(route,material,metres);
-  const positions=[],uv=[],indices=[],edges=[];
+function ribbonPart(route,material,metres,kind=route[0].material,entryS=-Infinity){
+  if(isStairSurface(kind))return stairRibbonPart(route,material,metres);
+  const positions=[],uv=[],indices=[],edges=[],entries=[];
   for(let i=0;i<route.length;i++){
     const p=route[i],a=route[Math.max(0,i-1)],b=route[Math.min(route.length-1,i+1)];
     const n=Math.hypot(b.x-a.x,b.z-a.z)||1,nx=p.nx??-(b.z-a.z)/n,nz=p.nz??(b.x-a.x)/n;
-    for(const side of [-1,1]){positions.push(p.x+nx*p.width/2*side,p.y+.015,p.z+nz*p.width/2*side);uv.push(side*p.width/2/metres,p.s/metres);edges.push(side);}
+    const entry=Math.min(1,Math.max(0,1-(entryS-p.s)/SURFACE_OVERLAP_METRES)),y=p.y+.015+(entry<1?SURFACE_OVERLAP_LIFT:0);
+    for(const side of [-1,1]){positions.push(p.x+nx*p.width/2*side,y,p.z+nz*p.width/2*side);uv.push(side*p.width/2/metres,p.s/metres);edges.push(side);entries.push(entry);}
     if(i<route.length-1){const a=i*2;indices.push(a,a+1,a+2,a+1,a+3,a+2);}
   }
-  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setAttribute('trailEdge',new THREE.Float32BufferAttribute(edges,1));g.setIndex(indices);g.computeVertexNormals();g.computeBoundingBox();
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setAttribute('trailEdge',new THREE.Float32BufferAttribute(edges,1));g.setAttribute('trailEntry',new THREE.Float32BufferAttribute(entries,1));g.setIndex(indices);g.computeVertexNormals();g.computeBoundingBox();
   return new THREE.Mesh(g,material);
 }
 // 추정 디딤판. 수평 폭 최대 30cm·단차 최대 18cm로 실제 경사에 맞추며 GPX는 바꾸지 않는다.
@@ -145,7 +154,8 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
   const stoneStairs=materials.stone.clone(),woodStairs=materials.wood.clone();stoneStairs.side=woodStairs.side=THREE.DoubleSide;
   for(const [copy,source]of [[stoneStairs,materials.stone],[woodStairs,materials.wood]]){copy.onBeforeCompile=source.onBeforeCompile;copy.customProgramCacheKey=source.customProgramCacheKey;}
   Object.assign(materials,{paved,stoneStairs,woodStairs});
-  const pathMaterials={soil:trailMaterial(materials,manifest.materials),rock:materials.stone,paved,stairs:stoneStairs,deck_stairs:woodStairs,ridge:materials.granite};
+  // 돌길·암릉도 가장자리를 주변 지형 색으로 맞추고 노이즈 마스크로 녹인다(직선 경계 방지).
+  const pathMaterials={soil:trailMaterial(materials,manifest.materials),rock:rockTrailMaterial(materials,manifest.materials,'stone'),paved,stairs:stoneStairs,deck_stairs:woodStairs,ridge:rockTrailMaterial(materials,manifest.materials,'granite')};
   // 노면·계단 재질은 접촉 음영에서 제외한다. 아래 지형도 지도에서 경로 폭을 보호한다.
   const pathPoints=densifyRoute(route);
   const path=ribbon(pathPoints,pathMaterials,manifest.materials.soil.metres);path.name='등산로 노면';group.add(path);
@@ -163,7 +173,22 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
   };
   const roadRay=new THREE.Raycaster();path.updateMatrixWorld(true);
   const roadHeight=surfaceIndex(path);
-  const surfaceHeight=(x,z)=>{const h=floorHeight(x,z);return roadHeight(x,z,h+10,20)??h;};
+  // 2m 지형 삼각형이 노면 띠를 뚫고 올라와 노면과 직선으로 교차하는 것을 막는다(정상 암릉처럼 굽은 급경사에서 노면이 가로로 기울어 최대 8cm).
+  // 노면 회랑의 지형 꼭짓점을 경로 중심 높이 대신 가장 가까운 노면 높이-여유(2~12cm)에 맞추고, 어깨(폭/2+2m)부터 6m에 걸쳐 원래 높이로 되돌린다.
+  // 노면 안쪽은 노면보다 높지 않게 자른다. floorHeight(시설·보행 기준)는 그대로이며, 바위 접지(rockGround)도 이 함수를 쓴다. 계단은 clearStairs가 따로 비운다.
+  const chunkHeight=(x,z)=>{
+    const h=floorHeight(x,z),hit=nearest(x,z),a=route[hit.index],b=route[hit.index+1];
+    if(!a||!b||hit.distance>hit.width/2+8||isStairSurface(a.material)||isStairSurface(b.material))return h;
+    const cx=mix(a.x,b.x,hit.t),cz=mix(a.z,b.z,hit.t),reach=Math.min(1,(hit.width/2-.05)/Math.max(hit.distance,1e-6));
+    const road=roadHeight(cx+(x-cx)*reach,cz+(z-cz)*reach,h+10,20);if(!Number.isFinite(road))return h;
+    // 급경사 곡선에서는 2m 삼각형의 직선 보간 오차가 커지므로 경사에 비례해 여유를 늘린다(평지 2cm, 60% 경사 약 8cm).
+    const grade=Math.abs(b.y-a.y)/(Math.hypot(b.x-a.x,b.z-a.z)||1),margin=.02+.1*Math.min(1,grade);
+    const shoulder=Math.max(0,Math.min(1,(hit.distance-hit.width/2-2)/6)),fade=1-shoulder*shoulder*(3-2*shoulder);
+    const follow=h+(road-margin-hit.y)*fade;
+    return hit.distance<=hit.width/2?Math.min(follow,road-margin):follow;
+  };
+  // 노면 밖은 화면에 보이는 지형(chunkHeight)과 같은 높이를 쓴다.
+  const surfaceHeight=(x,z)=>{const h=floorHeight(x,z);return roadHeight(x,z,h+10,20)??chunkHeight(x,z);};
   summitSites=facilitySites(route,floorHeight);groundSites=summitSites;
   sectionSites=scenerySites(route,floorHeight);groundSites=[...summitSites,...sectionSites];
   const facilities=createSummitFacilities(route,floorHeight,summitSites);group.add(facilities.group);
@@ -189,7 +214,7 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
     if(!nearDetail&&(!isStairSurface(route[hit.index].material)||hit.distance>hit.width/2+8+radius))return undefined;
     const cx=Math.floor(x/64)*64,cz=Math.floor(z/64)*64,key=`${cx},${cz},${cleared}`;
     if(!rockTerrainIndices.has(key)){
-      const mesh=gridMesh(cx,cz,64,2,floorHeight,blended,1);if(cleared)clearStairs(mesh.geometry);
+      const mesh=gridMesh(cx,cz,64,2,chunkHeight,blended,1);if(cleared)clearStairs(mesh.geometry);
       if(rockTerrainIndices.size>=8)rockTerrainIndices.delete(rockTerrainIndices.keys().next().value);
       rockTerrainIndices.set(key,surfaceIndex(mesh));mesh.geometry.dispose();
     }
@@ -220,7 +245,7 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
     }
     // 한 프레임에 최대 한 청크. 대기 중에는 상시 유지되는 NearDEM8m가 바닥을 덮는다.
     const next=pendingChunks.shift();
-    if(next){const mesh=gridMesh(next.x,next.z,size,2,floorHeight,blended,1);clearStairs(mesh.geometry);indexStaticRaycast(mesh);chunks.set(next.key,mesh);terrain.add(mesh);freezeStatic(mesh);if(!pendingChunks.length)for(const geometry of baseGeometries)maskCoveredBaseGeometry(geometry,chunks);}
+    if(next){const mesh=gridMesh(next.x,next.z,size,2,chunkHeight,blended,1);clearStairs(mesh.geometry);indexStaticRaycast(mesh);chunks.set(next.key,mesh);terrain.add(mesh);freezeStatic(mesh);if(!pendingChunks.length)for(const geometry of baseGeometries)maskCoveredBaseGeometry(geometry,chunks);}
     checkPlaza();
     status.pendingTerrainChunks=pendingChunks.length;
     culler.update(camera);

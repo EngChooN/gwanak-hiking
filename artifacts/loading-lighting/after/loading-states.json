@@ -1,0 +1,31 @@
+{
+  "mobileProgress": {
+    "pct": "44%",
+    "overflowX": false,
+    "card": {
+      "x": 16,
+      "y": 555.328125,
+      "width": 358,
+      "height": 274.671875,
+      "top": 555.328125,
+      "right": 374,
+      "bottom": 830,
+      "left": 16
+    }
+  },
+  "readyAtMs": 34314,
+  "buttonVisible": "출발하기",
+  "startedBeforeClick": false,
+  "elapsedBeforeClick": 0,
+  "afterClick": {
+    "started": true,
+    "fading": "leaving"
+  },
+  "removed": true,
+  "errors": [],
+  "failure": {
+    "reached": false,
+    "message": "평소보다 오래 걸리고 있습니다. 조금 더 기다리거나 다시 시도해 주세요.",
+    "button": "다시 시도"
+  }
+}

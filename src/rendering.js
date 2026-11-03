@@ -32,6 +32,7 @@ export function setupRendering(renderer,scene,camera,mobile,environmentSky){
   const sunPreset=SUN_PRESETS[parameters.get('sun')]??SUN_PRESETS.am,sunDir=sunDirection(SUN_PRESETS.am.elevation,SUN_PRESETS.am.azimuth);
   const environment=createEnvironment({search:location.search}),precipitation=createPrecipitation();scene.add(precipitation.group);
   environment.weather.start();installEnvironmentHud();
+  const ENV_GRAY_CUT=+(parameters.get('envcut')??.7),HEMI_GRAY_BOOST=+(parameters.get('hemiboost')??2);
   const base={environmentIntensity:.3,hemisphereIntensity:INDIRECT_PROFILE.hemisphereIntensity,exposure:1},clock={last:performance.now(),elapsed:0};
   const sunVector=new THREE.Vector3(),moonVector=new THREE.Vector3(),tmpColor=new THREE.Color();
   scene.background=new THREE.Color(LOOK_PROFILE.horizon);
@@ -115,7 +116,8 @@ export function setupRendering(renderer,scene,camera,mobile,environmentSky){
     const e=environment.update(dt),ground=Math.max(0,Math.min(1,e.light.elevation/6));
     direction(e.light.elevation,e.light.azimuth,solarOffset).multiplyScalar(80);
     sun.color.setRGB(...e.light.color,THREE.SRGBColorSpace);sun.intensity=4*e.light.intensity;
-    scene.environmentIntensity=base.environmentIntensity*e.ambient;groundFill.intensity=base.hemisphereIntensity*e.ambient;groundFill.color.setRGB(...e.hemiColor,THREE.SRGBColorSpace);
+    // 구워 둔 환경광(IBL)은 맑은 낮의 푸른 하늘색이라 색을 바꿀 수 없다. 흐림·비·안개에서는 그 몫을 줄이고 중성 반구광이 대신 채운다.
+    scene.environmentIntensity=base.environmentIntensity*e.ambient*(1-ENV_GRAY_CUT*e.neutral);groundFill.intensity=base.hemisphereIntensity*e.ambient*(1+HEMI_GRAY_BOOST*e.neutral);groundFill.color.setRGB(...e.hemiColor,THREE.SRGBColorSpace);
     renderer.toneMappingExposure=base.exposure*e.exposureMul;
     scene.fog.color.setRGB(...e.fogColor,THREE.SRGBColorSpace);scene.background.setRGB(...e.horizon,THREE.SRGBColorSpace);
     // 맑은 날(15km) 기준 대비 얼마나 더 뿌연가. fog.near 칸에 감쇠 계수(1/m)를 실어 셰이더가 읽는다.

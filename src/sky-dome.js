@@ -15,7 +15,7 @@ const CLOUD_FRAGMENT=`
   retColor=mix(retColor,cloudColor*max(retColor.b,0.62),cover);
  }
 `;
-// 밤하늘: 별(방향 해시), 달 원반·달무리, 서울 야경(북쪽 지평선 주변의 불빛 알갱이와 도시 불빛 번짐).
+// 밤하늘: 별(방향 해시), 달 원반·달무리, 서울 야경(북쪽 지평선 주변의 불빛 알갱이와 도시 불빛 번짐. 번짐은 노을로 읽히지 않게 푸른 회색).
 // 지형·건물에 가려지는 부분은 가려지고, 지평선 위로 드러난 먼 불빛만 하늘 셰이더가 그린다. 건물 창문 자체는 발광시키지 않는다.
 const NIGHT_FRAGMENT=`
   if(nightAmt>0.002){
@@ -30,7 +30,7 @@ const NIGHT_FRAGMENT=`
    float az=atan(gd.x,-gd.z),da=abs(mod(az-0.35+3.14159265,6.2831853)-3.14159265);
    float mask=smoothstep(1.4,0.25,da);
    float glow=exp(-max(gd.y,0.0)*16.0)*step(-0.03,gd.y);
-   base+=vec3(1.0,0.60,0.30)*0.12*mask*glow*cityAmt;
+   base+=vec3(0.46,0.52,0.78)*0.07*mask*glow*cityAmt;
    vec2 cp=vec2(az*900.0,gd.y*320.0),cell=floor(cp);
    float lh=fract(sin(dot(cell,vec2(41.3,289.1)))*43758.5453);
    float lamp=step(0.88,lh)*smoothstep(0.5,0.05,length(fract(cp)-0.5))*step(-0.012,gd.y)*step(gd.y,0.028+0.012*fract(lh*13.0));

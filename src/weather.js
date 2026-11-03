@@ -6,6 +6,9 @@ export const ATTRIBUTION={text:'날씨 정보: Open-Meteo.com (CC BY 4.0)',href:
 export const MANUAL_ALIASES={clear:'clear',sunny:'clear',cloud:'cloud',cloudy:'cloud',overcast:'overcast',rain:'rain',snow:'snow',fog:'fog'};
 export const KIND_LABEL={clear:'맑음',cloud:'구름',overcast:'흐림',rain:'비',snow:'눈',fog:'안개'};
 export const KIND_ICON={clear:'☀',cloud:'⛅',overcast:'☁',rain:'🌧',snow:'❄',fog:'🌫'};
+// 해가 진 뒤(태양 고도 0° 미만)에는 맑음이 달, 구름(해가 비치는 ⛅)은 구름만 남긴다. 흐림·비·눈·안개는 낮과 같은 날씨 아이콘.
+export const NIGHT_KIND_ICON={...KIND_ICON,clear:'🌙',cloud:'☁'};
+export const iconFor=(kind,night=false)=>(night?NIGHT_KIND_ICON:KIND_ICON)[kind]??KIND_ICON.clear;
 const RAIN={51:'light',53:'medium',55:'heavy',56:'light',57:'heavy',61:'light',63:'medium',65:'heavy',66:'light',67:'heavy',80:'light',81:'medium',82:'heavy',95:'heavy',96:'heavy',97:'heavy',99:'heavy'};
 const SNOW={71:'light',73:'medium',75:'heavy',77:'light',85:'light',86:'heavy'};
 const FOG={45:'medium',48:'heavy'};
@@ -34,11 +37,11 @@ export function windSoundLevel(ms){
 const LEVEL_SCALE={light:.3,medium:.6,heavy:1};
 const TABLE={
  clear:{cloud:.05,sun:1,amb:1,fog:15000},
- cloud:{cloud:.45,sun:.75,amb:.95,fog:12000},
- overcast:{cloud:.85,sun:.3,amb:.9,fog:7000},
- rain:{cloud:.95,sun:.15,amb:.75,fog:{light:4000,medium:2500,heavy:1200}},
+ cloud:{cloud:.45,sun:.75,amb:1,fog:12000},
+ overcast:{cloud:.85,sun:.3,amb:1.12,fog:7000},
+ rain:{cloud:.95,sun:.15,amb:1,fog:{light:4000,medium:2500,heavy:1200}},
  snow:{cloud:.9,sun:.25,amb:1,fog:{light:4000,medium:2500,heavy:1000}},
- fog:{cloud:1,sun:.1,amb:.9,fog:{medium:400,heavy:200}}
+ fog:{cloud:1,sun:.1,amb:1.05,fog:{medium:400,heavy:200}}
 };
 // 날씨 → 화면 표현 목표값. visibility(m)가 오면 맑음·구름·흐림의 연무 거리에 그대로 쓴다.
 export function weatherLook({kind='clear',level=null,windSpeed=null,visibility=null}={}){
@@ -47,7 +50,7 @@ export function weatherLook({kind='clear',level=null,windSpeed=null,visibility=n
  if(num(visibility)!==null&&typeof t.fog==='number')fogDistance=Math.max(1500,Math.min(visibility,t.fog));
  const amount=LEVEL_SCALE[lv]??0;
  return {kind,level:lv,cloud:t.cloud,sunMul:t.sun,ambientMul:t.amb,fogDistance,
-  gray:kind==='clear'?0:kind==='cloud'?.18:kind==='overcast'?.7:kind==='rain'?.85:kind==='snow'?.5:.9,
+  gray:kind==='clear'?0:kind==='cloud'?.18:kind==='overcast'?.85:kind==='rain'?.92:kind==='snow'?.5:.92,
   starsMul:kind==='clear'?1:kind==='cloud'?.5:kind==='overcast'?.12:0,
   rain:kind==='rain'?amount:0,snow:kind==='snow'?amount:0,
   windSpeed:num(windSpeed)??2,windSound:windSoundLevel(windSpeed)};

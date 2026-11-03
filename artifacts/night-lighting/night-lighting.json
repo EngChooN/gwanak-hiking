@@ -1,0 +1,571 @@
+{
+  "plaza-night": {
+    "label": "밤 광장 3인칭",
+    "fps": [],
+    "night": {
+      "lamps": 47,
+      "lampAmount": 0.9994707825284628,
+      "headlamp": {
+        "on": false,
+        "amount": 0,
+        "override": null
+      },
+      "elevation": -35.63740978260343,
+      "realLights": 7,
+      "pool": [
+        44,
+        43,
+        42,
+        41
+      ],
+      "others": 0,
+      "othersDrawn": {
+        "bodies": 0,
+        "decals": 0,
+        "glows": 0,
+        "dropped": 0
+      },
+      "crowd": 0,
+      "parkEndS": 1075,
+      "lampStations": 40
+    },
+    "m": {
+      "drawCalls": 663,
+      "triangles": 875165,
+      "quality": 1,
+      "adaptive": {
+        "cap": 1,
+        "step": 0,
+        "targetMs": 33,
+        "dpr": 1,
+        "shadowDistance": 45,
+        "shadowMap": 1024,
+        "ao": false,
+        "quality": 1
+      },
+      "compileCount": 1,
+      "shaderErrors": 0,
+      "ao": false
+    },
+    "errors": []
+  },
+  "lake-night": {
+    "label": "밤 호수공원 길",
+    "fps": [],
+    "night": {
+      "lamps": 47,
+      "lampAmount": 0.9994411086984886,
+      "headlamp": {
+        "on": false,
+        "amount": 0,
+        "override": null
+      },
+      "elevation": -35.63740978260343,
+      "realLights": 7,
+      "pool": [
+        27,
+        28,
+        26,
+        29
+      ],
+      "others": 0,
+      "othersDrawn": {
+        "bodies": 0,
+        "decals": 0,
+        "glows": 0,
+        "dropped": 0
+      },
+      "crowd": 0,
+      "parkEndS": 1075,
+      "lampStations": 40
+    },
+    "m": {
+      "drawCalls": 500,
+      "triangles": 971827,
+      "quality": 1,
+      "adaptive": {
+        "cap": 1,
+        "step": 0,
+        "targetMs": 33,
+        "dpr": 1,
+        "shadowDistance": 45,
+        "shadowMap": 1024,
+        "ao": false,
+        "quality": 1
+      },
+      "compileCount": 1,
+      "shaderErrors": 0,
+      "ao": false
+    },
+    "errors": []
+  },
+  "ridge-night": {
+    "label": "밤 능선 헤드랜턴 1인칭",
+    "fps": [],
+    "night": {
+      "lamps": 47,
+      "lampAmount": 0.9994414191075714,
+      "headlamp": {
+        "on": true,
+        "amount": 0.9999999999999977,
+        "override": null
+      },
+      "elevation": -35.63740978260343,
+      "realLights": 7,
+      "pool": [
+        46,
+        45,
+        39,
+        38
+      ],
+      "others": 0,
+      "othersDrawn": {
+        "bodies": 0,
+        "decals": 0,
+        "glows": 0,
+        "dropped": 0
+      },
+      "crowd": 0,
+      "parkEndS": 1075,
+      "lampStations": 40
+    },
+    "m": {
+      "drawCalls": 153,
+      "triangles": 746782,
+      "quality": 1,
+      "adaptive": {
+        "cap": 1,
+        "step": 0,
+        "targetMs": 33,
+        "dpr": 1,
+        "shadowDistance": 45,
+        "shadowMap": 1024,
+        "ao": false,
+        "quality": 1
+      },
+      "compileCount": 1,
+      "shaderErrors": 0,
+      "ao": false
+    },
+    "errors": []
+  },
+  "ridge-night-third": {
+    "label": "밤 능선 헤드랜턴 3인칭(캡 모자)",
+    "fps": [],
+    "night": {
+      "lamps": 47,
+      "lampAmount": 0.999884150916965,
+      "headlamp": {
+        "on": true,
+        "amount": 0.9999999999999993,
+        "override": null
+      },
+      "elevation": -35.63740978260343,
+      "realLights": 7,
+      "pool": [
+        46,
+        45,
+        39,
+        38
+      ],
+      "others": 0,
+      "othersDrawn": {
+        "bodies": 0,
+        "decals": 0,
+        "glows": 0,
+        "dropped": 0
+      },
+      "crowd": 0,
+      "parkEndS": 1075,
+      "lampStations": 40
+    },
+    "m": {
+      "drawCalls": 218,
+      "triangles": 850873,
+      "quality": 1,
+      "adaptive": {
+        "cap": 1,
+        "step": 0,
+        "targetMs": 33,
+        "dpr": 1,
+        "shadowDistance": 45,
+        "shadowMap": 1024,
+        "ao": false,
+        "quality": 1
+      },
+      "compileCount": 1,
+      "shaderErrors": 0,
+      "ao": false
+    },
+    "errors": []
+  },
+  "ridge-crowd0": {
+    "label": "밤 능선 1인칭 (기준)",
+    "fps": [
+      60.00248972986441,
+      60.00248972986438,
+      60.000995867151445
+    ],
+    "night": {
+      "lamps": 47,
+      "lampAmount": 0.9999999999154394,
+      "headlamp": {
+        "on": true,
+        "amount": 0.9999999999999993,
+        "override": null
+      },
+      "elevation": -35.63740978260343,
+      "realLights": 7,
+      "pool": [
+        46,
+        45,
+        39,
+        38
+      ],
+      "others": 0,
+      "othersDrawn": {
+        "bodies": 0,
+        "decals": 0,
+        "glows": 0,
+        "dropped": 0
+      },
+      "crowd": 0,
+      "parkEndS": 1075,
+      "lampStations": 40
+    },
+    "m": {
+      "drawCalls": 143,
+      "triangles": 746065,
+      "quality": 1,
+      "adaptive": {
+        "cap": 1,
+        "step": 0,
+        "targetMs": 33,
+        "dpr": 1,
+        "shadowDistance": 45,
+        "shadowMap": 1024,
+        "ao": false,
+        "quality": 1
+      },
+      "compileCount": 1,
+      "shaderErrors": 0,
+      "ao": false
+    },
+    "errors": []
+  },
+  "plaza-night-fps": {
+    "label": "밤 광장 3인칭 fps",
+    "fps": [
+      60.00099586715141,
+      60.00398366696548,
+      60.00099586715144
+    ],
+    "night": {
+      "lamps": 47,
+      "lampAmount": 0.9999999999168835,
+      "headlamp": {
+        "on": false,
+        "amount": 0,
+        "override": null
+      },
+      "elevation": -35.63740978260343,
+      "realLights": 7,
+      "pool": [
+        44,
+        43,
+        42,
+        41
+      ],
+      "others": 0,
+      "othersDrawn": {
+        "bodies": 0,
+        "decals": 0,
+        "glows": 0,
+        "dropped": 0
+      },
+      "crowd": 0,
+      "parkEndS": 1075,
+      "lampStations": 40
+    },
+    "m": {
+      "drawCalls": 663,
+      "triangles": 875165,
+      "quality": 1,
+      "adaptive": {
+        "cap": 1,
+        "step": 0,
+        "targetMs": 33,
+        "dpr": 1,
+        "shadowDistance": 45,
+        "shadowMap": 1024,
+        "ao": false,
+        "quality": 1
+      },
+      "compileCount": 1,
+      "shaderErrors": 0,
+      "ao": false
+    },
+    "errors": []
+  },
+  "plaza-day-fps": {
+    "label": "낮 광장 3인칭 fps",
+    "fps": [
+      60.000995867151424,
+      60.00248972986435,
+      60.00398366696551
+    ],
+    "night": {
+      "lamps": 47,
+      "lampAmount": 0,
+      "headlamp": {
+        "on": false,
+        "amount": 0,
+        "override": null
+      },
+      "elevation": 36.48581502701593,
+      "realLights": 7,
+      "pool": [
+        44,
+        43,
+        42,
+        41
+      ],
+      "others": 0,
+      "othersDrawn": {
+        "bodies": 0,
+        "decals": 0,
+        "glows": 0,
+        "dropped": 0
+      },
+      "crowd": 0,
+      "parkEndS": 1075,
+      "lampStations": 40
+    },
+    "m": {
+      "drawCalls": 663,
+      "triangles": 875165,
+      "quality": 1,
+      "adaptive": {
+        "cap": 1,
+        "step": 0,
+        "targetMs": 33,
+        "dpr": 1,
+        "shadowDistance": 45,
+        "shadowMap": 1024,
+        "ao": false,
+        "quality": 1
+      },
+      "compileCount": 1,
+      "ao": false
+    },
+    "errors": []
+  },
+  "plaza-day": {
+    "label": "낮 광장(가로등 꺼짐)",
+    "fps": [],
+    "night": {
+      "lamps": 47,
+      "lampAmount": 0,
+      "headlamp": {
+        "on": false,
+        "amount": 0,
+        "override": null
+      },
+      "elevation": 36.48581502701593,
+      "realLights": 7,
+      "pool": [
+        44,
+        43,
+        42,
+        41
+      ],
+      "others": 0,
+      "othersDrawn": {
+        "bodies": 0,
+        "decals": 0,
+        "glows": 0,
+        "dropped": 0
+      },
+      "crowd": 0,
+      "parkEndS": 1075,
+      "lampStations": 40
+    },
+    "m": {
+      "drawCalls": 663,
+      "triangles": 875165,
+      "quality": 1,
+      "adaptive": {
+        "cap": 1,
+        "step": 0,
+        "targetMs": 33,
+        "dpr": 1,
+        "shadowDistance": 45,
+        "shadowMap": 1024,
+        "ao": false,
+        "quality": 1
+      },
+      "compileCount": 1,
+      "shaderErrors": 0,
+      "ao": false
+    },
+    "errors": []
+  },
+  "lake-day": {
+    "label": "낮 호수공원 길(가로등 꺼짐)",
+    "fps": [],
+    "night": {
+      "lamps": 47,
+      "lampAmount": 0,
+      "headlamp": {
+        "on": false,
+        "amount": 0,
+        "override": null
+      },
+      "elevation": 36.48581502701593,
+      "realLights": 7,
+      "pool": [
+        27,
+        28,
+        26,
+        29
+      ],
+      "others": 0,
+      "othersDrawn": {
+        "bodies": 0,
+        "decals": 0,
+        "glows": 0,
+        "dropped": 0
+      },
+      "crowd": 0,
+      "parkEndS": 1075,
+      "lampStations": 40
+    },
+    "m": {
+      "drawCalls": 500,
+      "triangles": 971827,
+      "quality": 1,
+      "adaptive": {
+        "cap": 1,
+        "step": 0,
+        "targetMs": 33,
+        "dpr": 1,
+        "shadowDistance": 45,
+        "shadowMap": 1024,
+        "ao": false,
+        "quality": 1
+      },
+      "compileCount": 1,
+      "shaderErrors": 0,
+      "ao": false
+    },
+    "errors": []
+  },
+  "ridge-crowd50": {
+    "label": "밤 능선 가짜 등산객 50",
+    "fps": [
+      59.75202907932092,
+      59.75351674343342,
+      59.75500448162539
+    ],
+    "night": {
+      "lamps": 47,
+      "lampAmount": 0.9999999999153738,
+      "headlamp": {
+        "on": true,
+        "amount": 0.9999999999999997,
+        "override": null
+      },
+      "elevation": -35.63740978260343,
+      "realLights": 7,
+      "pool": [
+        46,
+        45,
+        39,
+        38
+      ],
+      "others": 50,
+      "othersDrawn": {
+        "bodies": 50,
+        "decals": 32,
+        "glows": 32,
+        "dropped": 18
+      },
+      "crowd": 50,
+      "parkEndS": 1075,
+      "lampStations": 40
+    },
+    "m": {
+      "drawCalls": 145,
+      "triangles": 755729,
+      "quality": 1,
+      "adaptive": {
+        "cap": 1,
+        "step": 0,
+        "targetMs": 33,
+        "dpr": 1,
+        "shadowDistance": 45,
+        "shadowMap": 1024,
+        "ao": false,
+        "quality": 1
+      },
+      "compileCount": 1,
+      "shaderErrors": 0,
+      "ao": false
+    },
+    "errors": []
+  },
+  "ridge-crowd100": {
+    "label": "밤 능선 가짜 등산객 100",
+    "fps": [
+      60.00248972986442,
+      60.00099586715135,
+      60.00398366696565
+    ],
+    "night": {
+      "lamps": 47,
+      "lampAmount": 0.9999999999138084,
+      "headlamp": {
+        "on": true,
+        "amount": 0.9999999999999993,
+        "override": null
+      },
+      "elevation": -35.63740978260343,
+      "realLights": 7,
+      "pool": [
+        46,
+        45,
+        39,
+        38
+      ],
+      "others": 100,
+      "othersDrawn": {
+        "bodies": 100,
+        "decals": 32,
+        "glows": 32,
+        "dropped": 68
+      },
+      "crowd": 100,
+      "parkEndS": 1075,
+      "lampStations": 40
+    },
+    "m": {
+      "drawCalls": 145,
+      "triangles": 765329,
+      "quality": 1,
+      "adaptive": {
+        "cap": 1,
+        "step": 0,
+        "targetMs": 33,
+        "dpr": 1,
+        "shadowDistance": 45,
+        "shadowMap": 1024,
+        "ao": false,
+        "quality": 1
+      },
+      "compileCount": 1,
+      "shaderErrors": 0,
+      "ao": false
+    },
+    "errors": []
+  }
+}

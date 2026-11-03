@@ -1,0 +1,231 @@
+[
+  {
+    "id": "overcast-1614",
+    "query": "start=entrance&outfit=1&quality=balanced&time=16:14&weather=overcast",
+    "loadMs": 36051,
+    "errors": [],
+    "rendering": {
+      "indirectLight": {
+        "skyColor": "#C4DAF4",
+        "groundColor": "#9A9876",
+        "hemisphereIntensity": 0.5,
+        "retainedChroma": 0.01,
+        "terrainChroma": 0.25
+      },
+      "profile": "forest-granite-clear-v3",
+      "toneMapping": "Neutral",
+      "sunPreset": "오전 10시",
+      "sunElevation": 13.29334783324909,
+      "sunAzimuth": 238.81587135329298,
+      "shadowAzimuth": 322,
+      "shadowLengthPerHeight": 1.8040477552714238,
+      "sunColor": "#FFF1DE",
+      "hazeColor": "#9DBEDF",
+      "skyZenith": "#4A86C8",
+      "far": 30000,
+      "hdri": "Preetham 물리 기반 Sky 셰이더(three.js, MIT) · 외부 HDRI 없음",
+      "ao": false,
+      "shadows": true,
+      "shaderErrors": [],
+      "calibration": {
+        "environmentIntensity": 0.45113743975791776,
+        "hemisphereIntensity": 0.22556871987895888,
+        "directContribution": [
+          0.1196015253663063,
+          0.10520417988300323,
+          0.08736421167850494
+        ],
+        "indirectContribution": [
+          0.01830233819782734,
+          0.034807369112968445,
+          0.06433533877134323
+        ],
+        "exposure": 1.5754525489295745,
+        "ratio": 3.199999676617131,
+        "grayCard": [
+          116.80724175088606,
+          117.82289235421824,
+          123.26658991722167
+        ],
+        "grayCardLuma": 117.99999999999866,
+        "fogSamples": [
+          {
+            "distance": 1000,
+            "contrast": 0.9121373735196888
+          },
+          {
+            "distance": 8000,
+            "contrast": 0.5317820789903401
+          },
+          {
+            "distance": 10000,
+            "contrast": 0.4627489925533532
+          },
+          {
+            "distance": 12000,
+            "contrast": 0.40569019736051565
+          },
+          {
+            "distance": 25000,
+            "contrast": 0.17224815272688865
+          }
+        ],
+        "precision": "float32",
+        "calibrated": true
+      },
+      "normalPass": false,
+      "shadowDistance": 45,
+      "compiling": false,
+      "compileError": null,
+      "basicMaterials": 22,
+      "sceneNodesScanned": 159089,
+      "environment": {
+        "basicFactor": [
+          0.7085137877840179,
+          0.6876272941973935,
+          0.6631773382278833
+        ],
+        "time": "16:14",
+        "legacySun": false,
+        "manualTime": true,
+        "weather": "overcast",
+        "level": null,
+        "source": "manual",
+        "error": null,
+        "calls": 0,
+        "rain": 0,
+        "snow": 0,
+        "fogDistance": 7000,
+        "fogDensity": 0.00022857142857142854,
+        "night": 0,
+        "lightIntensity": 0.2622817405867917,
+        "ambient": 0.948792582428678,
+        "exposure": 1.9922814667586093,
+        "windSound": 0.2,
+        "windSpeed": 2,
+        "cloud": 0.85,
+        "stars": 0,
+        "moon": {
+          "elevation": -13.1800112372301,
+          "azimuth": 283.3468456501014,
+          "visible": 0,
+          "illumination": 0.2528057867069976
+        },
+        "light": {
+          "elevation": 13.293347833249088,
+          "azimuth": 238.815871353293
+        }
+      },
+      "aoProfile": {
+        "enabled": false,
+        "gpuSupported": false,
+        "gpuDisjointSamples": 0,
+        "rows": {}
+      },
+      "aoDiagnosticMode": null,
+      "breakdown": {
+        "입구 시설/그림자": {
+          "kind": "입구 시설",
+          "pass": "그림자",
+          "triangles": 25392,
+          "drawCalls": 3
+        },
+        "등산객/그림자": {
+          "kind": "등산객",
+          "pass": "그림자",
+          "triangles": 43699,
+          "drawCalls": 40
+        },
+        "기타·후처리/기본·후처리": {
+          "kind": "기타·후처리",
+          "pass": "기본·후처리",
+          "triangles": 12923,
+          "drawCalls": 2
+        },
+        "입구 시설/기본·후처리": {
+          "kind": "입구 시설",
+          "pass": "기본·후처리",
+          "triangles": 54280,
+          "drawCalls": 38
+        },
+        "정상부 시설/기본·후처리": {
+          "kind": "정상부 시설",
+          "pass": "기본·후처리",
+          "triangles": 92,
+          "drawCalls": 4
+        },
+        "계단 난간/기본·후처리": {
+          "kind": "계단 난간",
+          "pass": "기본·후처리",
+          "triangles": 22082,
+          "drawCalls": 17
+        },
+        "등산로/기본·후처리": {
+          "kind": "등산로",
+          "pass": "기본·후처리",
+          "triangles": 29930,
+          "drawCalls": 55
+        },
+        "지형 청크/기본·후처리": {
+          "kind": "지형 청크",
+          "pass": "기본·후처리",
+          "triangles": 32768,
+          "drawCalls": 16
+        },
+        "8m 상시 지형/기본·후처리": {
+          "kind": "8m 상시 지형",
+          "pass": "기본·후처리",
+          "triangles": 34852,
+          "drawCalls": 1
+        },
+        "원경 도시/기본·후처리": {
+          "kind": "원경 도시",
+          "pass": "기본·후처리",
+          "triangles": 5470,
+          "drawCalls": 1
+        },
+        "원경 지형/기본·후처리": {
+          "kind": "원경 지형",
+          "pass": "기본·후처리",
+          "triangles": 469216,
+          "drawCalls": 2
+        },
+        "등산객/기본·후처리": {
+          "kind": "등산객",
+          "pass": "기본·후처리",
+          "triangles": 43699,
+          "drawCalls": 40
+        },
+        "숲/기본·후처리": {
+          "kind": "숲",
+          "pass": "기본·후처리",
+          "triangles": 20360,
+          "drawCalls": 426
+        },
+        "바위/기본·후처리": {
+          "kind": "바위",
+          "pass": "기본·후처리",
+          "triangles": 74500,
+          "drawCalls": 4
+        },
+        "기타/직접 제출 외": {
+          "kind": "기타",
+          "pass": "직접 제출 외",
+          "triangles": 0,
+          "drawCalls": 0
+        }
+      },
+      "aoResolution": {
+        "width": 720,
+        "height": 450,
+        "scale": 0.5,
+        "kernelSamples": 12
+      },
+      "compileCount": 1,
+      "fov": 65,
+      "exposure": 1.9922814667586093
+    },
+    "zone": "plaza",
+    "overlay": false
+  }
+]

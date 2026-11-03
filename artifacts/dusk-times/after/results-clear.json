@@ -1,0 +1,26 @@
+[
+  {
+    "time": "15:00",
+    "weather": "clear",
+    "chip": "☀ 15:00 맑음",
+    "errors": []
+  },
+  {
+    "time": "17:10",
+    "weather": "clear",
+    "chip": "☀ 17:10 맑음",
+    "errors": []
+  },
+  {
+    "time": "18:30",
+    "weather": "clear",
+    "chip": "🌙 18:30 맑음",
+    "errors": []
+  },
+  {
+    "time": "20:30",
+    "weather": "clear",
+    "chip": "🌙 20:30 맑음",
+    "errors": []
+  }
+]

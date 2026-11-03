@@ -1,0 +1,84 @@
+{
+  "loadMs": 35113,
+  "errors": [],
+  "monotonic": true,
+  "readiness": {
+    "radius": 60,
+    "terrainSamples": 49,
+    "terrainMissing": [],
+    "terrain": true,
+    "nearLod": true,
+    "facilities": true,
+    "hikers": true,
+    "zone": "plaza",
+    "stableFrames": 12,
+    "stableTimeout": false,
+    "firstFrameMs": 24515.900000095367
+  },
+  "loading": {
+    "phase": "started",
+    "progress": 1,
+    "stages": {
+      "terrain": 1,
+      "nature": 1,
+      "facilities": 1,
+      "hikers": 1,
+      "environment": 1,
+      "stabilizing": 1
+    },
+    "error": null,
+    "loadMs": 34912,
+    "startedMs": 34912,
+    "last": {
+      "stage": "started",
+      "label": "출발",
+      "progress": 1,
+      "stages": {
+        "terrain": 1,
+        "nature": 1,
+        "facilities": 1,
+        "hikers": 1,
+        "environment": 1,
+        "stabilizing": 1
+      },
+      "elapsedMs": 34912,
+      "loadMs": 34912
+    }
+  },
+  "overlay": true,
+  "elapsed": 0,
+  "landscape": null,
+  "entrance": 2,
+  "ev": [
+    [
+      188,
+      "terrain",
+      0
+    ],
+    [
+      1689,
+      "nature",
+      0.3
+    ],
+    [
+      32192,
+      "facilities",
+      0.84
+    ],
+    [
+      32345,
+      "stabilizing",
+      0.92
+    ],
+    [
+      35100,
+      "ready",
+      1
+    ],
+    [
+      35100,
+      "started",
+      1
+    ]
+  ]
+}
