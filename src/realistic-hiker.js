@@ -1,5 +1,6 @@
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {AnimationMixer,Box3,Group,Vector3,Quaternion,MathUtils} from 'three';
+import {legTargets,pelvisDrop} from './hiker-ik.js';
 // 등산객: MPFB(MakeHuman) 몸 + 직접 만든 등산복·모자·배낭을 Blender에서 Mixamo 호환 뼈대로 묶고
 // Quaternius UAL(CC0) 동작을 리타겟한 Hiker.glb. 동작(Idle·Look·Walk·Stairs·Rock)을 이동 거리에 맞춰 재생한다.
 // 이동 위치는 애니메이션이 아니라 게임이 정한다. 발은 2관절 IK로 노면 높이에 붙인다.
@@ -16,7 +17,7 @@ export async function loadRealisticHiker(url,{height=1.7}={}){
  const box=new Box3().setFromObject(model),k=height/HIKER_HEIGHT;model.scale.multiplyScalar(k);model.position.y=-box.min.y*k;model.updateMatrixWorld(true);
  const bone=n=>model.getObjectByName('mixamorig'+n);
  // 머리카락·눈썹·속눈썹은 알파 컷아웃(투명 정렬 문제 방지), 나머지는 그림자 수신·발신
- model.traverse(o=>{if(!o.isMesh)return;o.castShadow=o.receiveShadow=true;o.frustumCulled=false;const m=o.material;
+ model.traverse(o=>{if(!o.isMesh)return;o.castShadow=o.receiveShadow=true;o.frustumCulled=!o.isSkinnedMesh;const m=o.material;
   if(m.transparent){m.transparent=false;m.alphaTest=.4;m.depthWrite=true;m.needsUpdate=true;}
   m.envMapIntensity=.7;});
  const pack=new Group(); // 배낭은 모델에 포함됨(호환용 빈 그룹)
@@ -36,7 +37,7 @@ export async function loadRealisticHiker(url,{height=1.7}={}){
  const soleMin=(k,list,groundAt)=>{ // 바닥 표본점 중 가장 낮은 높이(앞/뒤 따로), 지면 대비 관통량
   let lo=Infinity,loF=Infinity,loB=Infinity,pen=-Infinity;for(const c of list){boots.getVertexPosition(c.i,VV).applyMatrix4(boots.matrixWorld);lo=Math.min(lo,VV.y);if(c.front)loF=Math.min(loF,VV.y);else loB=Math.min(loB,VV.y);if(groundAt){const g=groundAt(VV.x,VV.z)-VV.y;if(g>pen)pen=g;}}
   return {lo,loF,loB,pen};};
- let current;const modelY=model.position.y;
+ let current,lastIdle,lastDistance,weights={};const modelY=model.position.y;
  // 걷기 클립 전체에서 발목이 가장 낮은 높이(딛는 중) — 이보다 올라간 만큼이 발 들기
  // 발바닥 최저점(뒤꿈치·발끝 중 낮은 쪽) 높이. 딛는 동안(발끝이 땅에 닿은 채 뒤꿈치가 들려도) 이 값은 일정하다.
  const soleOf=(l)=>{if(boots){boots.skeleton.update();return soleMin(l.side==='Left'?0:1,soleSmp[l.side==='Left'?0:1]).lo;}return Math.min(l.foot.getWorldPosition(P).y-ankle,l.toe.getWorldPosition(NB).y-toeH);};
@@ -47,11 +48,25 @@ export async function loadRealisticHiker(url,{height=1.7}={}){
   snapTo(heading){root.rotation.y=heading;},
 ankle,toeH,scene:root,animations:gltf.animations,actions,model,mixer,legs,pack,
   update({clip='Idle',distance=0,stride=.7,stepLength=.7,idleSeconds=0,slope=0}){api.step=stepLength;
-   const walkClip=clip!=='Idle',name=!walkClip?'Idle':clip==='Climb'?(slope>.45?'Scramble':'Climb'):'Walk';
-   if(current!==name){Object.values(actions).forEach(a=>a.stop());actions[name].play();current=name;}
-   const a=actions[name],d=a.getClip().duration;
+   const walkClip=clip!=='Idle';
+   // 경사 경계의 작은 변화로 Stairs/Rock이 매 프레임 바뀌지 않게 한다.
+   const name=!walkClip?'Idle':clip==='Climb'?(slope>(current==='Scramble'?.41:.47)?'Scramble':'Climb'):
+    ((current==='Climb'||current==='Scramble')&&slope>.12?'Climb':'Walk');
+   const elapsed=lastIdle===undefined?0:Math.abs(idleSeconds-lastIdle);
+   const travelled=lastDistance===undefined?0:Math.abs(distance-lastDistance);
+   const dt=Math.min(.1,elapsed||travelled/1.2);
+   lastIdle=idleSeconds;lastDistance=distance;
+   if(!current){weights[name]=1;current=name;}
+   const blend=1-Math.exp(-dt/ .12);
+   for(const [key,a] of Object.entries(actions)){
+    weights[key]=(weights[key]??0)+((key===name?1:0)-(weights[key]??0))*blend;
+    a.enabled=true;a.play();a.setEffectiveWeight(weights[key]);
+    const d=a.getClip().duration;
+    // 블렌딩 중인 모든 이동 클립을 같은 보행 위상으로 샘플링한다.
+    a.time=key==='Idle'?MathUtils.euclideanModulo(idleSeconds,d):MathUtils.euclideanModulo(distance/(2*stride)+WALK_CONTACT_OFFSET,1)*d;
+   }
+   current=name;
    // 서 있을 때는 둘러보기(Look) 클립을 시간으로, 걸을 때는 걸음 수(위상)로 재생
-   a.time=walkClip?((((distance/(2*stride))+WALK_CONTACT_OFFSET)%1)+1)%1*d:(idleSeconds%d);
    mixer.update(0);api.pose={clip,walkClip,name};
    model.updateMatrixWorld(true);
   },
@@ -82,18 +97,16 @@ ankle,toeH,scene:root,animations:gltf.animations,actions,model,mixer,legs,pack,
    // 딛는 발 목표(앵커 포함)가 다리 길이를 넘으면 그만큼 골반을 낮춰 발이 뜨지 않게 한다.
    for(const pass of [0,1]){let deficit=0;for(const i of info){const {l}=i,tg=target(i);
      A.setFromMatrixPosition(l.up.matrixWorld);B.setFromMatrixPosition(l.knee.matrixWorld);C.setFromMatrixPosition(l.foot.matrixWorld);
-     deficit=Math.max(deficit,Math.hypot(tg.x-A.x,i.ground+i.above+i.sw-A.y,tg.z-A.z)-(A.distanceTo(B)+B.distanceTo(C)-.01));}
+     deficit=Math.max(deficit,pelvisDrop(A,new Vector3(tg.x,i.ground+i.above+i.sw,tg.z),A.distanceTo(B)+B.distanceTo(C)-.02));}
     if(deficit>0){model.position.y-=Math.min(deficit,.3);model.updateMatrixWorld(true);}}
    const solve=(l,Tt,footQ)=>{
     A.setFromMatrixPosition(l.up.matrixWorld);B.setFromMatrixPosition(l.knee.matrixWorld);C.setFromMatrixPosition(l.foot.matrixWorld);
     const l1=A.distanceTo(B),l2=B.distanceTo(C);
-    U.subVectors(Tt,A);const d=MathUtils.clamp(U.length(),Math.abs(l1-l2)+.02,l1+l2-.002);U.normalize();
-    const ak=(l1*l1-l2*l2+d*d)/(2*d),h=Math.sqrt(Math.max(0,l1*l1-ak*ak));
-    P.subVectors(B,A);P.addScaledVector(U,-P.dot(U));if(P.lengthSq()<1e-8)P.set(0,0,-1);P.normalize();
-    NB.copy(A).addScaledVector(U,ak).addScaledVector(P,h);
+    const solved=legTargets(A,Tt,l1,l2,new Vector3(fx,0,fz));
+    NB.copy(solved.knee);
     aim(l.up,B.clone().sub(A).normalize(),NB.clone().sub(A).normalize());
     C.setFromMatrixPosition(l.foot.matrixWorld);B.setFromMatrixPosition(l.knee.matrixWorld);
-    const Tc=A.clone().addScaledVector(U,d);aim(l.knee,C.clone().sub(B).normalize(),Tc.clone().sub(B).normalize());
+    aim(l.knee,C.clone().sub(B).normalize(),solved.foot.clone().sub(B).normalize());
     l.foot.parent.getWorldQuaternion(q3);l.foot.quaternion.copy(q3.invert().multiply(footQ));l.foot.updateMatrixWorld(true);
    };
    for(const i of info){const {l}=i,swing=i.sw,planted=i.planted;

@@ -1,0 +1,1000 @@
+{
+  "audit": [
+    {
+      "id": "pine_tree_01",
+      "lod": 0,
+      "path": "/assets/realistic/generated/nature/pine_tree_01-lod0.glb",
+      "triangles": 23400,
+      "materials": 4,
+      "materialDetails": [
+        {
+          "name": "pine_tree_01_bark",
+          "color": [
+            1,
+            1,
+            1
+          ],
+          "map": true,
+          "alphaMap": false,
+          "alphaTest": 0,
+          "opacity": 1,
+          "transparent": false
+        },
+        {
+          "name": "pine_tree_01_trunk_a",
+          "color": [
+            1,
+            1,
+            1
+          ],
+          "map": true,
+          "alphaMap": false,
+          "alphaTest": 0,
+          "opacity": 1,
+          "transparent": false
+        },
+        {
+          "name": "pine_tree_01_twig",
+          "color": [
+            1,
+            1,
+            1
+          ],
+          "map": true,
+          "alphaMap": false,
+          "alphaTest": 0,
+          "opacity": 1,
+          "transparent": false
+        },
+        {
+          "name": "pine_tree_01_dead_branches",
+          "color": [
+            1,
+            1,
+            1
+          ],
+          "map": true,
+          "alphaMap": false,
+          "alphaTest": 0,
+          "opacity": 1,
+          "transparent": false
+        }
+      ],
+      "bounds": {
+        "min": [
+          -2.203661122487381,
+          0.00043757424186452454,
+          -2.415896961602148
+        ],
+        "max": [
+          2.1880293160723885,
+          11.931663890491594,
+          2.297678424116799
+        ]
+      },
+      "textures": [
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": "srgb"
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": ""
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": ""
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": ""
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": "srgb"
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": ""
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": ""
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": "srgb"
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": ""
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": ""
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": "srgb"
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": ""
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": ""
+        }
+      ],
+      "planeNormalAzimuthDegrees": []
+    },
+    {
+      "id": "pine_tree_01",
+      "lod": 1,
+      "path": "/assets/realistic/generated/nature/pine_tree_01-lod1.glb",
+      "triangles": 8,
+      "materials": 1,
+      "materialDetails": [
+        {
+          "name": "",
+          "color": [
+            1,
+            1,
+            1
+          ],
+          "map": true,
+          "alphaMap": false,
+          "alphaTest": 0.3,
+          "opacity": 1,
+          "transparent": false
+        }
+      ],
+      "bounds": {
+        "min": [
+          -6.477144241333008,
+          -0.47978848218917847,
+          -6.477144241333008
+        ],
+        "max": [
+          6.477144241333008,
+          12.47450065612793,
+          6.477144241333008
+        ]
+      },
+      "textures": [
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": "srgb"
+        }
+      ],
+      "planeNormalAzimuthDegrees": [
+        0,
+        45,
+        90,
+        135
+      ]
+    },
+    {
+      "id": "pine_tree_01",
+      "lod": 2,
+      "path": "/assets/realistic/generated/nature/pine_tree_01-lod2.glb",
+      "triangles": 4,
+      "materials": 1,
+      "materialDetails": [
+        {
+          "name": "",
+          "color": [
+            1,
+            1,
+            1
+          ],
+          "map": true,
+          "alphaMap": false,
+          "alphaTest": 0.3,
+          "opacity": 1,
+          "transparent": false
+        }
+      ],
+      "bounds": {
+        "min": [
+          -6.477144241333008,
+          -0.47978848218917847,
+          -6.477144241333008
+        ],
+        "max": [
+          6.477144241333008,
+          12.47450065612793,
+          6.477144241333008
+        ]
+      },
+      "textures": [
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": "srgb"
+        }
+      ],
+      "planeNormalAzimuthDegrees": [
+        0,
+        90
+      ]
+    },
+    {
+      "id": "pine_sapling_medium",
+      "lod": 0,
+      "path": "/assets/realistic/generated/nature/pine_sapling_medium-lod0.glb",
+      "triangles": 22775,
+      "materials": 3,
+      "materialDetails": [
+        {
+          "name": "pine_sapling_medium_bark",
+          "color": [
+            1,
+            1,
+            1
+          ],
+          "map": true,
+          "alphaMap": false,
+          "alphaTest": 0,
+          "opacity": 1,
+          "transparent": false
+        },
+        {
+          "name": "pine_sapling_medium_twig",
+          "color": [
+            1,
+            1,
+            1
+          ],
+          "map": true,
+          "alphaMap": false,
+          "alphaTest": 0,
+          "opacity": 1,
+          "transparent": false
+        },
+        {
+          "name": "pine_sapling_medium_dead_branches",
+          "color": [
+            1,
+            1,
+            1
+          ],
+          "map": true,
+          "alphaMap": false,
+          "alphaTest": 0,
+          "opacity": 1,
+          "transparent": false
+        }
+      ],
+      "bounds": {
+        "min": [
+          -1.104842635821033,
+          0.061881176710020025,
+          -1.0069486567780825
+        ],
+        "max": [
+          1.1173924942195244,
+          4.98687126842723,
+          1.0156836154543
+        ]
+      },
+      "textures": [
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": "srgb"
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": ""
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": ""
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": ""
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": "srgb"
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": ""
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": ""
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": "srgb"
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": ""
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": ""
+        }
+      ],
+      "planeNormalAzimuthDegrees": []
+    },
+    {
+      "id": "pine_sapling_medium",
+      "lod": 1,
+      "path": "/assets/realistic/generated/nature/pine_sapling_medium-lod1.glb",
+      "triangles": 8,
+      "materials": 1,
+      "materialDetails": [
+        {
+          "name": "",
+          "color": [
+            1,
+            1,
+            1
+          ],
+          "map": true,
+          "alphaMap": false,
+          "alphaTest": 0.3,
+          "opacity": 1,
+          "transparent": false
+        }
+      ],
+      "bounds": {
+        "min": [
+          -2.6965529918670654,
+          -0.19974467158317566,
+          -2.6965529918670654
+        ],
+        "max": [
+          2.6965529918670654,
+          5.193361282348633,
+          2.6965529918670654
+        ]
+      },
+      "textures": [
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": "srgb"
+        }
+      ],
+      "planeNormalAzimuthDegrees": []
+    },
+    {
+      "id": "pine_sapling_medium",
+      "lod": 2,
+      "path": "/assets/realistic/generated/nature/pine_sapling_medium-lod2.glb",
+      "triangles": 4,
+      "materials": 1,
+      "materialDetails": [
+        {
+          "name": "",
+          "color": [
+            1,
+            1,
+            1
+          ],
+          "map": true,
+          "alphaMap": false,
+          "alphaTest": 0.3,
+          "opacity": 1,
+          "transparent": false
+        }
+      ],
+      "bounds": {
+        "min": [
+          -2.6965529918670654,
+          -0.19974467158317566,
+          -2.6965529918670654
+        ],
+        "max": [
+          2.6965529918670654,
+          5.193361282348633,
+          2.6965529918670654
+        ]
+      },
+      "textures": [
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": "srgb"
+        }
+      ],
+      "planeNormalAzimuthDegrees": []
+    },
+    {
+      "id": "tree_small_02",
+      "lod": 0,
+      "path": "/assets/realistic/generated/nature/tree_small_02-lod0.glb",
+      "triangles": 23870,
+      "materials": 3,
+      "materialDetails": [
+        {
+          "name": "tree_small_02_branches",
+          "color": [
+            1,
+            1,
+            1
+          ],
+          "map": true,
+          "alphaMap": false,
+          "alphaTest": 0,
+          "opacity": 1,
+          "transparent": false
+        },
+        {
+          "name": "tree_small_02_leaves",
+          "color": [
+            1,
+            1,
+            1
+          ],
+          "map": true,
+          "alphaMap": false,
+          "alphaTest": 0.35,
+          "opacity": 1,
+          "transparent": false
+        },
+        {
+          "name": "tree_small_02_trunk",
+          "color": [
+            1,
+            1,
+            1
+          ],
+          "map": true,
+          "alphaMap": false,
+          "alphaTest": 0,
+          "opacity": 1,
+          "transparent": false
+        }
+      ],
+      "bounds": {
+        "min": [
+          -2.840528502266114,
+          0.0001419063113177188,
+          -4.077422847995416
+        ],
+        "max": [
+          2.838443359115365,
+          8.974911414456727,
+          3.9441865329382857
+        ]
+      },
+      "textures": [
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": "srgb"
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": ""
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": ""
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": ""
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": "srgb"
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": ""
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": ""
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": "srgb"
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": ""
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": ""
+        }
+      ],
+      "planeNormalAzimuthDegrees": []
+    },
+    {
+      "id": "tree_small_02",
+      "lod": 1,
+      "path": "/assets/realistic/generated/nature/tree_small_02-lod1.glb",
+      "triangles": 8,
+      "materials": 1,
+      "materialDetails": [
+        {
+          "name": "",
+          "color": [
+            1,
+            1,
+            1
+          ],
+          "map": true,
+          "alphaMap": false,
+          "alphaTest": 0.3,
+          "opacity": 1,
+          "transparent": false
+        }
+      ],
+      "bounds": {
+        "min": [
+          -4.859923362731934,
+          -0.3599943220615387,
+          -4.859923362731934
+        ],
+        "max": [
+          4.859923362731934,
+          9.35985279083252,
+          4.859923362731934
+        ]
+      },
+      "textures": [
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": "srgb"
+        }
+      ],
+      "planeNormalAzimuthDegrees": []
+    },
+    {
+      "id": "tree_small_02",
+      "lod": 2,
+      "path": "/assets/realistic/generated/nature/tree_small_02-lod2.glb",
+      "triangles": 4,
+      "materials": 1,
+      "materialDetails": [
+        {
+          "name": "",
+          "color": [
+            1,
+            1,
+            1
+          ],
+          "map": true,
+          "alphaMap": false,
+          "alphaTest": 0.3,
+          "opacity": 1,
+          "transparent": false
+        }
+      ],
+      "bounds": {
+        "min": [
+          -4.859923362731934,
+          -0.3599943220615387,
+          -4.859923362731934
+        ],
+        "max": [
+          4.859923362731934,
+          9.35985279083252,
+          4.859923362731934
+        ]
+      },
+      "textures": [
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": "srgb"
+        }
+      ],
+      "planeNormalAzimuthDegrees": []
+    },
+    {
+      "id": "island_tree_01",
+      "lod": 0,
+      "path": "/assets/realistic/generated/nature/island_tree_01-lod0.glb",
+      "triangles": 23914,
+      "materials": 3,
+      "materialDetails": [
+        {
+          "name": "island_tree_01",
+          "color": [
+            1,
+            1,
+            1
+          ],
+          "map": true,
+          "alphaMap": false,
+          "alphaTest": 0,
+          "opacity": 1,
+          "transparent": false
+        },
+        {
+          "name": "island_tree_01_leaves",
+          "color": [
+            1,
+            1,
+            1
+          ],
+          "map": true,
+          "alphaMap": false,
+          "alphaTest": 0.35,
+          "opacity": 1,
+          "transparent": false
+        },
+        {
+          "name": "island_tree_01_branches",
+          "color": [
+            1,
+            1,
+            1
+          ],
+          "map": true,
+          "alphaMap": false,
+          "alphaTest": 0,
+          "opacity": 1,
+          "transparent": false
+        }
+      ],
+      "bounds": {
+        "min": [
+          -4.691120201219674,
+          0.01698138175572428,
+          -4.686009552808957
+        ],
+        "max": [
+          4.712027278532145,
+          9.957711611438832,
+          4.777813180885446
+        ]
+      },
+      "textures": [
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": "srgb"
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": ""
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": ""
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": "srgb"
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": ""
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": ""
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": "srgb"
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": ""
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": ""
+        },
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": ""
+        }
+      ],
+      "planeNormalAzimuthDegrees": []
+    },
+    {
+      "id": "island_tree_01",
+      "lod": 1,
+      "path": "/assets/realistic/generated/nature/island_tree_01-lod1.glb",
+      "triangles": 8,
+      "materials": 1,
+      "materialDetails": [
+        {
+          "name": "",
+          "color": [
+            1,
+            1,
+            1
+          ],
+          "map": true,
+          "alphaMap": false,
+          "alphaTest": 0.3,
+          "opacity": 1,
+          "transparent": false
+        }
+      ],
+      "bounds": {
+        "min": [
+          -5.400000095367432,
+          -0.4000000059604645,
+          -5.400000095367432
+        ],
+        "max": [
+          5.400000095367432,
+          10.399999618530273,
+          5.400000095367432
+        ]
+      },
+      "textures": [
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": "srgb"
+        }
+      ],
+      "planeNormalAzimuthDegrees": []
+    },
+    {
+      "id": "island_tree_01",
+      "lod": 2,
+      "path": "/assets/realistic/generated/nature/island_tree_01-lod2.glb",
+      "triangles": 4,
+      "materials": 1,
+      "materialDetails": [
+        {
+          "name": "",
+          "color": [
+            1,
+            1,
+            1
+          ],
+          "map": true,
+          "alphaMap": false,
+          "alphaTest": 0.3,
+          "opacity": 1,
+          "transparent": false
+        }
+      ],
+      "bounds": {
+        "min": [
+          -5.400000095367432,
+          -0.4000000059604645,
+          -5.400000095367432
+        ],
+        "max": [
+          5.400000095367432,
+          10.399999618530273,
+          5.400000095367432
+        ]
+      },
+      "textures": [
+        {
+          "width": 1024,
+          "height": 1024,
+          "colorSpace": "srgb"
+        }
+      ],
+      "planeNormalAzimuthDegrees": []
+    }
+  ],
+  "existingPng": {
+    "path": "assets/realistic/generated/nature/pine_tree_01-impostor.png",
+    "width": 1024,
+    "height": 1024,
+    "opaquePixels": 27482,
+    "transparentPixels": 962743
+  },
+  "atlas": {
+    "texture": "pine-impostor-atlas-v1.png",
+    "size": [
+      2048,
+      1024
+    ],
+    "grid": [
+      4,
+      2
+    ],
+    "cellSize": [
+      512,
+      512
+    ],
+    "cellPivotPixelsTopLeft": [
+      256,
+      496
+    ],
+    "azimuthDegrees": [
+      0,
+      45,
+      90,
+      135,
+      180,
+      225,
+      270,
+      315
+    ],
+    "elevationDegrees": 0,
+    "modelHeightMeters": 11.93122631624973,
+    "planeSizeMeters": 12.726641403999711,
+    "modelNormalizationTranslation": [
+      0.007815903207496255,
+      -0.00043757424186452454,
+      0.05910926874267464
+    ],
+    "colorMode": "diffuse unlit + twigCutout, color×1.8, NeutralToneMapping, surviving fragment alpha=1 (AA coverage preserved)",
+    "rgbDilationPixels": 0,
+    "mipmaps": "PNG에 밉 없음. 셀별 밉 생성 또는 최대 mip 레벨 제한 필요",
+    "rgba8BaseBytes": 8388608,
+    "rgba8FullMipBytes": 11184812,
+    "cells": [
+      {
+        "index": 0,
+        "azimuthDegrees": 0,
+        "alphaBounds": {
+          "min": [
+            168,
+            16
+          ],
+          "max": [
+            343,
+            495
+          ]
+        },
+        "nonzeroAlphaPixels": 9619
+      },
+      {
+        "index": 1,
+        "azimuthDegrees": 45,
+        "alphaBounds": {
+          "min": [
+            154,
+            17
+          ],
+          "max": [
+            345,
+            495
+          ]
+        },
+        "nonzeroAlphaPixels": 9757
+      },
+      {
+        "index": 2,
+        "azimuthDegrees": 90,
+        "alphaBounds": {
+          "min": [
+            161,
+            17
+          ],
+          "max": [
+            349,
+            495
+          ]
+        },
+        "nonzeroAlphaPixels": 9662
+      },
+      {
+        "index": 3,
+        "azimuthDegrees": 135,
+        "alphaBounds": {
+          "min": [
+            150,
+            16
+          ],
+          "max": [
+            348,
+            495
+          ]
+        },
+        "nonzeroAlphaPixels": 9552
+      },
+      {
+        "index": 4,
+        "azimuthDegrees": 180,
+        "alphaBounds": {
+          "min": [
+            168,
+            16
+          ],
+          "max": [
+            343,
+            495
+          ]
+        },
+        "nonzeroAlphaPixels": 9608
+      },
+      {
+        "index": 5,
+        "azimuthDegrees": 225,
+        "alphaBounds": {
+          "min": [
+            164,
+            16
+          ],
+          "max": [
+            359,
+            495
+          ]
+        },
+        "nonzeroAlphaPixels": 9781
+      },
+      {
+        "index": 6,
+        "azimuthDegrees": 270,
+        "alphaBounds": {
+          "min": [
+            161,
+            16
+          ],
+          "max": [
+            350,
+            495
+          ]
+        },
+        "nonzeroAlphaPixels": 9657
+      },
+      {
+        "index": 7,
+        "azimuthDegrees": 315,
+        "alphaBounds": {
+          "min": [
+            162,
+            16
+          ],
+          "max": [
+            360,
+            495
+          ]
+        },
+        "nonzeroAlphaPixels": 9619
+      }
+    ]
+  },
+  "errors": []
+}

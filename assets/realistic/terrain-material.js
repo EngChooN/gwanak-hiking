@@ -14,11 +14,12 @@ vec4 graniteTex(sampler2D tex){float nearWeight=1.0-smoothstep(12.0,65.0,length(
 vec4 landWeights(){float slope=1.0-abs(normalize(landNormal).y); float landPatch=.5+.25*sin(landWorld.x*.23+sin(landWorld.z*.19)*2.0)+.25*sin(landWorld.z*.08+landWorld.x*.09); float outcrop=smoothstep(.36,.76,landPatch); float rock=smoothstep(.10,.34,slope)*(.38+.62*outcrop); rock=max(rock,smoothstep(490.0,625.0,landWorld.y)*(.18+.65*outcrop));float grass=(1.0-rock)*(.42+.32*landPatch);float soil=(1.0-rock-grass)*(.45+.35*(1.0-landPatch));return vec4(rock,soil,grass,1.0-rock-grass-soil);}\n`;
   for(const channel of ['D','N','R'])declarations+=`vec4 land${channel}(){vec4 w=landWeights();return ${keys.map((k,i)=>`${i===0?`graniteTex(land0${channel})`:`landTex(land${i}${channel},landWorld.xz/${Number(meta[k].metres).toFixed(3)})`}*w[${i}]`).join('+')};}\n`;
   shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\n'+declarations)
-   .replace('#include <map_fragment>','vec4 groundColor=landD(); float rockCover=landWeights().x; float detail=dot(groundColor.rgb,vec3(.2126,.7152,.0722)); float mottling=.8+.2*sin(landWorld.x*.19+sin(landWorld.z*.15)*2.0); vec3 forestColor=groundColor.rgb*mottling; vec3 stone=graniteTex(land0D).rgb; float stoneLuma=dot(stone,vec3(.2126,.7152,.0722)); vec3 graniteColor=mix(vec3(stoneLuma),stone,.12)*vec3(.94,.98,1.0); groundColor.rgb=mix(forestColor,graniteColor,rockCover); diffuseColor *= groundColor;')
+   .replace('#include <map_fragment>','vec4 groundColor=landD(); float rockCover=landWeights().x; float mottling=.92+.08*sin(landWorld.x*.019+sin(landWorld.z*.015)*2.0); vec3 forestColor=groundColor.rgb*mottling; vec3 stone=graniteTex(land0D).rgb; float stoneLuma=dot(stone,vec3(.2126,.7152,.0722)); vec3 graniteColor=mix(vec3(stoneLuma),stone,.12)*vec3(.94,.98,1.0); groundColor.rgb=mix(forestColor,graniteColor,rockCover); float farBlend=smoothstep(50.0,180.0,length(vViewPosition)); vec3 farGround=mix(vec3(.19,.24,.14),vec3(.38,.39,.37),rockCover); groundColor.rgb=mix(groundColor.rgb,farGround,farBlend*.92); diffuseColor *= groundColor;')
    .replace('#include <roughnessmap_fragment>','float roughnessFactor=roughness*landR().g;')
-   .replace('#include <normal_fragment_maps>',THREE.ShaderChunk.normal_fragment_maps.replace('texture2D( normalMap, vNormalMapUv )','landN()'));
+   // 반복 노멀의 원거리 명암 줄무늬를 줄인다. 근거리 PBR은 유지한다.
+   .replace('#include <normal_fragment_maps>',THREE.ShaderChunk.normal_fragment_maps.replace('texture2D( normalMap, vNormalMapUv )','mix(landN(),vec4(.5,.5,1.0,1.0),smoothstep(35.0,120.0,length(vViewPosition)))'));
  };
- material.customProgramCacheKey=()=> 'gwanak-slope-altitude-forest-v4-outcrop-mosaic';return material;
+ material.customProgramCacheKey=()=> 'gwanak-slope-altitude-forest-v5-distance-detail';return material;
 }
 
 // 노면 중심은 흙, 가장자리는 낙엽·풀. 세 PBR 채널에 같은 가중치를 적용한다.

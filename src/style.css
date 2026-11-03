@@ -16,3 +16,4 @@ header #sound-toggle{margin-left:auto;font-size:12px;white-space:nowrap}header #
 
 /* HDR 하늘의 밝은 영역에서도 상단 식별을 유지한다. */
 header::before{content:"";position:absolute;z-index:-1;top:0;left:0;right:0;height:105px;background:linear-gradient(#15382db0,#15382d00);pointer-events:none}.brand{text-shadow:0 1px 5px #132b25}
+.trail-label #quality{min-width:0;min-height:32px;padding:6px 12px;font-size:inherit;background:#173e36b0}

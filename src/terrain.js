@@ -2,5 +2,5 @@
 export class TerrainStream{
  constructor(scene,landscape,camera){this.scene=scene;this.landscape=landscape;this.camera=camera;scene.add(landscape.group);}
  get loaded(){return new Map(this.landscape.collisionObjects().map((mesh,i)=>[i,{mesh}]));}
- async update(){this.landscape.update(this.camera);}
+ update(s,quality=2){this.landscape.update(this.camera,quality);}
 }

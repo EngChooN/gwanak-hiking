@@ -17,7 +17,19 @@ export function nearDetailPlacements(route){
    for(const side of [-1,1]){
     const offset=width/2+.18+random()*.85,x=cx-(b.z-a.z)/length*offset*side,z=cz+(b.x-a.x)/length*offset*side;
     const hit=nearestRoute(route,x,z);
-    if(hit.distance>hit.width/2+.08){add('rock_09','rock',{x,z,scale:1.2+random()*4.5,yaw:random()*Math.PI*2,embed:.006});grass.push({x:x+(random()-.5)*.3,z:z+(random()-.5)*.3,scale:.6+random()*.8,yaw:random()*Math.PI*2});}
+    if(hit.distance>hit.width/2+.08){
+     add('rock_09','rock',{x,z,scale:1.2+random()*4.5,yaw:random()*Math.PI*2,embed:.006});
+     // 분포 미확정으로 수종명을 붙이지 않는다. 길가·경사면의 임시 표현.
+     for(let band=0;band<3;band++){
+      const d=width/2+.3+band*1.8+random()*1.5;
+      const gx=cx-(b.z-a.z)/length*d*side,gz=cz+(b.x-a.x)/length*d*side;
+      const gh=nearestRoute(route,gx,gz);
+      if(gh.distance<=gh.width/2+.15)continue;
+      const roll=random(),kind=roll<.48?'litter':roll<.9?'grass':'shrub';
+      if(y>600&&kind==='shrub')continue;
+      grass.push({x:gx,z:gz,kind,scale:.65+random()*.7,yaw:random()*Math.PI*2});
+     }
+    }
     if(y>430&&next%12<2){const d=width/2+2.5+random()*6,px=cx-(b.z-a.z)/length*d*side,pz=cz+(b.x-a.x)/length*d*side;
      const h=nearestRoute(route,px,pz);if(h.distance>h.width/2+1.5)add(y<600&&random()<.25?'pine_tree_01':'pine_sapling_medium','tree',{x:px,z:pz,scale:y<600?.36+random()*.28:.22+random()*.12,yaw:random()*Math.PI*2,embed:.035});
     }
@@ -29,15 +41,32 @@ export function nearDetailPlacements(route){
 }
 
 export function grassClumps(placements,height){
- const root=new THREE.Group();root.name='길가 풀 군집';const groups=new Map();
- for(const p of placements){const key=`${Math.floor(p.x/64)},${Math.floor(p.z/64)}`;if(!groups.has(key))groups.set(key,[]);groups.get(key).push(p);}
- const vertices=[];for(let i=0;i<5;i++){const a=i*2.399,x=Math.cos(a)*.09,z=Math.sin(a)*.09;vertices.push(x-.018,0,z,x+.018,0,z,x+.05,.16+i*.018,z+.025);}
- const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));geometry.computeVertexNormals();
- const material=new THREE.MeshStandardMaterial({color:0x596342,roughness:1,side:THREE.DoubleSide});
+ const root=new THREE.Group();root.name='길가 하층 식생 · 임시 표현';const groups=new Map();
+ for(const p of placements){const key=`${p.kind??'grass'}:${Math.floor(p.x/64)},${Math.floor(p.z/64)}`;if(!groups.has(key))groups.set(key,[]);groups.get(key).push(p);}
+ const resources=new Map();
+ for(const [kind,color] of [['grass',0x596342],['litter',0x786044],['shrub',0x4b5939]]){
+  const vertices=[];
+  for(let i=0;i<(kind==='shrub'?8:5);i++){
+   const a=i*2.399,x=Math.cos(a)*.17,z=Math.sin(a)*.17;
+   if(kind==='litter')vertices.push(x-.09,.025,z,x+.09,.025,z,x,.04,z+.19);
+   else {const h=kind==='shrub'?.45+i*.025:.18+i*.018;vertices.push(x-.035,0,z,x+.035,0,z,x+.08,h,z+.025);}
+  }
+  const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));geometry.computeVertexNormals();
+  resources.set(kind,{geometry,material:new THREE.MeshStandardMaterial({color,roughness:1,side:THREE.DoubleSide})});
+ }
  const dummy=new THREE.Object3D();
- for(const list of groups.values()){const mesh=new THREE.InstancedMesh(geometry,material,list.length);
+ for(const list of groups.values()){const {geometry,material}=resources.get(list[0].kind??'grass');const mesh=new THREE.InstancedMesh(geometry,material,list.length);
   list.forEach((p,i)=>{dummy.position.set(p.x,height(p.x,p.z)-.025,p.z);dummy.rotation.y=p.yaw;dummy.scale.setScalar(p.scale);dummy.updateMatrix();mesh.setMatrixAt(i,dummy.matrix);});
+  mesh.userData.fullCount=list.length;mesh.userData.metricKind='하층 식생';
   mesh.computeBoundingBox();mesh.computeBoundingSphere();mesh.receiveShadow=true;root.add(mesh);
  }
  return root;
+}
+
+// 고정 난수 순서의 접두부만 사용하여 화질 변경 시 재생성·행렬 업로드를 피한다.
+export function updateGroundCover(mesh,distance,quality){
+ const far=[28,45,65][quality],near=[10,16,24][quality];
+ mesh.visible=distance<far;
+ const density=[.25,.5,1][quality]*(distance<near?1:.35);
+ mesh.count=Math.ceil(mesh.userData.fullCount*density);
 }

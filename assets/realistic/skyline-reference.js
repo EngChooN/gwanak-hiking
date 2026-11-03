@@ -37,13 +37,20 @@ export function applyAtmosphere(material,atmosphere){
   const previous=material.onBeforeCompile,previousKey=material.customProgramCacheKey.bind(material);
   const key=previousKey();
   const stops=atmosphere.contrastStops;
-  let body=`float gContrast=1.0;\nfloat gDistance=length(vViewPosition);\n`;
+  let body=`float gContrast=1.0;\nfloat gDistance=length(gAtmosphereView);\n`;
   for(let i=1;i<stops.length;i++){
     const [a,ca]=stops[i-1],[b,cb]=stops[i];
     body+=`${i===1?'if':'else if'}(gDistance<=${Number(b).toFixed(1)}) gContrast=mix(${Number(ca).toFixed(6)},${Number(cb).toFixed(6)},clamp((gDistance-${Number(a).toFixed(1)})/${Number(b-a).toFixed(1)},0.0,1.0));\n`;
   }
   body+=`else gContrast=${Number(stops.at(-1)[1]).toFixed(6)};\ngl_FragColor.rgb=mix(fogColor,gl_FragColor.rgb,gContrast);`;
-  material.onBeforeCompile=shader=>{previous.call(material,shader);shader.fragmentShader=shader.fragmentShader.replace('#include <fog_fragment>',`#ifdef USE_FOG\n${body}\n#endif`);};
-  material.customProgramCacheKey=()=>`${key}-skyline-${JSON.stringify(stops)}`;
+  material.onBeforeCompile=shader=>{
+    previous.call(material,shader);
+    // 원경 도시의 MeshBasicMaterial에는 vViewPosition이 없다. 깊이/법선 override와도 독립한다.
+    shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 gAtmosphereView;')
+      .replace('#include <project_vertex>','#include <project_vertex>\ngAtmosphereView=mvPosition.xyz;');
+    shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nvarying vec3 gAtmosphereView;')
+      .replace('#include <fog_fragment>',`#ifdef USE_FOG\n${body}\n#endif`);
+  };
+  material.customProgramCacheKey=()=>`${key}-skyline-v2-${JSON.stringify(stops)}`;
   return material;
 }

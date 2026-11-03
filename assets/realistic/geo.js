@@ -24,6 +24,31 @@ export function nearestRoute(route,x,z){
   }
   return best;
 }
+// 경로 선분 AABB 트리. 최근접 선분과 보간식은 nearestRoute와 동일하다.
+export function indexRoute(route){
+  const build=ids=>{
+    const node={minX:Infinity,minZ:Infinity,maxX:-Infinity,maxZ:-Infinity};
+    for(const i of ids)for(const p of [route[i],route[i+1]]){node.minX=Math.min(node.minX,p.x);node.maxX=Math.max(node.maxX,p.x);node.minZ=Math.min(node.minZ,p.z);node.maxZ=Math.max(node.maxZ,p.z);}
+    if(ids.length<=8)node.ids=ids;
+    else{const axis=node.maxX-node.minX>node.maxZ-node.minZ?'x':'z';ids.sort((i,j)=>route[i][axis]+route[i+1][axis]-route[j][axis]-route[j+1][axis]);const mid=ids.length>>1;node.left=build(ids.slice(0,mid));node.right=build(ids.slice(mid));}
+    return node;
+  };
+  const tree=build(route.slice(1).map((_,i)=>i));
+  return (x,z)=>{
+    let best={distance:Infinity,index:Infinity},bestSq=Infinity;
+    const bound=n=>Math.max(n.minX-x,0,x-n.maxX)**2+Math.max(n.minZ-z,0,z-n.maxZ)**2;
+    const visit=node=>{
+      if(bound(node)>bestSq+1e-9)return;
+      if(node.ids){for(const i of node.ids){
+        const a=route[i],b=route[i+1],dx=b.x-a.x,dz=b.z-a.z;
+        const t=Math.max(0,Math.min(1,((x-a.x)*dx+(z-a.z)*dz)/(dx*dx+dz*dz||1)));
+        const distance=Math.hypot(x-mix(a.x,b.x,t),z-mix(a.z,b.z,t));
+        if(distance<best.distance||(distance===best.distance&&i<best.index)){bestSq=distance**2;best={distance,y:mix(a.y,b.y,t),s:mix(a.s,b.s,t),width:mix(a.width,b.width,t),index:i,t};}
+      }}else{const first=bound(node.left)<=bound(node.right)?node.left:node.right;visit(first);visit(first===node.left?node.right:node.left);}
+    };
+    visit(tree);return best;
+  };
+}
 export function cutHeight(raw,hit){
   const shoulder=Math.max(0,Math.min(1,(hit.distance-hit.width/2-2)/24));
   const smooth=shoulder*shoulder*(3-2*shoulder);
