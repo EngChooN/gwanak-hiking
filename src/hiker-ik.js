@@ -1,4 +1,4 @@
-import {Vector3,MathUtils} from 'three';
+import {Vector3,Quaternion,MathUtils} from 'three';
 
 // 굽힘 방향은 애니메이션의 무릎 위치 대신 몸의 전방으로 결정한다.
 // 월드 전방을 목표 축에 투영해 무릎이 뒤집히는 해를 배제한다.
@@ -28,4 +28,10 @@ export function pelvisDrop(hip,target,reach){
  const horizontal=Math.hypot(target.x-hip.x,target.z-hip.z);
  if(target.y>=hip.y||horizontal>=reach)return 0;
  return Math.max(0,hip.y-target.y-Math.sqrt(Math.max(0,reach*reach-horizontal*horizontal)));
+}
+
+// 소품 목표는 월드 좌표, 소품 회전은 루트의 로컬 좌표다.
+export function poleRotation(parentQuaternion,grip,tip){
+ const direction=tip.clone().sub(grip).normalize().applyQuaternion(parentQuaternion.clone().invert());
+ return new Quaternion().setFromUnitVectors(new Vector3(0,-1,0),direction);
 }

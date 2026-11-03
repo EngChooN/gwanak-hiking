@@ -1,6 +1,7 @@
 import {gpxPoints} from './gpx-data.js';
 import alignedPoints from '../assets/realistic/generated/route.json' with {type:'json'};
 import {assignSurfaceRoute,isStairSurface} from './route-surfaces.js';
+import {entranceConfig,polygonLineBounds,hitsGateObstacle} from './entrance-config.js';
 // 실제 GPX 수평 경로 + DSM 정렬 고도. 정상 632m, 노면 분류·폭은 임시값이다.
 export const MATERIALS = {deck:{label:'데크(평탄)',factor:.95,color:0x8b6143},deck_stairs:{label:'데크 계단',factor:.75,color:0x8b6143},soil:{label:'흙길',factor:1,color:0x9c8968},rock:{label:'돌길',factor:.85,color:0x96968b},stairs:{label:'계단',factor:.75,color:0x9a9386},ridge:{label:'암릉',factor:.65,color:0xa4a49b}};
 export const SUMMIT_REFERENCE_ELEVATION = 632;
@@ -20,7 +21,8 @@ export const STAIR_CADENCE=1.2, STAIR_RISE=.18, STAIR_TREAD=.30;
 export const STAIR_STRIDE=Math.hypot(STAIR_RISE,STAIR_TREAD);
 export const STAIR_SPEED=STAIR_STRIDE*STAIR_CADENCE;
 export function baseSpeedFor(slope,material,direction=1){if(isStairs(material))return STAIR_SPEED;const grade=Math.max(-SPEED_SLOPE_LIMIT,Math.min(SPEED_SLOPE_LIMIT,slope*direction));return 6*Math.exp(-3.5*Math.abs(grade+.05))*MATERIALS[material].factor/3.6;}
-export function speedFor(slope,material,direction=1){return baseSpeedFor(slope,material,direction)*(isStairs(material)?1:SPEED_CALIBRATION);}
+export const WALK_SPEED_MULTIPLIER=1.2;
+export function speedFor(slope,material,direction=1){return baseSpeedFor(slope,material,direction)*(isStairs(material)?1:SPEED_CALIBRATION)*WALK_SPEED_MULTIPLIER;}
 export function strideFor(seg){return isStairs(seg.material) ? STAIR_STRIDE : seg.slope>.05 ? .55 : .7;}
 export function projectedRoute(points,origin){return buildRoute(points.map(p=>({...toLocal(p,origin),material:p.material,width:p.width??1.8})));}
 export function buildRoute(points){let distance=0;const segments=[];for(let i=0;i<points.length-1;i++){const a=points[i],b=points[i+1],dx=b.x-a.x,dy=b.y-a.y,dz=b.z-a.z;const horizontal=Math.hypot(dx,dz),length=Math.hypot(horizontal,dy);if(!length)continue;segments.push({a,b,dx,dy,dz,length,horizontal,slope:dy/Math.max(.001,horizontal),start:distance,end:distance+length,material:a.material,width:a.width});distance+=length;}return {points,segments,length:distance};}
@@ -34,10 +36,32 @@ export const STAIR_SECONDS=route.segments.filter(s=>isStairs(s.material)).reduce
 export const NONSTAIR_BASE_SECONDS=route.segments.filter(s=>!isStairs(s.material)).reduce((t,s)=>t+s.length/baseSpeedFor(s.slope,s.material),0);
 export const SPEED_CALIBRATION=NONSTAIR_BASE_SECONDS/(150*60-STAIR_SECONDS);
 export const DEMO_START=route.segments.find(s=>s.a.y>=545).start;
+// GPX의 s=0과 337점을 유지한다. 광장 접근 구간에만 음수 거리를 쓴다.
+const entranceLocal=p=>geographicToLocal(p.lat,p.lon,route.points[0].y);
+export const entrancePolygon=entranceConfig.freeRoamPolygon.map(entranceLocal);
+const plazaStart=entranceLocal(entranceConfig.startPoint),bearing=entranceConfig.startPoint.facingDeg*rad;
+const direction={x:Math.sin(bearing),z:-Math.cos(bearing)};
+const [farT,nearT]=polygonLineBounds(entrancePolygon,plazaStart,direction);
+const approachPoint=t=>({...plazaStart,x:plazaStart.x+direction.x*t,z:plazaStart.z+direction.z*t});
+const approachPoints=[approachPoint(farT),approachPoint(nearT),entranceLocal(entranceConfig.gate),route.points[0]].map(p=>({...p,material:'paved',width:12,referenceMetres:0}));
+export const entranceApproach=buildRoute(approachPoints);
+export const ENTRANCE_MIN_S=-entranceApproach.length;
+export const ENTRANCE_START=ENTRANCE_MIN_S-farT;
+entranceApproach.segments.forEach(s=>{s.start+=ENTRANCE_MIN_S;s.end+=ENTRANCE_MIN_S;});
+export function entranceLateralBounds(s){
+ const p=sample(s);
+ return s<=entranceApproach.segments[0].end?polygonLineBounds(entrancePolygon,p,{x:p.nx,z:p.nz}):[-1.75,1.75];
+}
+// 일주문 기둥·바리케이드 충돌. 월드 xz를 일주문 기준 좌표로 돌려 entrance-config의 형상과 비교한다.
+const gatePoint=entranceLocal(entranceConfig.gate),gateYaw=-entranceConfig.startPoint.facingDeg*rad;
+export function blockedByGate(x,z,radius=.25){
+ const dx=x-gatePoint.x,dz=z-gatePoint.z;if(dx*dx+dz*dz>100)return false;
+ const c=Math.cos(gateYaw),s=Math.sin(gateYaw);return hitsGateObstacle(c*dx-s*dz,s*dx+c*dz,radius);
+}
 // 체크포인트표의 첫 참고 좌표를 일관되게 선택. 서로 모순되는 대안은 원본 표에 보존.
 const references=[[37.459251,126.947189],null,[37.447460,126.947380],[37.446278,126.952988],null];
 export const checkpoints=['제1광장','아카시아동산','제4쉼터','연주샘','제3깔딱고개'].map((name,i)=>{const ref=references[i],targetS=route.length*[.16,.32,.55,.78,.92][i],target=ref?geographicToLocal(...ref,0):null;let best=0,error=Infinity;route.points.forEach((p,j)=>{const d=ref?Math.hypot(p.x-target.x,p.z-target.z):Math.abs((geometry.segments[j]?.start??route.length)-targetS);if(d<error){best=j;error=d;}});return {id:['plaza-1','acacia','shelter-4','yeonju-spring','pass-3'][i],name,s:geometry.segments[best]?.start??route.length,pointIndex:best,verified:false,temporary:true,reference:ref,referenceOffsetM:ref?error:null,positionSource:ref?'임시: 표지판 참고 좌표 최근접 경로점(장소 자체 좌표 아님)':'임시: 경로 비율 최근접 경로점 — 좌표 없음'};});
-export function sample(s){s=Math.max(0,Math.min(route.length,s));let lo=0,hi=route.segments.length-1;while(lo<hi){const m=(lo+hi)>>1;if(route.segments[m].end<s)lo=m+1;else hi=m;}const seg=route.segments[lo],t=(s-seg.start)/seg.length;return {...seg,x:seg.a.x+seg.dx*t,y:seg.a.y+seg.dy*t,z:seg.a.z+seg.dz*t,nx:-seg.dz/seg.horizontal,nz:seg.dx/seg.horizontal,heading:Math.atan2(-seg.dx,-seg.dz)};}
-export function durationBetween(start,end){return route.segments.reduce((t,s)=>t+Math.max(0,Math.min(end,s.end)-Math.max(start,s.start))/speedFor(s.slope,s.material),0);}
+export function sample(s){s=Math.max(ENTRANCE_MIN_S,Math.min(route.length,s));const segments=s<0?entranceApproach.segments:route.segments;let lo=0,hi=segments.length-1;while(lo<hi){const m=(lo+hi)>>1;if(segments[m].end<s)lo=m+1;else hi=m;}const seg=segments[lo],t=(s-seg.start)/seg.length;return {...seg,x:seg.a.x+seg.dx*t,y:seg.a.y+seg.dy*t,z:seg.a.z+seg.dz*t,nx:-seg.dz/seg.horizontal,nz:seg.dx/seg.horizontal,heading:Math.atan2(-seg.dx,-seg.dz)};}
+export function durationBetween(start,end){return [...entranceApproach.segments,...route.segments].reduce((t,s)=>t+Math.max(0,Math.min(end,s.end)-Math.max(start,s.start))/speedFor(s.slope,s.material),0);}
 
 export function floorHeight(s){return sample(s).y;}

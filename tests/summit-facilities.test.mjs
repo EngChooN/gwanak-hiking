@@ -7,7 +7,7 @@ test('정상부 시설: 5종, GPX 기준점, LOD 예산과 원거리 축소',()=
  const route=[{x:0,z:0,y:99},{x:100,z:100,y:581},{x:200,z:200,y:654.5}];
  const facilities=createSummitFacilities(route,()=>600);
  assert.equal(facilities.items.length,5);
- assert.equal(facilities.items.find(i=>i.userData.id==='marker').position.x,191);
+ assert.equal(facilities.items.find(i=>i.userData.id==='marker').position.x,200);
  assert.equal(facilities.items.find(i=>i.userData.id==='helipad').position.x,114);
  for(const row of facilityTriangleCounts(facilities.items)){
   assert.ok(row.levels[0].triangles<30000);
@@ -23,7 +23,7 @@ test('정상 300도·갈림 90도 시야와 중심 고도 기초·절토·성토
  assert.equal(facilityAnchors(route).junction,route[1]);
  const height=(x,z)=>632+(x-200)*.02+(z-200)*.01,sites=facilitySites(route,height);
  const facilities=createSummitFacilities(route,height,sites);
- for(const [anchor,bearing,ids]of [[route[2],300,['radar','eungjinjeon','marker']],[route[1],90,['helipad','fork']]]){
+ for(const [anchor,bearing,ids]of [[route[2],300,['eungjinjeon','marker']],[route[1],90,['helipad','fork']]]){
   const camera=new PerspectiveCamera(60,1440/900,.1,2000),a=bearing*Math.PI/180;
   camera.position.set(anchor.x,Math.max(anchor.y,height(anchor.x,anchor.z))+1.6,anchor.z);
   camera.lookAt(camera.position.clone().add(new Vector3(Math.sin(a),-.04,-Math.cos(a))));camera.updateMatrixWorld();
@@ -48,10 +48,18 @@ test('급경사 기초는 중심 고도를 유지하고 바깥 지형에 매끄�
   assert.equal(facilityGround(sites,outer,site.z,height(outer,site.z)),height(outer,site.z));
  }
 });
-test('정상 시설 후보는 15~35m·고도 차 6m 이내와 시설 간격을 만족',()=>{
+test('응진전 후보는 15~35m, 레이돔은 서울 전망 반대편 남측에 배치',()=>{
  const sites=facilitySites([{x:0,z:0,y:632}],(x,z)=>632-Math.hypot(x,z)*.1);
- const summit=sites.filter(s=>s.anchor==='summit'),marker=summit.find(s=>s.id==='marker');
- for(const large of summit.filter(s=>s!==marker)){
+ const summit=sites.filter(s=>['summit','crest'].includes(s.anchor)),marker=summit.find(s=>s.id==='marker');
+ const radar=summit.find(s=>s.id==='radar');
+ assert.ok(radar.z>50);assert.equal(radar.placementVerified,false);
+ for(const bearing of [0,59]){
+  const camera=new PerspectiveCamera(55,1440/900,.1,2000),a=bearing*Math.PI/180;camera.position.set(0,634,0);camera.lookAt(Math.sin(a)*100,630,-Math.cos(a)*100);camera.updateMatrixWorld();
+  const f=new Frustum().setFromProjectionMatrix(new Matrix4().multiplyMatrices(camera.projectionMatrix,camera.matrixWorldInverse));
+  const item=createSummitFacilities([{x:0,z:0,y:632}],()=>632,sites).items.find(i=>i.userData.id==='radar');
+  assert.equal(f.intersectsBox(new Box3().setFromObject(item)),false);
+ }
+ for(const large of summit.filter(s=>s.id==='eungjinjeon')){
   assert.equal(large.placementVerified,true);
   const distance=Math.hypot(...large.offset);
   assert.ok(distance>=15-1e-9&&distance<=35+1e-9);

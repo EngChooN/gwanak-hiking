@@ -1,0 +1,1474 @@
+{
+  "rows": [
+    {
+      "id": "walk",
+      "s": 1800,
+      "pose": "stand",
+      "slope": 0.12394737421087969,
+      "performance": {
+        "frames": 300,
+        "breakdown": {
+          "등산객/그림자": {
+            "kind": "등산객",
+            "pass": "그림자",
+            "triangles": 43964.000000000044,
+            "drawCalls": 21.000000000000064,
+            "maxTriangles": 43964
+          },
+          "기타·후처리/기본·후처리": {
+            "kind": "기타·후처리",
+            "pass": "기본·후처리",
+            "triangles": 12922.999999999938,
+            "drawCalls": 1.9999999999999922,
+            "maxTriangles": 12923
+          },
+          "구간별 시설/기본·후처리": {
+            "kind": "구간별 시설",
+            "pass": "기본·후처리",
+            "triangles": 1424.0000000000007,
+            "drawCalls": 3.9999999999999845,
+            "maxTriangles": 1424
+          },
+          "등산로/기본·후처리": {
+            "kind": "등산로",
+            "pass": "기본·후처리",
+            "triangles": 20788.21999999995,
+            "drawCalls": 33.106666666666754,
+            "maxTriangles": 21146
+          },
+          "8m 상시 지형/기본·후처리": {
+            "kind": "8m 상시 지형",
+            "pass": "기본·후처리",
+            "triangles": 34851.999999999876,
+            "drawCalls": 0.9999999999999961,
+            "maxTriangles": 34852
+          },
+          "지형 청크/기본·후처리": {
+            "kind": "지형 청크",
+            "pass": "기본·후처리",
+            "triangles": 35198.29333333327,
+            "drawCalls": 17.186666666666635,
+            "maxTriangles": 36864
+          },
+          "원경 도시/기본·후처리": {
+            "kind": "원경 도시",
+            "pass": "기본·후처리",
+            "triangles": 7515.999999999987,
+            "drawCalls": 2.99999999999998,
+            "maxTriangles": 7516
+          },
+          "원경 지형/기본·후처리": {
+            "kind": "원경 지형",
+            "pass": "기본·후처리",
+            "triangles": 469216.0000000021,
+            "drawCalls": 1.9999999999999922,
+            "maxTriangles": 469216
+          },
+          "등산객/기본·후처리": {
+            "kind": "등산객",
+            "pass": "기본·후처리",
+            "triangles": 43964.000000000044,
+            "drawCalls": 21.000000000000064,
+            "maxTriangles": 43964
+          },
+          "하층 식생/기본·후처리": {
+            "kind": "하층 식생",
+            "pass": "기본·후처리",
+            "triangles": 224901.3499999993,
+            "drawCalls": 20.976666666666727,
+            "maxTriangles": 236915
+          },
+          "숲/기본·후처리": {
+            "kind": "숲",
+            "pass": "기본·후처리",
+            "triangles": 23504.08666666672,
+            "drawCalls": 469.499999999999,
+            "maxTriangles": 34176
+          },
+          "바위/기본·후처리": {
+            "kind": "바위",
+            "pass": "기본·후처리",
+            "triangles": 96085.00000000009,
+            "drawCalls": 3.729999999999978,
+            "maxTriangles": 100000
+          },
+          "기타/직접 제출 외": {
+            "kind": "기타",
+            "pass": "직접 제출 외",
+            "triangles": 0,
+            "drawCalls": 0,
+            "maxTriangles": 0
+          }
+        },
+        "categories": {
+          "등산객": {
+            "triangles": 87928.00000000009,
+            "drawCalls": 42.00000000000013,
+            "maxTriangles": 87928,
+            "maxDrawCalls": 42
+          },
+          "기타·후처리": {
+            "triangles": 12922.999999999938,
+            "drawCalls": 1.9999999999999922,
+            "maxTriangles": 12923,
+            "maxDrawCalls": 2
+          },
+          "구간별 시설": {
+            "triangles": 1424.0000000000007,
+            "drawCalls": 3.9999999999999845,
+            "maxTriangles": 1424,
+            "maxDrawCalls": 4
+          },
+          "등산로": {
+            "triangles": 20788.21999999995,
+            "drawCalls": 33.106666666666754,
+            "maxTriangles": 21146,
+            "maxDrawCalls": 34
+          },
+          "8m 상시 지형": {
+            "triangles": 34851.999999999876,
+            "drawCalls": 0.9999999999999961,
+            "maxTriangles": 34852,
+            "maxDrawCalls": 1
+          },
+          "지형 청크": {
+            "triangles": 35198.29333333327,
+            "drawCalls": 17.186666666666635,
+            "maxTriangles": 36864,
+            "maxDrawCalls": 18
+          },
+          "원경 도시": {
+            "triangles": 7515.999999999987,
+            "drawCalls": 2.99999999999998,
+            "maxTriangles": 7516,
+            "maxDrawCalls": 3
+          },
+          "원경 지형": {
+            "triangles": 469216.0000000021,
+            "drawCalls": 1.9999999999999922,
+            "maxTriangles": 469216,
+            "maxDrawCalls": 2
+          },
+          "하층 식생": {
+            "triangles": 224901.3499999993,
+            "drawCalls": 20.976666666666727,
+            "maxTriangles": 236915,
+            "maxDrawCalls": 22
+          },
+          "숲": {
+            "triangles": 23504.08666666672,
+            "drawCalls": 469.499999999999,
+            "maxTriangles": 34176,
+            "maxDrawCalls": 754
+          },
+          "바위": {
+            "triangles": 96085.00000000009,
+            "drawCalls": 3.729999999999978,
+            "maxTriangles": 100000,
+            "maxDrawCalls": 4
+          },
+          "기타": {
+            "triangles": 0,
+            "drawCalls": 0,
+            "maxTriangles": 0,
+            "maxDrawCalls": 0
+          }
+        },
+        "fps": 60.002400096003804,
+        "p95Ms": 16.700000000004366,
+        "p99Ms": 16.80000000000291,
+        "maxMs": 16.80000000000291,
+        "over50ms": 0,
+        "cpuMs": {
+          "movement": 0.050666672388712565,
+          "ambient": 0.010666667620340983,
+          "hiker": 0.12266666412353516,
+          "contact": 0.5036666639645895,
+          "camera": 0.09166666507720947,
+          "terrain": 1.8683333357175191,
+          "render": 2.7136666615804037
+        },
+        "drawCalls": 598.5,
+        "triangles": 1014335.95,
+        "maxTriangles": 1024364,
+        "textures": 51
+      },
+      "interaction": {
+        "pose": "stand",
+        "sit": 0,
+        "sitLinear": 0,
+        "drink": 0,
+        "teaProgress": 0,
+        "eyeHeight": 1.6,
+        "poles": [
+          {
+            "side": "Left",
+            "planted": true,
+            "tip": [
+              257.6532732468234,
+              131.20139840186764,
+              1637.2923847532702
+            ],
+            "error": 1.4210854715202004e-13,
+            "gripError": 2.2914314707516465e-13
+          },
+          {
+            "side": "Right",
+            "planted": false,
+            "tip": [
+              258.3893063220099,
+              131.08220459694112,
+              1636.721871111378
+            ],
+            "error": 0,
+            "gripError": 2.360884497795176e-13
+          }
+        ]
+      },
+      "eyeHeight": 1.6,
+      "state": {
+        "version": 1,
+        "routeId": "dem-valley-632-v2",
+        "routeRevision": "geometry-v1-ff567394",
+        "s": 1807.235015904542,
+        "lateral": 0,
+        "elapsed": 7.81630000000004,
+        "distance": 7.234975396899491,
+        "ascent": 0.9910129993297403,
+        "steps": 13,
+        "stepPhase": 0.15450072163545933,
+        "checkpoints": [],
+        "paused": false,
+        "auto": false,
+        "view": "third",
+        "sessions": 2,
+        "stamina": 100,
+        "runExhausted": false,
+        "running": false,
+        "pose": "stand",
+        "teaRemaining": 0
+      }
+    },
+    {
+      "id": "run",
+      "s": 1800,
+      "pose": "stand",
+      "running": true,
+      "slope": 0.12394737421087969,
+      "performance": {
+        "frames": 300,
+        "breakdown": {
+          "등산객/그림자": {
+            "kind": "등산객",
+            "pass": "그림자",
+            "triangles": 43964.000000000044,
+            "drawCalls": 21.000000000000064,
+            "maxTriangles": 43964
+          },
+          "기타·후처리/기본·후처리": {
+            "kind": "기타·후처리",
+            "pass": "기본·후처리",
+            "triangles": 12922.999999999938,
+            "drawCalls": 1.9999999999999922,
+            "maxTriangles": 12923
+          },
+          "구간별 시설/기본·후처리": {
+            "kind": "구간별 시설",
+            "pass": "기본·후처리",
+            "triangles": 1424.0000000000007,
+            "drawCalls": 3.9999999999999845,
+            "maxTriangles": 1424
+          },
+          "등산로/기본·후처리": {
+            "kind": "등산로",
+            "pass": "기본·후처리",
+            "triangles": 19544.000000000124,
+            "drawCalls": 30.000000000000156,
+            "maxTriangles": 19544
+          },
+          "8m 상시 지형/기본·후처리": {
+            "kind": "8m 상시 지형",
+            "pass": "기본·후처리",
+            "triangles": 34851.999999999876,
+            "drawCalls": 0.9999999999999961,
+            "maxTriangles": 34852
+          },
+          "지형 청크/기본·후처리": {
+            "kind": "지형 청크",
+            "pass": "기본·후처리",
+            "triangles": 34816.00000000005,
+            "drawCalls": 17.000000000000025,
+            "maxTriangles": 34816
+          },
+          "원경 도시/기본·후처리": {
+            "kind": "원경 도시",
+            "pass": "기본·후처리",
+            "triangles": 7515.999999999987,
+            "drawCalls": 2.99999999999998,
+            "maxTriangles": 7516
+          },
+          "원경 지형/기본·후처리": {
+            "kind": "원경 지형",
+            "pass": "기본·후처리",
+            "triangles": 469216.0000000021,
+            "drawCalls": 1.9999999999999922,
+            "maxTriangles": 469216
+          },
+          "등산객/기본·후처리": {
+            "kind": "등산객",
+            "pass": "기본·후처리",
+            "triangles": 43964.000000000044,
+            "drawCalls": 21.000000000000064,
+            "maxTriangles": 43964
+          },
+          "하층 식생/기본·후처리": {
+            "kind": "하층 식생",
+            "pass": "기본·후처리",
+            "triangles": 225045.63333333374,
+            "drawCalls": 21.19333333333343,
+            "maxTriangles": 250141
+          },
+          "숲/기본·후처리": {
+            "kind": "숲",
+            "pass": "기본·후처리",
+            "triangles": 33695.94666666686,
+            "drawCalls": 735.3933333333355,
+            "maxTriangles": 34068
+          },
+          "바위/기본·후처리": {
+            "kind": "바위",
+            "pass": "기본·후처리",
+            "triangles": 85500,
+            "drawCalls": 2.99999999999998,
+            "maxTriangles": 85500
+          },
+          "기타/직접 제출 외": {
+            "kind": "기타",
+            "pass": "직접 제출 외",
+            "triangles": 0,
+            "drawCalls": 0,
+            "maxTriangles": 0
+          }
+        },
+        "categories": {
+          "등산객": {
+            "triangles": 87928.00000000009,
+            "drawCalls": 42.00000000000013,
+            "maxTriangles": 87928,
+            "maxDrawCalls": 42
+          },
+          "기타·후처리": {
+            "triangles": 12922.999999999938,
+            "drawCalls": 1.9999999999999922,
+            "maxTriangles": 12923,
+            "maxDrawCalls": 2
+          },
+          "구간별 시설": {
+            "triangles": 1424.0000000000007,
+            "drawCalls": 3.9999999999999845,
+            "maxTriangles": 1424,
+            "maxDrawCalls": 4
+          },
+          "등산로": {
+            "triangles": 19544.000000000124,
+            "drawCalls": 30.000000000000156,
+            "maxTriangles": 19544,
+            "maxDrawCalls": 30
+          },
+          "8m 상시 지형": {
+            "triangles": 34851.999999999876,
+            "drawCalls": 0.9999999999999961,
+            "maxTriangles": 34852,
+            "maxDrawCalls": 1
+          },
+          "지형 청크": {
+            "triangles": 34816.00000000005,
+            "drawCalls": 17.000000000000025,
+            "maxTriangles": 34816,
+            "maxDrawCalls": 17
+          },
+          "원경 도시": {
+            "triangles": 7515.999999999987,
+            "drawCalls": 2.99999999999998,
+            "maxTriangles": 7516,
+            "maxDrawCalls": 3
+          },
+          "원경 지형": {
+            "triangles": 469216.0000000021,
+            "drawCalls": 1.9999999999999922,
+            "maxTriangles": 469216,
+            "maxDrawCalls": 2
+          },
+          "하층 식생": {
+            "triangles": 225045.63333333374,
+            "drawCalls": 21.19333333333343,
+            "maxTriangles": 250141,
+            "maxDrawCalls": 22
+          },
+          "숲": {
+            "triangles": 33695.94666666686,
+            "drawCalls": 735.3933333333355,
+            "maxTriangles": 34068,
+            "maxDrawCalls": 745
+          },
+          "바위": {
+            "triangles": 85500,
+            "drawCalls": 2.99999999999998,
+            "maxTriangles": 85500,
+            "maxDrawCalls": 3
+          },
+          "기타": {
+            "triangles": 0,
+            "drawCalls": 0,
+            "maxTriangles": 0,
+            "maxDrawCalls": 0
+          }
+        },
+        "fps": 60.00240009600389,
+        "p95Ms": 16.799999999995634,
+        "p99Ms": 16.80000000000291,
+        "maxMs": 16.80000000000291,
+        "over50ms": 0,
+        "cpuMs": {
+          "movement": 0.04700000365575155,
+          "ambient": 0.01633333206176758,
+          "hiker": 0.11266667286554972,
+          "contact": 0.4593333339691162,
+          "camera": 0.08200000365575155,
+          "terrain": 1.8670000012715657,
+          "render": 3.742666664918264
+        },
+        "drawCalls": 860.5866666666667,
+        "triangles": 1012460.58,
+        "maxTriangles": 1037928,
+        "textures": 51.583333333333336
+      },
+      "interaction": {
+        "pose": "stand",
+        "sit": 0,
+        "sitLinear": 0,
+        "drink": 0,
+        "teaProgress": 0,
+        "eyeHeight": 1.6,
+        "poles": [
+          {
+            "side": "Left",
+            "planted": false,
+            "tip": [
+              258.4048634126246,
+              133.24326971269483,
+              1643.421560064907
+            ],
+            "error": 0,
+            "gripError": 2.2914314707516465e-13
+          },
+          {
+            "side": "Right",
+            "planted": true,
+            "tip": [
+              259.16231284765416,
+              133.0368506255747,
+              1643.0256956267817
+            ],
+            "error": 2.842170943040401e-14,
+            "gripError": 2.842170943040401e-14
+          }
+        ]
+      },
+      "eyeHeight": 1.6,
+      "state": {
+        "version": 1,
+        "routeId": "dem-valley-632-v2",
+        "routeRevision": "geometry-v1-ff567394",
+        "s": 1813.632232426663,
+        "lateral": 0,
+        "elapsed": 15.632699999999918,
+        "distance": 13.632191919020642,
+        "ascent": 2.8900380817291023,
+        "steps": 24,
+        "stepPhase": 0.7858034891283604,
+        "checkpoints": [],
+        "paused": false,
+        "auto": false,
+        "view": "third",
+        "sessions": 2,
+        "stamina": 0.6663999999999941,
+        "runExhausted": true,
+        "running": false,
+        "pose": "stand",
+        "teaRemaining": 0
+      }
+    },
+    {
+      "id": "sit",
+      "s": 1800,
+      "pose": "sit",
+      "slope": 0.12394737421087969,
+      "performance": {
+        "frames": 300,
+        "breakdown": {
+          "등산객/그림자": {
+            "kind": "등산객",
+            "pass": "그림자",
+            "triangles": 44163.99999999995,
+            "drawCalls": 25.99999999999988,
+            "maxTriangles": 44164
+          },
+          "기타·후처리/기본·후처리": {
+            "kind": "기타·후처리",
+            "pass": "기본·후처리",
+            "triangles": 12922.999999999938,
+            "drawCalls": 1.9999999999999922,
+            "maxTriangles": 12923
+          },
+          "구간별 시설/기본·후처리": {
+            "kind": "구간별 시설",
+            "pass": "기본·후처리",
+            "triangles": 1424.0000000000007,
+            "drawCalls": 3.9999999999999845,
+            "maxTriangles": 1424
+          },
+          "등산로/기본·후처리": {
+            "kind": "등산로",
+            "pass": "기본·후처리",
+            "triangles": 19544.000000000124,
+            "drawCalls": 30.000000000000156,
+            "maxTriangles": 19544
+          },
+          "8m 상시 지형/기본·후처리": {
+            "kind": "8m 상시 지형",
+            "pass": "기본·후처리",
+            "triangles": 34851.999999999876,
+            "drawCalls": 0.9999999999999961,
+            "maxTriangles": 34852
+          },
+          "지형 청크/기본·후처리": {
+            "kind": "지형 청크",
+            "pass": "기본·후처리",
+            "triangles": 34816.00000000005,
+            "drawCalls": 17.000000000000025,
+            "maxTriangles": 34816
+          },
+          "원경 도시/기본·후처리": {
+            "kind": "원경 도시",
+            "pass": "기본·후처리",
+            "triangles": 7515.999999999987,
+            "drawCalls": 2.99999999999998,
+            "maxTriangles": 7516
+          },
+          "원경 지형/기본·후처리": {
+            "kind": "원경 지형",
+            "pass": "기본·후처리",
+            "triangles": 469216.0000000021,
+            "drawCalls": 1.9999999999999922,
+            "maxTriangles": 469216
+          },
+          "등산객/기본·후처리": {
+            "kind": "등산객",
+            "pass": "기본·후처리",
+            "triangles": 44163.99999999995,
+            "drawCalls": 25.99999999999988,
+            "maxTriangles": 44164
+          },
+          "하층 식생/기본·후처리": {
+            "kind": "하층 식생",
+            "pass": "기본·후처리",
+            "triangles": 250141.0000000011,
+            "drawCalls": 22.000000000000146,
+            "maxTriangles": 250141
+          },
+          "숲/기본·후처리": {
+            "kind": "숲",
+            "pass": "기본·후처리",
+            "triangles": 33963.99999999995,
+            "drawCalls": 742.0000000000044,
+            "maxTriangles": 33964
+          },
+          "바위/기본·후처리": {
+            "kind": "바위",
+            "pass": "기본·후처리",
+            "triangles": 85500,
+            "drawCalls": 2.99999999999998,
+            "maxTriangles": 85500
+          },
+          "기타/직접 제출 외": {
+            "kind": "기타",
+            "pass": "직접 제출 외",
+            "triangles": 0,
+            "drawCalls": 0,
+            "maxTriangles": 0
+          }
+        },
+        "categories": {
+          "등산객": {
+            "triangles": 88327.9999999999,
+            "drawCalls": 51.99999999999976,
+            "maxTriangles": 88328,
+            "maxDrawCalls": 52
+          },
+          "기타·후처리": {
+            "triangles": 12922.999999999938,
+            "drawCalls": 1.9999999999999922,
+            "maxTriangles": 12923,
+            "maxDrawCalls": 2
+          },
+          "구간별 시설": {
+            "triangles": 1424.0000000000007,
+            "drawCalls": 3.9999999999999845,
+            "maxTriangles": 1424,
+            "maxDrawCalls": 4
+          },
+          "등산로": {
+            "triangles": 19544.000000000124,
+            "drawCalls": 30.000000000000156,
+            "maxTriangles": 19544,
+            "maxDrawCalls": 30
+          },
+          "8m 상시 지형": {
+            "triangles": 34851.999999999876,
+            "drawCalls": 0.9999999999999961,
+            "maxTriangles": 34852,
+            "maxDrawCalls": 1
+          },
+          "지형 청크": {
+            "triangles": 34816.00000000005,
+            "drawCalls": 17.000000000000025,
+            "maxTriangles": 34816,
+            "maxDrawCalls": 17
+          },
+          "원경 도시": {
+            "triangles": 7515.999999999987,
+            "drawCalls": 2.99999999999998,
+            "maxTriangles": 7516,
+            "maxDrawCalls": 3
+          },
+          "원경 지형": {
+            "triangles": 469216.0000000021,
+            "drawCalls": 1.9999999999999922,
+            "maxTriangles": 469216,
+            "maxDrawCalls": 2
+          },
+          "하층 식생": {
+            "triangles": 250141.0000000011,
+            "drawCalls": 22.000000000000146,
+            "maxTriangles": 250141,
+            "maxDrawCalls": 22
+          },
+          "숲": {
+            "triangles": 33963.99999999995,
+            "drawCalls": 742.0000000000044,
+            "maxTriangles": 33964,
+            "maxDrawCalls": 742
+          },
+          "바위": {
+            "triangles": 85500,
+            "drawCalls": 2.99999999999998,
+            "maxTriangles": 85500,
+            "maxDrawCalls": 3
+          },
+          "기타": {
+            "triangles": 0,
+            "drawCalls": 0,
+            "maxTriangles": 0,
+            "maxDrawCalls": 0
+          }
+        },
+        "fps": 60.00360021601291,
+        "p95Ms": 16.700000000004366,
+        "p99Ms": 16.80000000000291,
+        "maxMs": 16.80000000000291,
+        "over50ms": 0,
+        "cpuMs": {
+          "movement": 0.006333332061767578,
+          "ambient": 0.009000001748402913,
+          "hiker": 0.11699999252955119,
+          "contact": 3.7983333444595337,
+          "camera": 0.07833332061767578,
+          "terrain": 1.7823333398501078,
+          "render": 3.4893333331743874
+        },
+        "drawCalls": 878,
+        "triangles": 1038224,
+        "maxTriangles": 1038224,
+        "textures": 52
+      },
+      "interaction": {
+        "pose": "sit",
+        "sit": 1,
+        "sitLinear": 1,
+        "drink": 0,
+        "teaProgress": 0,
+        "eyeHeight": 0.85,
+        "poles": [
+          {
+            "side": "Left",
+            "planted": false,
+            "tip": [
+              258.21141479569707,
+              132.8717893525182,
+              1642.5834399782016
+            ],
+            "error": 0,
+            "gripError": 0
+          },
+          {
+            "side": "Right",
+            "planted": false,
+            "tip": [
+              259.1841287854601,
+              132.88543537749626,
+              1642.4641609183493
+            ],
+            "error": 0,
+            "gripError": 0
+          }
+        ]
+      },
+      "eyeHeight": 0.85,
+      "state": {
+        "version": 1,
+        "routeId": "dem-valley-632-v2",
+        "routeRevision": "geometry-v1-ff567394",
+        "s": 1813.632232426663,
+        "lateral": 0,
+        "elapsed": 15.632699999999918,
+        "distance": 13.632191919020642,
+        "ascent": 2.8900380817291023,
+        "steps": 24,
+        "stepPhase": 0.7858034891283604,
+        "checkpoints": [],
+        "paused": false,
+        "auto": false,
+        "view": "third",
+        "sessions": 2,
+        "stamina": 100,
+        "runExhausted": false,
+        "running": false,
+        "pose": "sit",
+        "teaRemaining": 0
+      }
+    },
+    {
+      "id": "tea",
+      "s": 1800,
+      "pose": "tea",
+      "slope": 0.12394737421087969,
+      "performance": {
+        "frames": 300,
+        "breakdown": {
+          "등산객/그림자": {
+            "kind": "등산객",
+            "pass": "그림자",
+            "triangles": 44163.99999999995,
+            "drawCalls": 25.99999999999988,
+            "maxTriangles": 44164
+          },
+          "기타·후처리/기본·후처리": {
+            "kind": "기타·후처리",
+            "pass": "기본·후처리",
+            "triangles": 12922.999999999938,
+            "drawCalls": 1.9999999999999922,
+            "maxTriangles": 12923
+          },
+          "구간별 시설/기본·후처리": {
+            "kind": "구간별 시설",
+            "pass": "기본·후처리",
+            "triangles": 1424.0000000000007,
+            "drawCalls": 3.9999999999999845,
+            "maxTriangles": 1424
+          },
+          "등산로/기본·후처리": {
+            "kind": "등산로",
+            "pass": "기본·후처리",
+            "triangles": 19544.000000000124,
+            "drawCalls": 30.000000000000156,
+            "maxTriangles": 19544
+          },
+          "8m 상시 지형/기본·후처리": {
+            "kind": "8m 상시 지형",
+            "pass": "기본·후처리",
+            "triangles": 34851.999999999876,
+            "drawCalls": 0.9999999999999961,
+            "maxTriangles": 34852
+          },
+          "지형 청크/기본·후처리": {
+            "kind": "지형 청크",
+            "pass": "기본·후처리",
+            "triangles": 34816.00000000005,
+            "drawCalls": 17.000000000000025,
+            "maxTriangles": 34816
+          },
+          "원경 도시/기본·후처리": {
+            "kind": "원경 도시",
+            "pass": "기본·후처리",
+            "triangles": 7515.999999999987,
+            "drawCalls": 2.99999999999998,
+            "maxTriangles": 7516
+          },
+          "원경 지형/기본·후처리": {
+            "kind": "원경 지형",
+            "pass": "기본·후처리",
+            "triangles": 469216.0000000021,
+            "drawCalls": 1.9999999999999922,
+            "maxTriangles": 469216
+          },
+          "등산객/기본·후처리": {
+            "kind": "등산객",
+            "pass": "기본·후처리",
+            "triangles": 44163.99999999995,
+            "drawCalls": 25.99999999999988,
+            "maxTriangles": 44164
+          },
+          "하층 식생/기본·후처리": {
+            "kind": "하층 식생",
+            "pass": "기본·후처리",
+            "triangles": 250141.0000000011,
+            "drawCalls": 22.000000000000146,
+            "maxTriangles": 250141
+          },
+          "숲/기본·후처리": {
+            "kind": "숲",
+            "pass": "기본·후처리",
+            "triangles": 33963.99999999995,
+            "drawCalls": 742.0000000000044,
+            "maxTriangles": 33964
+          },
+          "바위/기본·후처리": {
+            "kind": "바위",
+            "pass": "기본·후처리",
+            "triangles": 85500,
+            "drawCalls": 2.99999999999998,
+            "maxTriangles": 85500
+          },
+          "기타/직접 제출 외": {
+            "kind": "기타",
+            "pass": "직접 제출 외",
+            "triangles": 0,
+            "drawCalls": 0,
+            "maxTriangles": 0
+          }
+        },
+        "categories": {
+          "등산객": {
+            "triangles": 88327.9999999999,
+            "drawCalls": 51.99999999999976,
+            "maxTriangles": 88328,
+            "maxDrawCalls": 52
+          },
+          "기타·후처리": {
+            "triangles": 12922.999999999938,
+            "drawCalls": 1.9999999999999922,
+            "maxTriangles": 12923,
+            "maxDrawCalls": 2
+          },
+          "구간별 시설": {
+            "triangles": 1424.0000000000007,
+            "drawCalls": 3.9999999999999845,
+            "maxTriangles": 1424,
+            "maxDrawCalls": 4
+          },
+          "등산로": {
+            "triangles": 19544.000000000124,
+            "drawCalls": 30.000000000000156,
+            "maxTriangles": 19544,
+            "maxDrawCalls": 30
+          },
+          "8m 상시 지형": {
+            "triangles": 34851.999999999876,
+            "drawCalls": 0.9999999999999961,
+            "maxTriangles": 34852,
+            "maxDrawCalls": 1
+          },
+          "지형 청크": {
+            "triangles": 34816.00000000005,
+            "drawCalls": 17.000000000000025,
+            "maxTriangles": 34816,
+            "maxDrawCalls": 17
+          },
+          "원경 도시": {
+            "triangles": 7515.999999999987,
+            "drawCalls": 2.99999999999998,
+            "maxTriangles": 7516,
+            "maxDrawCalls": 3
+          },
+          "원경 지형": {
+            "triangles": 469216.0000000021,
+            "drawCalls": 1.9999999999999922,
+            "maxTriangles": 469216,
+            "maxDrawCalls": 2
+          },
+          "하층 식생": {
+            "triangles": 250141.0000000011,
+            "drawCalls": 22.000000000000146,
+            "maxTriangles": 250141,
+            "maxDrawCalls": 22
+          },
+          "숲": {
+            "triangles": 33963.99999999995,
+            "drawCalls": 742.0000000000044,
+            "maxTriangles": 33964,
+            "maxDrawCalls": 742
+          },
+          "바위": {
+            "triangles": 85500,
+            "drawCalls": 2.99999999999998,
+            "maxTriangles": 85500,
+            "maxDrawCalls": 3
+          },
+          "기타": {
+            "triangles": 0,
+            "drawCalls": 0,
+            "maxTriangles": 0,
+            "maxDrawCalls": 0
+          }
+        },
+        "fps": 60.00240009600389,
+        "p95Ms": 16.70000000001164,
+        "p99Ms": 16.80000000000291,
+        "maxMs": 16.80000000000291,
+        "over50ms": 0,
+        "cpuMs": {
+          "movement": 0.005666666030883789,
+          "ambient": 0.007333329518636068,
+          "hiker": 0.12633333444595338,
+          "contact": 3.7730000027020774,
+          "camera": 0.0693333355585734,
+          "terrain": 1.7783333349227906,
+          "render": 3.4996666622161867
+        },
+        "drawCalls": 878,
+        "triangles": 1038224,
+        "maxTriangles": 1038224,
+        "textures": 52
+      },
+      "interaction": {
+        "pose": "tea",
+        "sit": 1,
+        "sitLinear": 1,
+        "drink": 1,
+        "teaProgress": 0.5,
+        "eyeHeight": 0.85,
+        "poles": [
+          {
+            "side": "Left",
+            "planted": false,
+            "tip": [
+              258.21141479569707,
+              132.8717893525182,
+              1642.5834399782016
+            ],
+            "error": 0,
+            "gripError": 0
+          },
+          {
+            "side": "Right",
+            "planted": false,
+            "tip": [
+              259.1841287854601,
+              132.88543537749626,
+              1642.4641609183493
+            ],
+            "error": 0,
+            "gripError": 0
+          }
+        ]
+      },
+      "eyeHeight": 0.85,
+      "state": {
+        "version": 1,
+        "routeId": "dem-valley-632-v2",
+        "routeRevision": "geometry-v1-ff567394",
+        "s": 1813.632232426663,
+        "lateral": 0,
+        "elapsed": 15.632699999999918,
+        "distance": 13.632191919020642,
+        "ascent": 2.8900380817291023,
+        "steps": 24,
+        "stepPhase": 0.7858034891283604,
+        "checkpoints": [],
+        "paused": false,
+        "auto": false,
+        "view": "third",
+        "sessions": 2,
+        "stamina": 100,
+        "runExhausted": false,
+        "running": false,
+        "pose": "sit",
+        "teaRemaining": 0
+      }
+    },
+    {
+      "id": "slope-walk",
+      "s": 3900,
+      "pose": "stand",
+      "slope": 0.31333830830849047,
+      "performance": {
+        "frames": 300,
+        "breakdown": {
+          "등산객/그림자": {
+            "kind": "등산객",
+            "pass": "그림자",
+            "triangles": 43964.000000000044,
+            "drawCalls": 21.000000000000064,
+            "maxTriangles": 43964
+          },
+          "기타·후처리/기본·후처리": {
+            "kind": "기타·후처리",
+            "pass": "기본·후처리",
+            "triangles": 12922.999999999938,
+            "drawCalls": 1.9999999999999922,
+            "maxTriangles": 12923
+          },
+          "등산로/기본·후처리": {
+            "kind": "등산로",
+            "pass": "기본·후처리",
+            "triangles": 6177.99999999998,
+            "drawCalls": 11.99999999999992,
+            "maxTriangles": 6178
+          },
+          "8m 상시 지형/기본·후처리": {
+            "kind": "8m 상시 지형",
+            "pass": "기본·후처리",
+            "triangles": 34851.999999999876,
+            "drawCalls": 0.9999999999999961,
+            "maxTriangles": 34852
+          },
+          "지형 청크/기본·후처리": {
+            "kind": "지형 청크",
+            "pass": "기본·후처리",
+            "triangles": 38911.99999999975,
+            "drawCalls": 18.99999999999988,
+            "maxTriangles": 38912
+          },
+          "원경 도시/기본·후처리": {
+            "kind": "원경 도시",
+            "pass": "기본·후처리",
+            "triangles": 29757.999999999873,
+            "drawCalls": 7.000000000000024,
+            "maxTriangles": 29758
+          },
+          "원경 지형/기본·후처리": {
+            "kind": "원경 지형",
+            "pass": "기본·후처리",
+            "triangles": 469216.0000000021,
+            "drawCalls": 1.9999999999999922,
+            "maxTriangles": 469216
+          },
+          "등산객/기본·후처리": {
+            "kind": "등산객",
+            "pass": "기본·후처리",
+            "triangles": 43964.000000000044,
+            "drawCalls": 21.000000000000064,
+            "maxTriangles": 43964
+          },
+          "하층 식생/기본·후처리": {
+            "kind": "하층 식생",
+            "pass": "기본·후처리",
+            "triangles": 239002.74000000034,
+            "drawCalls": 15.070000000000014,
+            "maxTriangles": 258557
+          },
+          "숲/기본·후처리": {
+            "kind": "숲",
+            "pass": "기본·후처리",
+            "triangles": 17492.106666666718,
+            "drawCalls": 353.15333333333575,
+            "maxTriangles": 17500
+          },
+          "바위/기본·후처리": {
+            "kind": "바위",
+            "pass": "기본·후처리",
+            "triangles": 102500.00000000033,
+            "drawCalls": 5.99999999999996,
+            "maxTriangles": 102500
+          },
+          "기타/직접 제출 외": {
+            "kind": "기타",
+            "pass": "직접 제출 외",
+            "triangles": 0,
+            "drawCalls": 0,
+            "maxTriangles": 0
+          }
+        },
+        "categories": {
+          "등산객": {
+            "triangles": 87928.00000000009,
+            "drawCalls": 42.00000000000013,
+            "maxTriangles": 87928,
+            "maxDrawCalls": 42
+          },
+          "기타·후처리": {
+            "triangles": 12922.999999999938,
+            "drawCalls": 1.9999999999999922,
+            "maxTriangles": 12923,
+            "maxDrawCalls": 2
+          },
+          "등산로": {
+            "triangles": 6177.99999999998,
+            "drawCalls": 11.99999999999992,
+            "maxTriangles": 6178,
+            "maxDrawCalls": 12
+          },
+          "8m 상시 지형": {
+            "triangles": 34851.999999999876,
+            "drawCalls": 0.9999999999999961,
+            "maxTriangles": 34852,
+            "maxDrawCalls": 1
+          },
+          "지형 청크": {
+            "triangles": 38911.99999999975,
+            "drawCalls": 18.99999999999988,
+            "maxTriangles": 38912,
+            "maxDrawCalls": 19
+          },
+          "원경 도시": {
+            "triangles": 29757.999999999873,
+            "drawCalls": 7.000000000000024,
+            "maxTriangles": 29758,
+            "maxDrawCalls": 7
+          },
+          "원경 지형": {
+            "triangles": 469216.0000000021,
+            "drawCalls": 1.9999999999999922,
+            "maxTriangles": 469216,
+            "maxDrawCalls": 2
+          },
+          "하층 식생": {
+            "triangles": 239002.74000000034,
+            "drawCalls": 15.070000000000014,
+            "maxTriangles": 258557,
+            "maxDrawCalls": 17
+          },
+          "숲": {
+            "triangles": 17492.106666666718,
+            "drawCalls": 353.15333333333575,
+            "maxTriangles": 17500,
+            "maxDrawCalls": 355
+          },
+          "바위": {
+            "triangles": 102500.00000000033,
+            "drawCalls": 5.99999999999996,
+            "maxTriangles": 102500,
+            "maxDrawCalls": 6
+          },
+          "기타": {
+            "triangles": 0,
+            "drawCalls": 0,
+            "maxTriangles": 0,
+            "maxDrawCalls": 0
+          }
+        },
+        "fps": 60.00120002400055,
+        "p95Ms": 16.799999999995634,
+        "p99Ms": 16.80000000000291,
+        "maxMs": 16.80000000000291,
+        "over50ms": 0,
+        "cpuMs": {
+          "movement": 0.048333330154418944,
+          "ambient": 0.009999999205271403,
+          "hiker": 0.09700000762939454,
+          "contact": 0.6659999998410543,
+          "camera": 0.051333331267038984,
+          "terrain": 1.5356666604677836,
+          "render": 2.3566666722297667
+        },
+        "drawCalls": 459.22333333333336,
+        "triangles": 1038761.8466666667,
+        "maxTriangles": 1058324,
+        "textures": 55
+      },
+      "interaction": {
+        "pose": "stand",
+        "sit": 0,
+        "sitLinear": 0,
+        "drink": 0,
+        "teaProgress": 0,
+        "eyeHeight": 1.6,
+        "poles": [
+          {
+            "side": "Left",
+            "planted": true,
+            "tip": [
+              1101.6738168715772,
+              402.42291259765625,
+              2631.9862038735996
+            ],
+            "error": 0,
+            "gripError": 4.547473508864641e-13
+          },
+          {
+            "side": "Right",
+            "planted": false,
+            "tip": [
+              1101.78632886227,
+              402.3079109742544,
+              2631.072564864709
+            ],
+            "error": 0,
+            "gripError": 2.2737367544323206e-13
+          }
+        ]
+      },
+      "eyeHeight": 1.6,
+      "state": {
+        "version": 1,
+        "routeId": "dem-valley-632-v2",
+        "routeRevision": "geometry-v1-ff567394",
+        "s": 3903.929443962754,
+        "lateral": 0,
+        "elapsed": 7.799700000000034,
+        "distance": 3.929443962753779,
+        "ascent": 1.1749182560973281,
+        "steps": 11,
+        "stepPhase": 0.2315680001507475,
+        "checkpoints": [],
+        "paused": false,
+        "auto": false,
+        "view": "third",
+        "sessions": 2,
+        "stamina": 100,
+        "runExhausted": false,
+        "running": false,
+        "pose": "stand",
+        "teaRemaining": 0
+      }
+    },
+    {
+      "id": "slope-sit",
+      "s": 3900,
+      "pose": "sit",
+      "slope": 0.31333830830849047,
+      "performance": {
+        "frames": 300,
+        "breakdown": {
+          "등산객/그림자": {
+            "kind": "등산객",
+            "pass": "그림자",
+            "triangles": 44163.99999999995,
+            "drawCalls": 25.99999999999988,
+            "maxTriangles": 44164
+          },
+          "기타·후처리/기본·후처리": {
+            "kind": "기타·후처리",
+            "pass": "기본·후처리",
+            "triangles": 12922.999999999938,
+            "drawCalls": 1.9999999999999922,
+            "maxTriangles": 12923
+          },
+          "등산로/기본·후처리": {
+            "kind": "등산로",
+            "pass": "기본·후처리",
+            "triangles": 6177.99999999998,
+            "drawCalls": 11.99999999999992,
+            "maxTriangles": 6178
+          },
+          "8m 상시 지형/기본·후처리": {
+            "kind": "8m 상시 지형",
+            "pass": "기본·후처리",
+            "triangles": 34851.999999999876,
+            "drawCalls": 0.9999999999999961,
+            "maxTriangles": 34852
+          },
+          "지형 청크/기본·후처리": {
+            "kind": "지형 청크",
+            "pass": "기본·후처리",
+            "triangles": 38911.99999999975,
+            "drawCalls": 18.99999999999988,
+            "maxTriangles": 38912
+          },
+          "원경 도시/기본·후처리": {
+            "kind": "원경 도시",
+            "pass": "기본·후처리",
+            "triangles": 29757.999999999873,
+            "drawCalls": 7.000000000000024,
+            "maxTriangles": 29758
+          },
+          "원경 지형/기본·후처리": {
+            "kind": "원경 지형",
+            "pass": "기본·후처리",
+            "triangles": 469216.0000000021,
+            "drawCalls": 1.9999999999999922,
+            "maxTriangles": 469216
+          },
+          "등산객/기본·후처리": {
+            "kind": "등산객",
+            "pass": "기본·후처리",
+            "triangles": 44163.99999999995,
+            "drawCalls": 25.99999999999988,
+            "maxTriangles": 44164
+          },
+          "하층 식생/기본·후처리": {
+            "kind": "하층 식생",
+            "pass": "기본·후처리",
+            "triangles": 258556.99999999945,
+            "drawCalls": 17.000000000000025,
+            "maxTriangles": 258557
+          },
+          "숲/기본·후처리": {
+            "kind": "숲",
+            "pass": "기본·후처리",
+            "triangles": 17500.000000000044,
+            "drawCalls": 352.00000000000233,
+            "maxTriangles": 17500
+          },
+          "바위/기본·후처리": {
+            "kind": "바위",
+            "pass": "기본·후처리",
+            "triangles": 102500.00000000033,
+            "drawCalls": 5.99999999999996,
+            "maxTriangles": 102500
+          },
+          "기타/직접 제출 외": {
+            "kind": "기타",
+            "pass": "직접 제출 외",
+            "triangles": 0,
+            "drawCalls": 0,
+            "maxTriangles": 0
+          }
+        },
+        "categories": {
+          "등산객": {
+            "triangles": 88327.9999999999,
+            "drawCalls": 51.99999999999976,
+            "maxTriangles": 88328,
+            "maxDrawCalls": 52
+          },
+          "기타·후처리": {
+            "triangles": 12922.999999999938,
+            "drawCalls": 1.9999999999999922,
+            "maxTriangles": 12923,
+            "maxDrawCalls": 2
+          },
+          "등산로": {
+            "triangles": 6177.99999999998,
+            "drawCalls": 11.99999999999992,
+            "maxTriangles": 6178,
+            "maxDrawCalls": 12
+          },
+          "8m 상시 지형": {
+            "triangles": 34851.999999999876,
+            "drawCalls": 0.9999999999999961,
+            "maxTriangles": 34852,
+            "maxDrawCalls": 1
+          },
+          "지형 청크": {
+            "triangles": 38911.99999999975,
+            "drawCalls": 18.99999999999988,
+            "maxTriangles": 38912,
+            "maxDrawCalls": 19
+          },
+          "원경 도시": {
+            "triangles": 29757.999999999873,
+            "drawCalls": 7.000000000000024,
+            "maxTriangles": 29758,
+            "maxDrawCalls": 7
+          },
+          "원경 지형": {
+            "triangles": 469216.0000000021,
+            "drawCalls": 1.9999999999999922,
+            "maxTriangles": 469216,
+            "maxDrawCalls": 2
+          },
+          "하층 식생": {
+            "triangles": 258556.99999999945,
+            "drawCalls": 17.000000000000025,
+            "maxTriangles": 258557,
+            "maxDrawCalls": 17
+          },
+          "숲": {
+            "triangles": 17500.000000000044,
+            "drawCalls": 352.00000000000233,
+            "maxTriangles": 17500,
+            "maxDrawCalls": 352
+          },
+          "바위": {
+            "triangles": 102500.00000000033,
+            "drawCalls": 5.99999999999996,
+            "maxTriangles": 102500,
+            "maxDrawCalls": 6
+          },
+          "기타": {
+            "triangles": 0,
+            "drawCalls": 0,
+            "maxTriangles": 0,
+            "maxDrawCalls": 0
+          }
+        },
+        "fps": 60.002400096003804,
+        "p95Ms": 16.799999999995634,
+        "p99Ms": 16.80000000000291,
+        "maxMs": 16.80000000000291,
+        "over50ms": 0,
+        "cpuMs": {
+          "movement": 0.0076666657129923505,
+          "ambient": 0.011333330472310384,
+          "hiker": 0.10133333921432496,
+          "contact": 6.028000000317891,
+          "camera": 0.07666666269302368,
+          "terrain": 1.483666678269704,
+          "render": 2.2306666604677834
+        },
+        "drawCalls": 470,
+        "triangles": 1058724,
+        "maxTriangles": 1058724,
+        "textures": 55
+      },
+      "interaction": {
+        "pose": "sit",
+        "sit": 1,
+        "sitLinear": 1,
+        "drink": 0,
+        "teaProgress": 0,
+        "eyeHeight": 0.85,
+        "poles": [
+          {
+            "side": "Left",
+            "planted": false,
+            "tip": [
+              1100.9927273434348,
+              402.21929573567706,
+              2631.591271194727
+            ],
+            "error": 0,
+            "gripError": 0
+          },
+          {
+            "side": "Right",
+            "planted": false,
+            "tip": [
+              1101.5780092916248,
+              402.12688850911456,
+              2630.8052399987037
+            ],
+            "error": 0,
+            "gripError": 0
+          }
+        ]
+      },
+      "eyeHeight": 0.85,
+      "state": {
+        "version": 1,
+        "routeId": "dem-valley-632-v2",
+        "routeRevision": "geometry-v1-ff567394",
+        "s": 3903.9378069471995,
+        "lateral": 0,
+        "elapsed": 7.81630000000004,
+        "distance": 3.937806947199608,
+        "ascent": 1.1774188193306259,
+        "steps": 11,
+        "stepPhase": 0.25547200015122273,
+        "checkpoints": [],
+        "paused": false,
+        "auto": false,
+        "view": "third",
+        "sessions": 2,
+        "stamina": 100,
+        "runExhausted": false,
+        "running": false,
+        "pose": "sit",
+        "teaRemaining": 0
+      }
+    }
+  ],
+  "errors": []
+}

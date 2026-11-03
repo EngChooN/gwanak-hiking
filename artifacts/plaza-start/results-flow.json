@@ -1,0 +1,301 @@
+{
+  "date": "2026-11-03T09:16:58.229Z",
+  "base": "http://127.0.0.1:5190",
+  "quality": "balanced",
+  "viewport": "1440×900",
+  "flow": {
+    "loading": {
+      "wallMs": 38326,
+      "loadMs": 35715,
+      "readiness": {
+        "radius": 60,
+        "terrainSamples": 12,
+        "terrainMissing": [],
+        "terrain": true,
+        "nearLod": true,
+        "facilities": true,
+        "hikers": true,
+        "zone": "plaza",
+        "stableFrames": 12,
+        "stableTimeout": false,
+        "firstFrameMs": 24835
+      },
+      "stagesSeen": [
+        "terrain",
+        "nature",
+        "facilities",
+        "stabilizing",
+        "ready"
+      ],
+      "eventCount": 95,
+      "monotonic": true,
+      "firstEvents": [
+        {
+          "t": 168,
+          "stage": "terrain",
+          "progress": 0,
+          "label": "지형 준비 중"
+        },
+        {
+          "t": 682,
+          "stage": "terrain",
+          "progress": 0.18000000000000002,
+          "label": "지형 준비 중"
+        },
+        {
+          "t": 770,
+          "stage": "terrain",
+          "progress": 0.24000000000000002,
+          "label": "지형 준비 중"
+        }
+      ],
+      "lastEvents": [
+        {
+          "t": 35864,
+          "stage": "stabilizing",
+          "progress": 0.9933333333333334,
+          "label": "첫 프레임 안정 준비 중"
+        },
+        {
+          "t": 35882,
+          "stage": "stabilizing",
+          "progress": 0.999,
+          "label": "첫 프레임 안정 준비 중"
+        },
+        {
+          "t": 35882,
+          "stage": "ready",
+          "progress": 1,
+          "label": "준비 완료"
+        }
+      ]
+    },
+    "inputBlocked": {
+      "position": {
+        "zone": "plaza",
+        "x": -40.78150300483763,
+        "z": -38.62327926715025,
+        "heading": -2.303834612632515,
+        "s": null,
+        "lateral": null,
+        "elapsed": 0,
+        "steps": 0,
+        "auto": false,
+        "pose": "stand",
+        "course": 0,
+        "label": "출발 전 · 광장 · 0 / 5,093 m"
+      },
+      "ok": true,
+      "started": false
+    },
+    "plazaStart": {
+      "zone": "plaza",
+      "x": -40.78150300483763,
+      "z": -38.62327926715025,
+      "heading": -2.303834612632515,
+      "s": null,
+      "lateral": null,
+      "elapsed": 0,
+      "steps": 0,
+      "auto": false,
+      "pose": "stand",
+      "course": 0,
+      "label": "출발 전 · 광장 · 0 / 5,093 m",
+      "ok": true
+    },
+    "freeRoam": {
+      "d": {
+        "zone": "plaza",
+        "x": -43.19574751947251,
+        "z": -35.94198909533905,
+        "heading": -2.303834612632515,
+        "s": null,
+        "lateral": null,
+        "elapsed": 3.0164999999999953,
+        "steps": 5,
+        "auto": false,
+        "pose": "stand",
+        "course": 0,
+        "label": "출발 전 · 광장 · 0 / 5,093 m",
+        "inside": true
+      },
+      "a": {
+        "zone": "plaza",
+        "x": -36.88653786148596,
+        "z": -42.949076300181645,
+        "heading": -2.303834612632515,
+        "s": null,
+        "lateral": null,
+        "elapsed": 10.899600000000003,
+        "steps": 18,
+        "auto": false,
+        "pose": "stand",
+        "course": 0,
+        "label": "출발 전 · 광장 · 0 / 5,093 m",
+        "inside": true
+      },
+      "s": {
+        "zone": "plaza",
+        "x": -42.63597307473131,
+        "z": -48.12589101861605,
+        "heading": -2.303834612632515,
+        "s": null,
+        "lateral": null,
+        "elapsed": 17.39929999999989,
+        "steps": 29,
+        "auto": false,
+        "pose": "stand",
+        "course": 0,
+        "label": "출발 전 · 광장 · 0 / 5,093 m",
+        "inside": true
+      },
+      "ok": true
+    },
+    "dragWalk": {
+      "headingBefore": -2.303834612632515,
+      "headingAfter": -2.703834612632515,
+      "moveHeading": -2.7038346126325075,
+      "turnedDeg": -22.918311805232925,
+      "ok": true
+    },
+    "reload": {
+      "before": {
+        "zone": "plaza",
+        "x": -41.89012192872636,
+        "z": -46.53234370377262,
+        "heading": -2.703834612632515,
+        "s": null,
+        "lateral": null,
+        "elapsed": 18.8991999999999,
+        "steps": 32,
+        "auto": false,
+        "pose": "stand",
+        "course": 0,
+        "label": "출발 전 · 광장 · 0 / 5,093 m"
+      },
+      "after": {
+        "zone": "plaza",
+        "x": -41.89012192872636,
+        "z": -46.53234370377262,
+        "heading": -2.703834612632515,
+        "s": null,
+        "lateral": null,
+        "elapsed": 18.8991999999999,
+        "steps": 32,
+        "auto": false,
+        "pose": "stand",
+        "course": 0,
+        "label": "출발 전 · 광장 · 0 / 5,093 m"
+      },
+      "ok": true
+    },
+    "gatePassage": {
+      "frames": 2136,
+      "maxStepM": 0.03994969751241713,
+      "maxTurnDeg": 2.870518553606164,
+      "switches": [
+        {
+          "from": "plaza",
+          "to": "route",
+          "step": 0.019855238883405357,
+          "turnDeg": 0,
+          "cameraStep": 0.02002449488814155,
+          "s": -26.10530604041299
+        }
+      ],
+      "after": {
+        "zone": "route",
+        "x": -14.054479744200492,
+        "z": -14.157139392344913,
+        "heading": -2.359833387857947,
+        "s": -19.94875927606592,
+        "lateral": 0,
+        "elapsed": 54.64780000000088,
+        "steps": 93,
+        "auto": true,
+        "pose": "stand",
+        "course": 6,
+        "label": "6 / 5,093 m"
+      },
+      "ok": true
+    },
+    "back": {
+      "frames": 415,
+      "maxStepM": 0.02009445862900584,
+      "maxTurnDeg": 0,
+      "switches": [
+        {
+          "from": "route",
+          "to": "plaza",
+          "step": 0.019974848756210698,
+          "turnDeg": 0,
+          "cameraStep": 0.0200895155397653,
+          "s": null
+        }
+      ],
+      "after": {
+        "zone": "plaza",
+        "x": -19.729930405978216,
+        "z": -19.755780963469405,
+        "heading": -2.3133731257738366,
+        "s": null,
+        "lateral": null,
+        "elapsed": 61.78080000000136,
+        "steps": 105,
+        "auto": false,
+        "pose": "stand",
+        "course": 0,
+        "label": "출발 전 · 광장 · 0 / 5,093 m",
+        "inside": true
+      },
+      "ok": true
+    },
+    "gate": {
+      "zone": "route",
+      "x": -18.40033036923993,
+      "z": -18.534733881559674,
+      "heading": -2.359833387857947,
+      "s": -26.117207311606073,
+      "lateral": 0,
+      "elapsed": 0,
+      "steps": 0,
+      "auto": false,
+      "pose": "stand",
+      "course": 0,
+      "label": "0 / 5,093 m",
+      "ok": true
+    },
+    "entranceOverSave": {
+      "zone": "plaza",
+      "x": -40.78150300483763,
+      "z": -38.62327926715025,
+      "heading": -2.303834612632515,
+      "s": null,
+      "lateral": null,
+      "elapsed": 0,
+      "steps": 0,
+      "auto": false,
+      "pose": "stand",
+      "course": 0,
+      "label": "출발 전 · 광장 · 0 / 5,093 m",
+      "ok": true
+    },
+    "savedRoute": {
+      "zone": "route",
+      "x": 57.61669255326866,
+      "z": 2210.244250424679,
+      "heading": -3.0328368236819423,
+      "s": 2500,
+      "lateral": 0,
+      "elapsed": 0,
+      "steps": 0,
+      "auto": false,
+      "pose": "stand",
+      "course": 2526,
+      "label": "2,526 / 5,093 m",
+      "ok": true
+    }
+  },
+  "fps": [],
+  "console": []
+}

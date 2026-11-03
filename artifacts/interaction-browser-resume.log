@@ -1,0 +1,19 @@
+검증 시작 ridge
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+
+  assert.ok(Math.abs((await snapshot()).stamina-after.stamina)<1)
+
+    at file:///Users/pc-2311001/gwanak-hiking/scripts/verify-hiking-interactions.mjs:24:178 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.19.0

@@ -5,7 +5,7 @@ import {writeFileSync} from 'node:fs';
 const port=process.env.PORT??5175,ds=Number(process.env.DS??.1);
 const browser=await chromium.launch({channel:'chrome',headless:true,args:['--enable-webgl','--ignore-gpu-blocklist']});
 try{const page=await browser.newPage();page.on('pageerror',e=>{throw e;});
- await page.goto(`http://127.0.0.1:${port}/`);await page.waitForFunction(()=>window.hiking?.landscape().ready,{timeout:120000});await page.waitForTimeout(3000);
+ await page.goto(`http://127.0.0.1:${port}/?start=demo`);await page.waitForFunction(()=>window.hiking?.started&&window.hiking?.landscape().ready,{timeout:120000});await page.waitForTimeout(3000);
  const r=await page.evaluate(async ds=>{const {route,sample,strideFor}=await import('/src/route.js');const h=window.__hiker,surf=window.__surface;
   let maxTruePen=0,truePen1=0,trueN=0,floatOver3=0,maxFloat=0,unanch=0,phase=0,first=true,prev=null,frames=0,planted=0,slip3=0,maxSlip=0,maxPen=0,maxPlantedErr=0,err3=0,plantedFrames=0;const byMat={};
   for(let s=.5;s<route.length-.5;s+=ds){const q=sample(s),stride=strideFor(q);phase+=ds/stride;

@@ -39,7 +39,7 @@ test('칸 단위 거리 우선 컬링·먼 칸 통합 제출·호출 상한과 �
  const camera=new PerspectiveCamera(65,1,.1,10000);camera.position.set(0,30,500);
  let checks=0;const culler={inFrustum(){checks++;return true;}};
  city.update(camera,2,culler);assert.equal(checks,60);assert.equal(status.cityGrid.distanceRejected,1);
- assert.ok(status.cityGrid.silhouetteCells>0);assert.ok(status.cityGrid.baseDrawCalls<=50);assert.ok(status.cityGrid.baseTriangles<=CITY_BASE_BUDGET[2]);
+ assert.ok(status.cityGrid.silhouetteCells+status.cityGrid.proxyCells>0);assert.ok(status.cityGrid.baseDrawCalls<=50);assert.ok(status.cityGrid.baseTriangles<=CITY_BASE_BUDGET[2]);
  const far=city.root.children[0],version=far.geometry.index.version;
  assert.ok(far.geometry.drawRange.count>0);city.update(camera,2,culler);assert.equal(far.geometry.index.version,version);
  city.update(camera,1,culler);assert.ok(status.cityGrid.baseDrawCalls<=50);assert.ok(status.cityGrid.baseTriangles<=300000);

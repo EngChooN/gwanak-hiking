@@ -17,7 +17,7 @@ try{
   await context.addInitScript(({key,state})=>{localStorage.setItem(key,JSON.stringify(state));localStorage.setItem('gwanak-sound-enabled','false');},{key:SAVE_KEY,state:{...initialState(),s,view:'first',paused:true}});
   const page=await context.newPage();page.on('pageerror',e=>results.errors.push(e.message));
   await page.goto(`${base}/?quality=balanced&bearing=${bearing}`);
-  await page.waitForFunction(()=>window.hiking?.landscape().ready&&window.hiking?.landscape().natureReady&&!window.hiking.rendering().compiling,null,{timeout:240000});
+  await page.waitForFunction(()=>window.hiking?.started&&window.hiking?.landscape().ready&&window.hiking?.landscape().natureReady&&!window.hiking.rendering().compiling,null,{timeout:240000});
   await page.waitForTimeout(2000);
   results[name]=await page.evaluate(()=>({facilities:window.hiking.landscape().summitFacilities,forest:window.hiking.landscape().forestMix,camera:window.hiking.orientation(),coordinates:window.hiking.coordinates()}));
   results[name].bearing=bearing;results[name].s=s;

@@ -35,3 +35,26 @@ export function trailMaterial(materials,meta){
  };
  material.customProgramCacheKey=()=> 'gwanak-trail-soil-leaf-grass-v2-feather';return material;
 }
+
+// 기존 돌 PBR로 포장 골재를 만들고 길 양쪽에 흙·낙엽 퇴적을 섞는다.
+export function pavedMaterial(materials,meta){
+ const material=new THREE.MeshStandardMaterial({map:materials.stone.map,normalMap:materials.stone.normalMap,roughness:1,normalScale:new THREE.Vector2(.22,.22),alphaHash:true});
+ material.onBeforeCompile=shader=>{
+  shader.uniforms.pavedLeaves={value:materials.leaves.map};
+  shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nattribute float trailEdge; varying float pavedSide; varying vec3 pavedWorld;').replace('#include <worldpos_vertex>','#include <worldpos_vertex>\npavedSide=trailEdge; pavedWorld=(modelMatrix*vec4(transformed,1.)).xyz;');
+  shader.fragmentShader=shader.fragmentShader.replace('#include <common>',`#include <common>
+   uniform sampler2D pavedLeaves; varying float pavedSide; varying vec3 pavedWorld;
+   float pavementNoise(vec2 p){return fract(sin(dot(floor(p),vec2(127.1,311.7)))*43758.5453);}`)
+   .replace('#include <map_fragment>',`vec3 aggregate=texture2D(map,pavedWorld.xz*2.5).rgb;
+    float grain=pavementNoise(pavedWorld.xz*95.);
+    float luma=dot(aggregate,vec3(.2126,.7152,.0722));
+    vec3 asphalt=vec3(.16,.157,.15)*(.72+luma*.75+grain*.14);
+    float edgePatch=.5+.25*sin(pavedWorld.x*5.1+sin(pavedWorld.z*3.7))+.25*sin(pavedWorld.z*11.7);
+    float edge=smoothstep(.65,.98,abs(pavedSide)+edgePatch*.12);
+    vec3 leaves=texture2D(pavedLeaves,pavedWorld.xz/1.6).rgb*vec3(.65,.53,.38);
+    diffuseColor.rgb*=mix(asphalt,leaves,edge*.9);
+    diffuseColor.a*=1.-smoothstep(.91,1.08,abs(pavedSide)+edgePatch*.12);`)
+   .replace('texture2D( normalMap, vNormalMapUv )','texture2D(normalMap,pavedWorld.xz*2.5)');
+ };
+ material.customProgramCacheKey=()=> 'gwanak-pavement-aggregate-leaf-edge-v1';return material;
+}

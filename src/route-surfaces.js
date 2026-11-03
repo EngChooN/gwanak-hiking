@@ -4,7 +4,8 @@ export const SURFACE_SECTIONS=[
  {id:1,metres:1070,shares:[['paved',70],['soil',30]]},
  {id:2,metres:1525,shares:[['soil',60],['rock',40]]},
  {id:3,metres:651,shares:[['soil',40],['rock',30],['stairs',30]]},
- {id:4,metres:1066,shares:[['deck_stairs',60],['rock',25],['soil',15]]},
+ // 4구간 안 순서: 깔딱고개 나무계단이 능선(5구간 데크)까지 이어지도록 뒤쪽에 둔다(실경 비교 1차, 추정).
+ {id:4,metres:1066,shares:[['soil',15],['rock',25],['deck_stairs',60]]},
  {id:5,metres:157,shares:[['deck_stairs',60],['rock',25],['soil',15]]},
  {id:6,metres:340,shares:[['stairs',40],['rock',30],['ridge',30]]},
  {id:7,metres:153,shares:[['ridge',60],['stairs',40]]}

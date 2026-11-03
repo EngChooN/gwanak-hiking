@@ -18,12 +18,12 @@ test('3인칭 직접·자동·계단 이동 및 마지막 시점 이어하기',(
  const state=initialState();state.s=route.segments.find(s=>isStairs(s.material)).start+.1;state.view='third';const start=state.s;
  advance(state,{forward:1},.1);state.auto=true;advance(state,{},.1);assert.ok(state.s>start);assert.equal(state.view,'third');assert.equal(restore(JSON.stringify(state)).view,'third');
 });
-test('계단·데크 계단 0.35~0.5m/s, 초당 1.2걸음, 전체 135~165분',()=>{
- for(const material of ['stairs','deck_stairs'])for(const grade of [-4,-.5,0,.5,4])for(const direction of [-1,1])assert.ok(speedFor(grade,material,direction)>=.35&&speedFor(grade,material,direction)<=.5);
+test('계단·데크 계단 20% 상향, 초당 1.44걸음, 전체 125분',()=>{
+ for(const material of ['stairs','deck_stairs'])for(const grade of [-4,-.5,0,.5,4])for(const direction of [-1,1])assert.ok(speedFor(grade,material,direction)>=.35*1.2&&speedFor(grade,material,direction)<=.5*1.2);
  const state=initialState(),seg=route.segments.find(s=>isStairs(s.material)&&s.length>10);state.s=seg.start+.1;
  for(let i=0;i<100;i++)advance(state,{forward:1},.1);
- assert.ok(Math.abs((state.steps+state.stepPhase)/state.elapsed-STAIR_CADENCE)<1e-8);assert.equal(sample(state.s).material,'stairs');
- const minutes=durationBetween(0,route.length)/60;assert.ok(minutes>=135&&minutes<=165);
+ assert.ok(Math.abs((state.steps+state.stepPhase)/state.elapsed-STAIR_CADENCE*1.2)<1e-8);assert.equal(sample(state.s).material,'stairs');
+ const minutes=durationBetween(0,route.length)/60;assert.ok(Math.abs(minutes-125)<1e-8);
 });
 test('3인칭 카메라 붐: 지형·계단 벽 앞에서 당김, 장애물 없으면 거리 유지',()=>{
  const target=new Vector3(0,1,0),desired=new Vector3(0,1,5),camera=new PerspectiveCamera(65,1,.08,100);

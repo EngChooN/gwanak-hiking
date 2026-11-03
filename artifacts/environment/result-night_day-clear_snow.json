@@ -1,0 +1,133 @@
+[
+  {
+    "name": "night",
+    "pos": "summit",
+    "view": "first",
+    "environment": {
+      "basicFactor": [
+        0.0468,
+        0.0546,
+        0.07150000000000001
+      ],
+      "time": "21:30",
+      "legacySun": false,
+      "manualTime": true,
+      "weather": "clear",
+      "level": null,
+      "source": "manual",
+      "error": null,
+      "calls": 0,
+      "rain": 0,
+      "snow": 0,
+      "fogDistance": 15000,
+      "fogDensity": 0,
+      "night": 1,
+      "lightIntensity": 0,
+      "ambient": 0.075,
+      "exposure": 2.9933598429661914,
+      "windSound": 0.2,
+      "windSpeed": 2,
+      "cloud": 0.05,
+      "stars": 1,
+      "moon": {
+        "elevation": -51.33909432951496,
+        "azimuth": 8.314646670769491,
+        "visible": 0,
+        "illumination": 0.23278972825641148
+      },
+      "light": {
+        "elevation": -51.33909432951496,
+        "azimuth": 8.314646670769491
+      }
+    },
+    "errors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "name": "day-clear",
+    "pos": "summit",
+    "view": "first",
+    "environment": {
+      "basicFactor": [
+        1,
+        0.9450980392156862,
+        0.8705882352941177
+      ],
+      "time": "12:00",
+      "legacySun": false,
+      "manualTime": true,
+      "weather": "clear",
+      "level": null,
+      "source": "manual",
+      "error": null,
+      "calls": 0,
+      "rain": 0,
+      "snow": 0,
+      "fogDistance": 15000,
+      "fogDensity": 0,
+      "night": 0,
+      "lightIntensity": 1,
+      "ambient": 1,
+      "exposure": 1.5754525489295745,
+      "windSound": 0.2,
+      "windSpeed": 2,
+      "cloud": 0.05,
+      "stars": 0,
+      "moon": {
+        "elevation": 35.23700609363584,
+        "azimuth": 243.2545055117737,
+        "visible": 0,
+        "illumination": 0.26928734873680626
+      },
+      "light": {
+        "elevation": 37.39373118256268,
+        "azimuth": 175.22841240249636
+      }
+    },
+    "errors": []
+  },
+  {
+    "name": "snow",
+    "pos": "summit",
+    "view": "first",
+    "environment": {
+      "basicFactor": [
+        0.7375,
+        0.7273774509803922,
+        0.713639705882353
+      ],
+      "time": "14:00",
+      "legacySun": false,
+      "manualTime": true,
+      "weather": "snow",
+      "level": "medium",
+      "source": "manual",
+      "error": null,
+      "calls": 0,
+      "rain": 0,
+      "snow": 0.6,
+      "fogDistance": 2500,
+      "fogDensity": 0.0009999999999999998,
+      "night": 0,
+      "lightIntensity": 0.25,
+      "ambient": 1,
+      "exposure": 1.5754525489295745,
+      "windSound": 0.2,
+      "windSpeed": 2,
+      "cloud": 0.9,
+      "stars": 0,
+      "moon": {
+        "elevation": 12.804860893484063,
+        "azimuth": 263.7092032227165,
+        "visible": 0,
+        "illumination": 0.2614588613862715
+      },
+      "light": {
+        "elevation": 32.05178933330533,
+        "azimuth": 210.05396384227026
+      }
+    },
+    "errors": []
+  }
+]

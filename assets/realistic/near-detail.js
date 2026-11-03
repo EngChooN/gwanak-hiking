@@ -51,7 +51,10 @@ export function grassClumps(placements,height){
    if(kind==='litter')vertices.push(x-.09,.025,z,x+.09,.025,z,x,.04,z+.19);
    else {const h=kind==='shrub'?.45+i*.025:.18+i*.018;vertices.push(x-.035,0,z,x+.035,0,z,x+.08,h,z+.025);}
   }
-  const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));geometry.computeVertexNormals();
+  const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));
+  // 이전 하층 식생도 같은 눈높이에 맞춘다. 낙엽 크기는 유지한다.
+  if(kind!=='litter')geometry.scale(.65,kind==='shrub'?.45:.65,.65);
+  geometry.computeVertexNormals();
   resources.set(kind,{geometry,material:new THREE.MeshStandardMaterial({color,roughness:1,side:THREE.DoubleSide})});
  }
  const dummy=new THREE.Object3D();

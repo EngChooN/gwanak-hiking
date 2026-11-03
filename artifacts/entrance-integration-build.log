@@ -1,0 +1,21 @@
+
+> gwanak-hiking@0.1.0 build
+> vite build && node scripts/copy-assets.mjs
+
+vite v7.3.7 building client environment for production...
+transforming...
+✓ 86 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                    8.37 kB │ gzip:   3.81 kB
+dist/assets/pine-impostor-atlas-v1-Dbi4blB3.png  393.49 kB
+dist/assets/index-C0If8SRS.css                    12.97 kB │ gzip:   3.54 kB
+dist/assets/terrain-B4TVoQx0.js                    0.30 kB │ gzip:   0.23 kB │ map:     0.96 kB
+dist/assets/index-C_AVLROf.js                    987.95 kB │ gzip: 294.94 kB │ map: 3,884.28 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 1.67s
+게임 GLB·보행 데이터 정적 배포 복사 완료

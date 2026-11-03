@@ -17,7 +17,7 @@ try{
   await context.route('**/*',r=>new URL(r.request().url()).origin===new URL(base).origin?r.continue():r.abort());
   await context.addInitScript(({key,state})=>{localStorage.setItem(key,JSON.stringify(state));localStorage.setItem('gwanak-sound-enabled','false');},{key:SAVE_KEY,state:{...initialState(),s:site.s,view,paused:true}});
   const page=await context.newPage();page.on('pageerror',e=>result.errors.push(e.message));
-  await page.goto(`${base}/?quality=balanced`);await page.waitForFunction(()=>window.hiking?.landscape().ready&&window.hiking?.landscape().natureReady&&!window.hiking.rendering().compiling,null,{timeout:240000});
+  await page.goto(`${base}/?quality=balanced`);await page.waitForFunction(()=>window.hiking?.started&&window.hiking?.landscape().ready&&window.hiking?.landscape().natureReady&&!window.hiking.rendering().compiling,null,{timeout:240000});
   await page.waitForTimeout(2000);
   const contact=await page.evaluate(()=>({ground:hiking.groundCheck(),feet:window.__hikingMetrics?.footContact,state:hiking.snapshot(),rendering:hiking.rendering(),contactProbes:hiking.contactProbes()}));
   if(contact.rendering.shaderErrors.length)result.errors.push(`${view}: ${JSON.stringify(contact.rendering.shaderErrors)}`);

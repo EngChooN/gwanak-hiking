@@ -1,0 +1,26 @@
+{
+  "date": "2026-11-03T09:25:05.096Z",
+  "base": "http://127.0.0.1:5190",
+  "quality": "balanced",
+  "viewport": "1440×900",
+  "flow": {},
+  "fps": [
+    {
+      "id": "plaza-third",
+      "loadMs": 36173,
+      "idleFps": 59.66965014917415,
+      "walkFps": 59.00330568203081,
+      "walkP95Ms": null,
+      "zone": "plaza"
+    },
+    {
+      "id": "stairs",
+      "loadMs": 36501,
+      "idleFps": 60.00100001666693,
+      "walkFps": 60.00225008437818,
+      "walkP95Ms": null,
+      "zone": "route"
+    }
+  ],
+  "console": []
+}

@@ -33,9 +33,9 @@
     {"id":"gwacheon","bbox":[37.40,126.99,37.48,127.06]}
   ],
   "landmarks":[
-    {"id":"n-seoul-tower","name":"남산·N서울타워","lat":37.551216,"lon":126.988276,"bearing":10,"distance":12000,"height":236.7,"ground":243,"shape":"tower","radius":6},
-    {"id":"63-building","name":"63빌딩","lat":37.51972,"lon":126.94000,"bearing":346,"distance":8600,"height":249,"ground":15,"shape":"box","width":50,"depth":35},
-    {"id":"lotte-world-tower","name":"롯데월드타워","lat":37.51250,"lon":127.10278,"bearing":59,"distance":14300,"height":555,"ground":20,"shape":"taper","radius":32},
+    {"id":"n-seoul-tower","name":"남산·N서울타워","lat":37.551216,"lon":126.988276,"bearing":10.2,"distance":11980,"height":236.7,"ground":243,"shape":"tower","radius":6},
+    {"id":"63-building","name":"63빌딩","lat":37.51972,"lon":126.94000,"bearing":345.6,"distance":8560,"height":249,"ground":15,"shape":"box","width":50,"depth":35},
+    {"id":"lotte-world-tower","name":"롯데월드타워","lat":37.51250,"lon":127.10278,"bearing":58.5,"distance":14340,"height":555.65,"ground":20,"shape":"taper","radius":32},
     {"id":"dongjak-bridge","name":"동작대교","bearing":12.2,"distance":7510,"ground":5,"shape":"reference"},
     {"id":"hangang-bridge","name":"한강대교","bearing":356,"distance":7900,"ground":5,"shape":"reference"},
     {"id":"yeouido","name":"여의도","bearing":339.3,"distance":9360,"ground":10,"shape":"reference"},
@@ -43,7 +43,7 @@
     {"id":"gwacheon","name":"과천시","bearing":113.2,"distance":3440,"shape":"reference"},
     {"id":"anyang","name":"안양시","bearing":201.7,"distance":7440,"shape":"reference"},
     {"id":"cheonggyesan","name":"청계산","bearing":115.8,"distance":7580,"ground":620,"shape":"reference"},
-    {"id":"bukhansan","name":"북한산 대표 지점","bearing":6,"distance":24100,"ground":836.5,"shape":"reference"}
+    {"id":"bukhansan","name":"북한산 대표 지점","bearing":6.1,"distance":24110,"ground":836.5,"shape":"reference"}
   ],
   "budget":{"firstLoadBytes":30000000,"textureSize":512,"cityChunkLimit":5000},
   "capturePoints":[{"id":"summit","label":"정상","routeIndex":336},{"id":"pass","label":"깔딱고개 · 임시","routeIndex":315},{"id":"valley","label":"계곡 · 제4쉼터 참고","routeIndex":198}]

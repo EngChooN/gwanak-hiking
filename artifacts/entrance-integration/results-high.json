@@ -1,0 +1,62 @@
+[
+  {
+    "id": "valley",
+    "quality": "high",
+    "camera": {
+      "s": 1608.3738503863663,
+      "lateral": 0,
+      "view": "first"
+    },
+    "idleFps": 22.48008198618138,
+    "walkFps": 58.62719851994447,
+    "errors": []
+  },
+  {
+    "id": "stairs",
+    "quality": "high",
+    "camera": {
+      "s": 3951.963000446444,
+      "lateral": 0,
+      "view": "first"
+    },
+    "idleFps": 22.6048799946812,
+    "walkFps": 59.5030188114366,
+    "errors": []
+  },
+  {
+    "id": "ridge",
+    "quality": "high",
+    "camera": {
+      "s": 4613.11886229228,
+      "lateral": 0,
+      "view": "first"
+    },
+    "idleFps": 25.028592265999244,
+    "walkFps": 60.00225008437818,
+    "errors": []
+  },
+  {
+    "id": "summit",
+    "quality": "high",
+    "camera": {
+      "s": 5026.9619062282045,
+      "lateral": 0,
+      "view": "first"
+    },
+    "idleFps": 28.588524699155666,
+    "walkFps": 60.00300015000745,
+    "errors": []
+  },
+  {
+    "id": "third",
+    "quality": "high",
+    "camera": {
+      "s": 3951.963000446444,
+      "lateral": 0,
+      "view": "third"
+    },
+    "idleFps": 19.782555382980462,
+    "walkFps": 59.62798139906996,
+    "errors": []
+  }
+]

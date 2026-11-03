@@ -1,0 +1,38 @@
+import {readFileSync,writeFileSync} from 'node:fs';
+const rows=JSON.parse(readFileSync('artifacts/interaction-browser.json','utf8'));
+const names={entrance:'입구',valley:'계곡',ridge:'능선',summit:'정상',third:'3인칭'};
+const tests=readFileSync('artifacts/interaction-tests.log','utf8');
+const count=tests.match(/tests (\d+)/)?.[1]??'확인 필요';
+const report=`# 걷기·달리기·스테미너·길 밖 이동 결과
+
+2026-11-03 · 산개발 · 프로젝트: /Users/pc-2311001/gwanak-hiking
+
+걷기 20% 상향(계단·자동 포함), Shift 1.6배 달리기, 스테미너 증감·고갈 잠금, C 앉기/일어나기·T 차 3초 완료 회복, 저장 복원을 구현했다. 길 밖 좌우 8m와 0.7배 속도, 실제 렌더링 지면 높이, 35° 경사·큰 바위 차단, 흙·낙엽 발소리, 자동 중앙 복귀를 main.js에 연결했다.
+
+## 검증
+
+- npm test: ${count}개 통과. 신규 기능 테스트 12개 포함.
+- npm run build 통과. 기존 대형 번들 경고는 남아 있다.
+- git diff --check 통과.
+- 키보드 C·T·Shift, 차 완료, 일어나기와 1인칭 높이 복귀, 스테미너 소모, 새로고침 저장 복원을 전용 headless Chrome에서 검증.
+
+| 시점 | fps | 기준 | 결과 |
+|---|---:|---:|---|
+${rows.map(r=>`| ${names[r.id]} | ${r.performance.fps.toFixed(2)} | ${r.view==='third'?40:45} | ${r.performance.fps>=(r.view==='third'?40:45)?'통과':'미달'} |`).join('\n')}
+
+측정 환경은 이 맥의 headless Chrome, 1440×900, DPR 1, 기존 자동 화질이다. 각 시점 로딩 후 8초 안정화·10초 정지 화면으로 측정했다. 걷기·달리기 동작 확인은 별도로 수행했다. 비·눈 성능은 날씨 모듈이 없어 검증하지 못했다. 원시 자료: artifacts/interaction-browser.json.
+
+## 통합 대기
+
+현재 폴더에 weather.js·daytime.js와 새 휴식 버튼·스테미너 UI 모듈이 없다. realistic-hiker.js도 pose·teaProgress를 아직 사용하지 않는다. 따라서 실시간 시간·날씨, 스틱·앉기·차 마시기 캐릭터 동작, 버튼·스테미너 막대는 완료로 판정하지 않는다. 1인칭 앉은 높이와 상태·회복은 동작한다.
+
+main.js는 hiker.update/ground에 자세·차 진행률·지면 높이를 전달하고, UI에 hiking:state 이벤트를 내보내며 hiking:command 이벤트를 받는다. 상세 인수와 연결 예시는 docs/이동-휴식-통합규약.md에 기록했다. 동료 모듈 제공 후 실제 내보내기에 맞춰 main.js 연결과 밤·비·눈 캡처·성능 검증이 필요하다.
+
+## 한계와 보존
+
+- 바위 충돌은 실제 배치 월드 AABB와 20cm 몸 반경으로 보수적으로 판정한다. 바위 모서리 부근은 다소 넓게 막힐 수 있다.
+- 자동 복귀도 경사·바위 차단을 따른다. 위험 구간에서는 복귀가 멈출 수 있다.
+- 길 밖 8m 한계·경사·절벽·바위는 단위 테스트로 검증했다. 실제 산행 현장 정확성 검증을 대신하지 않는다.
+- 기존 다른 담당 파일과 작업은 보존. 새 외부 자료·API 도입 없음. push·배포·파일 삭제 없음.
+`;
+writeFileSync('docs/변경기록-2026-11-03-이동-휴식.md',report);

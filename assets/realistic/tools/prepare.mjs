@@ -7,6 +7,7 @@ import {fromArrayBuffer} from 'geotiff';
 import sharp from 'sharp';
 import {project,unproject,alignRoute} from '../geo.js';
 import {placeReference} from '../skyline-reference.js';
+import {buildingProfile} from '../../../scripts/seoul-building-profile.mjs';
 const root=fileURLToPath(new URL('../',import.meta.url));
 const config=JSON.parse(await readFile(path.join(root,'config.json'),'utf8'));
 const generated=path.join(root,'generated'), raw=path.join(root,'raw');
@@ -168,7 +169,7 @@ for(const {id,bbox} of config.cityBboxes){
     const heightTag=Number.parseFloat(e.tags?.height),levels=Number.parseFloat(e.tags?.['building:levels']);
     const height=heightTag>0?heightTag:levels>0?levels*3:9;
     const cx=footprint.reduce((s,p)=>s+p[0],0)/footprint.length,cz=footprint.reduce((s,p)=>s+p[1],0)/footprint.length;
-    buildings.push({id:e.id,footprint,height:Math.min(height,600),heightSource:heightTag>0?'height':levels>0?'levels*3':'assumed-9m',ground:demHeight(cx,cz)});
+    buildings.push({id:e.id,footprint,height:Math.min(height,600),heightSource:heightTag>0?'height':levels>0?'levels*3':'assumed-9m',...buildingProfile(e.tags,e.id),ground:demHeight(cx,cz)});
   }
   const limit=config.budget.cityChunkLimit;
   for(let start=0;start<buildings.length;start+=limit){

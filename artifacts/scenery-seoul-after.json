@@ -1,0 +1,2129 @@
+[
+  {
+    "id": "north",
+    "s": 5066.907963768512,
+    "bearing": 0,
+    "inspect": false,
+    "errors": [],
+    "performance": {
+      "frames": 498,
+      "breakdown": {
+        "기타·후처리/기본·후처리": {
+          "kind": "기타·후처리",
+          "pass": "기본·후처리",
+          "triangles": 12923.763052208918,
+          "drawCalls": 2.763052208835362,
+          "maxTriangles": 12927
+        },
+        "정상부 시설/기본·후처리": {
+          "kind": "정상부 시설",
+          "pass": "기본·후처리",
+          "triangles": 192.00000000000142,
+          "drawCalls": 1.0000000000000089,
+          "maxTriangles": 192
+        },
+        "지형 청크/기본·후처리": {
+          "kind": "지형 청크",
+          "pass": "기본·후처리",
+          "triangles": 34815.999999999956,
+          "drawCalls": 16.99999999999998,
+          "maxTriangles": 34816
+        },
+        "8m 상시 지형/기본·후처리": {
+          "kind": "8m 상시 지형",
+          "pass": "기본·후처리",
+          "triangles": 140148.0000000018,
+          "drawCalls": 1.0000000000000089,
+          "maxTriangles": 140148
+        },
+        "등산로/기본·후처리": {
+          "kind": "등산로",
+          "pass": "기본·후처리",
+          "triangles": 4704.000000000024,
+          "drawCalls": 10.999999999999954,
+          "maxTriangles": 4704
+        },
+        "원경 도시/기본·후처리": {
+          "kind": "원경 도시",
+          "pass": "기본·후처리",
+          "triangles": 135804.00000000026,
+          "drawCalls": 5.000000000000028,
+          "maxTriangles": 135804
+        },
+        "원경 지형/기본·후처리": {
+          "kind": "원경 지형",
+          "pass": "기본·후처리",
+          "triangles": 469448.0000000032,
+          "drawCalls": 8.000000000000071,
+          "maxTriangles": 469448
+        },
+        "하층 식생/기본·후처리": {
+          "kind": "하층 식생",
+          "pass": "기본·후처리",
+          "triangles": 18210.99999999984,
+          "drawCalls": 6.000000000000044,
+          "maxTriangles": 18211
+        },
+        "숲/기본·후처리": {
+          "kind": "숲",
+          "pass": "기본·후처리",
+          "triangles": 25721.99999999981,
+          "drawCalls": 766.000000000005,
+          "maxTriangles": 25722
+        },
+        "바위/기본·후처리": {
+          "kind": "바위",
+          "pass": "기본·후처리",
+          "triangles": 220650.00000000253,
+          "drawCalls": 22.999999999999876,
+          "maxTriangles": 220650
+        },
+        "기타·후처리/SSAO 깊이·법선": {
+          "kind": "기타·후처리",
+          "pass": "SSAO 깊이·법선",
+          "triangles": 2465.230923694781,
+          "drawCalls": 0.38152610441767026,
+          "maxTriangles": 12923
+        },
+        "정상부 시설/SSAO 깊이·법선": {
+          "kind": "정상부 시설",
+          "pass": "SSAO 깊이·법선",
+          "triangles": 36.6265060240964,
+          "drawCalls": 0.19076305220883513,
+          "maxTriangles": 192
+        },
+        "지형 청크/SSAO 깊이·법선": {
+          "kind": "지형 청크",
+          "pass": "SSAO 깊이·법선",
+          "triangles": 6641.606425702808,
+          "drawCalls": 3.2429718875501994,
+          "maxTriangles": 34816
+        },
+        "8m 상시 지형/SSAO 깊이·법선": {
+          "kind": "8m 상시 지형",
+          "pass": "SSAO 깊이·법선",
+          "triangles": 26735.060240963838,
+          "drawCalls": 0.19076305220883513,
+          "maxTriangles": 140148
+        },
+        "등산로/SSAO 깊이·법선": {
+          "kind": "등산로",
+          "pass": "SSAO 깊이·법선",
+          "triangles": 897.3493975903599,
+          "drawCalls": 2.0983935742971913,
+          "maxTriangles": 4704
+        },
+        "원경 도시/SSAO 깊이·법선": {
+          "kind": "원경 도시",
+          "pass": "SSAO 깊이·법선",
+          "triangles": 25906.385542168704,
+          "drawCalls": 0.9538152610441778,
+          "maxTriangles": 135804
+        },
+        "원경 지형/SSAO 깊이·법선": {
+          "kind": "원경 지형",
+          "pass": "SSAO 깊이·법선",
+          "triangles": 89553.33333333339,
+          "drawCalls": 1.526104417670681,
+          "maxTriangles": 469448
+        },
+        "하층 식생/SSAO 깊이·법선": {
+          "kind": "하층 식생",
+          "pass": "SSAO 깊이·법선",
+          "triangles": 3473.985943775103,
+          "drawCalls": 1.1445783132530125,
+          "maxTriangles": 18211
+        },
+        "숲/SSAO 깊이·법선": {
+          "kind": "숲",
+          "pass": "SSAO 깊이·법선",
+          "triangles": 4906.807228915662,
+          "drawCalls": 146.12449799196793,
+          "maxTriangles": 25722
+        },
+        "바위/SSAO 깊이·법선": {
+          "kind": "바위",
+          "pass": "SSAO 깊이·법선",
+          "triangles": 42091.86746987946,
+          "drawCalls": 4.387550200803214,
+          "maxTriangles": 220650
+        },
+        "기타/직접 제출 외": {
+          "kind": "기타",
+          "pass": "직접 제출 외",
+          "triangles": 0,
+          "drawCalls": 0,
+          "maxTriangles": 0
+        }
+      },
+      "categories": {
+        "기타·후처리": {
+          "triangles": 15388.9939759037,
+          "drawCalls": 3.1445783132530303,
+          "maxTriangles": 25850,
+          "maxDrawCalls": 8
+        },
+        "정상부 시설": {
+          "triangles": 228.62650602409835,
+          "drawCalls": 1.1907630522088448,
+          "maxTriangles": 384,
+          "maxDrawCalls": 2
+        },
+        "지형 청크": {
+          "triangles": 41457.60642570296,
+          "drawCalls": 20.242971887550272,
+          "maxTriangles": 69632,
+          "maxDrawCalls": 34
+        },
+        "8m 상시 지형": {
+          "triangles": 166883.06024096633,
+          "drawCalls": 1.1907630522088448,
+          "maxTriangles": 280296,
+          "maxDrawCalls": 2
+        },
+        "등산로": {
+          "triangles": 5601.349397590361,
+          "drawCalls": 13.0983935742971,
+          "maxTriangles": 9408,
+          "maxDrawCalls": 22
+        },
+        "원경 도시": {
+          "triangles": 161710.38554216758,
+          "drawCalls": 5.953815261044227,
+          "maxTriangles": 271608,
+          "maxDrawCalls": 10
+        },
+        "원경 지형": {
+          "triangles": 559001.3333333365,
+          "drawCalls": 9.526104417670759,
+          "maxTriangles": 938896,
+          "maxDrawCalls": 16
+        },
+        "하층 식생": {
+          "triangles": 21684.985943774936,
+          "drawCalls": 7.144578313253073,
+          "maxTriangles": 36422,
+          "maxDrawCalls": 12
+        },
+        "숲": {
+          "triangles": 30628.807228915415,
+          "drawCalls": 912.124497991975,
+          "maxTriangles": 51444,
+          "maxDrawCalls": 1532
+        },
+        "바위": {
+          "triangles": 262741.86746988335,
+          "drawCalls": 27.38755020080309,
+          "maxTriangles": 441300,
+          "maxDrawCalls": 46
+        },
+        "기타": {
+          "triangles": 0,
+          "drawCalls": 0,
+          "maxTriangles": 0,
+          "maxDrawCalls": 0
+        }
+      },
+      "fps": 49.63669527255333,
+      "p95Ms": 33.400000000001455,
+      "p99Ms": 50,
+      "maxMs": 50.10000000000582,
+      "over50ms": 2,
+      "cpuMs": {
+        "movement": 0.0014056235432146065,
+        "ambient": 0.0026104416713178397,
+        "hiker": 0.05080321658567252,
+        "contact": 0.22208834699837557,
+        "camera": 0.008433732641748634,
+        "terrain": 1.2234939844254031,
+        "render": 9.410040153078286
+      },
+      "drawCalls": 1001.004016064257,
+      "triangles": 1265327.0160642571,
+      "maxTriangles": 2125240,
+      "textures": 52.76305220883534
+    },
+    "landscape": {
+      "source": "manifest",
+      "cityChunks": 32,
+      "buildings": 153397,
+      "waterPolygons": 382,
+      "errors": [],
+      "ready": true,
+      "contactOcclusion": {
+        "method": "경로 지역 배치 접촉 음영",
+        "enabled": true,
+        "occluders": 170500,
+        "resolutionLimit": 8192,
+        "resolution": [
+          4751,
+          8192
+        ],
+        "metresPerTexel": [
+          0.35887884787609936,
+          0.35891058364181544
+        ],
+        "bytes": 38920192,
+        "directMax": 0.36,
+        "forestMax": 0.26,
+        "protectedRoute": true,
+        "routeMargin": 0.15
+      },
+      "summitFacilities": {
+        "status": "추정 위치·치수",
+        "sites": [
+          {
+            "id": "radar",
+            "anchor": "summit",
+            "offset": [
+              -18,
+              -19
+            ],
+            "supportRadius": 6,
+            "dimensions": "받침 9×7×6m, 흰 돔 지름 10m",
+            "yaw": 0,
+            "x": 1539.5703327634624,
+            "z": 2516.5960865837123,
+            "y": 618.3176685335309,
+            "anchorElevation": 632,
+            "placementVerified": false,
+            "placementStatus": "조건 충족 후보 없음·임시 배치"
+          },
+          {
+            "id": "eungjinjeon",
+            "anchor": "summit",
+            "offset": [
+              -24,
+              -4
+            ],
+            "supportRadius": 5,
+            "dimensions": "석축 7×6×5m, 기와집 6×5×3.5m, 연등 9개",
+            "yaw": 0.25,
+            "x": 1533.5703327634624,
+            "z": 2531.5960865837123,
+            "y": 623.0266516591339,
+            "anchorElevation": 632,
+            "placementVerified": false,
+            "placementStatus": "조건 충족 후보 없음·임시 배치"
+          },
+          {
+            "id": "marker",
+            "anchor": "summit",
+            "offset": [
+              -9,
+              -6
+            ],
+            "supportRadius": 1.5,
+            "dimensions": "받침 지름 2.4m·높이 0.24m, 표지석 1.4×0.65×2m",
+            "yaw": 1.0471975511965976,
+            "x": 1548.5703327634624,
+            "z": 2529.5960865837123,
+            "y": 630.8697595362096,
+            "anchorElevation": 632
+          },
+          {
+            "id": "helipad",
+            "anchor": "junction",
+            "offset": [
+              14,
+              4
+            ],
+            "supportRadius": 8,
+            "dimensions": "원형 공터 지름 16m, H 4×4m",
+            "yaw": 0,
+            "x": 1654.1948963349166,
+            "z": 2802.522950328025,
+            "y": 572.4689353617099,
+            "anchorElevation": 573.4304489955438
+          },
+          {
+            "id": "fork",
+            "anchor": "junction",
+            "offset": [
+              5,
+              -1
+            ],
+            "supportRadius": 0.2,
+            "dimensions": "지주 2.3m, 표지판 2×0.65m",
+            "yaw": -1.5707963267948966,
+            "x": 1645.1948963349166,
+            "z": 2797.522950328025,
+            "y": 573.478423150327,
+            "anchorElevation": 573.4304489955438
+          }
+        ],
+        "counts": [
+          {
+            "id": "radar",
+            "levels": [
+              {
+                "distance": 0,
+                "triangles": 228,
+                "meshes": 2
+              },
+              {
+                "distance": 40,
+                "triangles": 128,
+                "meshes": 2
+              },
+              {
+                "distance": 120,
+                "triangles": 32,
+                "meshes": 1
+              },
+              {
+                "distance": 400,
+                "triangles": 32,
+                "meshes": 1
+              }
+            ]
+          },
+          {
+            "id": "eungjinjeon",
+            "levels": [
+              {
+                "distance": 0,
+                "triangles": 636,
+                "meshes": 4
+              },
+              {
+                "distance": 40,
+                "triangles": 588,
+                "meshes": 4
+              },
+              {
+                "distance": 120,
+                "triangles": 60,
+                "meshes": 3
+              },
+              {
+                "distance": 400,
+                "triangles": 60,
+                "meshes": 3
+              }
+            ]
+          },
+          {
+            "id": "marker",
+            "levels": [
+              {
+                "distance": 0,
+                "triangles": 46,
+                "meshes": 2
+              },
+              {
+                "distance": 40,
+                "triangles": 44,
+                "meshes": 1
+              },
+              {
+                "distance": 120,
+                "triangles": 44,
+                "meshes": 1
+              },
+              {
+                "distance": 400,
+                "triangles": 0,
+                "meshes": 0
+              }
+            ]
+          },
+          {
+            "id": "helipad",
+            "levels": [
+              {
+                "distance": 0,
+                "triangles": 228,
+                "meshes": 2
+              },
+              {
+                "distance": 40,
+                "triangles": 132,
+                "meshes": 2
+              },
+              {
+                "distance": 120,
+                "triangles": 132,
+                "meshes": 2
+              },
+              {
+                "distance": 400,
+                "triangles": 0,
+                "meshes": 0
+              }
+            ]
+          },
+          {
+            "id": "fork",
+            "levels": [
+              {
+                "distance": 0,
+                "triangles": 26,
+                "meshes": 2
+              },
+              {
+                "distance": 40,
+                "triangles": 24,
+                "meshes": 1
+              },
+              {
+                "distance": 120,
+                "triangles": 24,
+                "meshes": 1
+              },
+              {
+                "distance": 400,
+                "triangles": 0,
+                "meshes": 0
+              }
+            ]
+          }
+        ]
+      },
+      "cityLabels": false,
+      "pendingTerrainChunks": 0,
+      "terrainVisibleChunks": 17,
+      "natureBroadPhase": {
+        "cells": 264,
+        "frustumTests": 56,
+        "distanceRejected": 208
+      },
+      "natureVisibleChunks": 789,
+      "natureBaseTriangleBudget": 300000,
+      "seoulRoads": 12256,
+      "seoulBridges": 1211,
+      "cityDuplicates": 137,
+      "natureReady": true,
+      "natureCounts": {
+        "trees": 134888,
+        "rocks": 982,
+        "understory": 7651
+      },
+      "scenery": {
+        "forestCorridor": 30,
+        "grassRadius": [
+          20,
+          30,
+          40
+        ],
+        "grassInstances": 415648,
+        "trees": 21637,
+        "outcrops": 160,
+        "speciesStatus": "임상도 미확보 · 활엽 60%/소나무 40% 시각 대용",
+        "wind": true,
+        "layers": [
+          "소나무·참나무류 교목 시각 대용",
+          "관목",
+          "고사리·조릿대형 하층"
+        ],
+        "ground": "기존 4종 PBR 노멀 혼합 + 이끼 색 패치",
+        "visibleGrass": 532
+      },
+      "forestMix": {
+        "status": "추정(임상도 확보 전)",
+        "broadleafRatio": 0.6,
+        "broadleafIds": [
+          "tree_small_02",
+          "island_tree_01"
+        ],
+        "pineIds": [
+          "pine_tree_01",
+          "pine_sapling_medium"
+        ],
+        "broadleafTint": 11978901,
+        "pineTint": 12897966,
+        "broadleafScale": 1.04,
+        "counts": {
+          "broadleaf": 94084,
+          "pine": 62613
+        }
+      },
+      "contactOccluderKinds": {
+        "tree": 156697,
+        "rock": 6152,
+        "understory": 7651
+      },
+      "cityGrid": {
+        "cellSize": 2000,
+        "cells": 148,
+        "nodes": 149,
+        "silhouetteStrips": 128,
+        "visibleCells": 78,
+        "detailedCells": 0,
+        "simpleCells": 4,
+        "silhouetteCells": 0,
+        "proxyCells": 74,
+        "frustumTests": 148,
+        "distanceRejected": 0,
+        "baseTriangles": 135804,
+        "baseDrawCalls": 5,
+        "baseTriangleBudget": 300000
+      },
+      "nearDetail": {
+        "instances": 5212,
+        "grass": 15062,
+        "understoryMinimumScale": 0.28
+      },
+      "natureChunks": 16589,
+      "sceneNodes": 156679
+    },
+    "rendering": {
+      "indirectLight": {
+        "skyColor": "#D5D6D3",
+        "groundColor": "#ABA8A2",
+        "hemisphereIntensity": 0.45,
+        "retainedChroma": 0.01,
+        "terrainChroma": 0.25
+      },
+      "profile": "forest-granite-clear-v2",
+      "toneMapping": "Neutral",
+      "sunElevation": 29.00000000000002,
+      "sunAzimuth": 141.99999999999983,
+      "shadowAzimuth": 322,
+      "shadowLengthPerHeight": 1.8040477552714238,
+      "sunColor": "#FFF1DE",
+      "hazeColor": "#94ADBD",
+      "skyZenith": "#5B8FC7",
+      "far": 30000,
+      "hdri": "Poly Haven Kloppenheim 06 PureSky 1K · CC0",
+      "ao": false,
+      "shadows": true,
+      "shaderErrors": [],
+      "calibration": {
+        "environmentIntensity": 0.19025671504749112,
+        "hemisphereIntensity": 0.08561552177137101,
+        "directContribution": [
+          0.1196015253663063,
+          0.10520417988300323,
+          0.08736421167850494
+        ],
+        "indirectContribution": [
+          0.026651568710803986,
+          0.026847971603274345,
+          0.025989754125475883
+        ],
+        "exposure": 1.6561216376008554,
+        "ratio": 3.999999911855317,
+        "grayCard": [
+          124.18718823325746,
+          117.24703062205111,
+          107.23999280771878
+        ],
+        "grayCardLuma": 117.99999999999878,
+        "fogSamples": [
+          {
+            "distance": 1000,
+            "contrast": 0.9528209605121986
+          },
+          {
+            "distance": 8000,
+            "contrast": 0.6799886860236525
+          },
+          {
+            "distance": 10000,
+            "contrast": 0.6115473056718708
+          },
+          {
+            "distance": 12000,
+            "contrast": 0.5499930242747069
+          },
+          {
+            "distance": 25000,
+            "contrast": 0.2499984534472227
+          }
+        ],
+        "precision": "float32",
+        "calibrated": true
+      },
+      "normalPass": false,
+      "shadowDistance": 45,
+      "aoResolution": {
+        "width": 720,
+        "height": 450,
+        "scale": 0.5,
+        "kernelSamples": 12
+      },
+      "compiling": false,
+      "compileError": null,
+      "aoProfile": {
+        "enabled": false,
+        "gpuSupported": false,
+        "gpuDisjointSamples": 0,
+        "rows": {}
+      },
+      "aoDiagnosticMode": null,
+      "breakdown": {
+        "기타·후처리/기본·후처리": {
+          "kind": "기타·후처리",
+          "pass": "기본·후처리",
+          "triangles": 12923,
+          "drawCalls": 2
+        },
+        "정상부 시설/기본·후처리": {
+          "kind": "정상부 시설",
+          "pass": "기본·후처리",
+          "triangles": 192,
+          "drawCalls": 1
+        },
+        "지형 청크/기본·후처리": {
+          "kind": "지형 청크",
+          "pass": "기본·후처리",
+          "triangles": 34816,
+          "drawCalls": 17
+        },
+        "8m 상시 지형/기본·후처리": {
+          "kind": "8m 상시 지형",
+          "pass": "기본·후처리",
+          "triangles": 140148,
+          "drawCalls": 1
+        },
+        "등산로/기본·후처리": {
+          "kind": "등산로",
+          "pass": "기본·후처리",
+          "triangles": 4704,
+          "drawCalls": 11
+        },
+        "원경 도시/기본·후처리": {
+          "kind": "원경 도시",
+          "pass": "기본·후처리",
+          "triangles": 135804,
+          "drawCalls": 5
+        },
+        "원경 지형/기본·후처리": {
+          "kind": "원경 지형",
+          "pass": "기본·후처리",
+          "triangles": 469448,
+          "drawCalls": 8
+        },
+        "하층 식생/기본·후처리": {
+          "kind": "하층 식생",
+          "pass": "기본·후처리",
+          "triangles": 18211,
+          "drawCalls": 6
+        },
+        "숲/기본·후처리": {
+          "kind": "숲",
+          "pass": "기본·후처리",
+          "triangles": 25722,
+          "drawCalls": 766
+        },
+        "바위/기본·후처리": {
+          "kind": "바위",
+          "pass": "기본·후처리",
+          "triangles": 220650,
+          "drawCalls": 23
+        },
+        "기타/직접 제출 외": {
+          "kind": "기타",
+          "pass": "직접 제출 외",
+          "triangles": 0,
+          "drawCalls": 0
+        }
+      },
+      "compileCount": 1,
+      "fov": 55,
+      "exposure": 1.6561216376008554
+    },
+    "labels": true
+  },
+  {
+    "id": "northeast",
+    "s": 5066.907963768512,
+    "bearing": 59,
+    "inspect": false,
+    "errors": [],
+    "performance": {
+      "frames": 495,
+      "breakdown": {
+        "기타·후처리/기본·후처리": {
+          "kind": "기타·후처리",
+          "pass": "기본·후처리",
+          "triangles": 12923.735353535218,
+          "drawCalls": 2.7353535353535454,
+          "maxTriangles": 12927
+        },
+        "8m 상시 지형/기본·후처리": {
+          "kind": "8m 상시 지형",
+          "pass": "기본·후처리",
+          "triangles": 140147.99999999988,
+          "drawCalls": 1.0000000000000056,
+          "maxTriangles": 140148
+        },
+        "지형 청크/기본·후처리": {
+          "kind": "지형 청크",
+          "pass": "기본·후처리",
+          "triangles": 34815.99999999966,
+          "drawCalls": 16.999999999999833,
+          "maxTriangles": 34816
+        },
+        "등산로/기본·후처리": {
+          "kind": "등산로",
+          "pass": "기본·후처리",
+          "triangles": 838.0000000000058,
+          "drawCalls": 1.0000000000000056,
+          "maxTriangles": 838
+        },
+        "원경 도시/기본·후처리": {
+          "kind": "원경 도시",
+          "pass": "기본·후처리",
+          "triangles": 86867.9999999991,
+          "drawCalls": 10.000000000000004,
+          "maxTriangles": 86868
+        },
+        "원경 지형/기본·후처리": {
+          "kind": "원경 지형",
+          "pass": "기본·후처리",
+          "triangles": 469408.0000000004,
+          "drawCalls": 2.9999999999999787,
+          "maxTriangles": 469408
+        },
+        "하층 식생/기본·후처리": {
+          "kind": "하층 식생",
+          "pass": "기본·후처리",
+          "triangles": 24646.00000000013,
+          "drawCalls": 6.999999999999959,
+          "maxTriangles": 24646
+        },
+        "숲/기본·후처리": {
+          "kind": "숲",
+          "pass": "기본·후처리",
+          "triangles": 23355.99999999979,
+          "drawCalls": 775.9999999999927,
+          "maxTriangles": 23356
+        },
+        "바위/기본·후처리": {
+          "kind": "바위",
+          "pass": "기본·후처리",
+          "triangles": 166303,
+          "drawCalls": 21.000000000000117,
+          "maxTriangles": 166303
+        },
+        "기타·후처리/SSAO 깊이·법선": {
+          "kind": "기타·후처리",
+          "pass": "SSAO 깊이·법선",
+          "triangles": 2375.743434343438,
+          "drawCalls": 0.3676767676767684,
+          "maxTriangles": 12923
+        },
+        "8m 상시 지형/SSAO 깊이·법선": {
+          "kind": "8m 상시 지형",
+          "pass": "SSAO 깊이·법선",
+          "triangles": 25764.581818181865,
+          "drawCalls": 0.1838383838383842,
+          "maxTriangles": 140148
+        },
+        "지형 청크/SSAO 깊이·법선": {
+          "kind": "지형 청크",
+          "pass": "SSAO 깊이·법선",
+          "triangles": 6400.517171717172,
+          "drawCalls": 3.125252525252525,
+          "maxTriangles": 34816
+        },
+        "등산로/SSAO 깊이·법선": {
+          "kind": "등산로",
+          "pass": "SSAO 깊이·법선",
+          "triangles": 154.05656565656588,
+          "drawCalls": 0.1838383838383842,
+          "maxTriangles": 838
+        },
+        "원경 도시/SSAO 깊이·법선": {
+          "kind": "원경 도시",
+          "pass": "SSAO 깊이·법선",
+          "triangles": 15969.672727272758,
+          "drawCalls": 1.8383838383838351,
+          "maxTriangles": 86868
+        },
+        "원경 지형/SSAO 깊이·법선": {
+          "kind": "원경 지형",
+          "pass": "SSAO 깊이·법선",
+          "triangles": 86295.20808080815,
+          "drawCalls": 0.5515151515151514,
+          "maxTriangles": 469408
+        },
+        "하층 식생/SSAO 깊이·법선": {
+          "kind": "하층 식생",
+          "pass": "SSAO 깊이·법선",
+          "triangles": 4530.880808080807,
+          "drawCalls": 1.2868686868686878,
+          "maxTriangles": 24646
+        },
+        "숲/SSAO 깊이·법선": {
+          "kind": "숲",
+          "pass": "SSAO 깊이·법선",
+          "triangles": 4293.729292929297,
+          "drawCalls": 142.65858585858606,
+          "maxTriangles": 23356
+        },
+        "바위/SSAO 깊이·법선": {
+          "kind": "바위",
+          "pass": "SSAO 깊이·법선",
+          "triangles": 30572.874747474696,
+          "drawCalls": 3.8606060606060644,
+          "maxTriangles": 166303
+        },
+        "기타/직접 제출 외": {
+          "kind": "기타",
+          "pass": "직접 제출 외",
+          "triangles": 0,
+          "drawCalls": 0,
+          "maxTriangles": 0
+        }
+      },
+      "categories": {
+        "기타·후처리": {
+          "triangles": 15299.478787878628,
+          "drawCalls": 3.1030303030303164,
+          "maxTriangles": 25850,
+          "maxDrawCalls": 8
+        },
+        "8m 상시 지형": {
+          "triangles": 165912.58181818042,
+          "drawCalls": 1.1838383838383897,
+          "maxTriangles": 280296,
+          "maxDrawCalls": 2
+        },
+        "지형 청크": {
+          "triangles": 41216.517171716805,
+          "drawCalls": 20.125252525252346,
+          "maxTriangles": 69632,
+          "maxDrawCalls": 34
+        },
+        "등산로": {
+          "triangles": 992.0565656565717,
+          "drawCalls": 1.1838383838383897,
+          "maxTriangles": 1676,
+          "maxDrawCalls": 2
+        },
+        "원경 도시": {
+          "triangles": 102837.67272727152,
+          "drawCalls": 11.83838383838388,
+          "maxTriangles": 173736,
+          "maxDrawCalls": 20
+        },
+        "원경 지형": {
+          "triangles": 555703.2080808085,
+          "drawCalls": 3.55151515151511,
+          "maxTriangles": 938816,
+          "maxDrawCalls": 6
+        },
+        "하층 식생": {
+          "triangles": 29176.880808081103,
+          "drawCalls": 8.286868686868655,
+          "maxTriangles": 49292,
+          "maxDrawCalls": 14
+        },
+        "숲": {
+          "triangles": 27649.72929292892,
+          "drawCalls": 918.6585858585768,
+          "maxTriangles": 46712,
+          "maxDrawCalls": 1552
+        },
+        "바위": {
+          "triangles": 196875.87474747404,
+          "drawCalls": 24.860606060606262,
+          "maxTriangles": 332606,
+          "maxDrawCalls": 42
+        },
+        "기타": {
+          "triangles": 0,
+          "drawCalls": 0,
+          "maxTriangles": 0,
+          "maxDrawCalls": 0
+        }
+      },
+      "fps": 49.33767903597164,
+      "p95Ms": 33.400000000001455,
+      "p99Ms": 50,
+      "maxMs": 50.10000000000582,
+      "over50ms": 4,
+      "cpuMs": {
+        "movement": 0.002828283020944306,
+        "ambient": 0.002424241075612078,
+        "hiker": 0.048686869457514596,
+        "contact": 0.20727273093329535,
+        "camera": 0.008686869072191643,
+        "terrain": 1.3329292904246937,
+        "render": 9.599191920925872
+      },
+      "drawCalls": 992.7919191919192,
+      "triangles": 1135664,
+      "maxTriangles": 1918616,
+      "textures": 52.73535353535353
+    },
+    "landscape": {
+      "source": "manifest",
+      "cityChunks": 32,
+      "buildings": 153397,
+      "waterPolygons": 382,
+      "errors": [],
+      "ready": true,
+      "contactOcclusion": {
+        "method": "경로 지역 배치 접촉 음영",
+        "enabled": true,
+        "occluders": 170500,
+        "resolutionLimit": 8192,
+        "resolution": [
+          4751,
+          8192
+        ],
+        "metresPerTexel": [
+          0.35887884787609936,
+          0.35891058364181544
+        ],
+        "bytes": 38920192,
+        "directMax": 0.36,
+        "forestMax": 0.26,
+        "protectedRoute": true,
+        "routeMargin": 0.15
+      },
+      "summitFacilities": {
+        "status": "추정 위치·치수",
+        "sites": [
+          {
+            "id": "radar",
+            "anchor": "summit",
+            "offset": [
+              -18,
+              -19
+            ],
+            "supportRadius": 6,
+            "dimensions": "받침 9×7×6m, 흰 돔 지름 10m",
+            "yaw": 0,
+            "x": 1539.5703327634624,
+            "z": 2516.5960865837123,
+            "y": 618.3176685335309,
+            "anchorElevation": 632,
+            "placementVerified": false,
+            "placementStatus": "조건 충족 후보 없음·임시 배치"
+          },
+          {
+            "id": "eungjinjeon",
+            "anchor": "summit",
+            "offset": [
+              -24,
+              -4
+            ],
+            "supportRadius": 5,
+            "dimensions": "석축 7×6×5m, 기와집 6×5×3.5m, 연등 9개",
+            "yaw": 0.25,
+            "x": 1533.5703327634624,
+            "z": 2531.5960865837123,
+            "y": 623.0266516591339,
+            "anchorElevation": 632,
+            "placementVerified": false,
+            "placementStatus": "조건 충족 후보 없음·임시 배치"
+          },
+          {
+            "id": "marker",
+            "anchor": "summit",
+            "offset": [
+              -9,
+              -6
+            ],
+            "supportRadius": 1.5,
+            "dimensions": "받침 지름 2.4m·높이 0.24m, 표지석 1.4×0.65×2m",
+            "yaw": 1.0471975511965976,
+            "x": 1548.5703327634624,
+            "z": 2529.5960865837123,
+            "y": 630.8697595362096,
+            "anchorElevation": 632
+          },
+          {
+            "id": "helipad",
+            "anchor": "junction",
+            "offset": [
+              14,
+              4
+            ],
+            "supportRadius": 8,
+            "dimensions": "원형 공터 지름 16m, H 4×4m",
+            "yaw": 0,
+            "x": 1654.1948963349166,
+            "z": 2802.522950328025,
+            "y": 572.4689353617099,
+            "anchorElevation": 573.4304489955438
+          },
+          {
+            "id": "fork",
+            "anchor": "junction",
+            "offset": [
+              5,
+              -1
+            ],
+            "supportRadius": 0.2,
+            "dimensions": "지주 2.3m, 표지판 2×0.65m",
+            "yaw": -1.5707963267948966,
+            "x": 1645.1948963349166,
+            "z": 2797.522950328025,
+            "y": 573.478423150327,
+            "anchorElevation": 573.4304489955438
+          }
+        ],
+        "counts": [
+          {
+            "id": "radar",
+            "levels": [
+              {
+                "distance": 0,
+                "triangles": 228,
+                "meshes": 2
+              },
+              {
+                "distance": 40,
+                "triangles": 128,
+                "meshes": 2
+              },
+              {
+                "distance": 120,
+                "triangles": 32,
+                "meshes": 1
+              },
+              {
+                "distance": 400,
+                "triangles": 32,
+                "meshes": 1
+              }
+            ]
+          },
+          {
+            "id": "eungjinjeon",
+            "levels": [
+              {
+                "distance": 0,
+                "triangles": 636,
+                "meshes": 4
+              },
+              {
+                "distance": 40,
+                "triangles": 588,
+                "meshes": 4
+              },
+              {
+                "distance": 120,
+                "triangles": 60,
+                "meshes": 3
+              },
+              {
+                "distance": 400,
+                "triangles": 60,
+                "meshes": 3
+              }
+            ]
+          },
+          {
+            "id": "marker",
+            "levels": [
+              {
+                "distance": 0,
+                "triangles": 46,
+                "meshes": 2
+              },
+              {
+                "distance": 40,
+                "triangles": 44,
+                "meshes": 1
+              },
+              {
+                "distance": 120,
+                "triangles": 44,
+                "meshes": 1
+              },
+              {
+                "distance": 400,
+                "triangles": 0,
+                "meshes": 0
+              }
+            ]
+          },
+          {
+            "id": "helipad",
+            "levels": [
+              {
+                "distance": 0,
+                "triangles": 228,
+                "meshes": 2
+              },
+              {
+                "distance": 40,
+                "triangles": 132,
+                "meshes": 2
+              },
+              {
+                "distance": 120,
+                "triangles": 132,
+                "meshes": 2
+              },
+              {
+                "distance": 400,
+                "triangles": 0,
+                "meshes": 0
+              }
+            ]
+          },
+          {
+            "id": "fork",
+            "levels": [
+              {
+                "distance": 0,
+                "triangles": 26,
+                "meshes": 2
+              },
+              {
+                "distance": 40,
+                "triangles": 24,
+                "meshes": 1
+              },
+              {
+                "distance": 120,
+                "triangles": 24,
+                "meshes": 1
+              },
+              {
+                "distance": 400,
+                "triangles": 0,
+                "meshes": 0
+              }
+            ]
+          }
+        ]
+      },
+      "cityLabels": false,
+      "pendingTerrainChunks": 0,
+      "terrainVisibleChunks": 17,
+      "natureBroadPhase": {
+        "cells": 264,
+        "frustumTests": 56,
+        "distanceRejected": 208
+      },
+      "natureVisibleChunks": 797,
+      "natureBaseTriangleBudget": 300000,
+      "seoulRoads": 12256,
+      "seoulBridges": 1211,
+      "cityDuplicates": 137,
+      "natureReady": true,
+      "natureCounts": {
+        "trees": 134888,
+        "rocks": 982,
+        "understory": 7651
+      },
+      "scenery": {
+        "forestCorridor": 30,
+        "grassRadius": [
+          20,
+          30,
+          40
+        ],
+        "grassInstances": 415648,
+        "trees": 21637,
+        "outcrops": 160,
+        "speciesStatus": "임상도 미확보 · 활엽 60%/소나무 40% 시각 대용",
+        "wind": true,
+        "layers": [
+          "소나무·참나무류 교목 시각 대용",
+          "관목",
+          "고사리·조릿대형 하층"
+        ],
+        "ground": "기존 4종 PBR 노멀 혼합 + 이끼 색 패치",
+        "visibleGrass": 727
+      },
+      "forestMix": {
+        "status": "추정(임상도 확보 전)",
+        "broadleafRatio": 0.6,
+        "broadleafIds": [
+          "tree_small_02",
+          "island_tree_01"
+        ],
+        "pineIds": [
+          "pine_tree_01",
+          "pine_sapling_medium"
+        ],
+        "broadleafTint": 11978901,
+        "pineTint": 12897966,
+        "broadleafScale": 1.04,
+        "counts": {
+          "broadleaf": 94084,
+          "pine": 62613
+        }
+      },
+      "contactOccluderKinds": {
+        "tree": 156697,
+        "rock": 6152,
+        "understory": 7651
+      },
+      "cityGrid": {
+        "cellSize": 2000,
+        "cells": 148,
+        "nodes": 149,
+        "silhouetteStrips": 128,
+        "visibleCells": 61,
+        "detailedCells": 0,
+        "simpleCells": 9,
+        "silhouetteCells": 0,
+        "proxyCells": 52,
+        "frustumTests": 148,
+        "distanceRejected": 0,
+        "baseTriangles": 86868,
+        "baseDrawCalls": 10,
+        "baseTriangleBudget": 300000
+      },
+      "nearDetail": {
+        "instances": 5212,
+        "grass": 15062,
+        "understoryMinimumScale": 0.28
+      },
+      "natureChunks": 16589,
+      "sceneNodes": 156679
+    },
+    "rendering": {
+      "indirectLight": {
+        "skyColor": "#D5D6D3",
+        "groundColor": "#ABA8A2",
+        "hemisphereIntensity": 0.45,
+        "retainedChroma": 0.01,
+        "terrainChroma": 0.25
+      },
+      "profile": "forest-granite-clear-v2",
+      "toneMapping": "Neutral",
+      "sunElevation": 29.00000000000002,
+      "sunAzimuth": 141.99999999999983,
+      "shadowAzimuth": 322,
+      "shadowLengthPerHeight": 1.8040477552714238,
+      "sunColor": "#FFF1DE",
+      "hazeColor": "#94ADBD",
+      "skyZenith": "#5B8FC7",
+      "far": 30000,
+      "hdri": "Poly Haven Kloppenheim 06 PureSky 1K · CC0",
+      "ao": false,
+      "shadows": true,
+      "shaderErrors": [],
+      "calibration": {
+        "environmentIntensity": 0.19025671504749112,
+        "hemisphereIntensity": 0.08561552177137101,
+        "directContribution": [
+          0.1196015253663063,
+          0.10520417988300323,
+          0.08736421167850494
+        ],
+        "indirectContribution": [
+          0.026651568710803986,
+          0.026847971603274345,
+          0.025989754125475883
+        ],
+        "exposure": 1.6561216376008554,
+        "ratio": 3.999999911855317,
+        "grayCard": [
+          124.18718823325746,
+          117.24703062205111,
+          107.23999280771878
+        ],
+        "grayCardLuma": 117.99999999999878,
+        "fogSamples": [
+          {
+            "distance": 1000,
+            "contrast": 0.9528209605121986
+          },
+          {
+            "distance": 8000,
+            "contrast": 0.6799886860236525
+          },
+          {
+            "distance": 10000,
+            "contrast": 0.6115473056718708
+          },
+          {
+            "distance": 12000,
+            "contrast": 0.5499930242747069
+          },
+          {
+            "distance": 25000,
+            "contrast": 0.2499984534472227
+          }
+        ],
+        "precision": "float32",
+        "calibrated": true
+      },
+      "normalPass": false,
+      "shadowDistance": 45,
+      "aoResolution": {
+        "width": 720,
+        "height": 450,
+        "scale": 0.5,
+        "kernelSamples": 12
+      },
+      "compiling": false,
+      "compileError": null,
+      "aoProfile": {
+        "enabled": false,
+        "gpuSupported": false,
+        "gpuDisjointSamples": 0,
+        "rows": {}
+      },
+      "aoDiagnosticMode": null,
+      "breakdown": {
+        "기타·후처리/기본·후처리": {
+          "kind": "기타·후처리",
+          "pass": "기본·후처리",
+          "triangles": 12923,
+          "drawCalls": 2
+        },
+        "8m 상시 지형/기본·후처리": {
+          "kind": "8m 상시 지형",
+          "pass": "기본·후처리",
+          "triangles": 140148,
+          "drawCalls": 1
+        },
+        "지형 청크/기본·후처리": {
+          "kind": "지형 청크",
+          "pass": "기본·후처리",
+          "triangles": 34816,
+          "drawCalls": 17
+        },
+        "등산로/기본·후처리": {
+          "kind": "등산로",
+          "pass": "기본·후처리",
+          "triangles": 838,
+          "drawCalls": 1
+        },
+        "원경 도시/기본·후처리": {
+          "kind": "원경 도시",
+          "pass": "기본·후처리",
+          "triangles": 86868,
+          "drawCalls": 10
+        },
+        "원경 지형/기본·후처리": {
+          "kind": "원경 지형",
+          "pass": "기본·후처리",
+          "triangles": 469408,
+          "drawCalls": 3
+        },
+        "하층 식생/기본·후처리": {
+          "kind": "하층 식생",
+          "pass": "기본·후처리",
+          "triangles": 24646,
+          "drawCalls": 7
+        },
+        "숲/기본·후처리": {
+          "kind": "숲",
+          "pass": "기본·후처리",
+          "triangles": 23356,
+          "drawCalls": 776
+        },
+        "바위/기본·후처리": {
+          "kind": "바위",
+          "pass": "기본·후처리",
+          "triangles": 166303,
+          "drawCalls": 21
+        },
+        "기타/직접 제출 외": {
+          "kind": "기타",
+          "pass": "직접 제출 외",
+          "triangles": 0,
+          "drawCalls": 0
+        }
+      },
+      "compileCount": 1,
+      "fov": 55,
+      "exposure": 1.6561216376008554
+    }
+  },
+  {
+    "id": "west",
+    "s": 4208.1648172686155,
+    "bearing": 285,
+    "inspect": false,
+    "errors": [],
+    "performance": {
+      "frames": 483,
+      "breakdown": {
+        "기타·후처리/기본·후처리": {
+          "kind": "기타·후처리",
+          "pass": "기본·후처리",
+          "triangles": 12923.679089026964,
+          "drawCalls": 2.6790890269151477,
+          "maxTriangles": 12927
+        },
+        "등산로/기본·후처리": {
+          "kind": "등산로",
+          "pass": "기본·후처리",
+          "triangles": 20879.999999999935,
+          "drawCalls": 34.99999999999995,
+          "maxTriangles": 20880
+        },
+        "지형 청크/기본·후처리": {
+          "kind": "지형 청크",
+          "pass": "기본·후처리",
+          "triangles": 38911.999999999985,
+          "drawCalls": 18.999999999999993,
+          "maxTriangles": 38912
+        },
+        "8m 상시 지형/기본·후처리": {
+          "kind": "8m 상시 지형",
+          "pass": "기본·후처리",
+          "triangles": 140147.99999999965,
+          "drawCalls": 1.0000000000000089,
+          "maxTriangles": 140148
+        },
+        "원경 도시/기본·후처리": {
+          "kind": "원경 도시",
+          "pass": "기본·후처리",
+          "triangles": 33107.999999999585,
+          "drawCalls": 1.0000000000000089,
+          "maxTriangles": 33108
+        },
+        "원경 지형/기본·후처리": {
+          "kind": "원경 지형",
+          "pass": "기본·후처리",
+          "triangles": 469215.99999999866,
+          "drawCalls": 2.0000000000000178,
+          "maxTriangles": 469216
+        },
+        "하층 식생/기본·후처리": {
+          "kind": "하층 식생",
+          "pass": "기본·후처리",
+          "triangles": 171749.00000000015,
+          "drawCalls": 13.000000000000112,
+          "maxTriangles": 171749
+        },
+        "숲/기본·후처리": {
+          "kind": "숲",
+          "pass": "기본·후처리",
+          "triangles": 46819.99999999987,
+          "drawCalls": 1139.9999999999993,
+          "maxTriangles": 46820
+        },
+        "바위/기본·후처리": {
+          "kind": "바위",
+          "pass": "기본·후처리",
+          "triangles": 130104.99999999936,
+          "drawCalls": 7.000000000000025,
+          "maxTriangles": 130105
+        },
+        "기타·후처리/SSAO 깊이·법선": {
+          "kind": "기타·후처리",
+          "pass": "SSAO 깊이·법선",
+          "triangles": 2193.966873706008,
+          "drawCalls": 0.33954451345755743,
+          "maxTriangles": 12923
+        },
+        "등산로/SSAO 깊이·법선": {
+          "kind": "등산로",
+          "pass": "SSAO 깊이·법선",
+          "triangles": 3544.8447204968984,
+          "drawCalls": 5.942028985507253,
+          "maxTriangles": 20880
+        },
+        "지형 청크/SSAO 깊이·법선": {
+          "kind": "지형 청크",
+          "pass": "SSAO 깊이·법선",
+          "triangles": 6606.17805383024,
+          "drawCalls": 3.225672877846797,
+          "maxTriangles": 38912
+        },
+        "8m 상시 지형/SSAO 깊이·법선": {
+          "kind": "8m 상시 지형",
+          "pass": "SSAO 깊이·법선",
+          "triangles": 23793.242236024817,
+          "drawCalls": 0.16977225672877871,
+          "maxTriangles": 140148
+        },
+        "원경 도시/SSAO 깊이·법선": {
+          "kind": "원경 도시",
+          "pass": "SSAO 깊이·법선",
+          "triangles": 5620.819875776399,
+          "drawCalls": 0.16977225672877871,
+          "maxTriangles": 33108
+        },
+        "원경 지형/SSAO 깊이·법선": {
+          "kind": "원경 지형",
+          "pass": "SSAO 깊이·법선",
+          "triangles": 79659.8592132505,
+          "drawCalls": 0.33954451345755743,
+          "maxTriangles": 469216
+        },
+        "하층 식생/SSAO 깊이·법선": {
+          "kind": "하층 식생",
+          "pass": "SSAO 깊이·법선",
+          "triangles": 29158.215320910913,
+          "drawCalls": 2.2070393374741215,
+          "maxTriangles": 171749
+        },
+        "숲/SSAO 깊이·법선": {
+          "kind": "숲",
+          "pass": "SSAO 깊이·법선",
+          "triangles": 7948.737060041393,
+          "drawCalls": 193.5403726708077,
+          "maxTriangles": 46820
+        },
+        "바위/SSAO 깊이·법선": {
+          "kind": "바위",
+          "pass": "SSAO 깊이·법선",
+          "triangles": 22088.219461697692,
+          "drawCalls": 1.1884057971014486,
+          "maxTriangles": 130105
+        },
+        "기타/직접 제출 외": {
+          "kind": "기타",
+          "pass": "직접 제출 외",
+          "triangles": 0,
+          "drawCalls": 0,
+          "maxTriangles": 0
+        }
+      },
+      "categories": {
+        "기타·후처리": {
+          "triangles": 15117.645962733004,
+          "drawCalls": 3.0186335403727056,
+          "maxTriangles": 25850,
+          "maxDrawCalls": 8
+        },
+        "등산로": {
+          "triangles": 24424.844720496752,
+          "drawCalls": 40.94202898550747,
+          "maxTriangles": 41760,
+          "maxDrawCalls": 70
+        },
+        "지형 청크": {
+          "triangles": 45518.17805383006,
+          "drawCalls": 22.22567287784671,
+          "maxTriangles": 77824,
+          "maxDrawCalls": 38
+        },
+        "8m 상시 지형": {
+          "triangles": 163941.2422360252,
+          "drawCalls": 1.169772256728791,
+          "maxTriangles": 280296,
+          "maxDrawCalls": 2
+        },
+        "원경 도시": {
+          "triangles": 38728.819875776135,
+          "drawCalls": 1.169772256728791,
+          "maxTriangles": 66216,
+          "maxDrawCalls": 2
+        },
+        "원경 지형": {
+          "triangles": 548875.8592132475,
+          "drawCalls": 2.339544513457582,
+          "maxTriangles": 938432,
+          "maxDrawCalls": 4
+        },
+        "하층 식생": {
+          "triangles": 200907.2153209117,
+          "drawCalls": 15.207039337474306,
+          "maxTriangles": 343498,
+          "maxDrawCalls": 26
+        },
+        "숲": {
+          "triangles": 54768.73706004111,
+          "drawCalls": 1333.5403726707978,
+          "maxTriangles": 93640,
+          "maxDrawCalls": 2280
+        },
+        "바위": {
+          "triangles": 152193.2194616966,
+          "drawCalls": 8.188405797101462,
+          "maxTriangles": 260210,
+          "maxDrawCalls": 14
+        },
+        "기타": {
+          "triangles": 0,
+          "drawCalls": 0,
+          "maxTriangles": 0,
+          "maxDrawCalls": 0
+        }
+      },
+      "fps": 48.14113425695206,
+      "p95Ms": 50,
+      "p99Ms": 50.099999999998545,
+      "maxMs": 50.10000000000582,
+      "over50ms": 5,
+      "cpuMs": {
+        "movement": 0.001242236814637115,
+        "ambient": 0.0022774354764887018,
+        "hiker": 0.050310556439385895,
+        "contact": 0.3033126269314847,
+        "camera": 0.010351965886465512,
+        "terrain": 1.6981366465550771,
+        "render": 11.069979293993047
+      },
+      "drawCalls": 1427.8012422360248,
+      "triangles": 1244475.761904762,
+      "maxTriangles": 2127726,
+      "textures": 57.679089026915115
+    },
+    "landscape": {
+      "source": "manifest",
+      "cityChunks": 32,
+      "buildings": 153397,
+      "waterPolygons": 382,
+      "errors": [],
+      "ready": true,
+      "contactOcclusion": {
+        "method": "경로 지역 배치 접촉 음영",
+        "enabled": true,
+        "occluders": 170500,
+        "resolutionLimit": 8192,
+        "resolution": [
+          4751,
+          8192
+        ],
+        "metresPerTexel": [
+          0.35887884787609936,
+          0.35891058364181544
+        ],
+        "bytes": 38920192,
+        "directMax": 0.36,
+        "forestMax": 0.26,
+        "protectedRoute": true,
+        "routeMargin": 0.15
+      },
+      "summitFacilities": {
+        "status": "추정 위치·치수",
+        "sites": [
+          {
+            "id": "radar",
+            "anchor": "summit",
+            "offset": [
+              -18,
+              -19
+            ],
+            "supportRadius": 6,
+            "dimensions": "받침 9×7×6m, 흰 돔 지름 10m",
+            "yaw": 0,
+            "x": 1539.5703327634624,
+            "z": 2516.5960865837123,
+            "y": 618.3176685335309,
+            "anchorElevation": 632,
+            "placementVerified": false,
+            "placementStatus": "조건 충족 후보 없음·임시 배치"
+          },
+          {
+            "id": "eungjinjeon",
+            "anchor": "summit",
+            "offset": [
+              -24,
+              -4
+            ],
+            "supportRadius": 5,
+            "dimensions": "석축 7×6×5m, 기와집 6×5×3.5m, 연등 9개",
+            "yaw": 0.25,
+            "x": 1533.5703327634624,
+            "z": 2531.5960865837123,
+            "y": 623.0266516591339,
+            "anchorElevation": 632,
+            "placementVerified": false,
+            "placementStatus": "조건 충족 후보 없음·임시 배치"
+          },
+          {
+            "id": "marker",
+            "anchor": "summit",
+            "offset": [
+              -9,
+              -6
+            ],
+            "supportRadius": 1.5,
+            "dimensions": "받침 지름 2.4m·높이 0.24m, 표지석 1.4×0.65×2m",
+            "yaw": 1.0471975511965976,
+            "x": 1548.5703327634624,
+            "z": 2529.5960865837123,
+            "y": 630.8697595362096,
+            "anchorElevation": 632
+          },
+          {
+            "id": "helipad",
+            "anchor": "junction",
+            "offset": [
+              14,
+              4
+            ],
+            "supportRadius": 8,
+            "dimensions": "원형 공터 지름 16m, H 4×4m",
+            "yaw": 0,
+            "x": 1654.1948963349166,
+            "z": 2802.522950328025,
+            "y": 572.4689353617099,
+            "anchorElevation": 573.4304489955438
+          },
+          {
+            "id": "fork",
+            "anchor": "junction",
+            "offset": [
+              5,
+              -1
+            ],
+            "supportRadius": 0.2,
+            "dimensions": "지주 2.3m, 표지판 2×0.65m",
+            "yaw": -1.5707963267948966,
+            "x": 1645.1948963349166,
+            "z": 2797.522950328025,
+            "y": 573.478423150327,
+            "anchorElevation": 573.4304489955438
+          }
+        ],
+        "counts": [
+          {
+            "id": "radar",
+            "levels": [
+              {
+                "distance": 0,
+                "triangles": 228,
+                "meshes": 2
+              },
+              {
+                "distance": 40,
+                "triangles": 128,
+                "meshes": 2
+              },
+              {
+                "distance": 120,
+                "triangles": 32,
+                "meshes": 1
+              },
+              {
+                "distance": 400,
+                "triangles": 32,
+                "meshes": 1
+              }
+            ]
+          },
+          {
+            "id": "eungjinjeon",
+            "levels": [
+              {
+                "distance": 0,
+                "triangles": 636,
+                "meshes": 4
+              },
+              {
+                "distance": 40,
+                "triangles": 588,
+                "meshes": 4
+              },
+              {
+                "distance": 120,
+                "triangles": 60,
+                "meshes": 3
+              },
+              {
+                "distance": 400,
+                "triangles": 60,
+                "meshes": 3
+              }
+            ]
+          },
+          {
+            "id": "marker",
+            "levels": [
+              {
+                "distance": 0,
+                "triangles": 46,
+                "meshes": 2
+              },
+              {
+                "distance": 40,
+                "triangles": 44,
+                "meshes": 1
+              },
+              {
+                "distance": 120,
+                "triangles": 44,
+                "meshes": 1
+              },
+              {
+                "distance": 400,
+                "triangles": 0,
+                "meshes": 0
+              }
+            ]
+          },
+          {
+            "id": "helipad",
+            "levels": [
+              {
+                "distance": 0,
+                "triangles": 228,
+                "meshes": 2
+              },
+              {
+                "distance": 40,
+                "triangles": 132,
+                "meshes": 2
+              },
+              {
+                "distance": 120,
+                "triangles": 132,
+                "meshes": 2
+              },
+              {
+                "distance": 400,
+                "triangles": 0,
+                "meshes": 0
+              }
+            ]
+          },
+          {
+            "id": "fork",
+            "levels": [
+              {
+                "distance": 0,
+                "triangles": 26,
+                "meshes": 2
+              },
+              {
+                "distance": 40,
+                "triangles": 24,
+                "meshes": 1
+              },
+              {
+                "distance": 120,
+                "triangles": 24,
+                "meshes": 1
+              },
+              {
+                "distance": 400,
+                "triangles": 0,
+                "meshes": 0
+              }
+            ]
+          }
+        ]
+      },
+      "cityLabels": false,
+      "pendingTerrainChunks": 0,
+      "terrainVisibleChunks": 19,
+      "natureBroadPhase": {
+        "cells": 264,
+        "frustumTests": 57,
+        "distanceRejected": 207
+      },
+      "natureVisibleChunks": 1151,
+      "natureBaseTriangleBudget": 300000,
+      "seoulRoads": 12256,
+      "seoulBridges": 1211,
+      "cityDuplicates": 137,
+      "natureReady": true,
+      "natureCounts": {
+        "trees": 134888,
+        "rocks": 982,
+        "understory": 7651
+      },
+      "scenery": {
+        "forestCorridor": 30,
+        "grassRadius": [
+          20,
+          30,
+          40
+        ],
+        "grassInstances": 415648,
+        "trees": 21637,
+        "outcrops": 160,
+        "speciesStatus": "임상도 미확보 · 활엽 60%/소나무 40% 시각 대용",
+        "wind": true,
+        "layers": [
+          "소나무·참나무류 교목 시각 대용",
+          "관목",
+          "고사리·조릿대형 하층"
+        ],
+        "ground": "기존 4종 PBR 노멀 혼합 + 이끼 색 패치",
+        "visibleGrass": 5160
+      },
+      "forestMix": {
+        "status": "추정(임상도 확보 전)",
+        "broadleafRatio": 0.6,
+        "broadleafIds": [
+          "tree_small_02",
+          "island_tree_01"
+        ],
+        "pineIds": [
+          "pine_tree_01",
+          "pine_sapling_medium"
+        ],
+        "broadleafTint": 11978901,
+        "pineTint": 12897966,
+        "broadleafScale": 1.04,
+        "counts": {
+          "broadleaf": 94084,
+          "pine": 62613
+        }
+      },
+      "contactOccluderKinds": {
+        "tree": 156697,
+        "rock": 6152,
+        "understory": 7651
+      },
+      "cityGrid": {
+        "cellSize": 2000,
+        "cells": 148,
+        "nodes": 149,
+        "silhouetteStrips": 128,
+        "visibleCells": 28,
+        "detailedCells": 0,
+        "simpleCells": 0,
+        "silhouetteCells": 0,
+        "proxyCells": 28,
+        "frustumTests": 148,
+        "distanceRejected": 0,
+        "baseTriangles": 33108,
+        "baseDrawCalls": 1,
+        "baseTriangleBudget": 300000
+      },
+      "nearDetail": {
+        "instances": 5212,
+        "grass": 15062,
+        "understoryMinimumScale": 0.28
+      },
+      "natureChunks": 16589,
+      "sceneNodes": 156679
+    },
+    "rendering": {
+      "indirectLight": {
+        "skyColor": "#D5D6D3",
+        "groundColor": "#ABA8A2",
+        "hemisphereIntensity": 0.45,
+        "retainedChroma": 0.01,
+        "terrainChroma": 0.25
+      },
+      "profile": "forest-granite-clear-v2",
+      "toneMapping": "Neutral",
+      "sunElevation": 29.00000000000002,
+      "sunAzimuth": 141.99999999999983,
+      "shadowAzimuth": 322,
+      "shadowLengthPerHeight": 1.8040477552714238,
+      "sunColor": "#FFF1DE",
+      "hazeColor": "#94ADBD",
+      "skyZenith": "#5B8FC7",
+      "far": 30000,
+      "hdri": "Poly Haven Kloppenheim 06 PureSky 1K · CC0",
+      "ao": false,
+      "shadows": true,
+      "shaderErrors": [],
+      "calibration": {
+        "environmentIntensity": 0.19025671504749112,
+        "hemisphereIntensity": 0.08561552177137101,
+        "directContribution": [
+          0.1196015253663063,
+          0.10520417988300323,
+          0.08736421167850494
+        ],
+        "indirectContribution": [
+          0.026651568710803986,
+          0.026847971603274345,
+          0.025989754125475883
+        ],
+        "exposure": 1.6561216376008554,
+        "ratio": 3.999999911855317,
+        "grayCard": [
+          124.18718823325746,
+          117.24703062205111,
+          107.23999280771878
+        ],
+        "grayCardLuma": 117.99999999999878,
+        "fogSamples": [
+          {
+            "distance": 1000,
+            "contrast": 0.9528209605121986
+          },
+          {
+            "distance": 8000,
+            "contrast": 0.6799886860236525
+          },
+          {
+            "distance": 10000,
+            "contrast": 0.6115473056718708
+          },
+          {
+            "distance": 12000,
+            "contrast": 0.5499930242747069
+          },
+          {
+            "distance": 25000,
+            "contrast": 0.2499984534472227
+          }
+        ],
+        "precision": "float32",
+        "calibrated": true
+      },
+      "normalPass": false,
+      "shadowDistance": 45,
+      "aoResolution": {
+        "width": 720,
+        "height": 450,
+        "scale": 0.5,
+        "kernelSamples": 12
+      },
+      "compiling": false,
+      "compileError": null,
+      "aoProfile": {
+        "enabled": false,
+        "gpuSupported": false,
+        "gpuDisjointSamples": 0,
+        "rows": {}
+      },
+      "aoDiagnosticMode": null,
+      "breakdown": {
+        "기타·후처리/기본·후처리": {
+          "kind": "기타·후처리",
+          "pass": "기본·후처리",
+          "triangles": 12923,
+          "drawCalls": 2
+        },
+        "등산로/기본·후처리": {
+          "kind": "등산로",
+          "pass": "기본·후처리",
+          "triangles": 20880,
+          "drawCalls": 35
+        },
+        "지형 청크/기본·후처리": {
+          "kind": "지형 청크",
+          "pass": "기본·후처리",
+          "triangles": 38912,
+          "drawCalls": 19
+        },
+        "8m 상시 지형/기본·후처리": {
+          "kind": "8m 상시 지형",
+          "pass": "기본·후처리",
+          "triangles": 140148,
+          "drawCalls": 1
+        },
+        "원경 도시/기본·후처리": {
+          "kind": "원경 도시",
+          "pass": "기본·후처리",
+          "triangles": 33108,
+          "drawCalls": 1
+        },
+        "원경 지형/기본·후처리": {
+          "kind": "원경 지형",
+          "pass": "기본·후처리",
+          "triangles": 469216,
+          "drawCalls": 2
+        },
+        "하층 식생/기본·후처리": {
+          "kind": "하층 식생",
+          "pass": "기본·후처리",
+          "triangles": 171749,
+          "drawCalls": 13
+        },
+        "숲/기본·후처리": {
+          "kind": "숲",
+          "pass": "기본·후처리",
+          "triangles": 46820,
+          "drawCalls": 1140
+        },
+        "바위/기본·후처리": {
+          "kind": "바위",
+          "pass": "기본·후처리",
+          "triangles": 130105,
+          "drawCalls": 7
+        },
+        "기타/직접 제출 외": {
+          "kind": "기타",
+          "pass": "직접 제출 외",
+          "triangles": 0,
+          "drawCalls": 0
+        }
+      },
+      "compileCount": 1,
+      "fov": 55,
+      "exposure": 1.6561216376008554
+    }
+  }
+]

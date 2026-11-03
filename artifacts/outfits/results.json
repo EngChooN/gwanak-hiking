@@ -1,0 +1,99 @@
+{
+  "date": "2026-11-03T09:31:32.665Z",
+  "console": [],
+  "flow": {
+    "pickerBeforeStart": {
+      "started": false,
+      "phase": "ready",
+      "cards": 4
+    },
+    "picked": {
+      "outfit": "navy-zip",
+      "saved": "navy-zip",
+      "elapsed": 0
+    },
+    "reloadSelected": "navy-zip",
+    "keyPick": "floral-shirt",
+    "mapPick": {
+      "current": "red-zip",
+      "saved": "red-zip"
+    },
+    "urlOutfit": {
+      "current": "red-zip",
+      "picker": 0,
+      "zone": "route"
+    },
+    "attachments-1": {
+      "eyewear-lime-polo": true,
+      "polo-collar-lime-polo": true,
+      "neck-lime-polo": true,
+      "belt-lime-polo": true
+    },
+    "attachments-2": {
+      "eyewear-lime-polo": false,
+      "polo-collar-lime-polo": false,
+      "neck-lime-polo": false,
+      "belt-lime-polo": false,
+      "cap-navy-zip": true,
+      "belt-navy-zip": true,
+      "waist-glasses-navy-zip": true,
+      "zip-pull-navy-zip": true
+    },
+    "attachments-3": {
+      "eyewear-lime-polo": false,
+      "polo-collar-lime-polo": false,
+      "neck-lime-polo": false,
+      "belt-lime-polo": false,
+      "cap-navy-zip": false,
+      "belt-navy-zip": false,
+      "waist-glasses-navy-zip": false,
+      "zip-pull-navy-zip": false,
+      "eyewear-red-zip": true,
+      "head-bandana-red-zip": true,
+      "zip-pull-red-zip": true
+    },
+    "attachments-4": {
+      "eyewear-lime-polo": false,
+      "polo-collar-lime-polo": false,
+      "neck-lime-polo": false,
+      "belt-lime-polo": false,
+      "cap-navy-zip": false,
+      "belt-navy-zip": false,
+      "waist-glasses-navy-zip": false,
+      "zip-pull-navy-zip": false,
+      "eyewear-red-zip": false,
+      "head-bandana-red-zip": false,
+      "zip-pull-red-zip": false,
+      "eyewear-floral-shirt": true,
+      "wide-hat-floral-shirt": true,
+      "neck-floral-shirt": true,
+      "sternum-floral-shirt": true,
+      "phone-floral-shirt": true
+    }
+  },
+  "fps": {
+    "plazaThirdWalkOutfit4": 60.00225008437818
+  },
+  "info": {
+    "unit": 1.0016591096064076,
+    "front": 1,
+    "headTop": 1.7184005975723267,
+    "eyeLeft": [
+      0.03029359619055564,
+      1.591196097433567,
+      0.1285110527339081
+    ],
+    "eyeRight": [
+      -0.03029359432791049,
+      1.591196097433567,
+      0.1285110527339081
+    ],
+    "belt": {
+      "y": 0.9532640103454468,
+      "rx": 0.16322886473391568,
+      "rz": 0.12522122636437416,
+      "pantsTop": 0.9883220791816711,
+      "jacketHem": 0.779768705368042
+    }
+  }
+}

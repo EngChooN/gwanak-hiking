@@ -1,0 +1,215 @@
+[
+  {
+    "id": "plaza-third",
+    "query": "start=entrance&time=16:14&weather=overcast&outfit=1",
+    "loadMs": 36326,
+    "readiness": {
+      "radius": 60,
+      "terrainSamples": 49,
+      "terrainMissing": [],
+      "terrain": true,
+      "nearLod": true,
+      "facilities": true,
+      "hikers": true,
+      "zone": "plaza",
+      "stableFrames": 12,
+      "stableTimeout": false,
+      "firstFrameMs": 25520.400000095367
+    },
+    "errors": [],
+    "landscape": {
+      "entrance": {
+        "frame": {
+          "x": -18.40033107376895,
+          "z": -18.534734591234862,
+          "y": 49.645642777338416,
+          "yaw": -2.303834612632515
+        },
+        "counts": [
+          {
+            "levels": [
+              {
+                "distance": 0,
+                "triangles": 15762,
+                "meshes": 16
+              },
+              {
+                "distance": 45,
+                "triangles": 2318,
+                "meshes": 14
+              },
+              {
+                "distance": 150,
+                "triangles": 0,
+                "meshes": 0
+              }
+            ]
+          },
+          {
+            "levels": [
+              {
+                "distance": 0,
+                "triangles": 28922,
+                "meshes": 17
+              },
+              {
+                "distance": 60,
+                "triangles": 2868,
+                "meshes": 11
+              },
+              {
+                "distance": 170,
+                "triangles": 0,
+                "meshes": 0
+              }
+            ]
+          }
+        ],
+        "status": "입구 설정의 일주문 가설 위치 · 현장 실측 전 · 치수·현판 색 미확인"
+      },
+      "plazaReady": null
+    }
+  },
+  {
+    "id": "gate-third",
+    "query": "start=gate&time=16:14&weather=overcast&outfit=1",
+    "loadMs": 34751,
+    "readiness": {
+      "radius": 60,
+      "terrainSamples": 49,
+      "terrainMissing": [],
+      "terrain": true,
+      "nearLod": true,
+      "facilities": true,
+      "hikers": true,
+      "zone": "route",
+      "stableFrames": 12,
+      "stableTimeout": false,
+      "firstFrameMs": 24042.700000047684
+    },
+    "errors": [],
+    "landscape": {
+      "entrance": {
+        "frame": {
+          "x": -18.40033107376895,
+          "z": -18.534734591234862,
+          "y": 49.645642777338416,
+          "yaw": -2.303834612632515
+        },
+        "counts": [
+          {
+            "levels": [
+              {
+                "distance": 0,
+                "triangles": 15762,
+                "meshes": 16
+              },
+              {
+                "distance": 45,
+                "triangles": 2318,
+                "meshes": 14
+              },
+              {
+                "distance": 150,
+                "triangles": 0,
+                "meshes": 0
+              }
+            ]
+          },
+          {
+            "levels": [
+              {
+                "distance": 0,
+                "triangles": 28922,
+                "meshes": 17
+              },
+              {
+                "distance": 60,
+                "triangles": 2868,
+                "meshes": 11
+              },
+              {
+                "distance": 170,
+                "triangles": 0,
+                "meshes": 0
+              }
+            ]
+          }
+        ],
+        "status": "입구 설정의 일주문 가설 위치 · 현장 실측 전 · 치수·현판 색 미확인"
+      },
+      "plazaReady": null
+    }
+  },
+  {
+    "id": "plaza-stand-close",
+    "query": "start=entrance&time=16:14&weather=overcast&outfit=1",
+    "loadMs": 35919,
+    "readiness": {
+      "radius": 60,
+      "terrainSamples": 49,
+      "terrainMissing": [],
+      "terrain": true,
+      "nearLod": true,
+      "facilities": true,
+      "hikers": true,
+      "zone": "plaza",
+      "stableFrames": 12,
+      "stableTimeout": false,
+      "firstFrameMs": 25144.599999904633
+    },
+    "errors": [],
+    "landscape": {
+      "entrance": {
+        "frame": {
+          "x": -18.40033107376895,
+          "z": -18.534734591234862,
+          "y": 49.645642777338416,
+          "yaw": -2.303834612632515
+        },
+        "counts": [
+          {
+            "levels": [
+              {
+                "distance": 0,
+                "triangles": 15762,
+                "meshes": 16
+              },
+              {
+                "distance": 45,
+                "triangles": 2318,
+                "meshes": 14
+              },
+              {
+                "distance": 150,
+                "triangles": 0,
+                "meshes": 0
+              }
+            ]
+          },
+          {
+            "levels": [
+              {
+                "distance": 0,
+                "triangles": 28922,
+                "meshes": 17
+              },
+              {
+                "distance": 60,
+                "triangles": 2868,
+                "meshes": 11
+              },
+              {
+                "distance": 170,
+                "triangles": 0,
+                "meshes": 0
+              }
+            ]
+          }
+        ],
+        "status": "입구 설정의 일주문 가설 위치 · 현장 실측 전 · 치수·현판 색 미확인"
+      },
+      "plazaReady": null
+    }
+  }
+]

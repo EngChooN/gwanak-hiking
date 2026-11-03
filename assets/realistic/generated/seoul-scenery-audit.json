@@ -1,0 +1,27 @@
+{
+  "buildings": 153534,
+  "heightSources": {
+    "estimated-house": 105015,
+    "levels*3": 10587,
+    "height": 21189,
+    "estimated-apartment": 2437,
+    "estimated-industrial": 1847,
+    "estimated-office": 10820,
+    "levels*3.6": 1639
+  },
+  "uses": {
+    "house": 116245,
+    "apartment": 21371,
+    "industrial": 1920,
+    "office": 13998
+  },
+  "source": "© OpenStreetMap contributors",
+  "license": "ODbL-1.0",
+  "estimatedHeights": "용도별 결정적 시각 추정. 실측/도시 통계가 아님",
+  "surfaceMissing": [
+    "south"
+  ],
+  "roads": 12256,
+  "bridges": 1211,
+  "polygons": 9188
+}

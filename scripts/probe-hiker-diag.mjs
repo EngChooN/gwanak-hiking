@@ -4,7 +4,7 @@ import {writeFileSync} from 'node:fs';
 const port=process.env.PORT??5176,ds=Number(process.env.DS??.1),RANGES=(process.env.RANGES??`${process.env.S0??0}-${process.env.S1??1e9}`).split(',').map(r=>r.split('-').map(Number)),out=process.env.OUT??`/tmp/diag-${RANGES[0][0]}.json`;
 const browser=await chromium.launch({channel:'chrome',headless:true,args:['--enable-webgl','--ignore-gpu-blocklist']});
 try{const page=await browser.newPage();page.on('pageerror',e=>{throw e;});
- await page.goto(`http://127.0.0.1:${port}/`);await page.waitForFunction(()=>window.hiking?.landscape().ready,{timeout:120000});await page.waitForTimeout(3000);
+ await page.goto(`http://127.0.0.1:${port}/?start=demo`);await page.waitForFunction(()=>window.hiking?.started&&window.hiking?.landscape().ready,{timeout:120000});await page.waitForTimeout(3000);
  const r=await page.evaluate(async ({ds,RANGES})=>{const {route,sample,strideFor}=await import('/src/route.js');const h=window.__hiker,surf=window.__surface;
   const ev=[];for(const [S0,S1] of RANGES){let phase=0,first=true,prev=null,frames=0;const start=Math.max(.5,S0-8),end=Math.min(route.length-.5,S1);
   for(let s=start;s<end;s+=ds){const q=sample(s),stride=strideFor(q);phase+=ds/stride;

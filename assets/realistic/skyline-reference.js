@@ -42,7 +42,7 @@ export function applyAtmosphere(material,atmosphere){
     const [a,ca]=stops[i-1],[b,cb]=stops[i];
     body+=`${i===1?'if':'else if'}(gDistance<=${Number(b).toFixed(1)}) gContrast=mix(${Number(ca).toFixed(6)},${Number(cb).toFixed(6)},clamp((gDistance-${Number(a).toFixed(1)})/${Number(b-a).toFixed(1)},0.0,1.0));\n`;
   }
-  body+=`else gContrast=${Number(stops.at(-1)[1]).toFixed(6)};\ngl_FragColor.rgb=mix(fogColor,gl_FragColor.rgb,gContrast);`;
+  body+=`else gContrast=${Number(stops.at(-1)[1]).toFixed(6)};\ngContrast*=exp(-gDistance*fogNear);\ngl_FragColor.rgb=mix(fogColor,gl_FragColor.rgb,gContrast);`;
   material.onBeforeCompile=shader=>{
     previous.call(material,shader);
     // 원경 도시의 MeshBasicMaterial에는 vViewPosition이 없다. 깊이/법선 override와도 독립한다.
@@ -51,6 +51,6 @@ export function applyAtmosphere(material,atmosphere){
     shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nvarying vec3 gAtmosphereView;')
       .replace('#include <fog_fragment>',`#ifdef USE_FOG\n${body}\n#endif`);
   };
-  material.customProgramCacheKey=()=>`${key}-skyline-v2-${JSON.stringify(stops)}`;
+  material.customProgramCacheKey=()=>`${key}-skyline-v3-${JSON.stringify(stops)}`;
   return material;
 }

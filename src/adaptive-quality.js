@@ -1,4 +1,5 @@
 // rAF 간격으로 실제 속도를 지키고, 동기 대기를 제외한 CPU 작업 시간으로 복귀 여유를 확인한다.
+// 화질 단계별 그림자: 낮음=30m·1024(사람·가까운 바위만), 보통=45m·1024, 높음=60m·2048(+AO). 느려지면 step2부터 15m 줄이되 30m 아래로는 내리지 않는다.
 export class AdaptiveQuality {
  constructor(cap=2){this.setCap(cap);}
  setCap(cap){
@@ -12,7 +13,8 @@ export class AdaptiveQuality {
  get settings(){
   const cap=this.cap,step=this.step;
   return {cap,step,targetMs:cap===2?1000/55:33,dpr:[.8,1.15,1.6][cap]*[1,.85,.85,.85,.7][step],
-   shadowDistance:cap===0?0:Math.max(30,(cap===2?60:45)-(step>=2?15:0)),
+   shadowDistance:Math.max(30,[30,45,60][cap]-(step>=2?15:0)),
+   shadowMap:cap===2?2048:1024,
    ao:cap===2&&step<3,quality:cap};
  }
  snapshot(){return {...this.settings,changes:this.changes,totalFrames:this.totalFrames,aoFrames:this.aoFrames,

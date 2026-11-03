@@ -1,0 +1,106 @@
+{
+  "views": [
+    {
+      "id": "north",
+      "fps": 49.63669527255333,
+      "pass": true,
+      "errors": [],
+      "shaderErrors": [],
+      "cityGrid": {
+        "cellSize": 2000,
+        "cells": 148,
+        "nodes": 149,
+        "silhouetteStrips": 128,
+        "visibleCells": 78,
+        "detailedCells": 0,
+        "simpleCells": 4,
+        "silhouetteCells": 0,
+        "proxyCells": 74,
+        "frustumTests": 148,
+        "distanceRejected": 0,
+        "baseTriangles": 135804,
+        "baseDrawCalls": 5,
+        "baseTriangleBudget": 300000
+      },
+      "labelsDefault": false,
+      "labelsToggle": true
+    },
+    {
+      "id": "northeast",
+      "fps": 49.33767903597164,
+      "pass": true,
+      "errors": [],
+      "shaderErrors": [],
+      "cityGrid": {
+        "cellSize": 2000,
+        "cells": 148,
+        "nodes": 149,
+        "silhouetteStrips": 128,
+        "visibleCells": 61,
+        "detailedCells": 0,
+        "simpleCells": 9,
+        "silhouetteCells": 0,
+        "proxyCells": 52,
+        "frustumTests": 148,
+        "distanceRejected": 0,
+        "baseTriangles": 86868,
+        "baseDrawCalls": 10,
+        "baseTriangleBudget": 300000
+      },
+      "labelsDefault": false
+    },
+    {
+      "id": "west",
+      "fps": 48.14113425695206,
+      "pass": true,
+      "errors": [],
+      "shaderErrors": [],
+      "cityGrid": {
+        "cellSize": 2000,
+        "cells": 148,
+        "nodes": 149,
+        "silhouetteStrips": 128,
+        "visibleCells": 28,
+        "detailedCells": 0,
+        "simpleCells": 0,
+        "silhouetteCells": 0,
+        "proxyCells": 28,
+        "frustumTests": 148,
+        "distanceRejected": 0,
+        "baseTriangles": 33108,
+        "baseDrawCalls": 1,
+        "baseTriangleBudget": 300000
+      },
+      "labelsDefault": false
+    }
+  ],
+  "tests": 118,
+  "build": true,
+  "audit": {
+    "buildings": 153534,
+    "heightSources": {
+      "estimated-house": 105015,
+      "levels*3": 10587,
+      "height": 21189,
+      "estimated-apartment": 2437,
+      "estimated-industrial": 1847,
+      "estimated-office": 10820,
+      "levels*3.6": 1639
+    },
+    "uses": {
+      "house": 116245,
+      "apartment": 21371,
+      "industrial": 1920,
+      "office": 13998
+    },
+    "source": "© OpenStreetMap contributors",
+    "license": "ODbL-1.0",
+    "estimatedHeights": "용도별 결정적 시각 추정. 실측/도시 통계가 아님",
+    "surfaceMissing": [
+      "south"
+    ],
+    "roads": 12256,
+    "bridges": 1211,
+    "polygons": 9188
+  }
+}

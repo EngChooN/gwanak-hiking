@@ -1,0 +1,18 @@
+{
+  "date": "2026-11-03T09:57:53.756Z",
+  "base": "http://127.0.0.1:5176",
+  "quality": "balanced",
+  "viewport": "1440×900",
+  "flow": {},
+  "fps": [
+    {
+      "id": "plaza-first",
+      "loadMs": 35678,
+      "idleFps": 60.00265939764642,
+      "walkFps": 60.00300015000745,
+      "walkP95Ms": null,
+      "zone": "plaza"
+    }
+  ],
+  "console": []
+}

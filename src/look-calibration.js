@@ -1,14 +1,14 @@
 import * as THREE from 'three';
 import {LOOK_PROFILE,sunDirection,neutralCard,exposureForCard} from './look-profile.js';
 const luma=c=>c[0]*.2126+c[1]*.7152+c[2]*.0722;
-export function calibrateLook(renderer,environment,hemisphere=null){
+export function calibrateLook(renderer,environment,hemisphere=null,sun=sunDirection()){
   const floating=renderer.extensions.has('EXT_color_buffer_float');
   const target=new THREE.WebGLRenderTarget(1,1,{type:floating?THREE.FloatType:THREE.UnsignedByteType,depthBuffer:true});
   const oldTarget=renderer.getRenderTarget(),oldTone=renderer.toneMapping;
   const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(45,1,.1,LOOK_PROFILE.far);
   const card=new THREE.Mesh(new THREE.PlaneGeometry(10,10),new THREE.MeshStandardMaterial({color:new THREE.Color().setRGB(.18,.18,.18),roughness:1,metalness:0}));
   card.rotation.x=-Math.PI/2;scene.add(card);camera.position.set(0,5,0);camera.up.set(0,0,-1);camera.lookAt(0,0,0);
-  const light=new THREE.DirectionalLight(LOOK_PROFILE.sunColor,4);light.position.fromArray(sunDirection()).multiplyScalar(80);scene.add(light,light.target);
+  const light=new THREE.DirectionalLight(LOOK_PROFILE.sunColor,4);light.position.fromArray(sun).multiplyScalar(80);scene.add(light,light.target);
   const fill=hemisphere?.clone(),fillBase=hemisphere?.intensity||0;if(fill){fill.intensity=0;scene.add(fill);}
   scene.environment=environment;scene.environmentIntensity=0;
   function read(){renderer.setRenderTarget(target);renderer.render(scene,camera);const pixels=floating?new Float32Array(4):new Uint8Array(4);renderer.readRenderTargetPixels(target,0,0,1,1,pixels);return [...pixels].slice(0,3).map(v=>floating?v:v/255);}

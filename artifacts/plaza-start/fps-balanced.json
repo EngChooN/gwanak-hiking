@@ -1,0 +1,66 @@
+{
+  "date": "2026-11-03T08:52:10.813Z",
+  "base": "http://127.0.0.1:5190",
+  "quality": "balanced",
+  "viewport": "1440×900",
+  "flow": {},
+  "fps": [
+    {
+      "id": "plaza-first",
+      "loadMs": 36340,
+      "idleFps": 59.67023469184228,
+      "walkFps": 59.752240709026616,
+      "walkP95Ms": null,
+      "zone": "plaza"
+    },
+    {
+      "id": "plaza-third",
+      "loadMs": 35508,
+      "idleFps": 60.00200006666886,
+      "walkFps": 59.877993899695,
+      "walkP95Ms": null,
+      "zone": "plaza"
+    },
+    {
+      "id": "valley",
+      "loadMs": 34792,
+      "idleFps": 60.00265939764642,
+      "walkFps": 59.87724539670235,
+      "walkP95Ms": null,
+      "zone": "route"
+    },
+    {
+      "id": "stairs",
+      "loadMs": 35574,
+      "idleFps": 59.66924291531622,
+      "walkFps": 60.00199590838785,
+      "walkP95Ms": null,
+      "zone": "route"
+    },
+    {
+      "id": "ridge",
+      "loadMs": 36280,
+      "idleFps": 59.83532784426144,
+      "walkFps": 60.00225008437813,
+      "walkP95Ms": null,
+      "zone": "route"
+    },
+    {
+      "id": "summit",
+      "loadMs": 34899,
+      "idleFps": 60.00200006666893,
+      "walkFps": 60.00225008437818,
+      "walkP95Ms": null,
+      "zone": "route"
+    },
+    {
+      "id": "third",
+      "loadMs": 34770,
+      "idleFps": 59.67023469184228,
+      "walkFps": 60.00225008437813,
+      "walkP95Ms": null,
+      "zone": "route"
+    }
+  ],
+  "console": []
+}

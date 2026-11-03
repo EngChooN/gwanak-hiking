@@ -1,0 +1,136 @@
+[
+  {
+    "name": "rain",
+    "pos": "valley",
+    "view": "third",
+    "environment": {
+      "basicFactor": [
+        0.54,
+        0.5355529411764706,
+        0.5295176470588235
+      ],
+      "time": "14:00",
+      "legacySun": false,
+      "manualTime": true,
+      "weather": "rain",
+      "level": "medium",
+      "source": "manual",
+      "error": null,
+      "calls": 0,
+      "rain": 0.6,
+      "snow": 0,
+      "fogDistance": 2500,
+      "fogDensity": 0.0009999999999999998,
+      "night": 0,
+      "lightIntensity": 0.15,
+      "ambient": 0.75,
+      "exposure": 1.723671124732869,
+      "windSound": 0.5,
+      "windSpeed": 5,
+      "cloud": 0.95,
+      "stars": 0,
+      "moon": {
+        "elevation": 12.804860893484063,
+        "azimuth": 263.7092032227165,
+        "visible": 0,
+        "illumination": 0.2614588613862715
+      },
+      "light": {
+        "elevation": 32.05178933330533,
+        "azimuth": 210.05396384227026
+      }
+    },
+    "errors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ],
+    "fps": 54.01
+  },
+  {
+    "name": "snow",
+    "pos": "valley",
+    "view": "third",
+    "environment": {
+      "basicFactor": [
+        0.7375,
+        0.7273774509803922,
+        0.713639705882353
+      ],
+      "time": "14:00",
+      "legacySun": false,
+      "manualTime": true,
+      "weather": "snow",
+      "level": "medium",
+      "source": "manual",
+      "error": null,
+      "calls": 0,
+      "rain": 0,
+      "snow": 0.6,
+      "fogDistance": 2500,
+      "fogDensity": 0.0009999999999999998,
+      "night": 0,
+      "lightIntensity": 0.25,
+      "ambient": 1,
+      "exposure": 1.5754525489295745,
+      "windSound": 0.2,
+      "windSpeed": 2,
+      "cloud": 0.9,
+      "stars": 0,
+      "moon": {
+        "elevation": 12.804860893484063,
+        "azimuth": 263.7092032227165,
+        "visible": 0,
+        "illumination": 0.2614588613862715
+      },
+      "light": {
+        "elevation": 32.05178933330533,
+        "azimuth": 210.05396384227026
+      }
+    },
+    "errors": [],
+    "fps": 53.6
+  },
+  {
+    "name": "night-rain",
+    "pos": "valley",
+    "view": "third",
+    "environment": {
+      "basicFactor": [
+        0.0468,
+        0.0546,
+        0.07150000000000001
+      ],
+      "time": "22:00",
+      "legacySun": false,
+      "manualTime": true,
+      "weather": "rain",
+      "level": "heavy",
+      "source": "manual",
+      "error": null,
+      "calls": 0,
+      "rain": 1,
+      "snow": 0,
+      "fogDistance": 1200,
+      "fogDensity": 0.0023,
+      "night": 1,
+      "lightIntensity": 0,
+      "ambient": 0.075,
+      "exposure": 3.274975136992451,
+      "windSound": 0.2,
+      "windSpeed": 2,
+      "cloud": 0.95,
+      "stars": 0,
+      "moon": {
+        "elevation": -50.06762748797075,
+        "azimuth": 19.641046755458035,
+        "visible": 0,
+        "illumination": 0.2309190669813328
+      },
+      "light": {
+        "elevation": -50.06762748797075,
+        "azimuth": 19.641046755458035
+      }
+    },
+    "errors": [],
+    "fps": 53.91
+  }
+]

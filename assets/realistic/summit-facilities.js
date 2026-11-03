@@ -5,6 +5,29 @@ import {facilitySites} from './summit-config.js';
 const palette=[0xedece5,0x999488,0x454b50,0x8b4335];
 // 공유 재질 4개, 시설별 32m 이내. 사진 텍스처 없음.
 const shared=palette.map(color=>new THREE.MeshStandardMaterial({color,roughness:.95}));
+// 결정적 잡음으로 꼭짓점을 밀어 둥글고 울퉁불퉁한 돌을 만든다. 같은 위치는 같은 변위라 틈이 생기지 않는다.
+export function markerStone(level,h,w,top,d,seed,flatFront=Infinity){
+ const g=new THREE.IcosahedronGeometry(1,level===0?3:level===1?2:1),p=g.attributes.position,v=new THREE.Vector3();
+ for(let i=0;i<p.count;i++){
+  v.fromBufferAttribute(p,i);
+  const n=1+.07*Math.sin(v.x*3.1+seed)*Math.cos(v.y*2.3-seed*.7)+.05*Math.sin(v.z*4.7+v.y*1.9+seed*1.3);
+  const y=(v.y+1)/2,taper=mix(1,top,y);
+  // 글자를 새긴 앞면은 평평하게 깎는다(실물 정상석처럼).
+  p.setXYZ(i,v.x*w*taper*n,y*h*2*(1+.03*Math.sin(v.x*5+seed)),Math.min(flatFront,v.z*d*taper*n));
+ }
+ g.computeVertexNormals();return g;
+}
+const mix=(a,b,t)=>a+(b-a)*t;
+export const MARKER_FACE_Z=.38;
+// 새긴 글자: 투명 바탕에 어두운 홈과 아래쪽 밝은 테두리로 음각처럼 보이게 한다.
+function carved(lines,width,height){
+ if(typeof document==='undefined')return null;
+ const c=document.createElement('canvas');c.width=256;c.height=640;const ctx=c.getContext('2d');
+ ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 168px "Noto Serif CJK KR","AppleMyungjo","Songti SC",serif';
+ lines.forEach((ch,i)=>{const y=110+i*205;ctx.fillStyle='rgba(235,232,222,.55)';ctx.fillText(ch,131,y+5);ctx.fillStyle='#2a2925';ctx.fillText(ch,128,y);});
+ const map=new THREE.CanvasTexture(c);map.colorSpace=THREE.SRGBColorSpace;
+ return new THREE.Mesh(new THREE.PlaneGeometry(width,height),new THREE.MeshStandardMaterial({map,transparent:true,alphaTest:.35,roughness:.95,depthWrite:false}));
+}
 function shape(id,level){
  const buckets=palette.map(()=>[]),root=new THREE.Group();
  const add=(g,k,x,y,z,rx=0,rz=0)=>{g.rotateX(rx);g.rotateZ(rz);g.translate(x,y,z);buckets[k].push(g);};
@@ -30,8 +53,9 @@ function shape(id,level){
    }
   }
  }else if(id==='marker'){
-  add(new THREE.CylinderGeometry(1.1,1.2,.24,8),1,0,.12,0);
-  box(1,0,1.24,0,1.4,2,.65);
+  // 실경 비교(미디어허브 2001344 사진 대조): '冠岳山'을 새긴 둥근 자연석. 크기·모양은 사진 비례로 추정.
+  add(markerStone(level,.25,1.25,1.1,.7,11),1,0,-.2,0); // 받침돌은 20cm 묻어 경사면에서 뜨지 않게 한다.
+  add(markerStone(level,1,.8,1.05,.52,3,MARKER_FACE_Z),1,0,.22,0);
  }else if(id==='helipad'){
   add(new THREE.CylinderGeometry(8,8,.16,level===0?32:16),1,0,0,0);
   const ring=new THREE.RingGeometry(6.8,7.05,level===0?32:16);add(ring,0,0,.09,0,-Math.PI/2);
@@ -72,8 +96,10 @@ export function createSummitFacilities(route,height,sites=facilitySites(route,he
    lod.addLevel(object,distance,.1);
   }
   const text=spec.id==='marker'?'관악산 629m\n위치·치수 추정':spec.id==='fork'?'← 암릉 / 헬기장 우회 →\n위치·치수 추정':null;
-  if(text){const mesh=label(text,spec.id==='marker'?1.3:1.94,spec.id==='marker'?.48:.6);
-   if(mesh){mesh.position.set(0,spec.id==='marker'?1.54:2.05,spec.id==='marker'?.331:.045);lod.levels[0].object.add(mesh);}}
+  if(text){const mesh=label(text,spec.id==='marker'?.62:1.94,spec.id==='marker'?.23:.6);
+   // 표지석 안내판은 받침돌 앞에 낮게 둔다. 본 글자는 돌 앞면에 새긴다.
+   if(mesh){mesh.position.set(0,spec.id==='marker'?.12:2.05,spec.id==='marker'?.8:.045);if(spec.id==='marker')mesh.rotation.x=-.35;lod.levels[0].object.add(mesh);}}
+  if(spec.id==='marker')for(const level of [0,1]){const mesh=carved(['冠','岳','山'],.44,1.1);if(mesh){mesh.position.set(0,1.24,MARKER_FACE_Z+.004);lod.levels[level].object.add(mesh);}}
   lod.position.set(x,spec.y,z);lod.rotation.y=spec.yaw;
   lod.userData={...spec,status:'추정(후기 근거, 현장 확인 전)',position:[x,lod.position.y,z],collision:false};
   root.add(lod);items.push(lod);

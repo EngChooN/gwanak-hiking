@@ -12,7 +12,71 @@ import {nearDetailPlacements,grassClumps} from '../assets/realistic/near-detail.
 const aligned=JSON.parse(readFileSync(new URL('../assets/realistic/generated/route.json',import.meta.url)));
 import {route,sample,floorHeight,checkpoints,durationBetween,MATERIALS,speedFor,geographicToLocal,ORIGIN,SPEED_CALIBRATION,UNCALIBRATED_MINUTES,NONSTAIR_BASE_SECONDS,STAIR_SECONDS,baseSpeedFor} from '../src/route.js';
 import {initialState,advance,restore} from '../src/movement.js';
-test('150분 목표·경사 급변 제한·데크 계수',()=>{assert.ok(Math.abs(durationBetween(0,route.length)/60-150)<1e-8);assert.equal(SPEED_CALIBRATION,NONSTAIR_BASE_SECONDS/(9000-STAIR_SECONDS));assert.equal(MATERIALS.deck.factor,.95);assert.equal(MATERIALS.deck_stairs.factor,.75);assert.equal(baseSpeedFor(3,'soil'),baseSpeedFor(.5,'soil'));assert.ok(Math.abs(speedFor(.1,'deck')/speedFor(.1,'soil')-.95)<1e-12);});
+import {positionAt} from '../src/movement.js';
+import {ENTRANCE_START,ENTRANCE_MIN_S,entrancePolygon,entranceApproach} from '../src/route.js';
+import {entranceConfig,ENTRANCE_OPTIONS,polygonLineBounds} from '../src/entrance-config.js';
+test('입구 B 좌표·방위·다각형, A 대안과 GPX 원점을 분리한다',async()=>{
+ const {PLAZA_START,GATE_S}=await import('../src/plaza.js');
+ assert.equal(entranceConfig.hypothesis,'B');
+ assert.deepEqual(entranceConfig.startPoint,{lat:37.468378,lon:126.946067,facingDeg:132});
+ assert.deepEqual(entranceConfig.gate,{lat:37.468197,lon:126.946320});
+ assert.deepEqual(entranceConfig.freeRoamPolygon,[{lat:37.468205,lon:126.946207},{lat:37.468285,lon:126.946298},{lat:37.468467,lon:126.946046},{lat:37.468386,lon:126.945955}]);
+ assert.deepEqual(ENTRANCE_OPTIONS.A.startPoint,{lat:37.468244,lon:126.946319,facingDeg:142});
+ assert.equal(ENTRANCE_OPTIONS.A.freeRoamPolygon.length,4);assert.equal(entranceConfig.verified,false);
+ const state=initialState({entrance:true}),p=geographicToLocal(37.468378,126.946067,route.points[0].y);
+ assert.equal(state.zone,'plaza');assert.ok(Math.hypot(state.plaza.x-p.x,state.plaza.z-p.z)<1e-8);
+ assert.ok(Math.abs(state.plaza.heading+132*Math.PI/180)<1e-10);
+ assert.deepEqual(restore(JSON.stringify(state)).plaza,state.plaza);
+ // 예전 형식(s<0 접근로 위)의 출발점 저장은 같은 월드 위치의 광장으로 복원한다.
+ const old=restore(JSON.stringify({...state,zone:undefined,plaza:undefined,s:ENTRANCE_START,lateral:0}));
+ assert.equal(old.zone,'plaza');assert.ok(Math.hypot(old.plaza.x-PLAZA_START.x,old.plaza.z-PLAZA_START.z)<1e-6);
+ assert.ok(GATE_S<0&&GATE_S>-30);
+ const simulation=JSON.parse(readFileSync(new URL('../artifacts/simulation.json',import.meta.url)));
+ assert.deepEqual(simulation.입구설정,entranceConfig);
+});
+test('출발 시점은 일주문을 정면으로 보고, 기둥·바리케이드는 막되 가운데 통로로 지나간다',async()=>{
+ const {blockedByGate}=await import('../src/route.js');
+ const {gateObstacles,hitsGateObstacle}=await import('../src/entrance-config.js');
+ const {fromGate,GATE_S}=await import('../src/plaza.js');
+ const {playerPosition}=await import('../src/movement.js');
+ const start=initialState({entrance:true}),gate=geographicToLocal(entranceConfig.gate.lat,entranceConfig.gate.lon,0);
+ const bearing=Math.atan2(gate.x-start.plaza.x,-(gate.z-start.plaza.z))*180/Math.PI,facing=-start.plaza.heading*180/Math.PI;
+ assert.ok(Math.abs(bearing-facing)<2,`일주문 방위 ${bearing} / 시작 방향 ${facing}`);
+ assert.ok(Math.abs(Math.hypot(gate.x-start.plaza.x,gate.z-start.plaza.z)-30)<1,'일주문 바깥 약 30m');
+ assert.equal(gateObstacles.filter(o=>o.kind==='pillar').length,2);assert.equal(gateObstacles.filter(o=>o.kind==='barricade').length,4);
+ for(const o of gateObstacles)assert.ok(hitsGateObstacle(o.x,o.z));
+ assert.equal(hitsGateObstacle(.1,.3),false);
+ // 옆 바리케이드 앞에서 문 쪽(heading 그대로)으로 걸어도 통과하지 못한다.
+ for(const gx of [-1.2,1.3]){
+  const q=fromGate(gx,2),state={...initialState({entrance:true})};state.plaza={...state.plaza,x:q.x,z:q.z};
+  for(let i=0;i<200;i++)advance(state,{forward:1},.05);
+  assert.equal(state.zone,'plaza',`옆 바리케이드(${gx})를 통과하면 안 됨`);
+  const pos=playerPosition(state);assert.equal(blockedByGate(pos.x,pos.z),false);
+ }
+ const auto={...initialState({entrance:true}),auto:true};
+ for(let i=0;i<3000&&!(auto.zone==='route'&&auto.s>=1);i++){advance(auto,{},.05);const pos=playerPosition(auto);assert.equal(blockedByGate(pos.x,pos.z),false);}
+ assert.ok(auto.zone==='route'&&auto.s>=1,'자동 걷기는 가운데 통로로 GPX 0m를 넘는다');assert.ok(GATE_S<1);
+});
+test('광장 네 방향 경계·대각선 속도·자동 보행으로 GPX 진입',async()=>{
+ const {insidePlaza}=await import('../src/plaza.js');
+ const {playerPosition}=await import('../src/movement.js');
+ for(const input of [{forward:-1},{side:1},{side:-1},{forward:-1,side:1},{forward:-1,side:-1}]){
+  const state=initialState({entrance:true});
+  for(let i=0;i<1000;i++){
+   const before=playerPosition(state),distance=state.distance;
+   advance(state,input,.1);
+   const after=playerPosition(state);
+   assert.equal(state.zone,'plaza');assert.ok(insidePlaza(after.x,after.z));
+   assert.ok(Math.hypot(after.x-before.x,after.z-before.z)<=speedFor(0,'paved')*.1+1e-6);
+   assert.ok(state.distance-distance<=speedFor(0,'paved')*.1+1e-6);
+  }
+ }
+ const state=initialState({entrance:true});state.auto=true;const events=[];
+ for(let i=0;i<3000&&!(state.zone==='route'&&state.s>=1);i++)advance(state,{},.1,e=>events.push(e));
+ assert.ok(state.s>=1,'광장→문→GPX 연결');assert.ok(events.some(e=>e.zone==='plaza'&&e.material==='paved'));
+ assert.ok(entranceApproach.segments.every(s=>s.a.referenceMetres===0&&s.b.referenceMetres===0));
+});
+test('20% 상향 후 125분 목표·경사 급변 제한·데크 계수',()=>{assert.ok(Math.abs(durationBetween(0,route.length)/60-125)<1e-8);assert.equal(SPEED_CALIBRATION,NONSTAIR_BASE_SECONDS/(9000-STAIR_SECONDS));assert.equal(MATERIALS.deck.factor,.95);assert.equal(MATERIALS.deck_stairs.factor,.75);assert.equal(baseSpeedFor(3,'soil'),baseSpeedFor(.5,'soil'));assert.ok(Math.abs(speedFor(.1,'deck')/speedFor(.1,'soil')-.95)<1e-12);});
 test('GPX 수평 337점 보존·DSM 정렬 고도·첫 점 원점·1:1 거리',()=>{const rows=readFileSync(new URL('../data/GPX추출-계곡코스-상행.csv',import.meta.url),'utf8').trim().split(/\r?\n/).slice(1).map(l=>l.split(',').map(Number));assert.equal(rows.length,337);assert.equal(route.points.length,337);for(const [i,row]of rows.entries()){const p=route.points[i],q=geographicToLocal(row[1],row[2],row[4]);assert.ok(Math.abs(p.x-q.x)<1e-8);assert.equal(p.y,aligned[i].y);assert.equal(aligned[i].originalY,row[4]);assert.ok(Math.abs(p.z-q.z)<1e-8);}assert.equal(route.points[0].x,0);assert.ok(Math.abs(route.points[0].z)<1e-12);assert.equal(ORIGIN.latitude,37.46803);const oneDegree=geographicToLocal(ORIGIN.latitude+.001,ORIGIN.longitude+.001,0);assert.ok(Math.abs(oneDegree.x-88.45)<.1);assert.ok(Math.abs(oneDegree.z+110.99)<.1);});
 test('5곳 최근접 경로점·임시 표시·통과 저장 복구 및 이전 경로 저장 분리',()=>{for(const cp of checkpoints){assert.equal(cp.temporary,true);assert.equal(cp.verified,false);assert.ok(cp.positionSource.includes('임시'));assert.ok(Math.abs(sample(cp.s).y-route.points[cp.pointIndex].y)<1e-9);if(cp.reference){const p=geographicToLocal(...cp.reference,0);const min=Math.min(...route.points.map(q=>Math.hypot(q.x-p.x,q.z-p.z)));assert.ok(Math.abs(min-cp.referenceOffsetM)<1e-9);}const state=initialState();state.s=cp.s-.01;advance(state,{forward:1},.1);assert.deepEqual(state.checkpoints,[cp.id]);const restored=restore(JSON.stringify(state));assert.equal(restored.s,state.s);assert.equal(restored.elapsed,state.elapsed);assert.deepEqual(restored.checkpoints,[cp.id]);assert.equal(restored.paused,true);}assert.equal(restore(JSON.stringify({...initialState(),routeId:'synthetic-a-4700-v1',s:10})).s,initialState().s);});
 test('새 DSM 경로 전체 노면 raycast와 5동작 발바닥 접지 0.3m 이내',async()=>{

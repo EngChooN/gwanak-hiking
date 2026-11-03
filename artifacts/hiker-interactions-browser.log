@@ -1,0 +1,16 @@
+브라우저 실행 완료
+장면 준비 walk
+준비 상태 { ready: undefined, nature: undefined, compiling: undefined }
+walk 60.002400096003804 {"pose":"stand","sit":0,"sitLinear":0,"drink":0,"teaProgress":0,"eyeHeight":1.6,"poles":[{"side":"Left","planted":true,"tip":[257.6532732468234,131.20139840186764,1637.2923847532702],"error":1.4210854715202004e-13,"gripError":2.2914314707516465e-13},{"side":"Right","planted":false,"tip":[258.3893063220099,131.08220459694112,1636.721871111378],"error":0,"gripError":2.360884497795176e-13}]}
+장면 준비 run
+run 60.00240009600389 {"pose":"stand","sit":0,"sitLinear":0,"drink":0,"teaProgress":0,"eyeHeight":1.6,"poles":[{"side":"Left","planted":false,"tip":[258.4048634126246,133.24326971269483,1643.421560064907],"error":0,"gripError":2.2914314707516465e-13},{"side":"Right","planted":true,"tip":[259.16231284765416,133.0368506255747,1643.0256956267817],"error":2.842170943040401e-14,"gripError":2.842170943040401e-14}]}
+장면 준비 sit
+sit 60.00360021601291 {"pose":"sit","sit":1,"sitLinear":1,"drink":0,"teaProgress":0,"eyeHeight":0.85,"poles":[{"side":"Left","planted":false,"tip":[258.21141479569707,132.8717893525182,1642.5834399782016],"error":0,"gripError":0},{"side":"Right","planted":false,"tip":[259.1841287854601,132.88543537749626,1642.4641609183493],"error":0,"gripError":0}]}
+장면 준비 tea
+준비 상태 { ready: true, nature: true, compiling: false }
+tea 60.00240009600389 {"pose":"tea","sit":1,"sitLinear":1,"drink":1,"teaProgress":0.5,"eyeHeight":0.85,"poles":[{"side":"Left","planted":false,"tip":[258.21141479569707,132.8717893525182,1642.5834399782016],"error":0,"gripError":0},{"side":"Right","planted":false,"tip":[259.1841287854601,132.88543537749626,1642.4641609183493],"error":0,"gripError":0}]}
+장면 준비 slope-walk
+준비 상태 { ready: undefined, nature: undefined, compiling: undefined }
+slope-walk 60.00120002400055 {"pose":"stand","sit":0,"sitLinear":0,"drink":0,"teaProgress":0,"eyeHeight":1.6,"poles":[{"side":"Left","planted":true,"tip":[1101.6738168715772,402.42291259765625,2631.9862038735996],"error":0,"gripError":4.547473508864641e-13},{"side":"Right","planted":false,"tip":[1101.78632886227,402.3079109742544,2631.072564864709],"error":0,"gripError":2.2737367544323206e-13}]}
+장면 준비 slope-sit
+slope-sit 60.002400096003804 {"pose":"sit","sit":1,"sitLinear":1,"drink":0,"teaProgress":0,"eyeHeight":0.85,"poles":[{"side":"Left","planted":false,"tip":[1100.9927273434348,402.21929573567706,2631.591271194727],"error":0,"gripError":0},{"side":"Right","planted":false,"tip":[1101.5780092916248,402.12688850911456,2630.8052399987037],"error":0,"gripError":0}]}

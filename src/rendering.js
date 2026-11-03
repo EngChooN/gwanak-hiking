@@ -1,10 +1,14 @@
 import * as THREE from 'three';
-import {RGBELoader} from 'three/addons/loaders/RGBELoader.js';
 import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
 import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
 import {SSAOPass} from 'three/addons/postprocessing/SSAOPass.js';
 import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
-import {LOOK_PROFILE,sunDirection,HAZE_FRAGMENT} from './look-profile.js';
+import {LOOK_PROFILE,SUN_PRESETS,sunDirection,HAZE_FRAGMENT} from './look-profile.js';
+import {createSkyDome,bakeSkyEnvironment,updateSky} from './sky-dome.js';
+import {createEnvironment} from './environment.js';
+import {createPrecipitation} from './precipitation.js';
+import {setWeatherSound} from './ambient-config.js';
+import {installEnvironmentHud} from './hud.js';
 import {calibrateLook} from './look-calibration.js';
 import {INDIRECT_PROFILE,neutralizeEnvironment} from './indirect-light.js';
 import {installRenderBreakdown} from './render-breakdown.js';
@@ -22,34 +26,37 @@ export function setupRendering(renderer,scene,camera,mobile,environmentSky){
   renderer.shadowMap.type=THREE.PCFSoftShadowMap;
   THREE.ShaderChunk.fog_vertex=`#ifdef USE_FOG\n vFogDepth=length(mvPosition.xyz);\n#endif`;
   THREE.ShaderChunk.fog_fragment=HAZE_FRAGMENT;
-  scene.background=new THREE.Color(LOOK_PROFILE.haze);
+  // 가을 11월 초 태양(산리서치 계산값). ?sun=pm이면 오후 3시, 기본은 오전 10시.
+  // 이제 기본은 서울 현재 시각의 태양이다(daytime.js). ?time=HH:MM 수동 지정, ?sun=am|pm 은 예전처럼 고정 태양.
+  // 환경광 굽기·노출 보정은 항상 낮 기준 태양(am)으로 한 번만 하고, 시각·날씨 변화는 강도·색으로 따라간다.
+  const sunPreset=SUN_PRESETS[parameters.get('sun')]??SUN_PRESETS.am,sunDir=sunDirection(SUN_PRESETS.am.elevation,SUN_PRESETS.am.azimuth);
+  const environment=createEnvironment({search:location.search}),precipitation=createPrecipitation();scene.add(precipitation.group);
+  environment.weather.start();installEnvironmentHud();
+  const base={environmentIntensity:.3,hemisphereIntensity:INDIRECT_PROFILE.hemisphereIntensity,exposure:1},clock={last:performance.now(),elapsed:0};
+  const sunVector=new THREE.Vector3(),moonVector=new THREE.Vector3(),tmpColor=new THREE.Color();
+  scene.background=new THREE.Color(LOOK_PROFILE.horizon);
   scene.fog=new THREE.Fog(LOOK_PROFILE.haze,0,LOOK_PROFILE.far);
   const sun=new THREE.DirectionalLight(LOOK_PROFILE.sunColor,4);
   const groundFill=new THREE.HemisphereLight(INDIRECT_PROFILE.skyColor,INDIRECT_PROFILE.groundColor,INDIRECT_PROFILE.hemisphereIntensity);scene.add(groundFill);
-  const solarOffset=new THREE.Vector3().fromArray(sunDirection()).multiplyScalar(80);
-  const sky=new THREE.Group();scene.add(sky);if(environmentSky)scene.background=environmentSky;
+  const solarOffset=new THREE.Vector3().fromArray(sunDir).multiplyScalar(80);
+  const sky=createSkyDome(LOOK_PROFILE,sunDir);scene.add(sky);
   sun.castShadow=true;sun.shadow.bias=-.001;sun.shadow.normalBias=.12;sun.shadow.radius=2;
   Object.assign(sun.shadow.camera,{left:-28,right:28,top:28,bottom:-28,near:1,far:140});
   scene.add(sun,sun.target);
-  const status={indirectLight:{...INDIRECT_PROFILE},profile:LOOK_PROFILE.id,toneMapping:comparison?'ACES Filmic (비교용)':'Neutral',sunElevation:29,sunAzimuth:142,shadowAzimuth:322,shadowLengthPerHeight:1/Math.tan(29*Math.PI/180),sunColor:LOOK_PROFILE.sunColor,hazeColor:LOOK_PROFILE.haze,skyZenith:LOOK_PROFILE.zenith,far:LOOK_PROFILE.far,hdri:'로딩 중',ao:false,shadows:false,shaderErrors:[],calibration:{calibrated:false}};
+  const status={indirectLight:{...INDIRECT_PROFILE},profile:LOOK_PROFILE.id,toneMapping:comparison?'ACES Filmic (비교용)':'Neutral',sunPreset:sunPreset.label,sunElevation:sunPreset.elevation,sunAzimuth:sunPreset.azimuth,shadowAzimuth:(sunPreset.azimuth+180)%360,shadowLengthPerHeight:1/Math.tan(sunPreset.elevation*Math.PI/180),sunColor:LOOK_PROFILE.sunColor,hazeColor:LOOK_PROFILE.haze,skyZenith:LOOK_PROFILE.zenith,far:LOOK_PROFILE.far,hdri:'로딩 중',ao:false,shadows:false,shaderErrors:[],calibration:{calibrated:false}};
   renderer.debug.onShaderError=(gl,program,vs,fs)=>{
     const source=gl.getShaderSource(fs)??'';
     const name=source.match(/#define SHADER_NAME\s+(\S+)/)?.[1]??'알 수 없는 재질';
     const hook=source.includes('gAtmosphereView')?'대기 감쇠':source.includes('landWorld')?'지형 혼합':'기본/override';
     status.shaderErrors.push([`${name} / ${hook}`,gl.getProgramInfoLog(program),gl.getShaderInfoLog(vs),gl.getShaderInfoLog(fs)].filter(Boolean).join('\n'));
   };
-  // HDRI는 환경 조명 전용이다. 다른 지역 사진을 관악산 배경으로 표시하지 않는다.
-  const environmentReady=(environmentSky?Promise.resolve(environmentSky.clone()):new RGBELoader().setDataType(THREE.FloatType).loadAsync(`${import.meta.env.BASE_URL}environment/kiara_4_mid-morning_1k.hdr`)).then(texture=>{
-    // HDRI의 태양 고휘도 픽셀을 하늘 상위 95% 휘도로 제한해 직사광 이중 계산을 줄인다.
-    texture.image={...texture.image,data:texture.image.data.slice()};
-    const data=texture.image.data,levels=[];for(let i=0;i<data.length;i+=4)levels.push(.2126*data[i]+.7152*data[i+1]+.0722*data[i+2]);levels.sort((a,b)=>a-b);const cap=levels[Math.floor(levels.length*.95)];
-    for(let i=0;i<data.length;i+=4){const lum=.2126*data[i]+.7152*data[i+1]+.0722*data[i+2],factor=lum>cap?cap/lum:1;data[i]*=factor;data[i+1]*=factor;data[i+2]*=factor;}texture.needsUpdate=true;
-    neutralizeEnvironment(texture);
-    const pmrem=new THREE.PMREMGenerator(renderer);const env=pmrem.fromEquirectangular(texture);
-    scene.environment=env.texture;texture.dispose();pmrem.dispose();
-    try{status.calibration=calibrateLook(renderer,env.texture,groundFill);scene.environmentIntensity=status.calibration.environmentIntensity;groundFill.intensity=status.calibration.hemisphereIntensity;renderer.toneMappingExposure=status.calibration.exposure;}catch(error){status.calibration={calibrated:false,error:error.message};scene.environmentIntensity=.3;}
-    status.hdri='Poly Haven Kloppenheim 06 PureSky 1K · CC0';
-  }).catch(error=>{status.hdri='실패: '+error.message;console.warn('HDRI 로드 실패, 하늘 기본광 사용',error);});
+  // 환경광은 같은 Sky 셰이더를 PMREM으로 구워 쓴다. 푸른 천공광·따뜻한 지면 반사광이 하늘색과 일치하고 외부 HDRI 의존이 없다.
+  const environmentReady=Promise.resolve().then(()=>{
+    const envTexture=bakeSkyEnvironment(renderer,LOOK_PROFILE,sunDir,INDIRECT_PROFILE.groundColor);
+    scene.environment=envTexture;
+    try{status.calibration=calibrateLook(renderer,envTexture,groundFill,sunDir);scene.environmentIntensity=status.calibration.environmentIntensity;groundFill.intensity=status.calibration.hemisphereIntensity;renderer.toneMappingExposure=status.calibration.exposure;Object.assign(base,{environmentIntensity:status.calibration.environmentIntensity,hemisphereIntensity:status.calibration.hemisphereIntensity,exposure:status.calibration.exposure});}catch(error){status.calibration={calibrated:false,error:error.message};scene.environmentIntensity=.3;}
+    status.hdri='Preetham 물리 기반 Sky 셰이더(three.js, MIT) · 외부 HDRI 없음';
+  }).catch(error=>{status.hdri='실패: '+error.message;console.warn('하늘 환경광 생성 실패',error);});
   let composer=null,ao=null,current=-1,lastResize=null;
   function resize(quality,width,height,dpr,adaptive={}){
     lastResize=[quality,width,height,dpr,{...adaptive}];
@@ -63,9 +70,9 @@ export function setupRendering(renderer,scene,camera,mobile,environmentSky){
       ao._renderPass=(...args)=>profiler.measure('AO 후처리 합계',()=>fullscreen(...args));
       composer.addPass(ao);composer.addPass(new OutputPass());
     }
-    status.ao=enableAO&&diagnosticMode!=='normal';status.normalPass=enableAO;status.shadows=quality>0;
+    status.ao=enableAO&&diagnosticMode!=='normal';status.normalPass=enableAO;status.shadows=true;
     renderer.shadowMap.enabled=status.shadows;sun.castShadow=status.shadows;
-    const distance=adaptive.shadowDistance??(quality===2?60:45);
+    const distance=adaptive.shadowDistance??[30,45,60][quality];
     status.shadowDistance=status.shadows?distance:0;
     const half=distance/2;
     Object.assign(sun.shadow.camera,{left:-half,right:half,top:half,bottom:-half});
@@ -82,11 +89,49 @@ export function setupRendering(renderer,scene,camera,mobile,environmentSky){
   }
   renderer.info.autoReset=false;
   const breakdown=installRenderBreakdown(renderer);
+  // 나무·원경 도시 등 31,000여 개 MeshBasicMaterial은 조명을 받지 않고 낮 빛이 구워져 있다.
+  // 밤·흐림·비에는 색 배율로 어둡게 해 지형(조명 받는 재질)과 밝기를 맞춘다. 재질은 몇 초마다 다시 모으고, 값이 바뀔 때만 갱신한다.
+  const basic={set:new Set(),scanAt:-1e9,factor:[1,1,1],applied:[1,1,1]};
+  function scanBasic(){
+    basic.set.clear();let nodes=0;
+    scene.traverse(o=>{nodes++;if(o===sky||o.parent===precipitation.group)return;const m=o.material;if(!m)return;for(const t of Array.isArray(m)?m:[m])if(t.isMeshBasicMaterial){if(!t.userData.baseColor)t.userData.baseColor=t.color.clone();basic.set.add(t);}});
+    status.basicMaterials=basic.set.size;status.sceneNodesScanned=nodes;
+  }
+  function basicFactor(e){
+    const level=Math.max(.065,Math.min(1,.35*e.light.intensity+.65*e.ambient)),warm=Math.min(1,e.light.intensity)*(1-e.night);
+    const peak=Math.max(...e.light.color),night=[.72,.84,1.1];
+    return [0,1,2].map(i=>{const sun=1+(e.light.color[i]/peak-1)*warm;return level*(sun+(night[i]-sun)*e.night);});
+  }
+  function applyBasic(e){
+    if(clock.elapsed-basic.scanAt>3){basic.scanAt=clock.elapsed;scanBasic();basic.applied=null;}
+    const f=basicFactor(e);basic.factor=f;
+    if(basic.applied&&f.every((v,i)=>Math.abs(v-basic.applied[i])<.004))return;
+    basic.applied=f;for(const m of basic.set)m.color.copy(m.userData.baseColor).multiply(tmpColor.setRGB(f[0],f[1],f[2],THREE.LinearSRGBColorSpace));
+  }
+  const direction=(elevation,azimuth,target)=>target.fromArray(sunDirection(elevation,azimuth));
+  // 시각·날씨 → 방향광·하늘·연무·노출·입자·소리. 낮 맑음 기준값에 배율·색만 곱하므로 맑은 낮은 예전과 같다.
+  function applyEnvironment(){
+    const now=performance.now(),dt=(now-clock.last)/1000;clock.last=now;clock.elapsed+=Math.min(dt,.5);
+    const e=environment.update(dt),ground=Math.max(0,Math.min(1,e.light.elevation/6));
+    direction(e.light.elevation,e.light.azimuth,solarOffset).multiplyScalar(80);
+    sun.color.setRGB(...e.light.color,THREE.SRGBColorSpace);sun.intensity=4*e.light.intensity;
+    scene.environmentIntensity=base.environmentIntensity*e.ambient;groundFill.intensity=base.hemisphereIntensity*e.ambient;groundFill.color.setRGB(...e.hemiColor,THREE.SRGBColorSpace);
+    renderer.toneMappingExposure=base.exposure*e.exposureMul;
+    scene.fog.color.setRGB(...e.fogColor,THREE.SRGBColorSpace);scene.background.setRGB(...e.horizon,THREE.SRGBColorSpace);
+    // 맑은 날(15km) 기준 대비 얼마나 더 뿌연가. fog.near 칸에 감쇠 계수(1/m)를 실어 셰이더가 읽는다.
+    scene.fog.near=Number.isFinite(e.fogDistance)?Math.max(0,3/e.fogDistance-3/15000):0;
+    direction(e.elevation,e.azimuth,sunVector);direction(e.moon.elevation,e.moon.azimuth,moonVector);
+    updateSky(sky,e,sunVector,moonVector);applyBasic(e);
+    precipitation.update({time:clock.elapsed,camera,rain:e.rain,snow:e.snow,wind:e.windSpeed,viewHeight:renderer.domElement.height||900,fov:camera.fov});
+    setWeatherSound({wind:e.windSound,rain:e.rain});
+    status.environment={basicFactor:basic.factor,time:environment.info.timeLabel,legacySun:environment.info.legacySun,manualTime:environment.info.manualTime,weather:environment.info.kind,level:environment.info.level,source:environment.info.source,error:environment.weather.state.error,calls:environment.weather.state.calls,rain:e.rain,snow:e.snow,fogDistance:e.fogDistance,fogDensity:scene.fog.near,night:e.night,lightIntensity:e.light.intensity,ambient:e.ambient,exposure:renderer.toneMappingExposure,windSound:e.windSound,windSpeed:e.windSpeed,cloud:e.cloud,stars:e.stars,moon:e.moon,light:{elevation:e.light.elevation,azimuth:e.light.azimuth}};
+  }
   function render(position){
+    applyEnvironment();
     renderer.info.reset();
     breakdown.reset();
     // 카메라 주변 30~60m 폭. 갱신 간격은 화질 비교 전까지 매 프레임 유지한다.
-    sun.target.position.copy(camera.position);sun.position.copy(camera.position).add(solarOffset);sky.position.copy(camera.position);
+    sky.material.uniforms.skyGain.value=1/Math.max(.05,renderer.toneMappingExposure);sun.target.position.copy(camera.position);sun.position.copy(camera.position).add(solarOffset);sky.position.copy(camera.position);
     const solarDirection=new THREE.Vector3().subVectors(sun.position,sun.target.position).normalize();
     status.sunElevation=THREE.MathUtils.radToDeg(Math.asin(solarDirection.y));status.sunAzimuth=(THREE.MathUtils.radToDeg(Math.atan2(solarDirection.x,-solarDirection.z))+360)%360;
     profiler.poll();

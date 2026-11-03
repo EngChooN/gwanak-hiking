@@ -14,7 +14,7 @@ test('수동 상한 내 단계별 하향과 느린 복귀',()=>{
  feed(q,1000/60,22000,5);assert.ok(q.step<4);
  q.setCap(1);assert.equal(q.step,0);assert.equal(q.settings.targetMs,33);assert.equal(q.settings.ao,false);
  feed(q,40,1000);assert.ok(q.settings.dpr<=1.15);assert.equal(q.settings.shadowDistance,30);
- q.setCap(0);assert.equal(q.settings.shadowDistance,0);
+ q.setCap(0);assert.equal(q.settings.shadowDistance,30);assert.equal(q.settings.shadowMap,1024);q.setCap(2);assert.equal(q.settings.shadowMap,2048);
 });
 test('숨겨진 탭 프레임은 조절에 포함하지 않는다',()=>{
  const q=new AdaptiveQuality(2);for(let i=0;i<100;i++)q.sample(500,false);assert.equal(q.step,0);

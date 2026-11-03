@@ -1,0 +1,50 @@
+[
+  {
+    "id": "entrance-first",
+    "quality": "balanced",
+    "camera": {
+      "s": -26.117207311606073,
+      "lateral": 0,
+      "view": "first"
+    },
+    "idleFps": 59.83644704474435,
+    "walkFps": null,
+    "errors": []
+  },
+  {
+    "id": "stairs",
+    "quality": "balanced",
+    "camera": {
+      "s": 3951.9630004464443,
+      "lateral": 0,
+      "view": "first"
+    },
+    "idleFps": 59.83632514959077,
+    "walkFps": 59.75224070902655,
+    "errors": []
+  },
+  {
+    "id": "summit",
+    "quality": "balanced",
+    "camera": {
+      "s": 5026.9619062282045,
+      "lateral": 0,
+      "view": "first"
+    },
+    "idleFps": 60.00200006666893,
+    "walkFps": 60.00300015000745,
+    "errors": []
+  },
+  {
+    "id": "third",
+    "quality": "balanced",
+    "camera": {
+      "s": 3951.9630004464443,
+      "lateral": 0,
+      "view": "third"
+    },
+    "idleFps": 60.00200006666886,
+    "walkFps": 59.62776308567435,
+    "errors": []
+  }
+]

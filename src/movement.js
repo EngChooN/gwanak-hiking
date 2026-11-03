@@ -1,9 +1,151 @@
-import {route,sample,speedFor,strideFor,checkpoints,DEMO_START,ROUTE_ID,SUMMIT_REFERENCE_ELEVATION} from './route.js';
+import {route,sample,speedFor,strideFor,checkpoints,DEMO_START,ROUTE_ID,SUMMIT_REFERENCE_ELEVATION,ENTRANCE_MIN_S,entranceLateralBounds} from './route.js';
+import {ENTRANCE_HYPOTHESIS} from './entrance-config.js';
 import {routeRevision} from './route-revision.js';
+import {GATE_S,PLAZA_START,insidePlaza,routeFromWorld,worldFromGateFrame,segmentHitsGate,autoTarget,toGate,fromGate} from './plaza.js';
 const currentRevision=routeRevision(route.points,checkpoints,SUMMIT_REFERENCE_ELEVATION);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 export const SAVE_KEY='gwanak-hiking:v1';
-export function initialState(){return {version:1,routeId:ROUTE_ID,routeRevision:currentRevision,s:DEMO_START,lateral:0,elapsed:0,distance:0,ascent:0,steps:0,stepPhase:0,checkpoints:[],paused:false,auto:false,view:'first',sessions:1};}
-export function restore(raw){try{const v=JSON.parse(raw);if(v.version!==1||v.routeId!==ROUTE_ID||v.routeRevision!==currentRevision||!['s','lateral','elapsed','distance','steps','stepPhase'].every(k=>Number.isFinite(v[k])))return initialState();return {...initialState(),...v,view:v.view==='third'?'third':'first',s:Math.max(0,Math.min(route.length,v.s)),lateral:Math.max(-sample(v.s).width/2+.25,Math.min(sample(v.s).width/2-.25,v.lateral)),elapsed:Math.max(0,v.elapsed),distance:Math.max(0,v.distance),steps:Math.max(0,Math.floor(v.steps)),checkpoints:Array.isArray(v.checkpoints)?[...new Set(v.checkpoints.filter(x=>checkpoints.some(c=>c.id===x)))]:[],paused:true,auto:false,sessions:Math.max(1,Number(v.sessions)||1)+1};}catch{return initialState();}}
-export function advance(state,input,dt,onStep=()=>{}){if(state.paused||dt<=0)return 0;dt=Math.min(dt,.1);let f=Math.sign(input.forward||0),side=Math.sign(input.side||0);if(f<0)state.auto=false;else if(!f&&state.auto)f=1;if(!f&&!side)return 0;const p=sample(state.s),speed=speedFor(p.slope,p.material,f||1),budget=speed*dt,normal=Math.hypot(f,side);const proposedS=Math.max(0,Math.min(route.length,state.s+budget*f/normal));const proposedSide=Math.max(-p.width/2+.25,Math.min(p.width/2-.25,state.lateral+budget*side/normal));let ds=proposedS-state.s,dl=proposedSide-state.lateral;
-// 곡선 구간의 좌우 이동도 3D 실거리 기준 속도 한도로 제한한다.
-const pos=(s,l)=>{const q=sample(s);return [q.x+q.nx*l,q.y,q.z+q.nz*l];};const a=pos(state.s,state.lateral);let b=pos(proposedS,proposedSide),distance=Math.hypot(...a.map((v,i)=>b[i]-v));if(distance>budget){const ratio=budget/distance;ds*=ratio;dl*=ratio;distance=budget;}if(distance<1e-9)return 0;const oldS=state.s,oldLateral=state.lateral,oldPhase=state.stepPhase;state.s+=ds;state.ascent+=Math.max(0,sample(state.s).y-sample(oldS).y);state.lateral+=dl;state.elapsed+=dt;state.distance+=distance;const stride=strideFor(p);state.stepPhase+=distance/stride;let crossed=0;while(state.stepPhase>=1){state.stepPhase--;state.steps++;const fraction=Math.min(1,((1-oldPhase)+crossed++)*stride/distance),contactS=oldS+(state.s-oldS)*fraction,contactLateral=oldLateral+dl*fraction,contact=sample(contactS);onStep({step:state.steps,material:contact.material,slope:contact.slope,s:contactS,position:pos(contactS,contactLateral),distance:state.distance-distance+distance*fraction,elapsed:state.elapsed-dt+dt*fraction});}checkpoints.forEach((c,i)=>{if(Math.min(oldS,state.s)<=c.s&&c.s<=Math.max(oldS,state.s)&&!state.checkpoints.includes(c.id))state.checkpoints.push(c.id);});if(state.s>=route.length){state.auto=false;state.paused=true;}return distance/dt;}
+export const OFF_TRAIL_METRES=8, RUN_MULTIPLIER=1.6, OFF_TRAIL_MULTIPLIER=.7, TEA_SECONDS=3;
+export const lateralLimit=s=>s<0?Math.max(...entranceLateralBounds(s).map(Math.abs)):sample(s).width/2+OFF_TRAIL_METRES;
+export const isOffTrail=(s,lateral)=>s>=0&&Math.abs(lateral)>sample(s).width/2;
+export function positionAt(s,lateral,ground){const p=sample(s),a=sample(s-2),b=sample(s+2),length=Math.hypot(b.x-a.x,b.z-a.z),nx=s<0?p.nx:-(b.z-a.z)/length,nz=s<0?p.nz:(b.x-a.x)/length,x=p.x+nx*lateral,z=p.z+nz*lateral;return [x,ground?.height(x,z,isOffTrail(s,lateral))??p.y,z];}
+// 코스(zone 'route')의 시작은 일주문 아래(GATE_S). 그보다 뒤는 광장(zone 'plaza')의 자유이동이다.
+export const ROUTE_MIN_S=GATE_S+1e-6;
+const ZONES=['route','plaza'];
+// start: 'plaza'(일주문 앞 광장) | 'gate'(일주문 아래 s=GATE_S) | 'demo'(545m 구간). entrance:true는 'plaza'와 같다.
+export function initialState({entrance=false,start=entrance?'plaza':'demo'}={}){
+ const plaza=start==='plaza',s=start==='demo'?DEMO_START:ROUTE_MIN_S;
+ return {version:1,routeId:ROUTE_ID,routeRevision:currentRevision,entranceHypothesis:ENTRANCE_HYPOTHESIS,zone:plaza?'plaza':'route',plaza:plaza?{...PLAZA_START}:null,s,lateral:0,elapsed:0,distance:0,ascent:0,steps:0,stepPhase:0,checkpoints:[],paused:false,auto:false,view:'first',sessions:1,stamina:100,runExhausted:false,running:false,pose:'stand',teaRemaining:0};
+}
+// 일주문 기준 거리(코스 표시용). 광장은 0m다.
+export const courseDistance=state=>state.zone==='plaza'?0:Math.max(0,state.s-GATE_S);
+export const COURSE_LENGTH=route.length-GATE_S;
+const validPlaza=p=>p&&[p.x,p.z,p.heading].every(Number.isFinite)&&insidePlaza(p.x,p.z);
+// 멀티 대비 위치 하나: {zone,x,z,heading,s,lateral}. heading은 몸·이동 기준(three.js 회전), 광장에서 s·lateral은 null.
+export function playerPosition(state,ground){
+ if(state.zone==='plaza'){const {x,z,heading}=state.plaza;return {zone:'plaza',x,z,heading,s:null,lateral:null};}
+ const [x,,z]=positionAt(state.s,state.lateral,ground);return {zone:'route',x,z,heading:sample(state.s).heading,s:state.s,lateral:state.lateral};
+}
+export function setPlayerPosition(state,pos,ground){
+ if(!pos)return false;
+ if(pos.zone==='plaza'){
+  const plaza={x:pos.x,z:pos.z,heading:Number.isFinite(pos.heading)?pos.heading:PLAZA_START.heading};if(!validPlaza(plaza))return false;
+  Object.assign(state,{zone:'plaza',plaza,s:ROUTE_MIN_S,lateral:0});return true;
+ }
+ if(!Number.isFinite(pos.s))return false;
+ const s=clamp(pos.s,ROUTE_MIN_S,route.length),bounds=s<0?entranceLateralBounds(s):[-lateralLimit(s),lateralLimit(s)];
+ Object.assign(state,{zone:'route',plaza:null,s,lateral:clamp(Number.isFinite(pos.lateral)?pos.lateral:0,...bounds)});return true;
+}
+export function restore(raw){try{
+ const v=JSON.parse(raw);if(v.version!==1||v.routeId!==ROUTE_ID||v.routeRevision!==currentRevision||!['s','lateral','elapsed','distance','steps','stepPhase'].every(k=>Number.isFinite(v[k])))return initialState();
+ const plazaSave=v.zone==='plaza'||(!ZONES.includes(v.zone)&&v.s<ROUTE_MIN_S);
+ if(plazaSave&&v.entranceHypothesis!==ENTRANCE_HYPOTHESIS)return initialState({entrance:true});
+ const stamina=Number.isFinite(v.stamina)?clamp(v.stamina,0,100):100,pose=['stand','sit','tea'].includes(v.pose)?v.pose:'stand';
+ const result={...initialState(),elapsed:Math.max(0,v.elapsed),distance:Math.max(0,v.distance),ascent:Number.isFinite(v.ascent)?Math.max(0,v.ascent):0,steps:Math.max(0,Math.floor(v.steps)),stepPhase:clamp(v.stepPhase,0,1-1e-12),checkpoints:Array.isArray(v.checkpoints)?[...new Set(v.checkpoints.filter(x=>checkpoints.some(c=>c.id===x)))]:[],paused:true,auto:false,view:v.view==='third'?'third':'first',sessions:Math.max(1,Number(v.sessions)||1)+1,stamina,runExhausted:stamina===0||(v.runExhausted===true&&stamina<30),running:false,pose,teaRemaining:pose==='tea'?clamp(Number.isFinite(v.teaRemaining)?v.teaRemaining:TEA_SECONDS,.001,TEA_SECONDS):0};
+ if(plazaSave){
+  // 새 형식은 plaza{x,z,heading}, 예전 형식(s<0 접근로)은 그 자리의 월드 좌표로 옮긴다. 경계 밖이면 출발점.
+  let plaza=v.zone==='plaza'?v.plaza:null;
+  if(v.zone!=='plaza'){const s=clamp(v.s,ENTRANCE_MIN_S,0),[x,,z]=positionAt(s,clamp(v.lateral,...entranceLateralBounds(s)));plaza={x,z,heading:sample(s).heading};}
+  return {...result,zone:'plaza',plaza:validPlaza(plaza)?{x:plaza.x,z:plaza.z,heading:plaza.heading}:{...PLAZA_START},s:ROUTE_MIN_S,lateral:0};
+ }
+ const s=clamp(v.s,ROUTE_MIN_S,route.length),half=sample(s).width/2;
+ const lateral=s<0?clamp(v.lateral,...entranceLateralBounds(s)):Math.abs(v.lateral)>lateralLimit(s)?clamp(v.lateral,-half+.25,half-.25):v.lateral;
+ return {...result,zone:'route',plaza:null,s,lateral};
+}catch{return initialState();}}
+export function setPose(state,pose){
+ if(pose==='tea'){if(state.pose!=='sit')return false;state.pose='tea';state.teaRemaining=TEA_SECONDS;}
+ else if(pose==='stand'||pose==='sit'){state.pose=pose;state.teaRemaining=0;}else return false;
+ state.auto=false;state.running=false;return true;
+}
+function recover(state,rate,dt){state.stamina=clamp(state.stamina+rate*dt,0,100);if(state.stamina>=30)state.runExhausted=false;}
+const wrapAngle=a=>Math.atan2(Math.sin(a),Math.cos(a));
+const PLAZA_TURN_RATE=3;
+// 광장 한 프레임 이동 후보. 문 통로를 지나 s≥ROUTE_MIN_S가 되면 코스 좌표로 넘긴다.
+function planPlaza(state,f,side,budget,ground){
+ const P=state.plaza;let dx,dz;
+ if(state.auto){const t=autoTarget(P.x,P.z);dx=t.x-P.x;dz=t.z-P.z;const n=Math.hypot(dx,dz)||1;dx/=n;dz/=n;}
+ else{const h=P.heading,n=Math.hypot(f,side);dx=(-Math.sin(h)*f+Math.cos(h)*side)/n;dz=(-Math.cos(h)*f-Math.sin(h)*side)/n;}
+ const routeWorld=(s,l)=>positionAt(s,l,ground);
+ const resolve=(x,z)=>{
+  if(segmentHitsGate(P.x,P.z,x,z))return null;
+  const r=routeFromWorld(x,z,routeWorld);
+  if(r.s>=ROUTE_MIN_S){const [lo,hi]=entranceLateralBounds(r.s);return r.lateral>=lo&&r.lateral<=hi?{zone:'route',s:r.s,lateral:r.lateral,x,z}:null;}
+  return insidePlaza(x,z)?{zone:'plaza',x,z}:null;
+ };
+ // 막히면 문 기준 좌우(gx)·앞뒤(gz) 중 한 성분만 남겨 경계를 따라 미끄러진다.
+ const from=toGate(P.x,P.z),to=toGate(P.x+dx*budget,P.z+dz*budget);
+ for(const [gx,gz] of [[to.gx,to.gz],[to.gx,from.gz],[from.gx,to.gz]]){const q=fromGate(gx,gz),hit=resolve(q.x,q.z);if(hit)return {hit,direction:{x:dx,z:dz}};}
+ return {hit:null,direction:{x:dx,z:dz}};
+}
+export function advance(state,input,dt,onStep=()=>{},ground){
+ state.running=false;if(state.paused||dt<=0||!Number.isFinite(dt))return 0;dt=Math.min(dt,.1);
+ let f=Math.sign(input.forward||0),side=Math.sign(input.side||0);const direct=!!(f||side);
+ if(direct&&state.pose!=='stand')setPose(state,'stand');
+ if(state.pose!=='stand'){
+  recover(state,15,dt);
+  if(state.pose==='tea'){state.teaRemaining=Math.max(0,state.teaRemaining-dt);if(state.teaRemaining<=1e-8){recover(state,30,1);state.pose='sit';state.teaRemaining=0;}}
+  return 0;
+ }
+ if(direct)state.auto=false;else if(state.auto)f=1;
+ if(!f&&!side){recover(state,8,dt);return 0;}
+ const plaza=state.zone==='plaza',p=sample(plaza?ROUTE_MIN_S:state.s),off=!plaza&&isOffTrail(state.s,state.lateral),running=!!input.run&&!state.runExhausted&&state.stamina>0;
+ const speed=(plaza?speedFor(0,'paved',1):speedFor(p.slope,p.material,f||1))*(running?RUN_MULTIPLIER:1)*(off?OFF_TRAIL_MULTIPLIER:1),budget=speed*dt;
+ const motionPosition=(s,l)=>{const pos=positionAt(s,l,ground);if(!isOffTrail(s,l))pos[1]=sample(s).y;return pos;};
+ const plazaPosition=(x,z)=>[x,ground?.height(x,z,false)??route.points[0].y,z];
+ let a,b,distance,allowedBudget=budget,entersOff=false,next;
+ if(plaza){
+  a=plazaPosition(state.plaza.x,state.plaza.z);
+  let step=budget,plan;
+  // 지면 높이를 포함한 실제 거리로 속도를 제한한다.
+  for(let i=0;i<4;i++){plan=planPlaza(state,f,side,step,ground);if(!plan.hit)break;b=plazaPosition(plan.hit.x,plan.hit.z);distance=Math.hypot(...a.map((v,j)=>b[j]-v));if(distance<=budget+1e-10)break;step*=budget/distance;}
+  if(state.auto){const target=Math.atan2(-plan.direction.x,-plan.direction.z),d=wrapAngle(target-state.plaza.heading);state.plaza.heading=wrapAngle(state.plaza.heading+Math.sign(d)*Math.min(Math.abs(d),PLAZA_TURN_RATE*dt));}
+  if(!plan.hit){recover(state,8,dt);return 0;}
+  next=plan.hit;b=plazaPosition(next.x,next.z);distance=Math.hypot(...a.map((v,j)=>b[j]-v));
+ }else{
+  const normal=Math.hypot(f,side),rawS=state.s+budget*f/normal;
+  let proposedS=clamp(rawS,ROUTE_MIN_S,route.length);
+  let proposedSide=clamp(state.lateral+budget*side/normal,...(proposedS<0?entranceLateralBounds(proposedS):[-lateralLimit(proposedS),lateralLimit(proposedS)]));
+  if(state.auto)proposedSide=state.lateral-Math.sign(state.lateral)*Math.min(Math.abs(state.lateral),budget*.6);
+  a=motionPosition(state.s,state.lateral);
+  // 일주문 아래에서 뒤로 가면 문 선분 좌표계를 그대로 연장해 광장으로 돌아간다.
+  if(rawS<ROUTE_MIN_S){
+   const w=worldFromGateFrame(rawS,proposedSide),[x0,,z0]=positionAt(state.s,state.lateral);
+   if(!segmentHitsGate(x0,z0,w.x,w.z)&&insidePlaza(w.x,w.z)){next={zone:'plaza',x:w.x,z:w.z};b=plazaPosition(w.x,w.z);distance=Math.hypot(...a.map((v,j)=>b[j]-v));}
+   else proposedS=Math.max(proposedS,state.s);
+  }
+  if(!next){
+   b=motionPosition(proposedS,proposedSide);distance=Math.hypot(...a.map((v,i)=>b[i]-v));
+   entersOff=isOffTrail(proposedS,proposedSide);
+   allowedBudget=entersOff&&!off?budget*OFF_TRAIL_MULTIPLIER:budget;
+   // 곡선·지면 높이를 포함한 실제 거리로 속도를 제한해 급한 단차를 뛰어넘지 않는다.
+   for(let i=0;i<4&&distance>allowedBudget+1e-10;i++){
+    const ratio=allowedBudget/distance;proposedS=state.s+(proposedS-state.s)*ratio;proposedSide=state.lateral+(proposedSide-state.lateral)*ratio;
+    b=motionPosition(proposedS,proposedSide);distance=Math.hypot(...a.map((v,j)=>b[j]-v));
+   }
+   // 일주문 기둥·바리케이드: 경로 안팎과 무관하게 막고, 막히면 앞뒤·좌우 중 한 성분만 남겨 미끄러진다.
+   const gateHit=(s,l)=>{const q=positionAt(s,l);const [x0,,z0]=positionAt(state.s,state.lateral);return segmentHitsGate(x0,z0,q[0],q[2]);};
+   if(gateHit(proposedS,proposedSide)){
+    if(!gateHit(proposedS,state.lateral))proposedSide=state.lateral;else if(!gateHit(state.s,proposedSide))proposedS=state.s;else{recover(state,8,dt);return 0;}
+    b=motionPosition(proposedS,proposedSide);distance=Math.hypot(...a.map((v,j)=>b[j]-v));
+   }
+   next={zone:'route',s:proposedS,lateral:proposedSide};
+  }
+ }
+ const blocked=!plaza&&next.zone==='route'&&ground&&(off||entersOff)&&!ground.canMove(a,b);
+ if(blocked||!Number.isFinite(distance)||distance<1e-9||distance>allowedBudget+1e-6){recover(state,8,dt);return 0;}
+ const oldS=plaza?null:state.s,oldLateral=state.lateral,oldPhase=state.stepPhase,oldWorld=a;
+ if(next.zone==='plaza'){
+  const heading=plaza?state.plaza.heading:sample(state.s).heading;
+  Object.assign(state,{zone:'plaza',plaza:{x:next.x,z:next.z,heading},s:ROUTE_MIN_S,lateral:0});
+ }else Object.assign(state,{zone:'route',plaza:null,s:next.s,lateral:next.lateral});
+ state.ascent+=Math.max(0,b[1]-a[1]);state.elapsed+=dt;state.distance+=distance;state.running=running;
+ if(running){const horizontal=Math.hypot(b[0]-a[0],b[2]-a[2]);const uphill=Math.max(0,(b[1]-a[1])/Math.max(.001,horizontal));state.stamina=Math.max(0,state.stamina-10*(1+uphill)*dt);if(state.stamina<=0)state.runExhausted=true;}
+ else recover(state,4,dt);
+ const stride=plaza||next.zone==='plaza'?.7:(off||entersOff)? .7:strideFor(p);state.stepPhase+=distance/stride;let crossed=0;
+ while(state.stepPhase>=1){state.stepPhase--;state.steps++;const fraction=Math.min(1,((1-oldPhase)+crossed++)*stride/distance);
+  // 광장·문 전환 프레임의 발소리는 포장면(paved)이고 위치는 선형 보간한다.
+  if(oldS===null||next.zone==='plaza'){const position=oldWorld.map((v,j)=>v+(b[j]-v)*fraction);onStep({step:state.steps,material:'paved',slope:0,s:state.zone==='route'?state.s:null,zone:state.zone,position,distance:state.distance-distance+distance*fraction,elapsed:state.elapsed-dt+dt*fraction});continue;}
+  const contactS=oldS+(state.s-oldS)*fraction,contactLateral=oldLateral+(state.lateral-oldLateral)*fraction,contact=sample(contactS);onStep({step:state.steps,material:isOffTrail(contactS,contactLateral)?'soil':contact.material,slope:contact.slope,s:contactS,zone:'route',position:positionAt(contactS,contactLateral,ground),distance:state.distance-distance+distance*fraction,elapsed:state.elapsed-dt+dt*fraction});}
+ if(oldS!==null&&state.zone==='route')checkpoints.forEach(c=>{if(Math.min(oldS,state.s)<=c.s&&c.s<=Math.max(oldS,state.s)&&!state.checkpoints.includes(c.id))state.checkpoints.push(c.id);});
+ if(state.zone==='route'&&state.s>=route.length){state.auto=false;state.paused=true;}return distance/dt;
+}

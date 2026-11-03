@@ -1,0 +1,26 @@
+[
+  {
+    "id": "entrance-first",
+    "quality": "balanced",
+    "camera": {
+      "s": -56.19165564956948,
+      "lateral": 0,
+      "view": "first"
+    },
+    "idleFps": 60.00200006666886,
+    "walkFps": null,
+    "errors": []
+  },
+  {
+    "id": "entrance-third",
+    "quality": "balanced",
+    "camera": {
+      "s": -56.19165564956948,
+      "lateral": 0,
+      "view": "third"
+    },
+    "idleFps": 59.83545250560958,
+    "walkFps": null,
+    "errors": []
+  }
+]

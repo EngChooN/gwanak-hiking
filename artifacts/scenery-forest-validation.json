@@ -1,0 +1,44 @@
+{
+  "date": "2026-11-03T02:08:55.872Z",
+  "pass": true,
+  "runs": [
+    {
+      "id": "entrance",
+      "fps": 59.70238809552383,
+      "target": 45,
+      "pass": true
+    },
+    {
+      "id": "valley",
+      "fps": 60.00240009600385,
+      "target": 45,
+      "pass": true
+    },
+    {
+      "id": "ridge",
+      "fps": 60.002196419835656,
+      "target": 45,
+      "pass": true
+    },
+    {
+      "id": "summit",
+      "fps": 60.00240009600385,
+      "target": 45,
+      "pass": true
+    },
+    {
+      "id": "third",
+      "fps": 60.00279547133641,
+      "target": 40,
+      "pass": true
+    },
+    {
+      "id": "third-low",
+      "fps": 60.00279547133641,
+      "target": 55,
+      "pass": true
+    }
+  ],
+  "tests": 107,
+  "shaderErrors": 0
+}

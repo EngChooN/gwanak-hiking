@@ -1,0 +1,131 @@
+TAP version 13
+# Subtest: 선택한 일주문 좌표에 문을 놓고 출발 방위와 정면을 맞춘다
+ok 1 - 선택한 일주문 좌표에 문을 놓고 출발 방위와 정면을 맞춘다
+  ---
+  duration_ms: 44.296166
+  type: 'test'
+  ...
+# Subtest: 광장 중앙 바위·나무를 비우고 주변 숲의 개체 정보는 보존한다
+ok 2 - 광장 중앙 바위·나무를 비우고 주변 숲의 개체 정보는 보존한다
+  ---
+  duration_ms: 0.21025
+  type: 'test'
+  ...
+# Subtest: 특징표 시설은 GPX 기준 m로 배치하고 원경에서 숨긴다
+ok 3 - 특징표 시설은 GPX 기준 m로 배치하고 원경에서 숨긴다
+  ---
+  duration_ms: 38.722584
+  type: 'test'
+  ...
+# Subtest: 포장 광장은 GPX 첫 고도로 접합하고 외곽에서는 원래 지면으로 복귀한다
+ok 4 - 포장 광장은 GPX 첫 고도로 접합하고 외곽에서는 원래 지면으로 복귀한다
+  ---
+  duration_ms: 0.187125
+  type: 'test'
+  ...
+# Subtest: 위에서 보는 계곡 수면의 앞면은 위를 향한다
+ok 5 - 위에서 보는 계곡 수면의 앞면은 위를 향한다
+  ---
+  duration_ms: 34.127292
+  type: 'test'
+  ...
+# {"contacts":5067,"maxCenterError":0.03204177408110809,"maxFootError":7.451143452241737e-10,"maxLateralRoadDifference":0.8242370265804766}
+# Subtest: 입구 B 좌표·방위·다각형, A 대안과 GPX 원점을 분리한다
+ok 6 - 입구 B 좌표·방위·다각형, A 대안과 GPX 원점을 분리한다
+  ---
+  duration_ms: 1.358125
+  type: 'test'
+  ...
+# Subtest: 광장 네 방향 경계·대각선 속도·자동 보행으로 GPX 진입
+ok 7 - 광장 네 방향 경계·대각선 속도·자동 보행으로 GPX 진입
+  ---
+  duration_ms: 20.221416
+  type: 'test'
+  ...
+# Subtest: 20% 상향 후 125분 목표·경사 급변 제한·데크 계수
+ok 8 - 20% 상향 후 125분 목표·경사 급변 제한·데크 계수
+  ---
+  duration_ms: 0.217084
+  type: 'test'
+  ...
+# Subtest: GPX 수평 337점 보존·DSM 정렬 고도·첫 점 원점·1:1 거리
+ok 9 - GPX 수평 337점 보존·DSM 정렬 고도·첫 점 원점·1:1 거리
+  ---
+  duration_ms: 1.780417
+  type: 'test'
+  ...
+# Subtest: 5곳 최근접 경로점·임시 표시·통과 저장 복구 및 이전 경로 저장 분리
+ok 10 - 5곳 최근접 경로점·임시 표시·통과 저장 복구 및 이전 경로 저장 분리
+  ---
+  duration_ms: 0.470916
+  type: 'test'
+  ...
+# Subtest: 새 DSM 경로 전체 노면 raycast와 5동작 발바닥 접지 0.3m 이내
+ok 11 - 새 DSM 경로 전체 노면 raycast와 5동작 발바닥 접지 0.3m 이내
+  ---
+  duration_ms: 4311.867167
+  type: 'test'
+  ...
+# Subtest: 실제 격자 크기·경로 바닥·OSM relation 연결과 섬 구멍
+ok 12 - 실제 격자 크기·경로 바닥·OSM relation 연결과 섬 구멍
+  ---
+  duration_ms: 552.561417
+  type: 'test'
+  ...
+# Subtest: EPSG:5186 미터 변환 왕복과 북쪽 방향
+ok 13 - EPSG:5186 미터 변환 왕복과 북쪽 방향
+  ---
+  duration_ms: 1.397292
+  type: 'test'
+  ...
+# Subtest: 멈춤·일시정지는 거리·시간·걸음 불변
+ok 14 - 멈춤·일시정지는 거리·시간·걸음 불변
+  ---
+  duration_ms: 0.360625
+  type: 'test'
+  ...
+# Subtest: 대각선·자동+전진 입력은 실제 속도를 넘지 않음
+ok 15 - 대각선·자동+전진 입력은 실제 속도를 넘지 않음
+  ---
+  duration_ms: 0.646042
+  type: 'test'
+  ...
+# Subtest: 좌우 입력은 길 가장자리에서 8m까지 허용
+ok 16 - 좌우 입력은 길 가장자리에서 8m까지 허용
+  ---
+  duration_ms: 23.060542
+  type: 'test'
+  ...
+# Subtest: 재질별 걸음 이벤트 개수·저장 복구·손상 저장 처리
+ok 17 - 재질별 걸음 이벤트 개수·저장 복구·손상 저장 처리
+  ---
+  duration_ms: 1.861041
+  type: 'test'
+  ...
+# Subtest: DSM 경로 거리·정상 기준 632m, 후진 자동 걷기 해제
+ok 18 - DSM 경로 거리·정상 기준 632m, 후진 자동 걷기 해제
+  ---
+  duration_ms: 0.170417
+  type: 'test'
+  ...
+# Subtest: 실제 좌표 이동도 대각선 속도 한도 이내
+ok 19 - 실제 좌표 이동도 대각선 속도 한도 이내
+  ---
+  duration_ms: 0.32775
+  type: 'test'
+  ...
+# Subtest: 실제 이동 루프와 해석적 시뮬레이션 시간·걸음 수 일치
+ok 20 - 실제 이동 루프와 해석적 시뮬레이션 시간·걸음 수 일치
+  ---
+  duration_ms: 120.523292
+  type: 'test'
+  ...
+1..20
+# tests 20
+# suites 0
+# pass 20
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 4999.60575

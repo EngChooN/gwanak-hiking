@@ -1,0 +1,71 @@
+{
+  "time": "2026-11-03T02:44:15.504Z",
+  "runs": [
+    {
+      "id": "ridge",
+      "fps": 60.002400096003804,
+      "maxTriangles": 1623746,
+      "errors": 0
+    },
+    {
+      "id": "valley",
+      "fps": 60.002795471336455,
+      "maxTriangles": 1605844,
+      "errors": 0
+    },
+    {
+      "id": "third-low",
+      "fps": 60.00240009600385,
+      "maxTriangles": 721441,
+      "errors": 0
+    }
+  ],
+  "scopedTests": 20,
+  "fullTests": {
+    "total": 121,
+    "pass": 119,
+    "fail": 2
+  },
+  "tree": {
+    "status": "시각 높이 분포 · 현장 실측 아님",
+    "small": [
+      4,
+      7
+    ],
+    "medium": [
+      8,
+      13
+    ],
+    "tall": [
+      16,
+      22
+    ],
+    "tallCount": 38679,
+    "maxHeight": 21.999230443543638
+  },
+  "scenery": {
+    "forestCorridor": 30,
+    "grassRadius": [
+      20,
+      30,
+      40
+    ],
+    "grassDensityPerM2": [
+      12.25,
+      5.25
+    ],
+    "grassChunkSize": 12,
+    "grassInstances": 2010489,
+    "trees": 21637,
+    "outcrops": 160,
+    "speciesStatus": "임상도 미확보 · 활엽 60%/소나무 40% 시각 대용",
+    "wind": true,
+    "layers": [
+      "소나무·참나무류 교목 시각 대용",
+      "관목",
+      "고사리·조릿대형 하층"
+    ],
+    "ground": "기존 4종 PBR 노멀 혼합 + 이끼 색 패치",
+    "visibleGrass": 18378
+  }
+}

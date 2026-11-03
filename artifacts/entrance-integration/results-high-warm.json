@@ -1,0 +1,26 @@
+[
+  {
+    "id": "valley",
+    "quality": "high",
+    "camera": {
+      "s": 1608.3738503863663,
+      "lateral": 0,
+      "view": "first"
+    },
+    "idleFps": 59.502975148757464,
+    "walkFps": 59.7522407090265,
+    "errors": []
+  },
+  {
+    "id": "third",
+    "quality": "high",
+    "camera": {
+      "s": 3951.963000446444,
+      "lateral": 0,
+      "view": "third"
+    },
+    "idleFps": 59.66766112768544,
+    "walkFps": 59.752240709026616,
+    "errors": []
+  }
+]

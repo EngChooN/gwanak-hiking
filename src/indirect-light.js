@@ -1,5 +1,5 @@
 import {Color} from 'three';
-export const INDIRECT_PROFILE={skyColor:'#D5D6D3',groundColor:'#ABA8A2',hemisphereIntensity:.45,retainedChroma:.01,terrainChroma:.25};
+export const INDIRECT_PROFILE={skyColor:'#C4DAF4',groundColor:'#9A9876',hemisphereIntensity:.5,retainedChroma:.01,terrainChroma:.25};
 const sky=new Color(INDIRECT_PROFILE.skyColor),ground=new Color(INDIRECT_PROFILE.groundColor);
 const luminance=c=>.2126*c[0]+.7152*c[1]+.0722*c[2];
 export function groundAlbedo(rgb){const y=luminance(rgb);return rgb.map(v=>y+(v-y)*INDIRECT_PROFILE.terrainChroma);}

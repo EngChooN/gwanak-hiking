@@ -19,11 +19,11 @@ test('앱 음원 35개는 design 원본과 바이트가 동일하며 계단은 �
  const files=Object.values(SOUND_BANKS).flat();assert.equal(files.length,35);assert.equal(SOUND_BANKS.stairs.length+SOUND_BANKS.deck_stairs.length,13);
  for(const file of files)assert.deepEqual(readFileSync(new URL('../public/sounds/'+file,import.meta.url)),readFileSync(new URL('../design/sounds/'+file,import.meta.url)));
 });
-test('실제 계단 걸음 이벤트: 단마다 한 번·1/1.2초·정지하면 발생하지 않음',()=>{
+test('실제 계단 걸음 이벤트: 단마다 한 번·1/1.44초·정지하면 발생하지 않음',()=>{
  const s=initialState(),seg=route.segments.find(p=>p.material==='stairs'&&p.length>10),events=[];s.s=seg.start+.1;
- // 20초 끝 경계의 24번째 걸음이 부동소수 누적으로 빠지지 않도록 20.5초를 걷는다.
- for(let i=0;i<205;i++)advance(s,{forward:1},.1,e=>events.push(e));assert.equal(events.length,24);assert.ok(events.every(e=>e.material==='stairs'));
- for(let i=1;i<events.length;i++)assert.ok(Math.abs(events[i].elapsed-events[i-1].elapsed-1/STAIR_CADENCE)<1e-8);
+ // 17초 끝 경계의 24번째 걸음이 부동소수 누적으로 빠지지 않도록 17.1초를 걷는다.
+ for(let i=0;i<171;i++)advance(s,{forward:1},.1,e=>events.push(e));assert.equal(events.length,24);assert.ok(events.every(e=>e.material==='stairs'));
+ for(let i=1;i<events.length;i++)assert.ok(Math.abs(events[i].elapsed-events[i-1].elapsed-1/(STAIR_CADENCE*1.2))<1e-8);
  s.paused=true;for(let i=0;i<20;i++)advance(s,{forward:1},.1,e=>events.push(e));assert.equal(events.length,24);
 });
 test('재질 경계에 닿은 걸음은 이전 프레임 재질이 아닌 접지 위치 재질',()=>{

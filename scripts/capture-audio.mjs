@@ -9,11 +9,11 @@ let browser;
 try{
  browser=await chromium.launch({channel:'chrome',headless:true});const page=await browser.newPage({viewport:{width:1366,height:768}});
  page.on('pageerror',e=>result.errors.push(e.message));page.on('console',m=>{if(m.text().startsWith('[발소리]'))result.console.push(m.text());});
- await page.goto(base+'/?audioDebug=1');await page.waitForFunction(()=>!!window.hiking);const snapshot=()=>page.evaluate(()=>window.hiking.audio());
+ await page.goto(base+'/?audioDebug=1&start=demo');await page.waitForFunction(()=>window.hiking?.started);const snapshot=()=>page.evaluate(()=>window.hiking.audio());
  let a=await snapshot();assert.equal(a.context,'입력 대기');assert.equal(a.logs.length,0);result.checks.push('첫 사용자 입력 전 AudioContext 미생성·무음');
- await page.keyboard.press('r');await page.waitForFunction(()=>window.hiking.audio().decoded===35);a=await snapshot();assert.equal(a.context,'running');assert.deepEqual(a.errors,[]);
- await page.waitForFunction(()=>window.hiking.audio().peak>.0001,{},{timeout:4000});result.signal=await snapshot();result.checks.push('첫 R 입력으로 AudioContext 시작·35개 디코딩·실제 출력 파형 확인');
- await page.waitForFunction(()=>window.hiking.audio().logs.length>=12,{},{timeout:20000});result.walk=await snapshot();const walkState=await page.evaluate(()=>window.hiking.snapshot());
+ await page.keyboard.press('r');await page.waitForFunction(()=>window.hiking?.started&&window.hiking.audio().decoded===35);a=await snapshot();assert.equal(a.context,'running');assert.deepEqual(a.errors,[]);
+ await page.waitForFunction(()=>window.hiking?.started&&window.hiking.audio().peak>.0001,{},{timeout:4000});result.signal=await snapshot();result.checks.push('첫 R 입력으로 AudioContext 시작·35개 디코딩·실제 출력 파형 확인');
+ await page.waitForFunction(()=>window.hiking?.started&&window.hiking.audio().logs.length>=12,{},{timeout:20000});result.walk=await snapshot();const walkState=await page.evaluate(()=>window.hiking.snapshot());
  assert.equal(result.walk.logs.length,walkState.steps);assert.equal(result.walk.dropped.loading,0);assert.ok(result.walk.logs.every(r=>r.material==='stairs'));assert.equal(new Set(result.walk.logs.map(r=>r.variant)).size,6);
  const intervals=result.walk.logs.slice(1).map((r,i)=>r.eventElapsed-result.walk.logs[i].eventElapsed),actualIntervals=result.walk.logs.slice(1).map((r,i)=>r.contextTime-result.walk.logs[i].contextTime);
  assert.ok(intervals.every(v=>Math.abs(v-1/1.2)<.001));assert.ok(Math.abs(actualIntervals.reduce((a,b)=>a+b)/actualIntervals.length-1/1.2)<.05);result.intervals={event:intervals,audioContext:actualIntervals};
@@ -21,8 +21,8 @@ try{
  await page.keyboard.press('Space');await page.waitForTimeout(150);a=await snapshot();assert.equal(a.active,0);await page.waitForTimeout(900);assert.equal((await snapshot()).logs.length,a.logs.length);result.checks.push('일시정지 시 현재 소리 중단·추가 발소리 없음');
  await page.keyboard.press('Space');await page.keyboard.press('v');await page.keyboard.press('r');await page.waitForFunction(n=>window.hiking.audio().logs.length>n,a.logs.length);const third=(await snapshot()).logs.at(-1);assert.equal(third.view,'third');assert.ok(Math.abs(third.mixDb-third.variationDb-(-2))<.001);await page.keyboard.press('r');result.third=third;result.checks.push('3인칭 걸음 재생·-3dB 거리감 (급경사 +1dB와 별도 합산)');
  await page.locator('#sound-toggle').click();a=await snapshot();assert.equal(a.enabled,false);await page.keyboard.press('r');const steps=await page.evaluate(()=>window.hiking.snapshot().steps);await page.waitForFunction(n=>window.hiking.snapshot().steps>=n+2,steps);assert.equal((await snapshot()).logs.length,a.logs.length);await page.keyboard.press('r');result.checks.push('소리 끄기: 이동이 계속돼도 재생 없음');
- await page.reload();await page.waitForFunction(()=>!!window.hiking);assert.equal((await snapshot()).enabled,false);assert.equal(await page.locator('#sound-toggle').getAttribute('aria-pressed'),'false');
- await page.keyboard.press('Space');await page.locator('#sound-toggle').click();await page.waitForFunction(()=>window.hiking.audio().decoded===35&&window.hiking.audio().context==='running');result.checks.push('소리 토글 저장·이어하기 복구·다시 켜면 사용자 입력으로 시작');
+ await page.reload();await page.waitForFunction(()=>window.hiking?.started);assert.equal((await snapshot()).enabled,false);assert.equal(await page.locator('#sound-toggle').getAttribute('aria-pressed'),'false');
+ await page.keyboard.press('Space');await page.locator('#sound-toggle').click();await page.waitForFunction(()=>window.hiking?.started&&window.hiking.audio().decoded===35&&window.hiking.audio().context==='running');result.checks.push('소리 토글 저장·이어하기 복구·다시 켜면 사용자 입력으로 시작');
  // GPX에는 deck_stairs가 없어, 동일 공개 걸음 이벤트의 재질 입력으로 통나무 은행을 검사한다.
  result.logStairs=[];
  for(let i=1;i<=14;i++){

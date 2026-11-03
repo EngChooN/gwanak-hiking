@@ -1,0 +1,2545 @@
+{
+  "frame": {
+    "x": -18.40033107376895,
+    "z": -18.534734591234862,
+    "y": 49.645642777338416,
+    "yaw": -2.303834612632515
+  },
+  "summary": {
+    "밖: GwanakRealistic / NearTerrain / Mesh": {
+      "count": 80,
+      "maxAbove": 0.27803731088603456
+    },
+    "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh": {
+      "count": 73,
+      "maxAbove": 0.13632811993955585
+    },
+    "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / Group / Mesh": {
+      "count": 17,
+      "maxAbove": 1.0801667832035378
+    },
+    "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh": {
+      "count": 185,
+      "maxAbove": 6.14592315758744
+    },
+    "광장: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh": {
+      "count": 4,
+      "maxAbove": 0.08986979402328643
+    }
+  },
+  "hits": [
+    {
+      "gx": -14,
+      "gz": -3,
+      "inPlaza": false,
+      "above": 0.074,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": -14,
+      "gz": 0,
+      "inPlaza": false,
+      "above": 0.054,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": -14,
+      "gz": 3,
+      "inPlaza": false,
+      "above": 0.053,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": -14,
+      "gz": 6,
+      "inPlaza": false,
+      "above": 0.034,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": -14,
+      "gz": 8,
+      "inPlaza": false,
+      "above": 0.011,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": -14,
+      "gz": 9,
+      "inPlaza": false,
+      "above": 0.015,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": -14,
+      "gz": 10,
+      "inPlaza": false,
+      "above": 0.014,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": -14,
+      "gz": 11,
+      "inPlaza": false,
+      "above": 0.013,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": -14,
+      "gz": 13,
+      "inPlaza": false,
+      "above": 0.02,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": -14,
+      "gz": 14,
+      "inPlaza": false,
+      "above": 0.015,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": -14,
+      "gz": 15,
+      "inPlaza": false,
+      "above": 0.008,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": -14,
+      "gz": 16,
+      "inPlaza": false,
+      "above": 0.022,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": -14,
+      "gz": 17,
+      "inPlaza": false,
+      "above": 0.012,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": -14,
+      "gz": 18,
+      "inPlaza": false,
+      "above": 0.032,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": -14,
+      "gz": 19,
+      "inPlaza": false,
+      "above": 0.018,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": -14,
+      "gz": 21,
+      "inPlaza": false,
+      "above": 0.056,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": -14,
+      "gz": 22,
+      "inPlaza": false,
+      "above": 0.011,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": -14,
+      "gz": 24,
+      "inPlaza": false,
+      "above": 0.079,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": -14,
+      "gz": 27,
+      "inPlaza": false,
+      "above": 0.084,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": -14,
+      "gz": 29,
+      "inPlaza": false,
+      "above": 0.014,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": -14,
+      "gz": 30,
+      "inPlaza": false,
+      "above": 0.066,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": -14,
+      "gz": 32,
+      "inPlaza": false,
+      "above": 0.024,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": -14,
+      "gz": 33,
+      "inPlaza": false,
+      "above": 0.043,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": -14,
+      "gz": 34,
+      "inPlaza": false,
+      "above": 0.011,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": -14,
+      "gz": 35,
+      "inPlaza": false,
+      "above": 0.03,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": -14,
+      "gz": 36,
+      "inPlaza": false,
+      "above": 0.017,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": -14,
+      "gz": 37,
+      "inPlaza": false,
+      "above": 0.081,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": -14,
+      "gz": 38,
+      "inPlaza": false,
+      "above": 0.061,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": -13,
+      "gz": -18,
+      "inPlaza": false,
+      "above": 0.071,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": -13,
+      "gz": -15,
+      "inPlaza": false,
+      "above": 0.03,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": -13,
+      "gz": -9,
+      "inPlaza": false,
+      "above": 0.019,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": -13,
+      "gz": 7,
+      "inPlaza": false,
+      "above": 0.015,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": -13,
+      "gz": 10,
+      "inPlaza": false,
+      "above": 0.029,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": -13,
+      "gz": 13,
+      "inPlaza": false,
+      "above": 0.024,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": -13,
+      "gz": 16,
+      "inPlaza": false,
+      "above": 0.013,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": -13,
+      "gz": 21,
+      "inPlaza": false,
+      "above": 0.006,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": -13,
+      "gz": 24,
+      "inPlaza": false,
+      "above": 0.011,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": -13,
+      "gz": 27,
+      "inPlaza": false,
+      "above": 0.008,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": -13,
+      "gz": 31,
+      "inPlaza": false,
+      "above": 0.018,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": -13,
+      "gz": 34,
+      "inPlaza": false,
+      "above": 0.035,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": -13,
+      "gz": 37,
+      "inPlaza": false,
+      "above": 0.023,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": -12,
+      "gz": -20,
+      "inPlaza": false,
+      "above": 0.117,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": -11,
+      "gz": -39,
+      "inPlaza": false,
+      "above": 0.043,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": -11,
+      "gz": -24,
+      "inPlaza": false,
+      "above": 0.136,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": -11,
+      "gz": -24,
+      "inPlaza": false,
+      "above": 0.121,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": -11,
+      "gz": -24,
+      "inPlaza": false,
+      "above": 0.098,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": -10,
+      "gz": -39,
+      "inPlaza": false,
+      "above": 0.055,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": -9,
+      "gz": -28,
+      "inPlaza": false,
+      "above": 0.028,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": -9,
+      "gz": -26,
+      "inPlaza": false,
+      "above": 0.054,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": -9,
+      "gz": -16,
+      "inPlaza": false,
+      "above": 0.047,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": -9,
+      "gz": -15,
+      "inPlaza": false,
+      "above": 0.056,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": -8,
+      "gz": -33,
+      "inPlaza": false,
+      "above": 0.091,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": -8,
+      "gz": -27,
+      "inPlaza": false,
+      "above": 0.045,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": -8,
+      "gz": -21,
+      "inPlaza": false,
+      "above": 0.05,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": -8,
+      "gz": -21,
+      "inPlaza": false,
+      "above": 0.047,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": -7,
+      "gz": -31,
+      "inPlaza": false,
+      "above": 0.038,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": -7,
+      "gz": -25,
+      "inPlaza": false,
+      "above": 0.11,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": -6,
+      "gz": -25,
+      "inPlaza": false,
+      "above": 0.055,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": -6,
+      "gz": -15,
+      "inPlaza": false,
+      "above": 0.088,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": -6,
+      "gz": -15,
+      "inPlaza": false,
+      "above": 0.061,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": -6,
+      "gz": 6,
+      "inPlaza": true,
+      "above": 0.834,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / Group / Mesh"
+    },
+    {
+      "gx": -5,
+      "gz": -35,
+      "inPlaza": false,
+      "above": 0.063,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": -5,
+      "gz": -34,
+      "inPlaza": false,
+      "above": 0.076,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": -5,
+      "gz": -25,
+      "inPlaza": false,
+      "above": 0.037,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": -5,
+      "gz": -24,
+      "inPlaza": false,
+      "above": 0.05,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": -5,
+      "gz": -23,
+      "inPlaza": false,
+      "above": 0.086,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": -5,
+      "gz": -23,
+      "inPlaza": false,
+      "above": 0.061,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": -5,
+      "gz": -21,
+      "inPlaza": false,
+      "above": 0.048,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": -5,
+      "gz": -21,
+      "inPlaza": false,
+      "above": 0.045,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": -5,
+      "gz": -19,
+      "inPlaza": false,
+      "above": 0.029,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": -5,
+      "gz": -18,
+      "inPlaza": false,
+      "above": 0.086,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": -5,
+      "gz": -18,
+      "inPlaza": false,
+      "above": 0.065,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": -5,
+      "gz": -2,
+      "inPlaza": true,
+      "above": 4.836,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -5,
+      "gz": -2,
+      "inPlaza": true,
+      "above": 4.835,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -5,
+      "gz": -1,
+      "inPlaza": true,
+      "above": 5.547,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -5,
+      "gz": -1,
+      "inPlaza": true,
+      "above": 5.547,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -5,
+      "gz": -1,
+      "inPlaza": true,
+      "above": 5.483,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -5,
+      "gz": -1,
+      "inPlaza": true,
+      "above": 5.483,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -5,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 5.547,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -5,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 5.547,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -5,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 5.483,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -5,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 5.483,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -5,
+      "gz": 1,
+      "inPlaza": true,
+      "above": 5.547,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -5,
+      "gz": 1,
+      "inPlaza": true,
+      "above": 5.547,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -5,
+      "gz": 1,
+      "inPlaza": true,
+      "above": 5.483,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -5,
+      "gz": 1,
+      "inPlaza": true,
+      "above": 5.483,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -5,
+      "gz": 2,
+      "inPlaza": true,
+      "above": 4.836,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -5,
+      "gz": 2,
+      "inPlaza": true,
+      "above": 4.835,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -5,
+      "gz": 6,
+      "inPlaza": true,
+      "above": 1.071,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / Group / Mesh"
+    },
+    {
+      "gx": -5,
+      "gz": 6,
+      "inPlaza": true,
+      "above": 0.712,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / Group / Mesh"
+    },
+    {
+      "gx": -5,
+      "gz": 6,
+      "inPlaza": true,
+      "above": 0.272,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / Group / Mesh"
+    },
+    {
+      "gx": -5,
+      "gz": 7,
+      "inPlaza": true,
+      "above": 0.834,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / Group / Mesh"
+    },
+    {
+      "gx": -4,
+      "gz": -37,
+      "inPlaza": false,
+      "above": 0.023,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": -4,
+      "gz": -30,
+      "inPlaza": false,
+      "above": 0.076,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": -4,
+      "gz": -2,
+      "inPlaza": true,
+      "above": 4.754,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -4,
+      "gz": -2,
+      "inPlaza": true,
+      "above": 4.577,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -4,
+      "gz": -1,
+      "inPlaza": true,
+      "above": 5.057,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -4,
+      "gz": -1,
+      "inPlaza": true,
+      "above": 5.024,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -4,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 6.146,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -4,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 6.002,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -4,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 5.996,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -4,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 5.852,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -4,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 4.217,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -4,
+      "gz": 1,
+      "inPlaza": true,
+      "above": 5.057,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -4,
+      "gz": 1,
+      "inPlaza": true,
+      "above": 5.024,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -4,
+      "gz": 2,
+      "inPlaza": true,
+      "above": 4.754,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -4,
+      "gz": 2,
+      "inPlaza": true,
+      "above": 4.577,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -4,
+      "gz": 3,
+      "inPlaza": true,
+      "above": 1.067,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / Group / Mesh"
+    },
+    {
+      "gx": -4,
+      "gz": 3,
+      "inPlaza": true,
+      "above": 0.712,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / Group / Mesh"
+    },
+    {
+      "gx": -4,
+      "gz": 3,
+      "inPlaza": true,
+      "above": 0.272,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / Group / Mesh"
+    },
+    {
+      "gx": -4,
+      "gz": 4,
+      "inPlaza": true,
+      "above": 0.818,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / Group / Mesh"
+    },
+    {
+      "gx": -3,
+      "gz": -37,
+      "inPlaza": false,
+      "above": 0.03,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": -3,
+      "gz": -31,
+      "inPlaza": false,
+      "above": 0.067,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": -3,
+      "gz": -31,
+      "inPlaza": false,
+      "above": 0.017,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": -3,
+      "gz": -28,
+      "inPlaza": false,
+      "above": 0.121,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": -3,
+      "gz": -19,
+      "inPlaza": false,
+      "above": 0.089,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": -3,
+      "gz": -2,
+      "inPlaza": true,
+      "above": 4.607,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -3,
+      "gz": -2,
+      "inPlaza": true,
+      "above": 4.493,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -3,
+      "gz": -2,
+      "inPlaza": true,
+      "above": 4.468,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -3,
+      "gz": -1,
+      "inPlaza": true,
+      "above": 5.014,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -3,
+      "gz": -1,
+      "inPlaza": true,
+      "above": 5.002,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -3,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 6.146,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -3,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 6.002,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -3,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 5.996,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -3,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 5.852,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -3,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 4.217,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -3,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 3.987,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -3,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 3.762,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -3,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 3.632,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -3,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 3.552,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -3,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 0.482,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -3,
+      "gz": 1,
+      "inPlaza": true,
+      "above": 5.014,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -3,
+      "gz": 1,
+      "inPlaza": true,
+      "above": 5.002,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -3,
+      "gz": 2,
+      "inPlaza": true,
+      "above": 4.607,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -3,
+      "gz": 2,
+      "inPlaza": true,
+      "above": 4.493,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -3,
+      "gz": 2,
+      "inPlaza": true,
+      "above": 4.468,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -2,
+      "gz": -37,
+      "inPlaza": false,
+      "above": 0.041,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": -2,
+      "gz": -2,
+      "inPlaza": true,
+      "above": 4.431,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -2,
+      "gz": -2,
+      "inPlaza": true,
+      "above": 4.401,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -2,
+      "gz": -1,
+      "inPlaza": true,
+      "above": 5.002,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -2,
+      "gz": -1,
+      "inPlaza": true,
+      "above": 4.957,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -2,
+      "gz": -1,
+      "inPlaza": true,
+      "above": 4.297,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -2,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 6.146,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -2,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 6.002,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -2,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 5.996,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -2,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 5.852,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -2,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 4.217,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -2,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 3.987,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -2,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 3.552,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -2,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 0.157,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / Group / Mesh"
+    },
+    {
+      "gx": -2,
+      "gz": 1,
+      "inPlaza": true,
+      "above": 5.002,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -2,
+      "gz": 1,
+      "inPlaza": true,
+      "above": 4.957,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -2,
+      "gz": 1,
+      "inPlaza": true,
+      "above": 4.297,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -2,
+      "gz": 2,
+      "inPlaza": true,
+      "above": 4.431,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -2,
+      "gz": 2,
+      "inPlaza": true,
+      "above": 4.401,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -1,
+      "gz": -37,
+      "inPlaza": false,
+      "above": 0.046,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": -1,
+      "gz": -35,
+      "inPlaza": false,
+      "above": 0.026,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": -1,
+      "gz": -32,
+      "inPlaza": false,
+      "above": 0.036,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": -1,
+      "gz": -22,
+      "inPlaza": false,
+      "above": 0.078,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": -1,
+      "gz": -2,
+      "inPlaza": true,
+      "above": 4.422,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -1,
+      "gz": -2,
+      "inPlaza": true,
+      "above": 4.372,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -1,
+      "gz": -1,
+      "inPlaza": true,
+      "above": 5,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -1,
+      "gz": -1,
+      "inPlaza": true,
+      "above": 4.928,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -1,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 6.146,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -1,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 6.002,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -1,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 5.996,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -1,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 5.852,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -1,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 4.217,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -1,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 3.987,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -1,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 3.552,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -1,
+      "gz": 1,
+      "inPlaza": true,
+      "above": 5,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -1,
+      "gz": 1,
+      "inPlaza": true,
+      "above": 4.928,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -1,
+      "gz": 2,
+      "inPlaza": true,
+      "above": 4.422,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -1,
+      "gz": 2,
+      "inPlaza": true,
+      "above": 4.372,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": -1,
+      "gz": 37,
+      "inPlaza": false,
+      "above": 0.005,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": 0,
+      "gz": -39,
+      "inPlaza": false,
+      "above": 0.065,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": 0,
+      "gz": -37,
+      "inPlaza": false,
+      "above": 0.044,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": 0,
+      "gz": -29,
+      "inPlaza": false,
+      "above": 0.076,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": 0,
+      "gz": -22,
+      "inPlaza": false,
+      "above": 0.045,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": 0,
+      "gz": -2,
+      "inPlaza": true,
+      "above": 4.467,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 0,
+      "gz": -2,
+      "inPlaza": true,
+      "above": 4.421,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 0,
+      "gz": -2,
+      "inPlaza": true,
+      "above": 4.372,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 0,
+      "gz": -1,
+      "inPlaza": true,
+      "above": 5.039,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 0,
+      "gz": -1,
+      "inPlaza": true,
+      "above": 5,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 0,
+      "gz": -1,
+      "inPlaza": true,
+      "above": 4.928,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 0,
+      "gz": -1,
+      "inPlaza": true,
+      "above": 4.314,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 0,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 6.146,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 0,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 6.002,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 0,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 6.002,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 0,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 6.002,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 0,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 5.996,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 0,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 5.852,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 0,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 4.217,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 0,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 3.987,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 0,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 3.552,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 0,
+      "gz": 1,
+      "inPlaza": true,
+      "above": 5.039,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 0,
+      "gz": 1,
+      "inPlaza": true,
+      "above": 5,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 0,
+      "gz": 1,
+      "inPlaza": true,
+      "above": 4.928,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 0,
+      "gz": 1,
+      "inPlaza": true,
+      "above": 4.314,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 0,
+      "gz": 2,
+      "inPlaza": true,
+      "above": 4.467,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 0,
+      "gz": 2,
+      "inPlaza": true,
+      "above": 4.421,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 0,
+      "gz": 2,
+      "inPlaza": true,
+      "above": 4.372,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 1,
+      "gz": -34,
+      "inPlaza": false,
+      "above": 0.098,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": 1,
+      "gz": -34,
+      "inPlaza": false,
+      "above": 0.058,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": 1,
+      "gz": -31,
+      "inPlaza": false,
+      "above": 0.046,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": 1,
+      "gz": -15,
+      "inPlaza": false,
+      "above": 0.08,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": 1,
+      "gz": -2,
+      "inPlaza": true,
+      "above": 4.422,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 1,
+      "gz": -2,
+      "inPlaza": true,
+      "above": 4.372,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 1,
+      "gz": -1,
+      "inPlaza": true,
+      "above": 5,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 1,
+      "gz": -1,
+      "inPlaza": true,
+      "above": 4.928,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 1,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 6.146,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 1,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 6.002,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 1,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 5.996,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 1,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 5.852,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 1,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 4.217,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 1,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 3.987,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 1,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 3.552,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 1,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 0.157,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / Group / Mesh"
+    },
+    {
+      "gx": 1,
+      "gz": 1,
+      "inPlaza": true,
+      "above": 5,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 1,
+      "gz": 1,
+      "inPlaza": true,
+      "above": 4.928,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 1,
+      "gz": 2,
+      "inPlaza": true,
+      "above": 4.422,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 1,
+      "gz": 2,
+      "inPlaza": true,
+      "above": 4.372,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 2,
+      "gz": -37,
+      "inPlaza": false,
+      "above": 0.074,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": 2,
+      "gz": -24,
+      "inPlaza": false,
+      "above": 0.04,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": 2,
+      "gz": -24,
+      "inPlaza": false,
+      "above": 0.027,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": 2,
+      "gz": -23,
+      "inPlaza": false,
+      "above": 0.083,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": 2,
+      "gz": -21,
+      "inPlaza": false,
+      "above": 0.009,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": 2,
+      "gz": -2,
+      "inPlaza": true,
+      "above": 4.43,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 2,
+      "gz": -2,
+      "inPlaza": true,
+      "above": 4.384,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 2,
+      "gz": -1,
+      "inPlaza": true,
+      "above": 5.002,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 2,
+      "gz": -1,
+      "inPlaza": true,
+      "above": 4.935,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 2,
+      "gz": -1,
+      "inPlaza": true,
+      "above": 4.297,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 2,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 6.146,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 2,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 6.002,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 2,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 5.996,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 2,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 5.852,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 2,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 4.217,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 2,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 3.987,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 2,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 3.552,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 2,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 0.157,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / Group / Mesh"
+    },
+    {
+      "gx": 2,
+      "gz": 1,
+      "inPlaza": true,
+      "above": 5.002,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 2,
+      "gz": 1,
+      "inPlaza": true,
+      "above": 4.935,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 2,
+      "gz": 1,
+      "inPlaza": true,
+      "above": 4.297,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 2,
+      "gz": 2,
+      "inPlaza": true,
+      "above": 4.43,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 2,
+      "gz": 2,
+      "inPlaza": true,
+      "above": 4.384,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 2,
+      "gz": 37,
+      "inPlaza": false,
+      "above": 0.009,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": 3,
+      "gz": -23,
+      "inPlaza": false,
+      "above": 0.012,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": 3,
+      "gz": -18,
+      "inPlaza": false,
+      "above": 0.086,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": 3,
+      "gz": -15,
+      "inPlaza": false,
+      "above": 0.04,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": 3,
+      "gz": -2,
+      "inPlaza": true,
+      "above": 4.493,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 3,
+      "gz": -2,
+      "inPlaza": true,
+      "above": 4.465,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 3,
+      "gz": -2,
+      "inPlaza": true,
+      "above": 4.464,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 3,
+      "gz": -1,
+      "inPlaza": true,
+      "above": 5.013,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 3,
+      "gz": -1,
+      "inPlaza": true,
+      "above": 4.957,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 3,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 6.146,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 3,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 6.002,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 3,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 5.996,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 3,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 5.852,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 3,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 4.217,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 3,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 3.987,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 3,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 3.762,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 3,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 3.632,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 3,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 3.552,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 3,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 0.482,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 3,
+      "gz": 1,
+      "inPlaza": true,
+      "above": 5.013,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 3,
+      "gz": 1,
+      "inPlaza": true,
+      "above": 4.957,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 3,
+      "gz": 2,
+      "inPlaza": true,
+      "above": 4.493,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 3,
+      "gz": 2,
+      "inPlaza": true,
+      "above": 4.465,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 3,
+      "gz": 2,
+      "inPlaza": true,
+      "above": 4.464,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 4,
+      "gz": -23,
+      "inPlaza": false,
+      "above": 0.084,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": 4,
+      "gz": -23,
+      "inPlaza": false,
+      "above": 0.048,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": 4,
+      "gz": -22,
+      "inPlaza": false,
+      "above": 0.06,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": 4,
+      "gz": -17,
+      "inPlaza": false,
+      "above": 0.097,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": 4,
+      "gz": -2,
+      "inPlaza": true,
+      "above": 4.566,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 4,
+      "gz": -2,
+      "inPlaza": true,
+      "above": 4.558,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 4,
+      "gz": -1,
+      "inPlaza": true,
+      "above": 5.051,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 4,
+      "gz": -1,
+      "inPlaza": true,
+      "above": 4.978,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 4,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 6.146,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 4,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 6.002,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 4,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 5.996,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 4,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 5.852,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 4,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 4.217,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 4,
+      "gz": 1,
+      "inPlaza": true,
+      "above": 5.051,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 4,
+      "gz": 1,
+      "inPlaza": true,
+      "above": 4.978,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 4,
+      "gz": 2,
+      "inPlaza": true,
+      "above": 4.566,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 4,
+      "gz": 2,
+      "inPlaza": true,
+      "above": 4.558,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 4,
+      "gz": 3,
+      "inPlaza": true,
+      "above": 1.08,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / Group / Mesh"
+    },
+    {
+      "gx": 4,
+      "gz": 3,
+      "inPlaza": true,
+      "above": 0.712,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / Group / Mesh"
+    },
+    {
+      "gx": 4,
+      "gz": 3,
+      "inPlaza": true,
+      "above": 0.272,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / Group / Mesh"
+    },
+    {
+      "gx": 4,
+      "gz": 4,
+      "inPlaza": true,
+      "above": 0.712,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / Group / Mesh"
+    },
+    {
+      "gx": 4,
+      "gz": 37,
+      "inPlaza": false,
+      "above": 0.008,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": 5,
+      "gz": -12,
+      "inPlaza": true,
+      "above": 0.085,
+      "obj": "광장: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": 5,
+      "gz": -11,
+      "inPlaza": true,
+      "above": 0.09,
+      "obj": "광장: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": 5,
+      "gz": -2,
+      "inPlaza": true,
+      "above": 4.808,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 5,
+      "gz": -2,
+      "inPlaza": true,
+      "above": 4.764,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 5,
+      "gz": -1,
+      "inPlaza": true,
+      "above": 5.547,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 5,
+      "gz": -1,
+      "inPlaza": true,
+      "above": 5.547,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 5,
+      "gz": -1,
+      "inPlaza": true,
+      "above": 5.483,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 5,
+      "gz": -1,
+      "inPlaza": true,
+      "above": 5.483,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 5,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 5.547,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 5,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 5.547,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 5,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 5.483,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 5,
+      "gz": 0,
+      "inPlaza": true,
+      "above": 5.483,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 5,
+      "gz": 1,
+      "inPlaza": true,
+      "above": 5.547,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 5,
+      "gz": 1,
+      "inPlaza": true,
+      "above": 5.547,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 5,
+      "gz": 1,
+      "inPlaza": true,
+      "above": 5.483,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 5,
+      "gz": 1,
+      "inPlaza": true,
+      "above": 5.483,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 5,
+      "gz": 2,
+      "inPlaza": true,
+      "above": 4.808,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 5,
+      "gz": 2,
+      "inPlaza": true,
+      "above": 4.764,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / 관악산공원 · 두 기둥 겹처마 자체 모델 / Mesh"
+    },
+    {
+      "gx": 5,
+      "gz": 3,
+      "inPlaza": true,
+      "above": 0.796,
+      "obj": "광장: GwanakRealistic / 입구 일주문·광장 / LOD / Group / Group / Mesh"
+    },
+    {
+      "gx": 5,
+      "gz": 37,
+      "inPlaza": false,
+      "above": 0.008,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": 6,
+      "gz": -31,
+      "inPlaza": false,
+      "above": 0.048,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": 6,
+      "gz": -28,
+      "inPlaza": false,
+      "above": 0.106,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": 7,
+      "gz": -32,
+      "inPlaza": false,
+      "above": 0.032,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": 7,
+      "gz": 37,
+      "inPlaza": false,
+      "above": 0.009,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": 8,
+      "gz": -32,
+      "inPlaza": false,
+      "above": 0.03,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": 8,
+      "gz": -32,
+      "inPlaza": false,
+      "above": 0.029,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": 8,
+      "gz": -26,
+      "inPlaza": false,
+      "above": 0.031,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": 8,
+      "gz": -25,
+      "inPlaza": false,
+      "above": 0.03,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": 8,
+      "gz": -20,
+      "inPlaza": false,
+      "above": 0.064,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": 9,
+      "gz": -35,
+      "inPlaza": false,
+      "above": 0.06,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": 9,
+      "gz": -13,
+      "inPlaza": true,
+      "above": 0.021,
+      "obj": "광장: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": 9,
+      "gz": -12,
+      "inPlaza": true,
+      "above": 0.06,
+      "obj": "광장: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": 10,
+      "gz": -32,
+      "inPlaza": false,
+      "above": 0.03,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": 10,
+      "gz": -23,
+      "inPlaza": false,
+      "above": 0.044,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": 12,
+      "gz": -9,
+      "inPlaza": false,
+      "above": 0.068,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": 12,
+      "gz": 36,
+      "inPlaza": false,
+      "above": 0.011,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": 13,
+      "gz": -22,
+      "inPlaza": false,
+      "above": 0.012,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": 13,
+      "gz": 21,
+      "inPlaza": false,
+      "above": 0.024,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": 13,
+      "gz": 24,
+      "inPlaza": false,
+      "above": 0.047,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": 13,
+      "gz": 27,
+      "inPlaza": false,
+      "above": 0.053,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": 13,
+      "gz": 29,
+      "inPlaza": false,
+      "above": 0.005,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": 13,
+      "gz": 30,
+      "inPlaza": false,
+      "above": 0.039,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": 13,
+      "gz": 31,
+      "inPlaza": false,
+      "above": 0.025,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": 13,
+      "gz": 32,
+      "inPlaza": false,
+      "above": 0.011,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": 13,
+      "gz": 33,
+      "inPlaza": false,
+      "above": 0.023,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": 13,
+      "gz": 34,
+      "inPlaza": false,
+      "above": 0.09,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": 13,
+      "gz": 35,
+      "inPlaza": false,
+      "above": 0.009,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": 13,
+      "gz": 36,
+      "inPlaza": false,
+      "above": 0.047,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": 13,
+      "gz": 37,
+      "inPlaza": false,
+      "above": 0.081,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": 14,
+      "gz": -9,
+      "inPlaza": false,
+      "above": 0.121,
+      "obj": "밖: GwanakRealistic / 숲 층위 · 바람 풀 / Mesh"
+    },
+    {
+      "gx": 14,
+      "gz": 17,
+      "inPlaza": false,
+      "above": 0.01,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": 14,
+      "gz": 20,
+      "inPlaza": false,
+      "above": 0.047,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": 14,
+      "gz": 21,
+      "inPlaza": false,
+      "above": 0.007,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": 14,
+      "gz": 22,
+      "inPlaza": false,
+      "above": 0.007,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": 14,
+      "gz": 23,
+      "inPlaza": false,
+      "above": 0.068,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": 14,
+      "gz": 24,
+      "inPlaza": false,
+      "above": 0.01,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": 14,
+      "gz": 25,
+      "inPlaza": false,
+      "above": 0.057,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": 14,
+      "gz": 26,
+      "inPlaza": false,
+      "above": 0.078,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": 14,
+      "gz": 28,
+      "inPlaza": false,
+      "above": 0.108,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": 14,
+      "gz": 29,
+      "inPlaza": false,
+      "above": 0.076,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": 14,
+      "gz": 31,
+      "inPlaza": false,
+      "above": 0.155,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": 14,
+      "gz": 32,
+      "inPlaza": false,
+      "above": 0.061,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": 14,
+      "gz": 33,
+      "inPlaza": false,
+      "above": 0.014,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": 14,
+      "gz": 34,
+      "inPlaza": false,
+      "above": 0.195,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": 14,
+      "gz": 35,
+      "inPlaza": false,
+      "above": 0.034,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": 14,
+      "gz": 36,
+      "inPlaza": false,
+      "above": 0.052,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": 14,
+      "gz": 37,
+      "inPlaza": false,
+      "above": 0.278,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    },
+    {
+      "gx": 14,
+      "gz": 38,
+      "inPlaza": false,
+      "above": 0.106,
+      "obj": "밖: GwanakRealistic / NearTerrain / Mesh"
+    }
+  ]
+}

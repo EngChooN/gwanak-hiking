@@ -10,7 +10,7 @@ const browser=await chromium.launch({channel:'chrome',headless:true,args:['--ena
 try{
  const page=await browser.newPage({viewport:{width:1440,height:900},deviceScaleFactor:1});
  page.on('pageerror',e=>errors.push(e.message));
- await page.goto(`http://127.0.0.1:${port}/`);
+ await page.goto(`http://127.0.0.1:${port}/?start=demo`);
  const result=await page.evaluate(async()=>{
   const THREE=await import('/node_modules/three/build/three.module.js');
   const {loadRealisticHiker}=await import('/src/realistic-hiker.js');

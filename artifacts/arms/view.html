@@ -1,0 +1,21 @@
+<!doctype html><html lang="ko"><meta charset="utf-8"><title>등산객 팔·어깨 검증</title><style>body{margin:0;background:#edf1ef;font:16px -apple-system,sans-serif;color:#20392f}#label{position:absolute;left:24px;top:20px;line-height:1.6;background:#fffD;padding:12px 18px;border-radius:8px}canvas{display:block}</style><div id="label">팔·어깨 검증</div><script type="module">
+import * as THREE from '/node_modules/three/build/three.module.js';
+const before=new URLSearchParams(location.search).has('before');
+const {loadRealisticHiker}=await import(before?'/artifacts/arms/before-hiker.js':'/src/realistic-hiker.js');
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(1);renderer.setClearColor(0xedf1ef);renderer.shadowMap.enabled=true;document.body.append(renderer.domElement);
+const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(36,innerWidth/innerHeight,.05,100);
+scene.add(new THREE.HemisphereLight(0xffffff,0x607068,2.3));const key=new THREE.DirectionalLight(0xfff3df,2.5);key.position.set(-3,5,-4);key.castShadow=true;scene.add(key);const fill=new THREE.DirectionalLight(0xffffff,1);fill.position.set(3,3,4);scene.add(fill);
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(20,20),new THREE.MeshStandardMaterial({color:0xb9c5be,roughness:1}));floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;scene.add(floor);
+const h=await loadRealisticHiker('/assets/realistic/models/hiker/Hiker.glb');scene.add(h.scene);window.hiker=h;
+window.show=({view='front',moving=false,phase=.5,heading=0,pose='stand',teaProgress=0,slope=0}={})=>{
+ h.snapTo(heading);h.scene.position.set(0,0,0);const surfaceHeight=(x,z)=>slope*z;
+ for(let i=0;i<60;i++)h.update({clip:moving?'Walk':'Idle',pose:pose==='tea'?'sit':pose,stepPhase:phase,stepLength:.7,idleSeconds:i/60,dt:1/60});
+ h.update({clip:moving?'Walk':'Idle',pose,stepPhase:phase,stepLength:.7,idleSeconds:1,dt:0,teaProgress});h.ground({moving,phase,surfaceHeight});
+ const a={front:[0,1.25,-3.7],side:[3.7,1.25,0],back:[0,1.25,3.7]}[view];camera.position.set(...a);camera.lookAt(0,.9,0);
+ renderer.render(scene,camera);document.querySelector('#label').innerHTML=`${before?'수정 전':'수정 후'} · ${view==='front'?'정면':view==='side'?'측면':'뒷면'}<br>${moving?'보행 · 반대 팔·다리 위상':'서기 · 어깨와 팔의 연결'}`;
+ const pos=n=>{const b=h.model.getObjectByName('mixamorig'+n);return h.scene.worldToLocal(b.getWorldPosition(new THREE.Vector3())).toArray();};
+ const names=['Hips','Spine2','LeftShoulder','LeftArm','LeftForeArm','LeftHand','RightShoulder','RightArm','RightForeArm','RightHand','LeftFoot','RightFoot'];
+ const bones=Object.fromEntries(names.map(n=>[n,pos(n)]));
+ return {bones,interaction:h.interaction,pose:h.pose,heading,arms:h.interaction.arms};
+};window.show();window.ready=true;
+</script></html>

@@ -1,10 +1,14 @@
+import {maskCoveredBaseGeometry} from '../../src/terrain-base-mask.js';
+import {createEntrance,clearEntranceEntries,createEntranceGround} from './entrance-scenery.js';
+import {SPECIMEN_TREES,PLAZA_FACILITIES,plazaFootprint} from './entrance-plaza.js';
+import {createSectionScenery,scenerySites,clearSceneryPlacements} from './section-scenery.js';
 import * as THREE from 'three';
 import {RGBELoader} from 'three/addons/loaders/RGBELoader.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {MeshoptDecoder} from 'three/addons/libs/meshopt_decoder.module.js';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {gridHeight,nearestRoute,indexRoute,cutHeight,project,mix} from './geo.js';
-import {terrainMaterial,trailMaterial} from './terrain-material.js';
+import {terrainMaterial,trailMaterial,pavedMaterial} from './terrain-material.js';
 import {LOOK_PROFILE} from '../../src/look-profile.js';
 import {applyAtmosphere} from './skyline-reference.js';
 import {grassClumps,updateGroundCover} from './near-detail.js';
@@ -14,11 +18,12 @@ import {surfaceIndex} from './surface-index.js';
 import {stairTerrainClearance} from './terrain-clearance.js';
 import {indexStaticRaycast} from '../../src/static-raycast.js';
 import {chunkBounds,createChunkCuller,boxDistanceSquared} from '../../src/chunk-culling.js';
-import {createCityGrid} from '../../src/city-grid.js';
+import {createCityGrid,seoulRoadGeometry,createSeoulLandmark,bindSeoulLabels} from '../../src/city-grid.js';
 import {freezeStatic,applyNatureQuality} from '../../src/static-scene.js';
 import {pineImpostorParts} from '../../src/pine-impostor.js';
 import {assignSurfaceRoute,isStairSurface} from '../../src/route-surfaces.js';
 import {createSummitFacilities,facilityTriangleCounts} from './summit-facilities.js';
+import {createDeckRailings} from './deck-railing.js';
 import {facilitySites,facilityGround} from './summit-config.js';
 import {createContactOcclusion} from '../../src/contact-occlusion.js';
 import {contactFootprint,placedContact,instanceContactMatrix,seatContactInstance,contactGroundError} from '../../src/contact-footprint.js';
@@ -104,8 +109,9 @@ function stairRibbonPart(route,material,metres){
   const a=route[i],b=route[i+1],y=Math.max(a.y,b.y)+.015;
   quad([edge(a,-1,y),edge(a,1,y),edge(b,-1,y),edge(b,1,y)],a.s,b.s);
   const next=i+2<route.length?Math.max(b.y,route[i+2].y)+.015:b.y+.015;
-  quad([edge(b,-1,y),edge(b,1,y),edge(b,-1,next),edge(b,1,next)],b.s,b.s);
-  if(i===0)quad([edge(a,-1,a.y+.015),edge(a,1,a.y+.015),edge(a,-1,y),edge(a,1,y)],a.s,a.s);
+  // 챌면의 세로 UV는 단 높이만큼 진행시켜 질감이 한 줄로 늘어나지 않게 한다.
+  quad([edge(b,-1,y),edge(b,1,y),edge(b,-1,next),edge(b,1,next)],b.s,b.s+Math.abs(next-y));
+  if(i===0)quad([edge(a,-1,a.y+.015),edge(a,1,a.y+.015),edge(a,-1,y),edge(a,1,y)],a.s,a.s+Math.abs(y-a.y-.015));
  }
  const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));geometry.setAttribute('trailEdge',new THREE.Float32BufferAttribute(edges,1));geometry.setIndex(indices);geometry.computeVertexNormals();geometry.computeBoundingBox();
  return new THREE.Mesh(geometry,material);
@@ -135,7 +141,7 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
   const contactOcclusion=createContactOcclusion(near,{route,maxMapSize:maxContactMapSize,enabled:new URLSearchParams(location.search).get('contactAO')!=='off'});
   contactOcclusion.apply(blended);status.contactOcclusion=contactOcclusion.status;
   // 폭 안쪽과 어깨를 수평화하며 24m에 걸쳐 DSM으로 복귀한다.
-  const paved=new THREE.MeshStandardMaterial({color:0x858585,roughness:1});
+  const paved=pavedMaterial(materials,manifest.materials);
   const stoneStairs=materials.stone.clone(),woodStairs=materials.wood.clone();stoneStairs.side=woodStairs.side=THREE.DoubleSide;
   for(const [copy,source]of [[stoneStairs,materials.stone],[woodStairs,materials.wood]]){copy.onBeforeCompile=source.onBeforeCompile;copy.customProgramCacheKey=source.customProgramCacheKey;}
   Object.assign(materials,{paved,stoneStairs,woodStairs});
@@ -145,20 +151,31 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
   const path=ribbon(pathPoints,pathMaterials,manifest.materials.soil.metres);path.name='등산로 노면';group.add(path);
   path.traverse(mesh=>{if(mesh.isMesh)indexStaticRaycast(mesh);});
   path.userData.metricKind='등산로';
+  const deckRailings=createDeckRailings(pathPoints);group.add(deckRailings);status.deckRailings=deckRailings.userData.counts;
   const chunks=new Map();let far,farGroup,farPromise,waterGroup,disposed=false;
   const rawHeight=(x,z)=>gridHeight(within(near,x,z)?near:far||near,x,z);
   const nearest=indexRoute(route);
-  let summitSites=[];
+  let summitSites=[],sectionSites=[],groundSites=[];const entranceGround=createEntranceGround(route);
   const floorHeight=(x,z)=>{
     const hit=nearest(x,z),a=route[hit.index],b=route[hit.index+1];
     const correction=mix(a.elevationCorrection??0,b.elevationCorrection??0,hit.t)*Math.exp(-((hit.distance/300)**2));
-    return facilityGround(summitSites,x,z,cutHeight(rawHeight(x,z)+correction,hit));
+    return facilityGround(groundSites,x,z,entranceGround(x,z,cutHeight(rawHeight(x,z)+correction,hit)));
   };
   const roadRay=new THREE.Raycaster();path.updateMatrixWorld(true);
   const roadHeight=surfaceIndex(path);
   const surfaceHeight=(x,z)=>{const h=floorHeight(x,z);return roadHeight(x,z,h+10,20)??h;};
-  summitSites=facilitySites(route,floorHeight);
+  summitSites=facilitySites(route,floorHeight);groundSites=summitSites;
+  sectionSites=scenerySites(route,floorHeight);groundSites=[...summitSites,...sectionSites];
   const facilities=createSummitFacilities(route,floorHeight,summitSites);group.add(facilities.group);
+  const entrance=createEntrance(route,floorHeight),sectionScenery=createSectionScenery(route,floorHeight);group.add(entrance.group,sectionScenery.group);
+  status.entrance={frame:entrance.frame,counts:facilityTriangleCounts(entrance.items),status:'입구 설정의 일주문 가설 위치 · 현장 실측 전 · 치수·현판 색 미확인'};
+  // 광장 준비 상태: 바닥·시설(동기 생성), 가까운 나무(숲 로드 중 addInstances), 광장 아래 64m 지형 청크(update에서 한 프레임에 하나).
+  // 로딩 화면은 status.entrancePlaza.ready 또는 entranceReady()(Promise)로 기다린다. 규약: docs/이동-휴식-통합규약.md.
+  const plazaChunkKeys=(()=>{const keys=new Set(),f=entrance.frame,c=Math.cos(f.yaw),sn=Math.sin(f.yaw);for(let gz=-26;gz<=44;gz+=2)for(let gx=-14;gx<=14;gx+=2){if(!plazaFootprint(gx,gz,2))continue;const x=f.x+gx*c+gz*sn,z=f.z-gx*sn+gz*c;keys.add(`${Math.floor(x/64)},${Math.floor(z/64)}`);}return [...keys];})();
+  let resolvePlaza;const plazaReady=new Promise(r=>resolvePlaza=r);
+  status.entrancePlaza={ground:true,facilities:PLAZA_FACILITIES.length,textures:entrance.ground.userData.textures,nearTrees:{expected:SPECIMEN_TREES.length,loaded:0},terrainChunks:{expected:plazaChunkKeys.length,loaded:0},ready:false};
+  const checkPlaza=()=>{const p=status.entrancePlaza;if(p.ready)return;p.terrainChunks.loaded=plazaChunkKeys.filter(k=>chunks.has(k)).length;if(p.nearTrees.loaded>=p.nearTrees.expected&&p.terrainChunks.loaded>=p.terrainChunks.expected){p.ready=true;resolvePlaza({...p});}};
+  status.sectionScenery={sites:sectionSites,counts:facilityTriangleCounts(sectionScenery.items)};
   status.summitFacilities={status:'추정 위치·치수',sites:summitSites,counts:facilityTriangleCounts(facilities.items)};
   // 근경 전체를 유지한다. 보행 주변의 2m 격자는 이 바닥 위에 정밀하게 덧댄다.
   const clearStairs=stairTerrainClearance(pathPoints);
@@ -183,7 +200,7 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
   let natureQuality=2;
   function update(camera,quality=2){
     if(disposed)return;
-    facilities.update(camera);
+    facilities.update(camera);entrance.update(camera);sectionScenery.update(camera);
     baseMesh.geometry=baseGeometries[quality];
     const size=64,radius=3,cx=Math.floor(camera.position.x/size),cz=Math.floor(camera.position.z/size),wanted=new Set();
     const cell=`${cx},${cz}`;
@@ -199,16 +216,21 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
     }
     for(const [key,mesh] of chunks)if(!wanted.has(key)){disposeGeometry(mesh);chunks.delete(key);}
     pendingChunks.sort((a,b)=>a.distance-b.distance);
+    for(const geometry of baseGeometries)maskCoveredBaseGeometry(geometry,chunks);
     }
     // 한 프레임에 최대 한 청크. 대기 중에는 상시 유지되는 NearDEM8m가 바닥을 덮는다.
     const next=pendingChunks.shift();
-    if(next){const mesh=gridMesh(next.x,next.z,size,2,floorHeight,blended,1);clearStairs(mesh.geometry);indexStaticRaycast(mesh);chunks.set(next.key,mesh);terrain.add(mesh);freezeStatic(mesh);}
+    if(next){const mesh=gridMesh(next.x,next.z,size,2,floorHeight,blended,1);clearStairs(mesh.geometry);indexStaticRaycast(mesh);chunks.set(next.key,mesh);terrain.add(mesh);freezeStatic(mesh);if(!pendingChunks.length)for(const geometry of baseGeometries)maskCoveredBaseGeometry(geometry,chunks);}
+    checkPlaza();
     status.pendingTerrainChunks=pendingChunks.length;
     culler.update(camera);
     let terrainVisible=0;for(const mesh of chunks.values()){mesh.visible=culler.visible(boundsOf(mesh),camera);if(mesh.visible)terrainVisible++;}
     status.terrainVisibleChunks=terrainVisible;
     if(natureQuality!==quality){natureQuality=quality;for(const lod of vegetation)applyNatureQuality(lod,quality);}
-    let visible=0,budget=[60000,120000,300000][quality];const candidates=[];
+    const atEntrance=Math.hypot(camera.position.x-route[0].x,camera.position.z-route[0].z)<90;
+    // 입구에서는 근경 숲이 사진판으로 뭉개지지 않게 삼각형·호출 예산을 조금 더 준다(fps 실측: 변경기록 2026-11-03 입구광장 화면결함).
+    let visible=0,budget=[60000,120000,300000][quality]+(atEntrance?[30000,90000,120000][quality]:0),priorityTriangles=0;const candidates=[];
+    let natureCalls=atEntrance?[220,430,700][quality]:Infinity;
     let natureFrustumTests=0,natureDistanceRejected=0;
     for(const bucket of natureBuckets.values()){
       if(boxDistanceSquared(bucket.box,camera.position)>bucket.maxDistance**2){bucket.root.visible=false;natureDistanceRejected++;continue;}
@@ -220,17 +242,20 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
       }
     }
     status.natureBroadPhase={cells:natureBuckets.size,frustumTests:natureFrustumTests,distanceRejected:natureDistanceRejected};
-    candidates.sort((a,b)=>a.distanceSq-b.distanceSq);
+    // 입구 전용 가까운 나무(priority)는 예산과 무관하게 거리 LOD를 지키고 먼저 처리한다. 삼각형은 따로 센다.
+    candidates.sort((a,b)=>(b.lod.userData.priority?1:0)-(a.lod.userData.priority?1:0)||a.distanceSq-b.distanceSq);
     for(const {lod,distanceSq} of candidates){
         lod.update(camera);let index=lod.getCurrentLevel();
-        while(index<lod.levels.length-1&&lod.levels[index].object.userData.triangles>budget){
+        if(lod.userData.priority){for(let i=0;i<lod.levels.length;i++)lod.levels[i].object.visible=i===index;priorityTriangles+=lod.levels[index].object.userData.triangles;natureCalls-=lod.levels[index].object.children.length;visible++;continue;}
+        while(index<lod.levels.length-1&&(lod.levels[index].object.userData.triangles>budget||lod.levels[index].object.children.length>natureCalls)){
           if(lod.levels[index+1].object.userData.lodSource.representation==='impostor'&&distanceSq<400*400)break;
           index++;
         }
         const triangles=lod.levels[index].object.userData.triangles;
         for(let i=0;i<lod.levels.length;i++)lod.levels[i].object.visible=i===index;
-        if(triangles>budget)lod.visible=false;else {budget-=triangles;visible++;}
-    }status.natureVisibleChunks=visible;status.natureBaseTriangleBudget=[60000,120000,300000][quality];
+        const calls=lod.levels[index].object.children.length;
+        if(triangles>budget||calls>natureCalls)lod.visible=false;else {budget-=triangles;natureCalls-=calls;visible++;}
+    }status.entranceNatureCallBudget=atEntrance?{limit:[220,430,700][quality],remaining:natureCalls,priorityTriangles}:null;status.natureVisibleChunks=visible;status.natureBaseTriangleBudget=[60000,120000,300000][quality];
     city.update(camera,quality,culler);
     for(const mesh of grasses.children){
       const box=boundsOf(mesh);updateGroundCover(mesh,box.distanceToPoint(camera.position),quality);
@@ -260,12 +285,22 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
       const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(indices);g.computeVertexNormals();
       // 근경 아래 2m 오프셋. 원경 DSM을 과장하지 않는다.
       const mesh=new THREE.Mesh(g,applyAtmosphere(new THREE.MeshStandardMaterial({color:0x334b28,roughness:1,polygonOffset:true,polygonOffsetFactor:2,polygonOffsetUnits:2}),manifest.atmosphere));mesh.position.y=-2;holder.add(mesh);
-      for(const p of manifest.landmarks)holder.add(landmark(p,manifest.atmosphere));
+      if(manifest.seoulLandcover){
+        const map=await new THREE.TextureLoader().loadAsync(base+manifest.seoulLandcover);map.colorSpace=THREE.SRGBColorSpace;map.flipY=false;map.anisotropy=4;
+        const uv=g.attributes.uv,pos=g.attributes.position;for(let i=0;i<uv.count;i++)uv.setXY(i,(pos.getX(i)+30000)/60000,(pos.getZ(i)+30000)/60000);uv.needsUpdate=true;
+        mesh.material.map=map;mesh.material.color.set(0xffffff);mesh.material.needsUpdate=true;
+      }
+      if(manifest.seoulSurface){
+        const surface=await readJSON(base+manifest.seoulSurface),roads=seoulRoadGeometry(surface.roads,(x,z)=>gridHeight(grid,x,z));
+        const roadMesh=new THREE.Mesh(roads,applyAtmosphere(new THREE.MeshBasicMaterial({vertexColors:true,side:THREE.DoubleSide}),manifest.atmosphere));roadMesh.name='서울 간선도로·교량';holder.add(roadMesh);status.seoulRoads=surface.roads.length;status.seoulBridges=surface.roads.filter(r=>r.bridge).length;
+      }
+      for(const p of manifest.landmarks)holder.add(createSeoulLandmark(p,manifest.atmosphere));
       if(disposed){disposeGeometry(holder);throw new Error('해제한 자산');}
       farGroup=holder;group.add(holder);freezeStatic(holder);return holder;
     })().catch(e=>{farPromise=null;throw e;});
     return farPromise;
   }
+  const unbindCityLabels=bindSeoulLabels(group,status);
   const loadedCities=new Map(),cityMaterial=applyAtmosphere(new THREE.MeshStandardMaterial({color:0x78878b,roughness:.92}),manifest.atmosphere);
   const city=createCityGrid({parent:group,material:cityMaterial,atmosphere:manifest.atmosphere,status});
   async function streamCity(id){
@@ -274,7 +309,7 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
     const meta=manifest.cityChunks.find(c=>c.id===id);if(!meta)throw new Error('원경 청크 ID 없음');
     const promise=(async()=>{
       const data=await readJSON(base+meta.file);if(disposed)throw new Error('해제한 자산');
-      city.addBuildings(data.buildings);status.cityChunks++;status.buildings+=data.buildings.length;return {id,buildings:data.buildings.length};
+      const added=city.addBuildings(data.buildings);status.cityChunks++;status.buildings+=added;status.cityDuplicates=(status.cityDuplicates??0)+data.buildings.length-added;return {id,buildings:data.buildings.length};
     })().catch(e=>{loadedCities.delete(id);throw e;});
     loadedCities.set(id,promise);return promise;
   }
@@ -285,8 +320,8 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
     for(const file of manifest.water){
       const data=await readJSON(base+file);
       for(const element of data.elements){
-        if(seen.has(`${element.type}/${element.id}`))continue;seen.add(`${element.type}/${element.id}`);
-        const polygons=waterShapes(element);
+        if(seen.has(`${element.type}/${element.id}`))continue;
+        const polygons=waterShapes(element);if(!polygons.length)continue;seen.add(`${element.type}/${element.id}`);
         for(const shape of polygons){
           const points=shape.getPoints();waterMasks.push({points,holes:shape.holes.map(h=>h.getPoints()),box:new THREE.Box2().setFromPoints(points)});
           const g=new THREE.ShapeGeometry(shape);g.rotateX(-Math.PI/2);
@@ -299,7 +334,7 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
     // DSM의 교량·둑·보간값이 수면을 덮지 않도록 실제 물 윤곽 안의 원경 바닥만 낮춘다.
     const ground=farGroup.children.find(o=>o.isMesh)?.geometry;
     if(ground){const pos=ground.attributes.position,p=new THREE.Vector2();for(let i=0;i<pos.count;i++){p.set(pos.getX(i),-pos.getZ(i));if(waterMasks.some(m=>m.box.containsPoint(p)&&insideRing(p,m.points)&&!m.holes.some(h=>insideRing(p,h))))pos.setY(i,Math.min(pos.getY(i),4));}pos.needsUpdate=true;ground.computeVertexNormals();}
-    if(waterGeometries.length){const merged=mergeGeometries(waterGeometries,false);waterGeometries.forEach(g=>g.dispose());holder.add(new THREE.Mesh(merged,new THREE.MeshStandardMaterial({color:0x567b87,roughness:.32,metalness:.12,side:THREE.DoubleSide})));}
+    if(waterGeometries.length){const merged=mergeGeometries(waterGeometries,false);waterGeometries.forEach(g=>g.dispose());holder.add(new THREE.Mesh(merged,new THREE.MeshStandardMaterial({color:0x8eb9cf,roughness:.14,metalness:.55,envMapIntensity:1.6,side:THREE.DoubleSide})));}
     if(disposed){disposeGeometry(holder);throw new Error('해제한 자산');}if(waterGroup){waterGroup.traverse(o=>o.material?.dispose());disposeGeometry(waterGroup);}waterGroup=holder;group.add(holder);freezeStatic(holder);return holder;
   }
   function applyEnvironment(scene,renderer){
@@ -315,7 +350,7 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
     return ()=>{sun.removeFromParent();ambient.removeFromParent();if(scene.background===sky)scene.background=old.background;if(scene.environment===sky)scene.environment=old.environment;scene.fog=old.fog;renderer.toneMapping=old.toneMapping;renderer.toneMappingExposure=old.exposure;renderer.outputColorSpace=old.colorSpace;};
   }
   freezeStatic(group);
-  return {group,get manifest(){return manifest;},status,route,materials,sky,rawHeight,floorHeight,surfaceHeight,update,streamFar,streamCity,finalizeCities:()=>city.finalize(),streamWater,applyEnvironment,
+  return {group,get manifest(){return manifest;},status,route,entranceReady:()=>plazaReady,materials,sky,rawHeight,floorHeight,surfaceHeight,update,streamFar,streamCity,finalizeCities:()=>city.finalize(),streamWater,applyEnvironment,
     collisionObjects:()=>[path,...chunks.values()],
     cameraCollisionObjects(a,b){
       // 붐과 근평면 폭을 포함한 XZ 상자. 정적 월드 좌표 지형만 대상으로 한다.
@@ -333,9 +368,14 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
       if(JSON.stringify(next.near)!==JSON.stringify(manifest.near)&&['width','height','spacing','x0','z0'].some(k=>next.near[k]!==manifest.near[k]))throw new Error('높이 격자 변경: 새로고침 필요');
       next.water=[...new Set([...manifest.water,...next.water])];manifest=next;status.source='manifest';return true;
     },
-    addGrass(placements){grasses.add(...grassClumps(placements,floorHeight).children.slice());freezeStatic(grasses);},
+    addGrass(placements){grasses.add(...grassClumps(clearSceneryPlacements(clearEntranceEntries([{kind:'grass',placements}],route)[0]?.placements??[],sectionSites),floorHeight).children.slice());freezeStatic(grasses);},
     async addInstances(options){
-      const lod=await addInstances({...options,height:floorHeight,rockGround,materials,protectedSites:summitSites});lod.userData.metricKind=options.kind==='rock'?'바위':'숲';
+      // 입구 전용 나무는 성공·생략·실패와 상관없이 처리 끝을 광장 준비 상태에 알린다(무한 대기 방지).
+      if(options.entranceSpecimen)try{return await this.addInstances({...options,entranceSpecimen:false,keepAtEntrance:true});}finally{status.entrancePlaza.nearTrees.loaded+=options.placements.length;checkPlaza();}
+      const cleared=clearEntranceEntries([options],route)[0];if(!cleared)return new THREE.LOD();
+      cleared.placements=clearSceneryPlacements(cleared.placements,sectionSites,options.kind==='tree'?3:1);if(!cleared.placements.length)return new THREE.LOD();
+      const lod=await addInstances({...cleared,height:floorHeight,rockGround,materials,protectedSites:summitSites});lod.userData.metricKind=options.kind==='rock'?'바위':'숲';
+      if(options.priority)lod.userData.priority=true;
       if(!lod.levels.length)return lod;
       for(const p of lod.userData.contactOccluders??[])contactOcclusion.stamp(p.x,p.z,p.radius,p.opacity);
       status.contactOccluderKinds??={};
@@ -369,24 +409,8 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
       }
       return rows.sort((a,b)=>a.distance-b.distance).slice(0,limit);
     },
-    dispose(){disposed=true;contactOcclusion.dispose();city.dispose();for(const geometry of baseGeometries)if(geometry!==baseMesh.geometry)geometry.dispose();disposeGeometry(group);const seen=new Set([cityMaterial]);group.traverse(o=>{for(const m of o.material?(Array.isArray(o.material)?o.material:[o.material]):[])seen.add(m);});for(const m of Object.values(materials))seen.add(m);for(const m of seen){for(const value of Object.values(m))if(value?.isTexture)value.dispose();m.dispose();}sky.dispose();}
+    dispose(){disposed=true;unbindCityLabels();contactOcclusion.dispose();city.dispose();for(const geometry of baseGeometries)if(geometry!==baseMesh.geometry)geometry.dispose();disposeGeometry(group);const seen=new Set([cityMaterial]);group.traverse(o=>{for(const m of o.material?(Array.isArray(o.material)?o.material:[o.material]):[])seen.add(m);});for(const m of Object.values(materials))seen.add(m);for(const m of seen){for(const value of Object.values(m))if(value?.isTexture)value.dispose();m.dispose();}sky.dispose();}
   };
-}
-
-function landmark(p,atmosphere){
-  const group=new THREE.Group();group.name=p.name;group.position.set(p.x,p.ground,p.z);
-  group.userData={source:'data/서울원경-기준표.md / 산기획 확정 방위·거리',...p};
-  // 다리 폭·산 모양을 임의 모델로 만들지 않는다. 기준점과 실제 가시성은 구분한다.
-  if(p.shape==='reference')return group;
-  const material=applyAtmosphere(new THREE.MeshStandardMaterial({color:p.shape==='box'?0x8e7749:0x51616c,roughness:.48,metalness:.25}),atmosphere);
-  let g;
-  if(p.shape==='box')g=new THREE.BoxGeometry(p.width,p.height,p.depth);
-  else if(p.shape==='taper')g=new THREE.CylinderGeometry(3,p.radius,p.height,12);
-  else g=new THREE.CylinderGeometry(1.5,p.radius,p.height,12);
-  const mesh=new THREE.Mesh(g,material);mesh.position.y=p.height/2;group.add(mesh);
-  if(p.shape==='tower'){const deck=new THREE.Mesh(new THREE.CylinderGeometry(17,14,14,20),material);deck.position.y=p.height*.65;group.add(deck);}
-  const canvas=document.createElement('canvas');canvas.width=512;canvas.height=80;const ctx=canvas.getContext('2d');ctx.fillStyle='rgba(25,49,48,.8)';ctx.fillRect(0,0,512,80);ctx.font='500 36px sans-serif';ctx.textAlign='center';ctx.fillStyle='#f5f1dc';ctx.fillText(p.name,256,53);const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;const label=new THREE.Sprite(new THREE.SpriteMaterial({map:texture,depthTest:true,transparent:true}));label.scale.set(1300,203,1);label.position.y=p.height+140;group.add(label);
-  return group;
 }
 
 /** 외부 CC0/CC BY 모델을 별도 전달하는 인스턴싱 LOD. 구형 나무 대체물을 자동 생성하지 않는다.
@@ -394,7 +418,7 @@ function landmark(p,atmosphere){
  * placements=[{x,z,scale:1,yaw:0}]. 종류별 소나무/참나무/화강암을 따로 호출한다.
  */
 const natureCache=new Map();
-let graniteRockMaterial;
+let graniteRockMaterial,graniteRockFaceMaterial;
 function natureModel(url,rock=false){
  const key=`${url}:${rock}`;
  if(!natureCache.has(key))natureCache.set(key,new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).loadAsync(url).then(gltf=>{
@@ -414,6 +438,14 @@ function natureModel(url,rock=false){
 async function addInstances({levels,placements,height,rockGround,materials,kind,id,nearDetail=false,forestTint,protectedSites=[]}){
   if(!levels?.length||!placements?.length)throw new Error('LOD 모델과 배치 정보 필요');
   if(kind==='rock'&&protectedSites.length){
+    // 북·북동 전망 구역의 장식 바위만 낮춘다. 실제 DSM 암반 지형은 유지한다.
+    const summit=protectedSites.find(site=>site.id==='marker');
+    if(summit)placements=placements.map(p=>{
+      const dx=p.x-summit.summitPoint.x,dz=p.z-summit.summitPoint.z;
+      if(Math.hypot(dx,dz)>85||dz>8)return p;
+      const stretch=(p.stretch??[p.scale??1,p.scale??1,p.scale??1]).map(v=>v*.18);
+      return {...p,scale:1,stretch};
+    });
     // 모든 LOD의 실제 메시 범위와 배치 회전·비균일 크기를 포함한 보수적 반경.
     let radius=0;
     for(const level of levels)for(const {geometry} of await natureModel(level.url,true)){
@@ -438,10 +470,13 @@ async function addInstances({levels,placements,height,rockGround,materials,kind,
     for(const {geometry,material} of parts){
       if(kind==='rock'&&!graniteRockMaterial)graniteRockMaterial=new THREE.MeshStandardMaterial({map:materials.granite.map,normalMap:materials.granite.normalMap,roughnessMap:materials.granite.roughnessMap,color:0xb1b5b8,roughness:1,normalScale:new THREE.Vector2(.55,.55)});
       if(graniteRockMaterial){graniteRockMaterial.onBeforeCompile=shader=>{shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>',THREE.ShaderChunk.map_fragment+'\nfloat stoneLuma=dot(diffuseColor.rgb,vec3(.2126,.7152,.0722));diffuseColor.rgb=stoneLuma*vec3(.94,.98,1.0);');};graniteRockMaterial.customProgramCacheKey=()=> 'granite-rock-neutral-v1';}
-      const mesh=new THREE.InstancedMesh(geometry,kind==='rock'?graniteRockMaterial:material,placements.length),dummy=new THREE.Object3D();
+      // rock_face_*는 뒷면이 뚫린 절벽면 스캔이다. 뒤에서 보면 앞면 조각만 남아 공중 파편처럼 보이므로 양면으로 그린다.
+      if(kind==='rock'&&String(id).startsWith('rock_face')&&!graniteRockFaceMaterial){graniteRockFaceMaterial=graniteRockMaterial.clone();graniteRockFaceMaterial.side=THREE.DoubleSide;graniteRockFaceMaterial.onBeforeCompile=graniteRockMaterial.onBeforeCompile;graniteRockFaceMaterial.customProgramCacheKey=graniteRockMaterial.customProgramCacheKey;}
+      const rockMaterial=String(id).startsWith('rock_face')?graniteRockFaceMaterial:graniteRockMaterial;
+      const mesh=new THREE.InstancedMesh(geometry,kind==='rock'?rockMaterial:material,placements.length),dummy=new THREE.Object3D();
       placements.forEach((p,i)=>{dummy.position.set(p.x-cx,groundYs[i]-(p.supportDrop||0)-lod.position.y-((p.embed||0)+groundOffset)*(p.scale||1),p.z-cz);dummy.rotation.set(level.representation==='impostor'?0:p.pitch||0,level.representation==='impostor'?0:p.yaw||0,level.representation==='impostor'?0:p.roll||0);dummy.scale.set(...(p.stretch??[p.scale||1,p.scale||1,p.scale||1]));dummy.updateMatrix();mesh.setMatrixAt(i,dummy.matrix);});
       mesh.instanceMatrix.needsUpdate=true;mesh.computeBoundingSphere();mesh.castShadow=false;mesh.receiveShadow=true;holder.add(mesh);
-      if(forestTint!==undefined){const tint=new THREE.Color(forestTint);for(let i=0;i<placements.length;i++)mesh.setColorAt(i,tint);mesh.instanceColor.needsUpdate=true;}
+      if(forestTint!==undefined||placements.some(p=>p.forestTint!==undefined)){const tint=new THREE.Color();for(let i=0;i<placements.length;i++)mesh.setColorAt(i,tint.set(placements[i].forestTint??forestTint??0xffffff));mesh.instanceColor.needsUpdate=true;}
     }
     // 바늘잎 컷아웃을 갖는 수만 삼각형 근경 모델은 가까운 곳에만 유지한다.
     // 배치 수는 유지하고 사진판 전환을 앞당겨 알파 오버드로 비용을 제한한다.

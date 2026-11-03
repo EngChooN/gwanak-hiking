@@ -1,0 +1,60 @@
+{
+  "date": "2026-11-03T03:20:24.765Z",
+  "tests": {
+    "pass": 123,
+    "fail": 0
+  },
+  "build": true,
+  "runs": [
+    {
+      "id": "entrance",
+      "fps": 51.94236586530808,
+      "errors": [],
+      "shaderErrors": []
+    },
+    {
+      "id": "valley",
+      "fps": 53.822922584696336,
+      "errors": [],
+      "shaderErrors": []
+    },
+    {
+      "id": "ridge",
+      "fps": 54.231014169718165,
+      "errors": [],
+      "shaderErrors": []
+    },
+    {
+      "id": "summit",
+      "fps": 54.021728296621156,
+      "errors": [],
+      "shaderErrors": []
+    },
+    {
+      "id": "north",
+      "fps": 54.021728296621156,
+      "errors": [],
+      "shaderErrors": []
+    },
+    {
+      "id": "northeast",
+      "fps": 54.12139938203928,
+      "errors": [],
+      "shaderErrors": []
+    },
+    {
+      "id": "west",
+      "fps": 52.53888175766442,
+      "errors": [],
+      "shaderErrors": []
+    },
+    {
+      "id": "third",
+      "fps": 59.50482417670041,
+      "errors": [],
+      "shaderErrors": []
+    }
+  ],
+  "baseline": "scenery-final-after",
+  "final": "scenery-final-review"
+}
