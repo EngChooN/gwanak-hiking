@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import {mix,nearestRoute} from './geo.js';
+import {foliageUniforms} from './foliage-shader.js';
 
 // 기존 CC0 모델을 재사용한 시각 보완. 현장 개체 위치를 뜻하지 않는다.
 // 64m 청크·고정 난수. 길 중앙은 비우고 정상 직전에는 낮은 관목만 둔다.
@@ -55,7 +56,21 @@ export function grassClumps(placements,height){
   // 이전 하층 식생도 같은 눈높이에 맞춘다. 낙엽 크기는 유지한다.
   if(kind!=='litter')geometry.scale(.65,kind==='shrub'?.45:.65,.65);
   geometry.computeVertexNormals();
-  resources.set(kind,{geometry,material:new THREE.MeshStandardMaterial({color,roughness:1,side:THREE.DoubleSide})});
+  const material=new THREE.MeshStandardMaterial({color,roughness:1,side:THREE.DoubleSide});
+  // 길가 풀·관목도 숲 풀과 같은 시각으로 끝부분이 흔들린다. 낙엽은 바닥에 붙어 있어 고정한다.
+  if(kind!=='litter'){
+   material.onBeforeCompile=shader=>{
+    shader.uniforms.foliageTime=foliageUniforms.foliageTime;
+    shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nuniform float foliageTime;').replace('#include <begin_vertex>',`#include <begin_vertex>
+     #ifdef USE_INSTANCING
+     vec3 roadsideAnchor=instanceMatrix[3].xyz;float roadsideTip=position.y*position.y*${kind==='shrub'?'4.':'9.'};
+     transformed.x+=sin(foliageTime*1.5+roadsideAnchor.x*.08+roadsideAnchor.z*.06)*roadsideTip*.35;
+     transformed.z+=sin(foliageTime*1.1+roadsideAnchor.z*.07)*roadsideTip*.2;
+     #endif`);
+   };
+   material.customProgramCacheKey=()=>`roadside-${kind}-wind-v1`;
+  }
+  resources.set(kind,{geometry,material});
  }
  const dummy=new THREE.Object3D();
  for(const list of groups.values()){const {geometry,material}=resources.get(list[0].kind??'grass');const mesh=new THREE.InstancedMesh(geometry,material,list.length);

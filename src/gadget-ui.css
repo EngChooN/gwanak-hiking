@@ -1,0 +1,67 @@
+/* 쌍안경·휴대폰 카메라 화면. 크기는 HUD와 같은 --u(1920×1080에서 1px) 비율을 따른다. 위치는 body 바로 아래라 HUD 가리기(H)에 영향받지 않는다. */
+#gadget-ui{position:fixed;inset:0;z-index:30;pointer-events:none;font-size:max(12px,calc(15*var(--u)));color:#f4f1e8}
+#gadget-ui button{pointer-events:auto;font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+#gadget-ui [hidden]{display:none!important}
+#gadget-ui .bino,#gadget-ui .phone,#gadget-ui .gadget-chip{display:none}
+/* 쌍안경·휴대폰 1인칭: 기구가 나와 있는 동안 HUD는 접고 조이스틱·둘러보기 영역·대화상자만 남긴다. */
+#app.gadget-hud-hidden>*:not(#joystick):not(#look-zone):not(dialog){visibility:hidden;pointer-events:none}
+body.gadget-on .hud-hint,body.gadget-on .hud-restore{display:none!important}
+#world.gadget-mirror{transform:scaleX(-1)}
+/* ── 쌍안경 ── */
+#gadget-ui[data-mode=binoculars-first] .bino{display:block;position:absolute;inset:0;--r:min(46vh,27vw);--d:calc(var(--r)*.6)}
+.bino-mask{position:absolute;inset:0;background:#000;
+ -webkit-mask-image:radial-gradient(circle at calc(50% - var(--d)) 50%,transparent calc(var(--r)*.8),#000 var(--r)),radial-gradient(circle at calc(50% + var(--d)) 50%,transparent calc(var(--r)*.8),#000 var(--r));
+ -webkit-mask-composite:source-in;mask-image:radial-gradient(circle at calc(50% - var(--d)) 50%,transparent calc(var(--r)*.8),#000 var(--r)),radial-gradient(circle at calc(50% + var(--d)) 50%,transparent calc(var(--r)*.8),#000 var(--r));mask-composite:intersect}
+.bino-lens{position:absolute;top:50%;width:calc(var(--r)*2);height:calc(var(--r)*2);margin-top:calc(var(--r)*-1);border-radius:50%;
+ box-shadow:inset 0 0 0 calc(2*var(--u)) #1b1b1d,inset calc(2*var(--u)) 0 0 calc(1*var(--u)) #ff3c3c38,inset calc(-2*var(--u)) 0 0 calc(1*var(--u)) #3c78ff38}/* 색수차: 가장자리 빨강·파랑 번짐을 아주 약하게 */
+.bino-lens.l{left:calc(50% - var(--d) - var(--r))}.bino-lens.r{left:calc(50% + var(--d) - var(--r))}
+.bino-zoom{position:absolute;left:50%;bottom:calc(8vh);transform:translateX(-50%);padding:calc(2*var(--u)) calc(14*var(--u));border-radius:calc(12*var(--u));background:#000a;border:1px solid #ffffff30;font-size:max(14px,calc(20*var(--u)))}
+.bino-zoom b{font-weight:700;letter-spacing:.04em}
+/* 닫기 안내 칩(쌍안경·3인칭 휴대폰 공통) */
+#gadget-ui:not([data-mode=none]) .gadget-chip{display:flex;position:absolute;left:50%;transform:translateX(-50%);top:calc(14*var(--u));align-items:center;gap:calc(10*var(--u));padding:calc(7*var(--u)) calc(16*var(--u));border-radius:calc(20*var(--u));background:#0c211cd9;border:1px solid #ffffff38;font-size:max(12px,calc(14*var(--u)));pointer-events:none;max-width:94vw;flex-wrap:wrap;justify-content:center}
+.gadget-chip [data-chip-text]{pointer-events:auto;cursor:pointer}.gadget-chip kbd{margin:0 2px}.gadget-chip small{opacity:.7}
+.gadget-chip button{pointer-events:auto;min-height:max(36px,calc(34*var(--u)));min-width:max(36px,calc(40*var(--u)));padding:0 calc(10*var(--u));border-radius:calc(14*var(--u));background:#ffffff1c;border:1px solid #ffffff3a}
+.gadget-chip button[aria-pressed=true]{background:#f4d67c;color:#16261f}
+.gadget-chip-tools{display:flex;gap:calc(6*var(--u));align-items:center}.chip-zooms{display:flex;gap:calc(4*var(--u))}
+.chip-shutter{background:#fff!important;color:#111!important;font-weight:700}
+#gadget-ui[data-mode=phone-first] .gadget-chip{display:none}
+#gadget-ui[data-mode=binoculars-first] .chip-close,#gadget-ui[data-mode=binoculars-third] .chip-close{display:none}
+#gadget-ui[data-mode=binoculars-first] .gadget-chip{top:auto;bottom:calc(14*var(--u))}
+/* 3인칭 휴대폰: 조작줄은 화면 아래 가운데(HUD 단추줄 위) */
+#gadget-ui[data-mode=phone-third] .gadget-chip{top:auto;bottom:calc(88*var(--u))}
+@media(max-width:700px){#gadget-ui[data-mode=phone-third] .gadget-chip{bottom:calc(150px + env(safe-area-inset-bottom))}}
+/* ── 휴대폰(1인칭) ── */
+#gadget-ui[data-mode=phone-first] .phone{display:block;position:absolute;inset:0}
+.phone-device{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border:calc(12*var(--u)) solid #050506;border-radius:calc(46*var(--u));outline:calc(2*var(--u)) solid #2a2a2e;pointer-events:none}
+#gadget-ui[data-orient=landscape] .phone-device{width:min(94vw,calc(88vh*1.9));aspect-ratio:1.9/1;max-height:90vh}
+#gadget-ui[data-orient=portrait] .phone-device{height:min(94vh,calc(88vw*1.9));aspect-ratio:1/1.9;max-width:94vw}
+.phone-screen{position:relative;width:100%;height:100%;border-radius:calc(34*var(--u));overflow:hidden;box-shadow:0 0 0 100vmax #000a,inset 0 0 0 1px #ffffff14;/* 화면 안만 투명(3D 장면이 보이고 바깥은 어둡게) */}
+.phone-hole{position:absolute;z-index:3;width:calc(16*var(--u));height:calc(16*var(--u));min-width:9px;min-height:9px;border-radius:50%;background:#000;box-shadow:0 0 0 calc(3*var(--u)) #0d0d10,inset 0 0 calc(4*var(--u)) #2c3a52}
+#gadget-ui[data-orient=landscape] .phone-hole{left:calc(14*var(--u));top:50%;transform:translateY(-50%)}
+#gadget-ui[data-orient=portrait] .phone-hole{top:calc(14*var(--u));left:50%;transform:translateX(-50%)}
+.phone-top{position:absolute;z-index:2;left:0;right:0;top:0;display:flex;align-items:center;justify-content:space-between;padding:calc(12*var(--u)) calc(44*var(--u)) calc(30*var(--u));background:linear-gradient(#000a,#0000);font-weight:600;text-shadow:0 1px 3px #000}
+#gadget-ui[data-orient=portrait] .phone-top{padding:calc(40*var(--u)) calc(18*var(--u)) calc(28*var(--u))}
+.phone-top-btns{display:flex;gap:calc(8*var(--u));pointer-events:auto}
+.phone-top button{min-height:max(36px,calc(34*var(--u)));min-width:max(36px,calc(38*var(--u)));padding:0 calc(12*var(--u));border-radius:calc(16*var(--u));background:#0008;border:1px solid #ffffff30;font-size:max(12px,calc(13*var(--u)))}
+.phone-top button[aria-pressed=true]{background:#f4d67c;color:#16261f}
+.phone-battery{display:flex;align-items:center;gap:calc(6*var(--u))}.phone-battery i{position:relative;width:calc(22*var(--u));min-width:18px;height:calc(11*var(--u));min-height:9px;border:1.5px solid #fff;border-radius:3px;display:block}
+.phone-battery i::before{content:"";position:absolute;inset:1.5px;right:28%;background:#fff;border-radius:1px}.phone-battery i::after{content:"";position:absolute;right:-4px;top:28%;bottom:28%;width:2px;background:#fff;border-radius:0 1px 1px 0}
+.phone-battery em{font-style:normal;font-size:max(11px,calc(13*var(--u)))}
+.phone-grid{position:absolute;inset:0;display:none;pointer-events:none;background:linear-gradient(90deg,transparent calc(33.333% - .5px),#ffffff80 calc(33.333% - .5px),#ffffff80 calc(33.333% + .5px),transparent calc(33.333% + .5px),transparent calc(66.666% - .5px),#ffffff80 calc(66.666% - .5px),#ffffff80 calc(66.666% + .5px),transparent calc(66.666% + .5px)),linear-gradient(transparent calc(33.333% - .5px),#ffffff80 calc(33.333% - .5px),#ffffff80 calc(33.333% + .5px),transparent calc(33.333% + .5px),transparent calc(66.666% - .5px),#ffffff80 calc(66.666% - .5px),#ffffff80 calc(66.666% + .5px),transparent calc(66.666% + .5px))}
+#gadget-ui[data-grid=true] .phone-grid{display:block}
+.phone-zoom-readout{position:absolute;z-index:2;left:50%;transform:translateX(-50%);bottom:calc(112*var(--u));padding:calc(2*var(--u)) calc(10*var(--u));border-radius:calc(10*var(--u));background:#0008;font-weight:700;font-size:max(12px,calc(14*var(--u)));color:#f4d67c;text-shadow:0 1px 3px #000}
+#gadget-ui[data-orient=portrait] .phone-zoom-readout{bottom:calc(200*var(--u))}
+.phone-bar{position:absolute;z-index:2;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:space-between;gap:calc(14*var(--u));padding:calc(34*var(--u)) calc(44*var(--u)) calc(14*var(--u));background:linear-gradient(#0000,#000a)}
+#gadget-ui[data-orient=landscape] .phone-bar{justify-content:center;gap:calc(34*var(--u))}
+#gadget-ui[data-orient=portrait] .phone-bar{flex-wrap:wrap;padding:calc(34*var(--u)) calc(20*var(--u)) calc(18*var(--u));justify-content:space-between}
+#gadget-ui[data-orient=portrait] .phone-zooms{order:-1;flex:0 0 100%;justify-content:center}
+.phone-zooms{display:flex;gap:calc(6*var(--u));padding:calc(4*var(--u));border-radius:calc(24*var(--u));background:#0007;pointer-events:auto}
+.phone-zooms button{min-width:max(40px,calc(46*var(--u)));min-height:max(40px,calc(40*var(--u)));border-radius:50%;background:transparent;border:0;font-weight:600;font-size:max(12px,calc(14*var(--u)))}
+.phone-zooms button[aria-pressed=true]{background:#f4d67c;color:#16261f}
+.phone-shutter{position:relative;width:max(64px,calc(78*var(--u)));height:max(64px,calc(78*var(--u)));border-radius:50%;background:transparent;border:calc(5*var(--u)) solid #fff;padding:0;min-width:64px;min-height:64px}
+.phone-shutter i{position:absolute;inset:calc(5*var(--u));border-radius:50%;background:#fff;transition:transform .1s}.phone-shutter:active i,.phone-shutter.press i{transform:scale(.82)}
+.phone-flip,.phone-thumb{width:max(50px,calc(56*var(--u)));height:max(50px,calc(56*var(--u)));border-radius:50%;background:#0008;border:1px solid #ffffff40;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:max(18px,calc(24*var(--u)));line-height:1;padding:0;overflow:hidden}
+.phone-flip small{font-size:max(9px,calc(11*var(--u)));margin-top:2px}.phone-flip[aria-pressed=true]{background:#f4d67c;color:#16261f}
+.phone-thumb{border-radius:calc(12*var(--u));background:#222}.phone-thumb canvas{width:100%;height:100%;display:none}.phone-thumb[data-has=true] canvas{display:block}
+.phone-thumb.pop{animation:thumb-pop .45s ease-out}@keyframes thumb-pop{0%{transform:scale(1.35);box-shadow:0 0 0 3px #fff}100%{transform:scale(1);box-shadow:0 0 0 0 #fff0}}
+@media(prefers-reduced-motion:reduce){.phone-thumb.pop{animation:none}}

@@ -1,6 +1,7 @@
 // design/실사-룩-기준.md. 현장 사진으로 확정하기 전의 렌더러 목표값.
 // 태양: 산리서치 docs/경치-참고자료.md §4, 11/3 서울 위도 계산값(고도/방위). 오전은 10시, 오후는 15시.
 export const SUN_PRESETS={am:{label:'오전 10시',elevation:29,azimuth:142},pm:{label:'오후 3시',elevation:25,azimuth:224}};
+import {AERIAL} from './mood-config.js';
 export const LOOK_PROFILE={id:'forest-granite-clear-v3',sunElevation:29,sunAzimuth:142,directSkyRatio:3.2,haze:'#9DBEDF',zenith:'#4A86C8',horizon:'#BAD6EE',sunColor:'#FFF1DE',skyColor:'#CFE0F5',far:30000,
  sky:{turbidity:1.6,rayleigh:3,mieCoefficient:.002,mieDirectionalG:.8,exposure:.3}};
 export function sunDirection(elevation=LOOK_PROFILE.sunElevation,azimuth=LOOK_PROFILE.sunAzimuth){const e=elevation*Math.PI/180,a=azimuth*Math.PI/180;return [Math.sin(a)*Math.cos(e),Math.sin(e),-Math.cos(a)*Math.cos(e)];}
@@ -16,8 +17,8 @@ export const HAZE_FRAGMENT=`
  tau+=d*fogNear;
  gl_FragColor.rgb=mix(gl_FragColor.rgb,fogColor,1.0-exp(-tau));
  // 푸른 연무: 대비 감쇠와 별개로 먼 곳일수록 레일리 산란처럼 하늘색을 얹는다(회색 안개 대신).
- float veil=0.32*(1.0-exp(-d/7000.0));
- gl_FragColor.rgb=mix(gl_FragColor.rgb,vec3(0.40,0.62,0.92)*max(dot(fogColor,vec3(0.2126,0.7152,0.0722))*1.05,0.0)/0.62,veil);
+ float veil=${AERIAL.veil.toFixed(3)}*(1.0-exp(-d/${AERIAL.scale.toFixed(1)}));
+ gl_FragColor.rgb=mix(gl_FragColor.rgb,vec3(${AERIAL.color.map(v=>v.toFixed(3)).join(',')})*max(dot(fogColor,vec3(0.2126,0.7152,0.0722))*1.05,0.0)/0.62,veil);
 #endif
 `;
 const srgb=x=>255*(x<=.0031308?12.92*x:1.055*Math.pow(Math.max(0,x),1/2.4)-.055);

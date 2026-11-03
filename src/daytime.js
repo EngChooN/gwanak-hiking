@@ -2,6 +2,7 @@
 // 날씨 반영은 composeEnvironment()에서 weatherLook(weather.js)과 합친다. 수치는 설계 제안값이며 화면을 보며 조정한다.
 export const SEOUL_OFFSET_MS=9*3600*1000;
 export const GWANAK={lat:37.4453,lon:126.9640};
+import {SKY_KEYS,NIGHT,SOFT_WEATHER} from './mood-config.js';
 const RAD=Math.PI/180,DAY_MS=86400000;
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 const smooth=(a,b,x)=>{const t=clamp((x-a)/(b-a));return t*t*(3-2*t);};
@@ -55,19 +56,12 @@ export function moonPosition(utcMs,lat=GWANAK.lat,lon=GWANAK.lon){
 export const hexToRgb=h=>{const v=parseInt(h.slice(1),16);return [(v>>16&255)/255,(v>>8&255)/255,(v&255)/255];};
 export const rgbToHex=c=>'#'+c.map(v=>Math.round(clamp(v)*255).toString(16).padStart(2,'0')).join('');
 const mixRgb=(a,b,t)=>a.map((v,i)=>lerp(v,b[i],t));
-// 태양 고도 기준 키 프레임. 맨 위(25°↑)가 기존 낮 맑음 기준(LOOK_PROFILE)과 같다.
-const KEYS=[
- {e:-18,zenith:'#050912',horizon:'#0b1224',haze:'#0a101e',sunColor:'#7f93c8',sun:0,amb:.05},
- {e:-8,zenith:'#0e1c3d',horizon:'#3b3f66',haze:'#262c4a',sunColor:'#c77f6a',sun:0,amb:.09},
- {e:-3,zenith:'#27427a',horizon:'#e08a6a',haze:'#b27a78',sunColor:'#ff9a5a',sun:.04,amb:.2},
- {e:1,zenith:'#3c5f9c',horizon:'#f6a56b',haze:'#d89c82',sunColor:'#ff9d57',sun:.3,amb:.5},
- {e:6,zenith:'#4678b8',horizon:'#f1c9a0',haze:'#c9b4a4',sunColor:'#ffc58b',sun:.62,amb:.72},
- {e:14,zenith:'#4980c2',horizon:'#cde0ec',haze:'#a9c3de',sunColor:'#ffe3c2',sun:.88,amb:.85},
- {e:25,zenith:'#4A86C8',horizon:'#BAD6EE',haze:'#9DBEDF',sunColor:'#FFF1DE',sun:1,amb:1}
-].map(k=>({...k,zenith:hexToRgb(k.zenith),horizon:hexToRgb(k.horizon),haze:hexToRgb(k.haze),sunColor:hexToRgb(k.sunColor)}));
+// 태양 고도 기준 키 프레임. 색 값은 mood-config.js(SKY_KEYS)에서 고친다. 맨 위(25°↑)는 낮 맑음 기준이다.
+const KEYS=SKY_KEYS.map(k=>({...k}));
+const PARSED_KEYS=KEYS.map(k=>({...k,zenith:hexToRgb(k.zenith),horizon:hexToRgb(k.horizon),haze:hexToRgb(k.haze),sunColor:hexToRgb(k.sunColor)}));
 export function skyKeyframe(elevation){
- const e=clamp(elevation,KEYS[0].e,KEYS.at(-1).e);let i=1;while(i<KEYS.length-1&&e>KEYS[i].e)i++;
- const a=KEYS[i-1],b=KEYS[i],t=smooth(a.e,b.e,e);
+ const e=clamp(elevation,PARSED_KEYS[0].e,PARSED_KEYS.at(-1).e);let i=1;while(i<PARSED_KEYS.length-1&&e>PARSED_KEYS[i].e)i++;
+ const a=PARSED_KEYS[i-1],b=PARSED_KEYS[i],t=smooth(a.e,b.e,e);
  return {zenith:mixRgb(a.zenith,b.zenith,t),horizon:mixRgb(a.horizon,b.horizon,t),haze:mixRgb(a.haze,b.haze,t),sunColor:mixRgb(a.sunColor,b.sunColor,t),sun:lerp(a.sun,b.sun,t),amb:lerp(a.amb,b.amb,t)};
 }
 // 별·달·야경은 태양이 지평선 아래 4°를 지나며 서서히 나타난다.
@@ -87,25 +81,25 @@ export function composeEnvironment({sun,moon,weather=NEUTRAL_WEATHER}){
  const k=skyKeyframe(sun.elevation),night=nightAmount(sun.elevation),w={...NEUTRAL_WEATHER,...weather};
  // 날씨가 나쁠수록 하늘을 밝기가 같은 회색 쪽으로 보내 채도를 죽인다.
  const grayOf=c=>{const l=c[0]*.2126+c[1]*.7152+c[2]*.0722;return [l,l,l];};
- const dim=lerp(1,.8,w.gray);
- const sky=c=>mixRgb(c,grayOf(c).map(v=>v*dim),w.gray);
- const moonUp=smooth(-2,8,moon.elevation),moonLight=night*moonUp*(.25+.75*moon.illumination)*.14;
+ const dim=lerp(1,SOFT_WEATHER.dim,w.gray);
+ const sky=c=>mixRgb(c,grayOf(c).map(v=>v*dim),w.gray*SOFT_WEATHER.grayKeep);
+ const moonUp=Math.max(smooth(-2,8,moon.elevation),NIGHT.moonFloor),moonPhase=Math.max(moon.illumination,NIGHT.phaseFloor),moonLight=night*moonUp*(.25+.75*moonPhase)*NIGHT.moonLight;
  // 낮 태양이 지면 위일 때는 태양, 지면 아래면 달이 방향광이 된다.
- const useSun=sun.elevation>-1.5,lightElevation=useSun?sun.elevation:moon.elevation,lightAzimuth=useSun?sun.azimuth:moon.azimuth;
+ const useSun=sun.elevation>-1.5,lightElevation=useSun?sun.elevation:Math.max(moon.elevation,NIGHT.moonElevation),lightAzimuth=useSun?sun.azimuth:moon.azimuth;
  const sunIntensity=useSun?k.sun*w.sunMul:moonLight*w.sunMul;
- const lightColor=useSun?k.sunColor:[.62,.72,.95];
- const nightAmbient=.12+.06*moonUp*moon.illumination;
+ const lightColor=useSun?k.sunColor:NIGHT.moonColor;
+ const nightAmbient=NIGHT.ambientBase+NIGHT.ambientMoon*moonUp*moonPhase;
  const ambient=Math.max(k.amb*w.ambientMul,night*nightAmbient);
  const haze=sky(k.haze),horizon=sky(k.horizon),zenith=sky(k.zenith);
  return {
   elevation:sun.elevation,azimuth:sun.azimuth,night,
   light:{elevation:lightElevation,azimuth:lightAzimuth,color:lightColor,intensity:sunIntensity,castShadow:sunIntensity>.03&&lightElevation>1},
-  gray:w.gray,neutral:iblNeutral(sun.elevation,night,w.gray),ambient,exposureMul:lerp(1,1.9,night)*lerp(1,1.3,smooth(.3,1,w.gray)),
+  gray:w.gray,neutral:iblNeutral(sun.elevation,night,w.gray),ambient,exposureMul:lerp(1,NIGHT.exposure,night)*lerp(1,1.3,smooth(.3,1,w.gray)),
   hemiColor:hemiColor(sun.elevation,night,w.gray),
   zenith,horizon,haze,fogColor:haze,
   cloud:w.cloud,cloudColor:mixRgb([.97,.98,1],[.55,.58,.64],w.gray).map(v=>v*lerp(.04,1,smooth(-12,4,sun.elevation))),
   sunGlow:clamp((1-w.cloud*1.1))*Math.max(.15,k.sun)*(useSun?1:0),
-  stars:night*w.starsMul,moon:{elevation:moon.elevation,azimuth:moon.azimuth,visible:night*moonUp*w.starsMul*(1-.5*w.gray),illumination:moon.illumination},
+  stars:night*w.starsMul,moon:{elevation:moon.elevation,azimuth:moon.azimuth,visible:night*smooth(-2,8,moon.elevation)*w.starsMul*(1-.5*w.gray),illumination:moon.illumination},
   city:night*clamp(.4+.6*(1-w.gray*.6)),
   fogDistance:w.fogDistance,rain:w.rain,snow:w.snow,windSpeed:w.windSpeed,windSound:w.windSound
  };

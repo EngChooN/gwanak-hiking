@@ -14,6 +14,8 @@ import {applyAtmosphere} from './skyline-reference.js';
 import {grassClumps,updateGroundCover} from './near-detail.js';
 import {instanceGeometry} from './instance-geometry.js';
 import {twigCutout} from './foliage-material.js';
+import {patchFoliage,foliageUniforms} from './foliage-shader.js';
+import {createNearTrees,NEAR_TREE_IDS} from './near-trees.js';
 import {surfaceIndex} from './surface-index.js';
 import {stairTerrainClearance} from './terrain-clearance.js';
 import {indexStaticRaycast} from '../../src/static-raycast.js';
@@ -251,18 +253,23 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
     culler.update(camera);
     let terrainVisible=0;for(const mesh of chunks.values()){mesh.visible=culler.visible(boundsOf(mesh),camera);if(mesh.visible)terrainVisible++;}
     status.terrainVisibleChunks=terrainVisible;
-    if(natureQuality!==quality){natureQuality=quality;for(const lod of vegetation)applyNatureQuality(lod,quality);}
+    if(natureQuality!==quality){natureQuality=quality;for(const lod of vegetation){applyNatureQuality(lod,quality);applyDenseTrees(lod,quality);}}
+    foliageUniforms.foliageTime.value=performance.now()/1000;nearTrees.update(camera,quality);status.nearTrees=nearTrees.status;
     const atEntrance=Math.hypot(camera.position.x-route[0].x,camera.position.z-route[0].z)<90;
     // 입구에서는 근경 숲이 사진판으로 뭉개지지 않게 삼각형·호출 예산을 조금 더 준다(fps 실측: 변경기록 2026-11-03 입구광장 화면결함).
-    let visible=0,budget=[60000,120000,300000][quality]+(atEntrance?[30000,90000,120000][quality]:0),priorityTriangles=0;const candidates=[];
-    let natureCalls=atEntrance?[220,430,700][quality]:Infinity;
-    let natureFrustumTests=0,natureDistanceRejected=0;
+    // 쌍안경(camera.zoom>1): 확대된 시야 기준으로 거리 판정을 줄이고, 시야가 좁아진 만큼 예산을 1.5배로 올린다. THREE.LOD는 camera.zoom을 스스로 나눈다.
+    const zoom=Math.max(1,camera.zoom||1),zoomBoost=zoom>1.01?1.5:1;
+    let visible=0,budget=([60000,120000,300000][quality]+(atEntrance?[30000,90000,120000][quality]:0))*zoomBoost,priorityTriangles=0;const candidates=[];
+    // 근경 입체 나무(near-trees.js)가 가까운 나무를 맡으면서 사진판 청크가 삼각형 예산에 걸려 숨던 일이 없어졌다.
+    // 먼 청크까지 모두 그리면 호출이 약 1,200회로 늘어나므로 가까운 순서로 화질별 호출 상한을 둔다(이전 실측 약 340회).
+    let natureCalls=Math.round((atEntrance?[220,430,700][quality]:[200,300,380][quality])*zoomBoost);
+    let natureFrustumTests=0,natureDistanceRejected=0,budgetHidden=0;const levelUse=[];
     for(const bucket of natureBuckets.values()){
-      if(boxDistanceSquared(bucket.box,camera.position)>bucket.maxDistance**2){bucket.root.visible=false;natureDistanceRejected++;continue;}
+      if(boxDistanceSquared(bucket.box,camera.position)>(bucket.maxDistance*zoom)**2){bucket.root.visible=false;natureDistanceRejected++;continue;}
       natureFrustumTests++;const mask=culler.planeMask(bucket.box);bucket.root.visible=mask>=0;if(!bucket.root.visible)continue;
       for(const item of bucket.items){
         const {lod,box,maxDistance}=item;
-        lod.visible=culler.visible(box,camera,maxDistance,mask);
+        lod.visible=culler.visible(box,camera,maxDistance*zoom,mask);
         if(lod.visible){item.distanceSq=lod.position.distanceToSquared(camera.position);candidates.push(item);}
       }
     }
@@ -273,21 +280,23 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
         lod.update(camera);let index=lod.getCurrentLevel();
         if(lod.userData.priority){for(let i=0;i<lod.levels.length;i++)lod.levels[i].object.visible=i===index;priorityTriangles+=lod.levels[index].object.userData.triangles;natureCalls-=lod.levels[index].object.children.length;visible++;continue;}
         while(index<lod.levels.length-1&&(lod.levels[index].object.userData.triangles>budget||lod.levels[index].object.children.length>natureCalls)){
-          if(lod.levels[index+1].object.userData.lodSource.representation==='impostor'&&distanceSq<400*400)break;
+          if(lod.levels[index+1].object.userData.lodSource.representation==='impostor'&&distanceSq<(400*zoom)**2)break;
           index++;
         }
         const triangles=lod.levels[index].object.userData.triangles;
         for(let i=0;i<lod.levels.length;i++)lod.levels[i].object.visible=i===index;
         const calls=lod.levels[index].object.children.length;
-        if(triangles>budget||calls>natureCalls)lod.visible=false;else {budget-=triangles;natureCalls-=calls;visible++;}
-    }status.entranceNatureCallBudget=atEntrance?{limit:[220,430,700][quality],remaining:natureCalls,priorityTriangles}:null;status.natureVisibleChunks=visible;status.natureBaseTriangleBudget=[60000,120000,300000][quality];
+        if(triangles>budget||calls>natureCalls){lod.visible=false;budgetHidden++;}else {budget-=triangles;natureCalls-=calls;visible++;levelUse[index]=(levelUse[index]??0)+1;}
+    }status.entranceNatureCallBudget=atEntrance?{limit:[220,430,700][quality],remaining:natureCalls,priorityTriangles}:null;status.natureCallBudget={limit:atEntrance?[220,430,700][quality]:[200,300,380][quality],remaining:natureCalls};status.natureVisibleChunks=visible;status.natureBudgetHidden=budgetHidden;status.natureLevelUse=levelUse;status.natureBaseTriangleBudget=[60000,120000,300000][quality];
     city.update(camera,quality,culler);
     for(const mesh of grasses.children){
-      const box=boundsOf(mesh);updateGroundCover(mesh,box.distanceToPoint(camera.position),quality);
-      mesh.visible=mesh.visible&&culler.visible(box,camera,[28,45,65][quality]);
+      const box=boundsOf(mesh),grassZoom=Math.min(zoom,3);updateGroundCover(mesh,box.distanceToPoint(camera.position)/grassZoom,quality);
+      mesh.visible=mesh.visible&&culler.visible(box,camera,[28,45,65][quality]*grassZoom);
     }
   }
   const vegetation=[],grasses=new THREE.Group(),natureBuckets=new Map();group.add(grasses);grasses.userData.metricKind='숲';
+  // 근경 입체 나무: 길가 가까운 나무만 원본 모델로 그린다(near-trees.js). 사진판 청크는 그대로 둔다.
+  const nearTrees=createNearTrees({loadParts:url=>natureModel(url)});group.add(nearTrees.group);
   async function streamFar(){
     if(disposed)throw new Error('해제한 자산');
     if(farGroup)return farGroup;
@@ -399,7 +408,7 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
       if(options.entranceSpecimen)try{return await this.addInstances({...options,entranceSpecimen:false,keepAtEntrance:true});}finally{status.entrancePlaza.nearTrees.loaded+=options.placements.length;checkPlaza();}
       const cleared=clearEntranceEntries([options],route)[0];if(!cleared)return new THREE.LOD();
       cleared.placements=clearSceneryPlacements(cleared.placements,sectionSites,options.kind==='tree'?3:1);if(!cleared.placements.length)return new THREE.LOD();
-      const lod=await addInstances({...cleared,height:floorHeight,rockGround,materials,protectedSites:summitSites});lod.userData.metricKind=options.kind==='rock'?'바위':'숲';
+      const lod=await addInstances({...cleared,height:floorHeight,rockGround,materials,protectedSites:summitSites,nearTrees:options.priority||options.keepAtEntrance?null:nearTrees});lod.userData.metricKind=options.kind==='rock'?'바위':'숲';
       if(options.priority)lod.userData.priority=true;
       if(!lod.levels.length)return lod;
       for(const p of lod.userData.contactOccluders??[])contactOcclusion.stamp(p.x,p.z,p.radius,p.opacity);
@@ -410,7 +419,7 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
       const bucket=natureBuckets.get(key);bucket.root.add(lod);freezeStatic(lod);
       const box=boundsOf(lod),maxDistance=lod.userData.visibleDistance??950;
       bucket.box.union(box);bucket.items.push({lod,box,maxDistance,distanceSq:0});bucket.maxDistance=Math.max(bucket.maxDistance,maxDistance);
-      applyNatureQuality(lod,natureQuality);vegetation.push(lod);return lod;
+      applyNatureQuality(lod,natureQuality);applyDenseTrees(lod,natureQuality);vegetation.push(lod);return lod;
     },
     finalizeContactOcclusion(){contactOcclusion.commit();},
     setContactOcclusion(value){contactOcclusion.setEnabled(value);},
@@ -447,7 +456,7 @@ let graniteRockMaterial,graniteRockFaceMaterial;
 function natureModel(url,rock=false){
  const key=`${url}:${rock}`;
  if(!natureCache.has(key))natureCache.set(key,new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).loadAsync(url).then(gltf=>{
-  const parts=[];gltf.scene.updateMatrixWorld(true);gltf.scene.traverse(o=>{if(!o.isMesh)return;if(o.isSkinnedMesh)throw new Error('식생 스킨 미지원');const geometry=instanceGeometry(o.geometry,o.matrixWorld);parts.push({geometry,material:twigCutout(o.material)});});
+  const parts=[];gltf.scene.updateMatrixWorld(true);gltf.scene.traverse(o=>{if(!o.isMesh)return;if(o.isSkinnedMesh)throw new Error('식생 스킨 미지원');const geometry=instanceGeometry(o.geometry,o.matrixWorld);parts.push({geometry,material:rock?o.material:patchFoliage(twigCutout(o.material),{pine:/pine/.test(url)})});});
   const buckets=new Map();for(const part of parts){
    if(Array.isArray(part.material))continue;
    const signature=(rock?'granite':part.material.uuid)+':'+Object.entries(part.geometry.attributes).map(([n,a])=>`${n}:${a.itemSize}:${a.normalized}:${a.array.constructor.name}`).sort().join(',')+':'+!!part.geometry.index;
@@ -460,7 +469,7 @@ function natureModel(url,rock=false){
   }return result;
  }));return natureCache.get(key);
 }
-async function addInstances({levels,placements,height,rockGround,materials,kind,id,nearDetail=false,forestTint,protectedSites=[]}){
+async function addInstances({levels,placements,height,rockGround,materials,kind,id,nearDetail=false,forestTint,protectedSites=[],nearTrees=null}){
   if(!levels?.length||!placements?.length)throw new Error('LOD 모델과 배치 정보 필요');
   if(kind==='rock'&&protectedSites.length){
     // 북·북동 전망 구역의 장식 바위만 낮춘다. 실제 DSM 암반 지형은 유지한다.
@@ -487,8 +496,13 @@ async function addInstances({levels,placements,height,rockGround,materials,kind,
   if(Math.max(...xs)-Math.min(...xs)>128||Math.max(...zs)-Math.min(...zs)>128)throw new Error('식생은 최대 128m 청크별로 전달');
   const cx=(Math.min(...xs)+Math.max(...xs))/2,cz=(Math.min(...zs)+Math.max(...zs))/2;
   const lod=new THREE.LOD();lod.autoUpdate=false;lod.position.set(cx,height(cx,cz),cz);if(nearDetail||kind==='understory'||kind==='rock')lod.userData.visibleDistance=180;
+  // 늘린 교목(dense)은 뒤쪽에 모아 화질 낮음에서 앞쪽 개수만 그린다(행렬 재업로드 없음).
+  let denseFrom=placements.length;
+  if(placements.some(p=>p.dense)){placements=[...placements.filter(p=>!p.dense),...placements.filter(p=>p.dense)];denseFrom=placements.findIndex(p=>p.dense);}
   const groundYs=placements.map(p=>height(p.x,p.z));
-  for(const level of levels.filter((l,i,a)=>a.findIndex(v=>v.url===l.url)===i)){
+  // 근경 입체 나무로 넘기는 수종은 청크에서 원본 LOD0를 빼고 사진판만 남긴다.
+  const pooled=nearTrees&&kind==='tree'&&NEAR_TREE_IDS.includes(id)&&levels.some(l=>!l.url.endsWith('-lod0.glb'));
+  for(const level of levels.filter((l,i,a)=>a.findIndex(v=>v.url===l.url)===i&&!(pooled&&l.url.endsWith('-lod0.glb')))){
     const parts=level.representation==='impostor'&&level.url.endsWith('pine-impostor-atlas-v1.png')?await pineImpostorParts(placements):await natureModel(level.url,kind==='rock'),holder=new THREE.Group();
     // 원본 입체 식생의 실제 최하단을 밑동으로 사용한다. 사진판의 투명 여백은 옮기지 않는다.
     const groundOffset=kind!=='rock'&&level.url.endsWith('-lod0.glb')?Math.min(...parts.map(p=>{p.geometry.computeBoundingBox();return p.geometry.boundingBox.min.y;})):0;
@@ -509,6 +523,16 @@ async function addInstances({levels,placements,height,rockGround,materials,kind,
     holder.userData.triangles=holder.children.reduce((sum,m)=>sum+(m.geometry.index?.count??m.geometry.attributes.position.count)/3*m.count,0);
     lod.addLevel(holder,level.distance,0.10);
   }
+  if(pooled){
+    const lod0=levels[0].url.replace(/-lod\d\.glb$/,'-lod0.glb'),parts=await natureModel(lod0);
+    const groundOffset=Math.min(...parts.map(p=>{p.geometry.computeBoundingBox();return p.geometry.boundingBox.min.y;}));
+    const dummy=new THREE.Object3D(),matrices=placements.map((p,i)=>{
+      dummy.position.set(p.x,groundYs[i]-(p.supportDrop||0)-((p.embed||0)+groundOffset)*(p.scale||1),p.z);dummy.rotation.set(p.pitch||0,p.yaw||0,p.roll||0);
+      dummy.scale.set(...(p.stretch??[p.scale||1,p.scale||1,p.scale||1]));dummy.updateMatrix();return dummy.matrix.clone();
+    });
+    await nearTrees.register(lod,{id,url:lod0,matrices,tints:placements.map(p=>p.forestTint??forestTint??0xffffff),dense:placements.map(p=>!!p.dense)});
+  }
+  if(denseFrom<placements.length)lod.userData.denseFrom=denseFrom;
   if(['rock','tree','understory'].includes(kind)){
     const meshes=lod.levels[0]?.object.children??[],footprint=contactFootprint(meshes,kind);
     // 실제 첫 LOD 행렬에는 피치·롤·비균일 배율·embed·supportDrop이 모두 들어 있다.
@@ -527,6 +551,10 @@ async function addInstances({levels,placements,height,rockGround,materials,kind,
     }
   }
   return lod;
+}
+function applyDenseTrees(lod,quality){
+  const from=lod.userData.denseFrom;if(from===undefined)return;
+  for(const level of lod.levels)for(const mesh of level.object.children)if(mesh.isInstancedMesh)mesh.count=quality===0?from:mesh.instanceMatrix.count;
 }
 export function makePlacements({route,height,bounds,count=300,seed=37,minPathDistance=3}){
   const rand=seeded(seed),placements=[];

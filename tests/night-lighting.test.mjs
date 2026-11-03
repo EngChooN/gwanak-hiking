@@ -100,8 +100,8 @@ test('가짜 등산객 ?crowd=N 부하 시험 생성',()=>{
  assert.equal(night.info().crowd,100);assert.equal(night.others.length,100);
  assert.ok(night.info().realLights===REAL_LIGHT_COUNT+1);
 });
-test('밤 전체 밝기: 달빛·하늘빛이 이전보다 올랐지만 밤 느낌은 유지',()=>{
+test('밤 전체 밝기: 감성 분위기 조정으로 달빛·주변광을 더 올렸지만 밤 느낌은 유지',()=>{
  const t=resolveUtcMs({time:'22:00',nowMs:Date.UTC(2026,10,3,3,0)}).utcMs;
  const e=composeEnvironment({sun:sunPosition(t),moon:moonPosition(t)});
- assert.ok(e.ambient>.1&&e.ambient<.2);assert.ok(e.night===1&&e.light.intensity<.15);
+ assert.ok(e.ambient>.18&&e.ambient<.35);assert.ok(e.night===1&&e.light.intensity<.4);
 });

@@ -75,11 +75,22 @@ test('기초 경계는 인접 시설의 전이 영역보다 우선한다',()=>{
   assert.equal(facilityGround([...sites].reverse(),8*Math.cos(a),8*Math.sin(a),620),629.4);
  }
 });
-test('숲 혼효: 개체·좌표 유지, 6:4 배정, 스캔 파일 경로',()=>{
+test('숲 혼효: 개체·좌표 유지, 표고 없으면 중턱 숲 75:25 배정, 스캔 파일 경로',()=>{
  const placements=Array.from({length:100},(_,x)=>({x,z:2,scale:.5}));
  const entries=mixForestEntries([{id:'pine_tree_01',kind:'tree',placements}]);
  assert.equal(entries.reduce((n,e)=>n+e.placements.length,0),100);
- assert.equal(entries.filter(e=>['tree_small_02','island_tree_01'].includes(e.id)).reduce((n,e)=>n+e.placements.length,0),60);
+ assert.equal(entries.filter(e=>['tree_small_02','island_tree_01'].includes(e.id)).reduce((n,e)=>n+e.placements.length,0),75);
  assert.equal(new Set(entries.flatMap(e=>e.placements.map(p=>p.x))).size,100);
  for(const entry of entries)assert.ok(entry.levels.every(l=>l.url.startsWith(entry.id)));
+});
+
+test('숲 혼효: 숲 구간은 활엽 우점, 능선은 소나무 우점, 길가 근경 소나무는 그대로',()=>{
+ const placements=y=>Array.from({length:400},(_,i)=>({x:(i%20)*7.3,z:Math.floor(i/20)*6.1,y,scale:1}));
+ const broad=y=>{const e=mixForestEntries([{id:'pine_tree_01',kind:'tree',placements:placements(y)}]);return e.filter(x=>['tree_small_02','island_tree_01'].includes(x.id)).reduce((n,x)=>n+x.placements.length,0)/400;};
+ assert.ok(broad(120)>.7&&broad(120)<.9,`계곡 활엽 ${broad(120)}`);
+ assert.ok(broad(560)<.35,`능선 활엽 ${broad(560)}`);
+ const near={id:'pine_tree_01',kind:'tree',nearDetail:true,placements:placements(120)};
+ assert.equal(mixForestEntries([near])[0],near);
+ const byHeight=mixForestEntries([{id:'pine_tree_01',kind:'tree',placements:placements(undefined).map(({y,...p})=>p)}],()=>570);
+ assert.ok(byHeight.filter(x=>x.id.startsWith('pine')).reduce((n,x)=>n+x.placements.length,0)>260,'표고가 없으면 height(x,z)로 구간을 정한다');
 });

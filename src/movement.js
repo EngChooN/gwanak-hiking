@@ -5,7 +5,10 @@ import {GATE_S,PLAZA_START,insidePlaza,routeFromWorld,worldFromGateFrame,segment
 const currentRevision=routeRevision(route.points,checkpoints,SUMMIT_REFERENCE_ELEVATION);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 export const SAVE_KEY='gwanak-hiking:v1';
-export const OFF_TRAIL_METRES=8, RUN_MULTIPLIER=1.6, OFF_TRAIL_MULTIPLIER=.7, TEA_SECONDS=3;
+export const OFF_TRAIL_METRES=8, RUN_MULTIPLIER=1.6, OFF_TRAIL_MULTIPLIER=.7, TEA_SECONDS=3, BACKWARD_MULTIPLIER=.6;
+// 길 밖·뒷걸음은 보폭도 줄여, 느려진 속도가 느린 동작(걸음 빈도 저하)으로만 보이지 않게 한다.
+export const OFF_TRAIL_STRIDE=.85, BACKWARD_STRIDE=.75;
+export function strideAt({plaza=false,seg,direction=1,off=false,backward=false}){return (plaza?strideFor({slope:0,material:'paved'}):strideFor(seg,direction))*(off&&!plaza?OFF_TRAIL_STRIDE:1)*(backward?BACKWARD_STRIDE:1);}
 export const lateralLimit=s=>s<0?Math.max(...entranceLateralBounds(s).map(Math.abs)):sample(s).width/2+OFF_TRAIL_METRES;
 export const isOffTrail=(s,lateral)=>s>=0&&Math.abs(lateral)>sample(s).width/2;
 export function positionAt(s,lateral,ground){const p=sample(s),a=sample(s-2),b=sample(s+2),length=Math.hypot(b.x-a.x,b.z-a.z),nx=s<0?p.nx:-(b.z-a.z)/length,nz=s<0?p.nz:(b.x-a.x)/length,x=p.x+nx*lateral,z=p.z+nz*lateral;return [x,ground?.height(x,z,isOffTrail(s,lateral))??p.y,z];}
@@ -60,11 +63,15 @@ export function setPose(state,pose){
 function recover(state,rate,dt){state.stamina=clamp(state.stamina+rate*dt,0,100);if(state.stamina>=30)state.runExhausted=false;}
 const wrapAngle=a=>Math.atan2(Math.sin(a),Math.cos(a));
 const PLAZA_TURN_RATE=3;
+// 카메라 기준 입력(W 앞·S 뒤·A/D 옆)을 이동 기준 방향(along 앞, right 오른쪽)으로 돌린다. yaw는 카메라가 기준 방향에서 왼쪽으로 돈 각.
+export function cameraRelative(forward,side,yaw=0){const c=Math.cos(yaw),s=Math.sin(yaw);return {along:forward*c+side*s,right:side*c-forward*s};}
+// 일시정지 중 걷기 입력이 들어오면 바로 이어 걷는다(이어하기·탭 복귀 뒤 첫 입력). 창이 열려 있으면 그대로 둔다.
+export function resumeOnInput(state,input,{blocked=false}={}){if(!state.paused||blocked||!(Math.sign(input.forward||0)||Math.sign(input.side||0)))return false;state.paused=false;return true;}
 // 광장 한 프레임 이동 후보. 문 통로를 지나 s≥ROUTE_MIN_S가 되면 코스 좌표로 넘긴다.
-function planPlaza(state,f,side,budget,ground){
+function planPlaza(state,f,side,budget,ground,yaw=0){
  const P=state.plaza;let dx,dz;
  if(state.auto){const t=autoTarget(P.x,P.z);dx=t.x-P.x;dz=t.z-P.z;const n=Math.hypot(dx,dz)||1;dx/=n;dz/=n;}
- else{const h=P.heading,n=Math.hypot(f,side);dx=(-Math.sin(h)*f+Math.cos(h)*side)/n;dz=(-Math.cos(h)*f-Math.sin(h)*side)/n;}
+ else{const h=P.heading+yaw,n=Math.hypot(f,side);dx=(-Math.sin(h)*f+Math.cos(h)*side)/n;dz=(-Math.cos(h)*f-Math.sin(h)*side)/n;}
  const routeWorld=(s,l)=>positionAt(s,l,ground);
  const resolve=(x,z)=>{
   if(segmentHitsGate(P.x,P.z,x,z))return null;
@@ -88,8 +95,10 @@ export function advance(state,input,dt,onStep=()=>{},ground){
  }
  if(direct)state.auto=false;else if(state.auto)f=1;
  if(!f&&!side){recover(state,8,dt);return 0;}
+ // 직접 입력은 카메라 기준. 뒷걸음(S 포함)은 앞으로 걷는 속도의 0.6배다.
+ const yaw=direct&&Number.isFinite(input.yaw)?input.yaw:0,backward=direct&&f<0,{along,right}=cameraRelative(f,side,yaw);
  const plaza=state.zone==='plaza',p=sample(plaza?ROUTE_MIN_S:state.s),off=!plaza&&isOffTrail(state.s,state.lateral),running=!!input.run&&!state.runExhausted&&state.stamina>0;
- const speed=(plaza?speedFor(0,'paved',1):speedFor(p.slope,p.material,f||1))*(running?RUN_MULTIPLIER:1)*(off?OFF_TRAIL_MULTIPLIER:1),budget=speed*dt;
+ const speed=(plaza?speedFor(0,'paved',1):speedFor(p.slope,p.material,along<0?-1:1))*(running?RUN_MULTIPLIER:1)*(off?OFF_TRAIL_MULTIPLIER:1)*(backward?BACKWARD_MULTIPLIER:1),budget=speed*dt;
  const motionPosition=(s,l)=>{const pos=positionAt(s,l,ground);if(!isOffTrail(s,l))pos[1]=sample(s).y;return pos;};
  const plazaPosition=(x,z)=>[x,ground?.height(x,z,false)??route.points[0].y,z];
  let a,b,distance,allowedBudget=budget,entersOff=false,next;
@@ -97,14 +106,14 @@ export function advance(state,input,dt,onStep=()=>{},ground){
   a=plazaPosition(state.plaza.x,state.plaza.z);
   let step=budget,plan;
   // 지면 높이를 포함한 실제 거리로 속도를 제한한다.
-  for(let i=0;i<4;i++){plan=planPlaza(state,f,side,step,ground);if(!plan.hit)break;b=plazaPosition(plan.hit.x,plan.hit.z);distance=Math.hypot(...a.map((v,j)=>b[j]-v));if(distance<=budget+1e-10)break;step*=budget/distance;}
+  for(let i=0;i<4;i++){plan=planPlaza(state,f,side,step,ground,yaw);if(!plan.hit)break;b=plazaPosition(plan.hit.x,plan.hit.z);distance=Math.hypot(...a.map((v,j)=>b[j]-v));if(distance<=budget+1e-10)break;step*=budget/distance;}
   if(state.auto){const target=Math.atan2(-plan.direction.x,-plan.direction.z),d=wrapAngle(target-state.plaza.heading);state.plaza.heading=wrapAngle(state.plaza.heading+Math.sign(d)*Math.min(Math.abs(d),PLAZA_TURN_RATE*dt));}
   if(!plan.hit){recover(state,8,dt);return 0;}
   next=plan.hit;b=plazaPosition(next.x,next.z);distance=Math.hypot(...a.map((v,j)=>b[j]-v));
  }else{
-  const normal=Math.hypot(f,side),rawS=state.s+budget*f/normal;
+  const normal=Math.hypot(along,right)||1,rawS=state.s+budget*along/normal;
   let proposedS=clamp(rawS,ROUTE_MIN_S,route.length);
-  let proposedSide=clamp(state.lateral+budget*side/normal,...(proposedS<0?entranceLateralBounds(proposedS):[-lateralLimit(proposedS),lateralLimit(proposedS)]));
+  let proposedSide=clamp(state.lateral+budget*right/normal,...(proposedS<0?entranceLateralBounds(proposedS):[-lateralLimit(proposedS),lateralLimit(proposedS)]));
   if(state.auto)proposedSide=state.lateral-Math.sign(state.lateral)*Math.min(Math.abs(state.lateral),budget*.6);
   a=motionPosition(state.s,state.lateral);
   // 일주문 아래에서 뒤로 가면 문 선분 좌표계를 그대로 연장해 광장으로 돌아간다.
@@ -141,7 +150,7 @@ export function advance(state,input,dt,onStep=()=>{},ground){
  state.ascent+=Math.max(0,b[1]-a[1]);state.elapsed+=dt;state.distance+=distance;state.running=running;
  if(running){const horizontal=Math.hypot(b[0]-a[0],b[2]-a[2]);const uphill=Math.max(0,(b[1]-a[1])/Math.max(.001,horizontal));state.stamina=Math.max(0,state.stamina-10*(1+uphill)*dt);if(state.stamina<=0)state.runExhausted=true;}
  else recover(state,4,dt);
- const stride=plaza||next.zone==='plaza'?.7:(off||entersOff)? .7:strideFor(p);state.stepPhase+=distance/stride;let crossed=0;
+ const stride=strideAt({plaza:plaza||next.zone==='plaza',seg:p,direction:along<0?-1:1,off:off||entersOff,backward});state.stepPhase+=distance/stride;let crossed=0;
  while(state.stepPhase>=1){state.stepPhase--;state.steps++;const fraction=Math.min(1,((1-oldPhase)+crossed++)*stride/distance);
   // 광장·문 전환 프레임의 발소리는 포장면(paved)이고 위치는 선형 보간한다.
   if(oldS===null||next.zone==='plaza'){const position=oldWorld.map((v,j)=>v+(b[j]-v)*fraction);onStep({step:state.steps,material:'paved',slope:0,s:state.zone==='route'?state.s:null,zone:state.zone,position,distance:state.distance-distance+distance*fraction,elapsed:state.elapsed-dt+dt*fraction});continue;}

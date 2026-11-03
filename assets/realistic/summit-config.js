@@ -1,3 +1,4 @@
+import {FOREST_ZONES,broadleafRatio} from './forest-zones.js';
 // 추정(후기 근거, 현장 확인 전). X 동쪽 / Z 남쪽, 단위 m.
 export const SUMMIT_CONFIG = [
  {id:'radar',anchor:'summit',offset:[-18,52],supportRadius:6,dimensions:'받침 9×7×6m, 흰 돔 지름 10m',yaw:0},
@@ -52,21 +53,26 @@ export function facilityGround(sites,x,z,base){
  return strongest===0?base:base+(target-base)*strongest;
 }
 export const FOREST_CONFIG={
- status:'추정(임상도 확보 전)',broadleafRatio:.6,
+ status:'구간별 추정(임상도 확보 전) · forest-zones.js',broadleafRatio:FOREST_ZONES.targets.mid.broadleaf,
  broadleafIds:['tree_small_02','island_tree_01'],pineIds:['pine_tree_01','pine_sapling_medium'],
  broadleafTint:0xb6c895,pineTint:0xc4ceae,broadleafScale:1.04,
  // 스캔 모델을 신갈나무로 확정 동정하지 않는다. 활엽 우점의 시각 대용이다.
 };
+const hash=(x,z)=>{const n=Math.sin(x*91.345+z*47.853)*24634.6345;return n-Math.floor(n);};
 
 // 총 개체 수·좌표·64m 청크를 유지하며 기존 스캔 모델로 재배정.
-export function mixForestEntries(entries){
+// 활엽 비율은 표고 구간별(숲 75~80%, 능선 25%, 정상부 10%). 표고가 없으면 height(x,z)로 구한다.
+// 길가 근경 소나무(nearDetail)는 능선 바위 사이 소나무이므로 재배정하지 않는다.
+export function mixForestEntries(entries,height){
  let ordinal=0;
  return entries.flatMap(entry=>{
-  if(![...FOREST_CONFIG.broadleafIds,...FOREST_CONFIG.pineIds].includes(entry.id)||entry.kind==='understory')return [entry];
+  if(![...FOREST_CONFIG.broadleafIds,...FOREST_CONFIG.pineIds].includes(entry.id)||entry.kind==='understory'||entry.nearDetail)return [entry];
   const buckets=new Map();
   for(const p of entry.placements){
-   const n=ordinal++,broad=n%10<Math.round(FOREST_CONFIG.broadleafRatio*10);
-   const ids=broad?FOREST_CONFIG.broadleafIds:FOREST_CONFIG.pineIds,id=ids[Math.floor(n/10)%ids.length];
+   const n=ordinal++,y=Number.isFinite(p.y)?p.y:height?.(p.x,p.z),ratio=broadleafRatio(y);
+   // 좌표가 없는 시험 배치는 순번으로 비율을 정확히 맞춘다.
+   const broad=Number.isFinite(p.x)&&Number.isFinite(p.z)&&(Number.isFinite(y)||height)?hash(p.x,p.z)<ratio:n%20<Math.round(ratio*20);
+   const ids=broad?FOREST_CONFIG.broadleafIds:FOREST_CONFIG.pineIds,id=ids[Math.floor(n/20)%ids.length];
    if(!buckets.has(id))buckets.set(id,{...entry,id,kind:'tree',crossboard:null,impostor:null,
     levels:[0,1,2].map(i=>({url:`${id}-lod${i}.glb`,distance:[0,48,120][i]})),placements:[],
     forestTint:broad?FOREST_CONFIG.broadleafTint:FOREST_CONFIG.pineTint});

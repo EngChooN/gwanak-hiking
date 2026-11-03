@@ -171,12 +171,14 @@ export function createCityGrid({parent,material,atmosphere,status={},cellSize=CI
    visible.push({cell,distanceSq,direction,range:quality===2?cell.proxyRange:cell.ranges[direction]});
   }
   visible.sort((a,b)=>a.distanceSq-b.distanceSq);
+  // 쌍안경(camera.zoom>1): 확대된 시야 기준 거리로 단계를 고르고, 거리 단계는 한 칸 높은 화질, 예산은 시야가 좁아진 만큼 1.5배.
+  const zoom=Math.max(1,camera.zoom||1),zoomed=zoom>1.01,lodQuality=zoomed?Math.min(2,quality+1):quality,budget=CITY_BASE_BUDGET[quality]*(zoomed?1.5:1),maxNear=Math.round(MAX_NEAR_MESHES*(zoomed?1.5:1));
   let triangles=visible.reduce((sum,item)=>sum+item.range.count/3,0),nearMeshes=0,detailed=0,simple=0;const distant=[];
   for(const item of visible){
-   const {cell,distanceSq,range}=item,near=[0,1000,2000][quality],middle=[2000,3500,5000][quality];
+   const {cell,distanceSq,range}=item,near=[0,1000,2000][lodQuality]*zoom,middle=[2000,3500,5000][lodQuality]*zoom;
    let level=distanceSq<near*near?0:distanceSq<middle*middle?1:2;
-   const remaining=CITY_BASE_BUDGET[quality]-triangles+range.count/3;
-   while(level<2&&(cell.triangles[level]>remaining||nearMeshes>=MAX_NEAR_MESHES))level++;
+   const remaining=budget-triangles+range.count/3;
+   while(level<2&&(cell.triangles[level]>remaining||nearMeshes>=maxNear))level++;
    if(level<2){cell.mesh.geometry=cell.geometries[level];cell.mesh.visible=true;triangles+=cell.triangles[level]-range.count/3;nearMeshes++;if(level===0)detailed++;else simple++;}
    else distant.push(item);
   }
@@ -187,7 +189,7 @@ export function createCityGrid({parent,material,atmosphere,status={},cellSize=CI
    index.needsUpdate=true;far.geometry.setDrawRange(0,count);farKey=key;
   }
   far.visible=distant.length>0;
-  status.cityGrid={...status.cityGrid,visibleCells:visible.length,detailedCells:detailed,simpleCells:simple,silhouetteCells:quality===2?0:distant.length,proxyCells:quality===2?distant.length:0,frustumTests,distanceRejected,baseTriangles:triangles,baseDrawCalls:nearMeshes+(far.visible?1:0),baseTriangleBudget:CITY_BASE_BUDGET[quality]};
+  status.cityGrid={...status.cityGrid,visibleCells:visible.length,detailedCells:detailed,simpleCells:simple,silhouetteCells:quality===2?0:distant.length,proxyCells:quality===2?distant.length:0,frustumTests,distanceRejected,baseTriangles:triangles,baseDrawCalls:nearMeshes+(far.visible?1:0),baseTriangleBudget:budget,zoom};
  }
  function dispose(){closed=true;root.removeFromParent();for(const cell of cells.values())cell.geometries?.forEach(g=>g.dispose());far.geometry.dispose();nearMaterial.dispose();if(farMaterial!==material)farMaterial.dispose();cells.clear();}
  return {root,cells,addBuildings,finalize,update,dispose};

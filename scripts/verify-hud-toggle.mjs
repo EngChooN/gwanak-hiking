@@ -1,0 +1,25 @@
+import {chromium} from '@playwright/test';
+const out=process.argv[2];
+const browser=await chromium.launch({channel:'chrome',headless:true,args:['--enable-webgl','--ignore-gpu-blocklist']});
+const ctx=await browser.newContext({viewport:{width:1440,height:900}});const page=await ctx.newPage();
+const errs=[];page.on('pageerror',e=>errs.push(e.message));
+const B='http://127.0.0.1:5173/?outfit=1&time=12:00&weather=clear';
+await page.goto(B);await page.evaluate(()=>localStorage.clear());await page.reload();
+await page.waitForFunction(()=>window.hiking?.started,null,{timeout:180000});await page.waitForTimeout(800);
+const st=()=>page.evaluate(()=>({hidden:document.getElementById('app').classList.contains('hud-hidden'),saved:localStorage.getItem('gwanak-hud-hidden'),pressed:document.getElementById('hud-hide')?.getAttribute('aria-pressed'),headerVis:getComputedStyle(document.querySelector('#app header')||document.querySelector('header')).visibility,restore:document.querySelector('.hud-restore')?.dataset.on,pauseVis:(()=>{const e=document.getElementById('pause-overlay');return e&&getComputedStyle(e).display!=='none'&&getComputedStyle(e).visibility!=='hidden'&&e.offsetWidth>0;})()}));
+await page.screenshot({path:`${out}/1-hud-shown.png`});console.log('초기',JSON.stringify(await st()));
+await page.keyboard.press('h');await page.waitForTimeout(300);console.log('H 1회',JSON.stringify(await st()));
+await page.screenshot({path:`${out}/2-hud-hidden.png`});
+await page.keyboard.press('h');await page.waitForTimeout(300);console.log('H 2회',JSON.stringify(await st()));
+await page.click('#hud-hide');await page.waitForTimeout(300);console.log('버튼 클릭',JSON.stringify(await st()));
+await page.reload();await page.waitForFunction(()=>window.hiking?.started,null,{timeout:180000});await page.waitForTimeout(600);console.log('새로고침',JSON.stringify(await st()));
+const ps=await page.evaluate(()=>window.hiking.snapshot().paused);console.log('숨김+이어하기 일시정지 paused',ps,JSON.stringify(await st()));
+await page.screenshot({path:`${out}/3-hidden-paused.png`});
+await page.keyboard.press('Escape');await page.waitForTimeout(300);console.log('ESC 계속하기 paused',await page.evaluate(()=>window.hiking.snapshot().paused));
+await page.keyboard.press('h');await page.waitForTimeout(300);console.log('H 복귀',JSON.stringify(await st()));
+// 터치: 숨김 상태에서 'HUD 보기' 복귀 버튼
+const m=await browser.newContext({viewport:{width:844,height:390},hasTouch:true,isMobile:true});const mp=await m.newPage();mp.on('pageerror',e=>errs.push(e.message));
+await mp.goto(B);await mp.evaluate(()=>{localStorage.clear();localStorage.setItem('gwanak-hud-hidden','true');});await mp.reload();await mp.waitForFunction(()=>window.hiking?.started,null,{timeout:180000});await mp.waitForTimeout(800);
+console.log('터치 복귀 버튼 보임',await mp.locator('.hud-restore').isVisible());await mp.screenshot({path:`${out}/4-touch-hidden.png`});
+await mp.locator('.hud-restore').tap();await mp.waitForTimeout(300);console.log('터치 탭 후 hidden',await mp.evaluate(()=>document.getElementById('app').classList.contains('hud-hidden')));
+console.log('errors',JSON.stringify(errs));await browser.close();

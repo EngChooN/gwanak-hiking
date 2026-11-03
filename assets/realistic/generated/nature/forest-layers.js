@@ -3,6 +3,8 @@ import * as THREE from 'three';
 import {indexRoute} from '../../geo.js';
 import {createChunkCuller} from '../../../../src/chunk-culling.js';
 import {freezeStatic} from '../../../../src/static-scene.js';
+import {treeDensity,shrubDensity,grassDensity,broadleafRatio} from '../../forest-zones.js';
+import {shrubMaterial,foliageUniforms} from '../../foliage-shader.js';
 
 // 표시되는 2m 지형의 삼각형과 같은 보간. 함수 표면 높이만 쓰면 풀 밑동이 묻힌다.
 export function grassGround(height,x,z){
@@ -14,7 +16,7 @@ export function grassGround(height,x,z){
 // 형상과 밀도는 참고 사진에 따른 시각 가정. 현장 개체 위치·수종 비율이 아니다.
 export function forestLayers(landscape){
  const nearest=indexRoute(landscape.route),root=new THREE.Group();root.name='숲 층위 · 바람 풀';
- const cells=new Map(),treeGroups=new Map(),rocks=new Map();let seed=61103;
+ const cells=new Map(),treeGroups=new Map(),rocks=new Map(),shrubs=new Map();let seed=61103;
  const random=()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/4294967296);
  const points=landscape.route,minX=Math.min(...points.map(p=>p.x))-30,maxX=Math.max(...points.map(p=>p.x))+30,minZ=Math.min(...points.map(p=>p.z))-30,maxZ=Math.max(...points.map(p=>p.z))+30;
  const add=(map,key,p)=>{if(!map.has(key))map.set(key,[]);map.get(key).push(p);};
@@ -26,11 +28,23 @@ export function forestLayers(landscape){
   const entrance=entranceLocal(points,px,pz);if(Math.abs(entrance.x)<11.4&&entrance.z> -12.4&&entrance.z<34.4)continue;
   if(landscape.status.sectionScenery?.sites.some(s=>Math.hypot(px-s.x,pz-s.z)<s.supportRadius+1.4))continue;
   const y=landscape.floorHeight(px,pz),p={x:px,z:pz,y,gridX:x,gridZ:z,distance:h.distance,yaw:random()*6.283,scale:.65+random()*.8};
-  if(random()<(y>590?.18:.98))add(cells,cell(p),p);
-  if(h.distance>h.width/2+4.5&&h.distance<30&&random()<.13&&y<605){
-   const id=random()<.6?'tree_small_02':'pine_tree_01',key=`${id}:${Math.floor(px/48)},${Math.floor(pz/48)}`;
+  // 구간별 밀도(forest-zones.js): 숲 구간은 빽빽하게, 능선·정상부는 지금처럼 성기게.
+  if(random()<.98*grassDensity(y))add(cells,cell(p),p);
+  // 덤불층(1~3m): 숲 구간 길가 2m 칸의 약 절반. 길 바로 옆은 작게 두어 길을 가리지 않는다.
+  if(h.distance>h.width/2+1.4&&random()<.55*shrubDensity(y)){
+   const key=`${Math.floor(px/24)},${Math.floor(pz/24)}`;if(!shrubs.has(key))shrubs.set(key,[]);
+   const edge=Math.min(1,(h.distance-h.width/2-1.4)/4);
+   shrubs.get(key).push({x:px+random()*.6-.3,z:pz+random()*.6-.3,yaw:random()*6.283,scale:(.8+random()*.95)*(.55+.45*edge),roll:random()});
+  }
+  // 교목: 숲 구간 간격 약 4.5m(이전 .13 → .2). 늘린 몫(dense)은 화질 낮음에서 감춘다.
+  const treeRoll=random(),density=treeDensity(y);
+  if(h.distance>h.width/2+4.5&&h.distance<30&&treeRoll<.2*density&&y<605){
+   const broad=random()<broadleafRatio(y),pick=random();
+   const id=broad?(pick<.55?'tree_small_02':'island_tree_01'):(pick<.75?'pine_tree_01':'pine_sapling_medium');
+   // 수종이 넷이라 청크를 96m로 키워 그리기 호출 수를 이전(2수종·48m)보다 늘리지 않는다.
+   const dense=treeRoll>=.13*density,key=`${id}:${Math.floor(px/96)},${Math.floor(pz/96)}`;
    if(!treeGroups.has(key))treeGroups.set(key,{id,kind:'tree',forestTint:0xb6c895,placements:[],levels:[{url:`${id}-lod1.glb`,distance:0},{url:`${id}-lod2.glb`,distance:14}]});
-   treeGroups.get(key).placements.push({x:px,z:pz,scale:.65+random()*.3,yaw:p.yaw,embed:.03});
+   treeGroups.get(key).placements.push({x:px,z:pz,scale:.65+random()*.3,yaw:p.yaw,embed:.03,...(dense?{dense:true}:{})});
   }
   // 정상부는 교목 대신 절리 암봉과 작은 바위. 노면과 모델 반경을 분리한다.
   if(y>470&&h.distance>h.width/2+7&&random()<.018){
@@ -63,14 +77,16 @@ export function forestLayers(landscape){
   if(h.distance<30||h.distance>180)continue;
   let y;try{y=landscape.floorHeight(px,pz);}catch{continue;}
   if(!Number.isFinite(y)||y>590)continue;
-  const id=random()<.6?'tree_small_02':'pine_tree_01',key=`far:${id}:${Math.floor(px/96)},${Math.floor(pz/96)}`;
+  const id=random()<broadleafRatio(y)?'tree_small_02':'pine_tree_01',key=`far:${id}:${Math.floor(px/96)},${Math.floor(pz/96)}`;
   if(!treeGroups.has(key))treeGroups.set(key,{id,kind:'tree',forestTint:0xb6c895,levels:[{url:`${id}-lod2.glb`,distance:0}],placements:[]});
   treeGroups.get(key).placements.push({x:px,z:pz,scale:1+random()*.35,yaw:random()*6.283});
  }
  const vertices=[];
  // 뾰족한 3차원 곡선 풀잎 7장 + 조릿대·고사리 대용 잎. 투명 텍스처 없음.
- for(let i=0;i<7;i++){
-  const a=i*2.399,r=.15,dx=Math.cos(a),dz=Math.sin(a),h=.3+(i%3)*.12,w=.025;
+  // 포기당 9장(이전 7장). 포기 수를 늘리지 않고 한 포기를 풍성하게 해 메모리·행렬 업로드를 그대로 둔다.
+ const BLADES=9;
+ for(let i=0;i<BLADES;i++){
+  const a=i*2.399,r=.12+(i%4)*.025,dx=Math.cos(a),dz=Math.sin(a),h=.25+(i%3)*.12+(i%5)*.015,w=.029;
   const bx=dx*r,bz=dz*r,mx=bx+dx*.07,mz=bz+dz*.07;
   vertices.push(bx-dz*w,0,bz+dx*w,bx+dz*w,0,bz-dx*w,mx-dz*w*.6,h*.55,mz+dx*w*.6,
    bx+dz*w,0,bz-dx*w,mx+dz*w*.6,h*.55,mz-dx*w*.6,mx-dz*w*.6,h*.55,mz+dx*w*.6,
@@ -85,7 +101,7 @@ export function forestLayers(landscape){
   }
  }
  const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));
- geometry.setAttribute('forestLeaf',new THREE.Float32BufferAttribute(Array.from({length:vertices.length/3},(_,i)=>i>=63?1:0),1));
+ geometry.setAttribute('forestLeaf',new THREE.Float32BufferAttribute(Array.from({length:vertices.length/3},(_,i)=>i>=BLADES*9?1:0),1));
  // 풀 높이와 잎 폭을 줄인다. 최대 .54×.42×1.45 ≒ .33m.
  geometry.scale(.55,.42,.55);geometry.computeVertexNormals();
  // 가는 잎의 면마다 흰 줄이 생기지 않도록 위쪽으로 완만하게 향한 노멀을 쓴다.
@@ -110,11 +126,11 @@ export function forestLayers(landscape){
  material.customProgramCacheKey=()=> 'forest-blades-wind-v3-understory';
  const dummy=new THREE.Object3D(),tint=new THREE.Color(),items=[];
  for(const list of cells.values()){
-  const mesh=new THREE.InstancedMesh(geometry,material,list.reduce((n,p)=>n+(p.distance<=12?49:21),0));let i=0;
+  const mesh=new THREE.InstancedMesh(geometry,material,list.reduce((n,p)=>n+(p.distance<=14?49:21),0));let i=0;
   // 포기 순서를 영역 전체에 교차 배치한다. 낮음에서도 한쪽 띠만 남기지 않는다.
   // 고정 접두부만 그리므로 화질 변경 때 행렬 업로드가 없다.
   for(let step=0;step<49;step++)for(const p of list){
-   const rows=p.distance<=12?7:3,total=7*rows;if(step>=total)continue;
+   const rows=p.distance<=14?7:3,total=7*rows;if(step>=total)continue;
    const j=step*(total===49?17:8)%total;
    const x=p.gridX+(j%7+.15+random()*.7)*2/7,z=p.gridZ+(Math.floor(j/7)+.15+random()*.7)*2/rows;
    if(nearest(x,z).distance<nearest(x,z).width/2+.25)continue;
@@ -127,16 +143,56 @@ export function forestLayers(landscape){
   mesh.count=i;mesh.userData.metricKind='하층 식생';mesh.receiveShadow=true;
   mesh.computeBoundingBox();mesh.computeBoundingSphere();mesh.boundingBox.expandByScalar(.5);mesh.boundingSphere.radius+=.5;root.add(mesh);items.push({mesh,box:mesh.boundingBox.clone(),count:i});
  }
- landscape.group.add(root);freezeStatic(root);
+ // 덤불층: 24m 칸마다 InstancedMesh 하나. 잎 무더기는 층이 진 작은 잎판(삼각형 2개) 모음이며 투명 텍스처를 쓰지 않는다.
+ const shrubGeometry=makeShrubGeometry(),shrubMat=shrubMaterial(),shrubItems=[],shrubRoot=new THREE.Group();shrubRoot.name='덤불층 · 바람';
+ // 11월 덤불 색(sRGB): 팥배·당단풍 붉은·주황, 참나무 어린나무 갈색, 노랑, 남은 초록.
+ const shrubPalette=[0x7c4630,0x8f5a36,0x6f5134,0x857242,0x56603a,0x6a3428];
+ for(const list of shrubs.values()){
+  const mesh=new THREE.InstancedMesh(shrubGeometry,shrubMat,list.length);
+  list.forEach((p,i)=>{
+   dummy.position.set(p.x,grassGround(landscape.floorHeight,p.x,p.z)-.02,p.z);dummy.rotation.set(0,p.yaw,0);
+   dummy.scale.set(p.scale*(.85+p.roll*.3),p.scale*(.8+((p.roll*7)%1)*.6),p.scale*(.85+((p.roll*3)%1)*.3));dummy.updateMatrix();mesh.setMatrixAt(i,dummy.matrix);
+   const patch=.5+.25*Math.sin(p.x*.05+p.z*.03)+.25*Math.sin(p.z*.07-p.x*.02),k=Math.min(shrubPalette.length-1,Math.floor((patch*.6+p.roll*.4)*shrubPalette.length));
+   mesh.setColorAt(i,tint.set(shrubPalette[k]).multiplyScalar(.85+p.roll*.3));
+  });
+  mesh.userData.metricKind='하층 식생';mesh.receiveShadow=true;mesh.computeBoundingBox();mesh.computeBoundingSphere();mesh.boundingBox.expandByScalar(1.5);mesh.boundingSphere.radius+=1.5;
+  shrubRoot.add(mesh);shrubItems.push({mesh,box:mesh.boundingBox.clone(),count:list.length});
+ }
+ landscape.group.add(root,shrubRoot);freezeStatic(root);freezeStatic(shrubRoot);
  const culler=createChunkCuller(),update=landscape.update.bind(landscape);
  landscape.update=(camera,quality=2)=>{
   update(camera,quality);time.value=performance.now()/1000;culler.update(camera);
   let visible=0;
   for(const item of items){const {mesh,box,count}=item;mesh.visible=culler.visible(box,camera,[20,30,40][quality]);mesh.count=Math.ceil(count*[.22,.5,1][quality]);if(mesh.visible)visible+=mesh.count;}
   landscape.status.scenery.visibleGrass=visible;
+  // 덤불은 풀보다 멀리 보이고 화질 낮음에서 30%만 남긴다.
+  let visibleShrubs=0;foliageUniforms.foliageTime.value=time.value;
+  for(const {mesh,box,count} of shrubItems){mesh.visible=culler.visible(box,camera,[22,34,48][quality]);mesh.count=Math.ceil(count*[.3,.65,1][quality]);if(mesh.visible)visibleShrubs+=mesh.count;}
+  landscape.status.scenery.visibleShrubs=visibleShrubs;
  };
- landscape.status.scenery={forestCorridor:30,grassRadius:[20,30,40],grassDensityPerM2:[12.25,5.25],grassChunkSize:12,grassInstances:items.reduce((n,i)=>n+i.count,0),trees:[...treeGroups.values()].reduce((n,e)=>n+e.placements.length,0),outcrops:[...rocks.values()].reduce((n,e)=>n+e.placements.length,0),speciesStatus:'임상도 미확보 · 활엽 60%/소나무 40% 시각 대용',wind:true,layers:['소나무·참나무류 교목 시각 대용','관목','고사리·조릿대형 하층'],ground:'낙엽층 PBR + 이끼 군락 · 등산로 별도 재질 유지'};
+ landscape.status.scenery={forestCorridor:30,grassRadius:[20,30,40],grassDensityPerM2:[12.25,5.25],grassBlades:BLADES,shrubs:shrubItems.reduce((n,i)=>n+i.count,0),shrubRadius:[22,34,48],denseTrees:[...treeGroups.values()].reduce((n,e)=>n+e.placements.filter(p=>p.dense).length,0),zones:'forest-zones.js',grassChunkSize:12,grassInstances:items.reduce((n,i)=>n+i.count,0),trees:[...treeGroups.values()].reduce((n,e)=>n+e.placements.length,0),outcrops:[...rocks.values()].reduce((n,e)=>n+e.placements.length,0),speciesStatus:'임상도 미확보 · 구간별 활엽 비율(숲 75~80%, 능선 25%) 시각 대용',wind:true,layers:['소나무·참나무류 교목 시각 대용','덤불층(1~3m)','관목','고사리·조릿대형 하층'],ground:'낙엽층 PBR + 이끼 군락 · 등산로 별도 재질 유지'};
  return [...treeGroups.values(),...rocks.values()];
+}
+
+// 덤불 한 포기: 가는 줄기 5개 + 높이를 셋으로 나눈 잎판 층. 높이 약 1.2m, 반경 약 .7m(배율 1).
+// 아래층 잎판은 작고 어둡게(shrubShade), 위층은 크고 밝게 해 잎 무더기가 층져 보이게 한다.
+export function makeShrubGeometry(){
+ const v=[],shade=[];let seed=7;const r=()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/4294967296);
+ for(let i=0;i<5;i++){const a=i*1.256+r()*.4,tx=Math.cos(a)*.35,tz=Math.sin(a)*.35,top=.75+r()*.45,w=.012;
+  v.push(-w,0,0,w,0,0,tx,top,tz);shade.push(.35,.35,.5);}
+ // 잎판은 층마다 타원체 껍질 쪽에 몰아 덩어리 윤곽을 만들고, 안쪽에도 일부 채워 비어 보이지 않게 한다.
+ for(const [layer,count,y0,y1,radius,size] of [[0,26,.16,.48,.42,.16],[1,36,.42,.82,.5,.18],[2,26,.76,1.12,.38,.19]])for(let i=0;i<count;i++){
+  const a=r()*6.283,d=radius*(i%4===0?.2+r()*.5:.7+r()*.3),cy=y0+r()*(y1-y0),cx=Math.cos(a)*d,cz=Math.sin(a)*d;
+  const ya=r()*6.283,tilt=.35+r()*.5,ux=Math.cos(ya)*size,uz=Math.sin(ya)*size,lx=-Math.sin(ya)*size*.55,lz=Math.cos(ya)*size*.55,ly=tilt*size*.6;
+  // 잎판: 마름모 두 삼각형.
+  const p0=[cx-ux,cy-ly,cz-uz],p1=[cx+lx,cy+ly*.4,cz+lz],p2=[cx+ux,cy+ly,cz+uz],p3=[cx-lx,cy-ly*.4,cz-lz];
+  v.push(...p0,...p1,...p2,...p0,...p2,...p3);const s=.45+layer*.17+r()*.15;for(let k=0;k<6;k++)shade.push(s);
+ }
+ const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(v,3));
+ geometry.setAttribute('shrubShade',new THREE.Float32BufferAttribute(shade,1));geometry.computeVertexNormals();
+ const normals=geometry.attributes.normal,n=new THREE.Vector3();
+ for(let i=0;i<normals.count;i++){n.fromBufferAttribute(normals,i).multiplyScalar(.5);n.y+=.6;n.normalize();normals.setXYZ(i,n.x,n.y,n.z);}
+ return geometry;
 }
 
 // 기존 흙·낙엽·풀·화강암 노멀맵 혼합을 유지하며 습한 이끼 패치를 더한다.

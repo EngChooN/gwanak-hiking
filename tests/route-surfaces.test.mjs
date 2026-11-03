@@ -18,13 +18,12 @@ test('구간 1~7 추정 배정은 CSV 수평 누적 거리와 기획 비율을 �
  }
  assert.equal(route.points.length,337);
 });
-test('새 노면의 고정 계단 시간을 제외한 보정으로 20% 상향 후 ETA 전장 125분과 구간 합을 유지한다',()=>{
- assert.ok(STAIR_SECONDS>0&&STAIR_SECONDS<9000);assert.ok(Number.isFinite(SPEED_CALIBRATION)&&SPEED_CALIBRATION>0);
- assert.equal(SPEED_CALIBRATION,NONSTAIR_BASE_SECONDS/(9000-STAIR_SECONDS));
- assert.ok(Math.abs(durationBetween(0,route.length)-7500)<1e-7);
+test('ETA 전장은 계단·일반 구간 걸음 모델 시간의 합이고 구간 합과 같다',()=>{
+ assert.ok(STAIR_SECONDS>0&&STAIR_SECONDS<9000);assert.equal(SPEED_CALIBRATION,1);
+ const total=STAIR_SECONDS+NONSTAIR_BASE_SECONDS;assert.ok(Math.abs(durationBetween(0,route.length)-total)<1e-6);
  const bySection=Array.from({length:7},()=>0);
  for(const seg of route.segments)bySection[seg.a.section-1]+=seg.length/speedFor(seg.slope,seg.material);
- assert.ok(Math.abs(bySection.reduce((a,b)=>a+b,0)-7500)<1e-7);assert.ok(bySection.every(n=>n>0));
+ assert.ok(Math.abs(bySection.reduce((a,b)=>a+b,0)-total)<1e-6);assert.ok(bySection.every(n=>n>0));
  assert.equal(MATERIALS.paved.factor,MATERIALS.rock.factor);assert.equal(speedFor(.2,'paved'),speedFor(.2,'rock'));
  assert.equal(footstepMaterial('paved'),'rock');assert.ok(SOUND_BANKS.rock.includes(new FootstepSelector().next('paved',1).file));
 });

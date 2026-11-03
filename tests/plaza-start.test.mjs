@@ -118,8 +118,8 @@ test('플레이어 위치 읽기·쓰기 함수 하나: {zone,x,z,heading,s,late
 
 test('main.js 연결: 로딩 전 입력·시간 차단, 광장 표시·zone 신호, 출발 옵션, favicon 404 제거',()=>{
  const main=readFileSync(new URL('../src/main.js',import.meta.url),'utf8');
- assert.match(main,/function command\(id\)\{if\(!started\)return;/);
- assert.match(main,/const cmd=started\?input\.read\(\):\{forward:0,side:0,run:false,turn:0\}/);
+ assert.match(main,/function command\(id(,value)?\)\{if\(!started\)return;/);
+ assert.match(main,/const cmd=(walkInput\(state,)?started\?input\.read\(\):\{forward:0,side:0,run:false,turn:0\}/);
  assert.match(main,/speed=started\?frameMetrics\.stage\('movement'/);
  assert.match(main,/if\(started&&now-saveAt>700\)/);
  assert.match(main,/zone:state\.zone,courseDistance:course/);assert.match(main,/출발 전 · 광장 · /);

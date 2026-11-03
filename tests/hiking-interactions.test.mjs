@@ -7,8 +7,9 @@ import {createWalkingGround} from '../src/walking-ground.js';
 const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-6,`${a} ≠ ${b}`);
 const flat={height:()=>0,canMove:()=>true};
 function tick(s,input,seconds,ground=flat){for(let i=0;i<Math.round(seconds*10);i++)advance(s,input,.1,()=>{},ground);}
-test('걷기와 계단의 speedFor가 기존 보정 결과의 1.2배',()=>{
- for(const material of ['soil','stairs','deck_stairs','ridge','paved'])for(const slope of [-.3,0,.3])for(const direction of [-1,1])near(speedFor(slope,material,direction),baseSpeedFor(slope,material,direction)*(isStairs(material)?1:SPEED_CALIBRATION)*1.2);
+test('speedFor는 보정 없이 걸음 모델(보폭×빈도) 그대로',()=>{
+ assert.equal(SPEED_CALIBRATION,1);
+ for(const material of ['soil','stairs','deck_stairs','ridge','paved'])for(const slope of [-.3,0,.3])for(const direction of [-1,1])near(speedFor(slope,material,direction),baseSpeedFor(slope,material,direction));
  const direct=initialState(),auto=initialState();auto.auto=true;advance(direct,{forward:1},.1);advance(auto,{},.1);near(direct.distance,auto.distance);
 });
 test('Shift 1.6배, 걷기·정지·앉기 회복률과 상한',()=>{

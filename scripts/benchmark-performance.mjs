@@ -11,11 +11,11 @@ const folder=`artifacts/performance-${label}`;await mkdir(folder,{recursive:true
 const browser=await chromium.launch({channel:'chrome',headless:process.env.HEADED!=='1',args:['--enable-webgl','--ignore-gpu-blocklist']});
 const results={label,date:new Date().toISOString(),base,duration,environment:{platform:process.platform,arch:process.arch,chrome:browser.version(),viewport:'1440×900',dpr:1,headed:process.env.HEADED==='1'},runs:[],errors:[]};
 try{
- for(const [quality,cpu,view,actions] of [['high',1,'third',['idle','w','s','a','d','auto']],['high',1,'first',['w']],['balanced',4,'third',['w']]]){
+ for(const [quality,cpu,view,actions] of [['high',1,'third',['idle','w','s','a','d','auto']],['high',1,'first',['w']],['balanced',4,'third',['w']]].filter(r=>!process.env.ONLY||r[0]===process.env.ONLY)){
   const context=await browser.newContext({viewport:{width:1440,height:900},deviceScaleFactor:1});
   await context.addInitScript(({state,key})=>{localStorage.setItem(key,JSON.stringify(state));localStorage.setItem('gwanak-sound-enabled','false');},{state:{...initialState(),s:startSegment.start,view,paused:true},key:SAVE_KEY});
   const page=await context.newPage();let navigations=0;page.on('framenavigated',frame=>{if(frame===page.mainFrame())navigations++;});page.on('pageerror',e=>results.errors.push(e.message));
-  await page.goto(`${base}/?quality=${quality}`);
+  await page.goto(`${base}/?quality=${quality}${process.env.QUERY??""}`);
   await page.waitForFunction(()=>window.hiking?.started&&window.hiking?.landscape().ready&&window.hiking?.landscape().natureReady&&!window.hiking.rendering().compiling,null,{timeout:240000});
   await page.waitForTimeout(15000);
   const cdp=await context.newCDPSession(page);

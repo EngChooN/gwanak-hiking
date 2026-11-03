@@ -1,9 +1,12 @@
 import * as THREE from 'three';
 import {contactGroundError} from './contact-footprint.js';
 import './style.css';
+import './gadget-ui.css';
 import {mountRestUI} from './rest-ui.js';
-import {route,sample,MATERIALS,checkpoints,DEMO_START,durationBetween,floorHeight as routeFloorHeight,strideFor} from './route.js';
-import {initialState,restore,SAVE_KEY,advance,setPose,positionAt,isOffTrail,playerPosition,setPlayerPosition,courseDistance,COURSE_LENGTH} from './movement.js';
+import {installHudToggle} from './hud-toggle.js';
+import {installGadgetUI} from './gadget-ui.js';
+import {route,sample,MATERIALS,checkpoints,DEMO_START,durationBetween,floorHeight as routeFloorHeight} from './route.js';
+import {initialState,restore,SAVE_KEY,advance,setPose,resumeOnInput,positionAt,isOffTrail,playerPosition,setPlayerPosition,courseDistance,COURSE_LENGTH,strideAt} from './movement.js';
 import {createLoadingTracker,createStabilityCounter,LOADING_EVENT,START_EVENT} from './loading.js';
 import {insidePlaza,fromGate} from './plaza.js';
 import {createNightLighting} from './night-lighting.js';
@@ -15,7 +18,9 @@ import {movementHeading} from './hiker-facing.js';
 import {loadRealisticHiker} from './realistic-hiker.js';
 import {createWalkingGround} from './walking-ground.js';
 import {bindInput} from './input.js';
-import {createLook,turnLook,faceForward,updateLook} from './view.js';
+import {ensureGadget,setGadget,closeGadget,walkInput,zoomBy,zoomStep,setPhoneZoom,toggleSelfie,viewZoom,selfieActive,lookScale,hazeScale,selfiePosition,photoFilename} from './gadget.js';
+import {LOOK_PROFILE} from './look-profile.js';
+import {createLook,turnLook,faceForward,updateLook,createHeightFollow,followHeight} from './view.js';
 import {setupRendering,retractCamera} from './rendering.js';
 import {loadLandscape} from '../assets/realistic/load-landscape.js';
 import {loadOptionalModels} from './realistic-models.js';
@@ -38,7 +43,7 @@ window.addEventListener(START_EVENT,()=>window.hiking.start());
 const $=id=>document.getElementById(id);let saved=null,storageOK=true;try{saved=localStorage.getItem(SAVE_KEY);}catch{storageOK=false;}
 // ?start=entrance|gate|demo. 저장이 없는 첫 실행은 광장 출발이다.
 const startParam=new URLSearchParams(location.search).get('start'),startOption={entrance:'plaza',plaza:'plaza',gate:'gate',demo:'demo'}[startParam];
-const state=startOption?initialState({start:startOption}):saved?restore(saved):initialState({start:'plaza'});
+const state=ensureGadget(startOption?initialState({start:startOption}):saved?restore(saved):initialState({start:'plaza'}));
 loading.set('terrain',0);
 function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(state));storageOK=true;}catch{storageOK=false;$('resume-note').textContent='저장 공간을 사용할 수 없습니다. 이 세션의 진행만 유지됩니다.';}}
 let soundEnabled=true;try{soundEnabled=localStorage.getItem(SOUND_SAVE_KEY)!=='false';}catch{}
@@ -90,24 +95,55 @@ avatar.userData.metricKind='등산객';
 function resize(){const width=innerWidth,height=innerHeight;camera.aspect=width/height;camera.far=30000;camera.fov=inspectionMode?inspectionFov:height>width?78:65;camera.updateProjectionMatrix();renderer.setSize(width,height);adaptiveQuality.setViewport(`${width}x${height}@${devicePixelRatio}`);if(adaptiveQuality.cap!==quality)adaptiveQuality.setCap(quality);const settings=adaptiveQuality.settings,dpr=Math.min(devicePixelRatio,settings.dpr);renderer.setPixelRatio(dpr);lighting.resize(quality,width,height,dpr,settings);}window.addEventListener('resize',resize);resize();
 function pause(){if(!started)return;audio.stop();ambient.setPaused(true);state.paused=true;state.auto=false;input.clear();save();}
 const teaReady=()=>state.pose==='sit'&&hiker.interaction?.sitLinear>=.999;
-mountRestUI();
-function command(id){if(!started)return;if(document.querySelector('dialog[open]')&&!['map-toggle','help-toggle'].includes(id))return;if(id==='sit'){setPose(state,state.pose==='stand'?'sit':'stand');state.paused=false;}if(id==='tea'&&teaReady()){setPose(state,'tea');state.paused=false;}if(id==='stop-auto')state.auto=false;if(id==='auto'){const enable=!state.auto;setPose(state,'stand');state.auto=enable;state.paused=false;}if(id==='pause'){if(state.paused){state.paused=false;}else pause();}if(id==='face-forward')faceForward(look);if(id==='view')state.view=state.view==='first'?'third':'first';if(id==='map-toggle'||id==='help-toggle'){const dialog=$(id==='map-toggle'?'map':'help');if(dialog.open)dialog.close();else{pause();dialog.showModal();}}save();updateUI();}
-const input=bindInput(command,(dx,dy)=>turnLook(look,dx,dy),dz=>{if(state.view==='third')look.orbit=THREE.MathUtils.clamp(look.orbit+dz,2.2,12);});for(const id of ['auto','pause','view','face-forward','map-toggle','help-toggle'])$(id).onclick=()=>{command(id);$(id).blur();};document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>$(b.dataset.close).close());for(const [id,start] of [['start-entrance','plaza'],['start-demo','demo']])$(id).onclick=()=>{Object.assign(state,initialState({start}),{paused:false});save();location.replace(location.pathname+location.hash);};
+mountRestUI();installHudToggle();installGadgetUI();
+function command(id,value){if(!started)return;if(document.querySelector('dialog[open]')&&!['map-toggle','help-toggle'].includes(id))return;
+ // 기구(쌍안경·휴대폰). 앉기·차·자동 걷기를 고르면 기구를 내린다.
+ if(gadgetCommand(id,value)){save();updateUI();return;}if(['sit','tea','auto'].includes(id))closeGadget(state);if(id==='sit'){setPose(state,state.pose==='stand'?'sit':'stand');state.paused=false;}if(id==='tea'&&teaReady()){setPose(state,'tea');state.paused=false;}if(id==='stop-auto')state.auto=false;if(id==='auto'){const enable=!state.auto;setPose(state,'stand');state.auto=enable;state.paused=false;}if(id==='pause'){if(state.paused){state.paused=false;}else pause();}if(id==='face-forward')faceForward(look);if(id==='hud-toggle'){window.dispatchEvent(new CustomEvent('hiking:hud-toggle'));return;}if(id==='view')state.view=state.view==='first'?'third':'first';if(id==='map-toggle'||id==='help-toggle'){const dialog=$(id==='map-toggle'?'map':'help');if(dialog.open)dialog.close();else{pause();dialog.showModal();}}save();updateUI();}
+function gadgetCommand(id,value){
+ if(id==='binoculars'||id==='phone'){setGadget(state,id);if(state.gadget!=='none'){input.clear();if(state.view==='first')look.reset=null;}return true;}
+ if(id==='gadget-off')return closeGadget(state)||true;
+ if(id==='zoom-in'||id==='zoom-out')return zoomStep(state,id==='zoom-in'?1:-1)||true;
+ if(id==='phone-zoom')return setPhoneZoom(state,Number(value))||true;
+ if(id==='selfie')return toggleSelfie(state)||true;
+ if(id==='shutter'){if(state.gadget==='phone')photoRequested=true;return true;}
+ return false;
+}
+let photoRequested=false;
+// 촬영: 방금 그린 3D 캔버스만 PNG로 받는다(HUD·휴대폰 테두리는 DOM이라 빠진다). 렌더 직후 같은 프레임에서 읽어야 버퍼가 남아 있다.
+function takePhoto(){
+ let url=null;try{url=renderer.domElement.toDataURL('image/png');}catch(e){landscape.status.errors.push(`촬영: ${e.message}`);}
+ const filename=photoFilename();if(url){const a=document.createElement('a');a.href=url;a.download=filename;document.body.append(a);a.click();a.remove();}
+ playShutter();const flash=document.createElement('div');flash.className='shutter-flash';document.body.append(flash);setTimeout(()=>flash.remove(),260);
+ window.hiking.lastPhoto={filename,selfie:!!state.phone.selfie,zoom:state.phone.zoom,bytes:url?Math.round(url.length*.75):0};
+ window.dispatchEvent(new CustomEvent('hiking:photo',{detail:{...window.hiking.lastPhoto}}));
+}
+// 셔터 소리: 짧은 잡음 두 번(기계식 셔터 느낌)을 합성한다. 소리를 끄면 내지 않는다.
+function playShutter(){
+ const ctx=audio.context;if(!ctx||!audio.enabled)return;
+ try{const t=ctx.currentTime,len=Math.floor(ctx.sampleRate*.05),buffer=ctx.createBuffer(1,len,ctx.sampleRate),d=buffer.getChannelData(0);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.exp(-i/(len*.18));
+  for(const [at,gain] of [[0,.5],[.075,.35]]){const src=ctx.createBufferSource(),g=ctx.createGain(),f=ctx.createBiquadFilter();f.type='highpass';f.frequency.value=1800;src.buffer=buffer;g.gain.value=gain;src.connect(f).connect(g).connect(audio.master??ctx.destination);src.start(t+at);}}catch{}
+}
+const input=bindInput(command,(dx,dy)=>{const k=lookScale(state);turnLook(look,dx*k,dy*k);},dz=>{if(state.view==='first'&&state.gadget!=='none'){zoomBy(state,dz);updateUI();return;}if(state.view==='third')look.orbit=THREE.MathUtils.clamp(look.orbit+dz,2.2,12);},{mode:()=>started?state.gadget:'none'});
+// 휴대폰 촬영: 화면을 끌지 않고 짧게 클릭(탭)하면 셔터.
+{let down=null;$('world').addEventListener('pointerdown',e=>{down={x:e.clientX,y:e.clientY,t:performance.now()};});$('world').addEventListener('pointerup',e=>{if(down&&state.gadget==='phone'&&!document.pointerLockElement&&Math.hypot(e.clientX-down.x,e.clientY-down.y)<6&&performance.now()-down.t<500)command('shutter');down=null;});}for(const id of ['auto','pause','view','face-forward','map-toggle','help-toggle'])$(id).onclick=()=>{command(id);$(id).blur();};document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>$(b.dataset.close).close());for(const [id,start] of [['start-entrance','plaza'],['start-demo','demo']])$(id).onclick=()=>{Object.assign(state,initialState({start}),{paused:false});save();location.replace(location.pathname+location.hash);};
+$('pause-resume').onclick=()=>{if(state.paused)command('pause');$('pause-resume').blur();};
 $('lock').onclick=()=>{try{const p=$('world').requestPointerLock();p?.catch(()=>{});$('help').close();}catch{}};
-window.addEventListener('hiking:command',e=>{if(['sit','tea','auto','pause','view'].includes(e.detail?.id))command(e.detail.id);});
+window.addEventListener('hiking:command',e=>{if(['sit','tea','auto','pause','view','binoculars','phone','gadget-off','zoom-in','zoom-out','phone-zoom','selfie','shutter'].includes(e.detail?.id))command(e.detail.id,e.detail.value);});
 for(const id of ['sit','tea'])$(id)?.addEventListener('click',()=>command(id));
 const lifecyclePause=()=>{pause();if(document.pointerLockElement)document.exitPointerLock();};document.addEventListener('visibilitychange',()=>{if(document.hidden)lifecyclePause();});window.addEventListener('blur',lifecyclePause);window.addEventListener('pagehide',lifecyclePause);document.addEventListener('freeze',lifecyclePause);$('world').addEventListener('webglcontextlost',e=>{e.preventDefault();pause();$('resume-note').textContent='3D 연결이 끊겼습니다. 새로고침하면 저장 지점에서 이어집니다.';});
 const pad=n=>String(n).padStart(2,'0');const time=s=>`${pad(Math.floor(s/3600))}:${pad(Math.floor(s/60)%60)}:${pad(Math.floor(s)%60)}`;
 const minX=Math.min(...route.points.map(p=>p.x)),maxX=Math.max(...route.points.map(p=>p.x)),minZ=Math.min(...route.points.map(p=>p.z)),maxZ=Math.max(...route.points.map(p=>p.z));
 const mapScale=Math.min(250/(maxX-minX),250/(maxZ-minZ)),mapX=p=>160+(p.x-(minX+maxX)/2)*mapScale,mapY=p=>150+(p.z-(minZ+maxZ)/2)*mapScale;$('map-path').setAttribute('d',route.points.map((p,i)=>`${i?'L':'M'}${mapX(p)} ${mapY(p)}`).join(' '));
-function updateUI(){const p=sample(state.s),plaza=state.zone==='plaza',course=courseDistance(state);window.dispatchEvent(new CustomEvent('hiking:state',{detail:{...state,plaza:state.plaza&&{...state.plaza},speed,teaReady:teaReady(),offTrail:offTrailNow(),zone:state.zone,courseDistance:course,courseLength:COURSE_LENGTH,position:playerPosition(state,walkingGround),started}}));$('status').textContent=state.paused?'일시정지':state.pose==='tea'?'차 마시는 중':state.pose==='sit'?'앉아서 쉬는 중':state.running?'달리는 중':moving?'걷는 중':'쉬는 중';$('progress-fill').style.width=`${course/COURSE_LENGTH*100}%`;{const total=Math.round(COURSE_LENGTH),done=Math.min(total,Math.round(course)),fmt=n=>n.toLocaleString('ko-KR');$('distance').textContent=`${plaza?'출발 전 · 광장 · ':''}${fmt(done)} / ${fmt(total)} m`;$('remaining').textContent=`정상까지 ${fmt(total-done)} m`;}$('altitude').innerHTML=`${worldPosition()[1].toFixed(0)} <em>m</em>`;$('elapsed').textContent=time(state.elapsed);$('speed').innerHTML=`${(speed*3.6).toFixed(1)} <em>km/h</em>`;$('eta').textContent=`${Math.ceil(durationBetween(state.s,route.length)/60)}분`;$('surface').textContent=plaza?'광장 · 포장':offTrailNow()?'길 밖 · 흙·낙엽':MATERIALS[p.material].label;$('quality').textContent=`화질 ${['낮음','균형','높음'][quality]} · ${qualityMode==='auto'?'자동':'고정'}`;$('auto').classList.toggle('active',state.auto);$('auto').setAttribute('aria-pressed',state.auto);$('pause').setAttribute('aria-pressed',state.paused);$('pause').querySelector('span').textContent=state.paused?'계속하기':'일시정지';$('view').querySelector('span').textContent=state.view==='first'?'3인칭':'1인칭';{const [x,,z]=worldPosition();$('map-dot').setAttribute('cx',mapX({x,z}));$('map-dot').setAttribute('cy',mapY({x,z}));}$('checkpoints').innerHTML=checkpoints.map((c,i)=>`<div>${state.checkpoints.includes(c.id)?'●':'○'} ${c.name} · 임시${c.s<state.s&&!state.checkpoints.includes(c.id)?' · 시범 시작 전 구간':''}</div>`).join('');}
-if(state.zone==='plaza'){$('resume-note').textContent='출발 전 · 일주문 앞 광장 · W/A/S/D로 둘러보거나 자동 걷기(R)로 출발하세요';}else if(saved&&!startOption){$('resume-note').textContent=`${[...checkpoints].reverse().find(c=>state.checkpoints.includes(c.id))?.name||'정상 접근'} · ${Math.round(state.s)}m 지점에서 이어왔습니다 · 계속하기를 눌러 주세요`;}else{$('resume-note').textContent='정상 접근 시범 구간 · 자동 걷기 또는 W로 출발하세요';}const hideResumeNote=()=>setTimeout(()=>{if(storageOK)$('resume-note').style.opacity='0';},3500);
+function updateUI(){const p=sample(state.s),plaza=state.zone==='plaza',course=courseDistance(state);window.dispatchEvent(new CustomEvent('hiking:state',{detail:{...state,plaza:state.plaza&&{...state.plaza},phone:{...state.phone},binoculars:{...state.binoculars},viewZoom:viewZoom(state),speed,teaReady:teaReady(),offTrail:offTrailNow(),zone:state.zone,courseDistance:course,courseLength:COURSE_LENGTH,position:playerPosition(state,walkingGround),started}}));$('status').textContent=state.paused?'일시정지':state.pose==='tea'?'차 마시는 중':state.pose==='sit'?'앉아서 쉬는 중':state.running?'달리는 중':moving?'걷는 중':'쉬는 중';$('progress-fill').style.width=`${course/COURSE_LENGTH*100}%`;{const total=Math.round(COURSE_LENGTH),done=Math.min(total,Math.round(course)),fmt=n=>n.toLocaleString('ko-KR');$('distance').textContent=`${plaza?'출발 전 · 광장 · ':''}${fmt(done)} / ${fmt(total)} m`;$('remaining').textContent=`정상까지 ${fmt(total-done)} m`;}$('altitude').innerHTML=`${worldPosition()[1].toFixed(0)} <em>m</em>`;$('elapsed').textContent=time(state.elapsed);$('speed').innerHTML=`${(speed*3.6).toFixed(1)} <em>km/h</em>`;$('eta').textContent=`${Math.ceil(durationBetween(state.s,route.length)/60)}분`;$('surface').textContent=plaza?'광장 · 포장':offTrailNow()?'길 밖 · 흙·낙엽':MATERIALS[p.material].label;$('quality').textContent=`화질 ${['낮음','균형','높음'][quality]} · ${qualityMode==='auto'?'자동':'고정'}`;$('auto').classList.toggle('active',state.auto);$('auto').setAttribute('aria-pressed',state.auto);$('pause').setAttribute('aria-pressed',state.paused);$('pause').querySelector('span').textContent=state.paused?'계속하기':'일시정지';$('pause-overlay').hidden=!(started&&state.paused)||!!document.querySelector('dialog[open]');$('view').querySelector('span').textContent=state.view==='first'?'3인칭':'1인칭';{const [x,,z]=worldPosition();$('map-dot').setAttribute('cx',mapX({x,z}));$('map-dot').setAttribute('cy',mapY({x,z}));}$('checkpoints').innerHTML=checkpoints.map((c,i)=>`<div>${state.checkpoints.includes(c.id)?'●':'○'} ${c.name} · 임시${c.s<state.s&&!state.checkpoints.includes(c.id)?' · 시범 시작 전 구간':''}</div>`).join('');}
+if(state.zone==='plaza'){$('resume-note').textContent='출발 전 · 일주문 앞 광장 · W/A/S/D로 둘러보거나 자동 걷기(R)로 출발하세요';}else if(saved&&!startOption){$('resume-note').textContent=`${[...checkpoints].reverse().find(c=>state.checkpoints.includes(c.id))?.name||'정상 접근'} · ${Math.round(state.s)}m 지점에서 이어왔습니다 · W로 걷거나 계속하기(Space/ESC)를 눌러 주세요`;}else{$('resume-note').textContent='정상 접근 시범 구간 · 자동 걷기 또는 W로 출발하세요';}const hideResumeNote=()=>setTimeout(()=>{if(storageOK)$('resume-note').style.opacity='0';},3500);
 const camGoal=new THREE.Vector3(),lookGoal=new THREE.Vector3();let cameraReady=false,summitShown=state.s>=route.length;let firstFrameMs=null;const clockStart=performance.now();
 const frameMetrics=createFrameMetrics();
 window.__hikingPerformance={reset:()=>frameMetrics.reset(),report:()=>frameMetrics.report()};
 const inspectionBearing=new URLSearchParams(location.search).get('bearing');
 const entrancePhoto=new URLSearchParams(location.search).has('entrancePhoto'),entrancePhotoDistance=Number(new URLSearchParams(location.search).get('entrancePhoto'))||8.8;
-const forward=new THREE.Vector3();
+const forward=new THREE.Vector3(),shadowAhead=new THREE.Vector3();
+// 카메라 높이 추종(계단 들썩임 제거)과 뒷걸음 때 거꾸로 도는 보행 위상.
+const cameraHeight=createHeightFollow();let walkPhase=null,lastTravelled=null;
 const stability=createStabilityCounter({count:12,limitMs:100});let stabilizingSince=null;
 const wrapAngle=a=>Math.atan2(Math.sin(a),Math.cos(a));
 function frame(now){
@@ -116,11 +152,13 @@ function frame(now){
  const frameSeconds=(now-last)/1000,dt=Math.min(frameSeconds,.1);last=now;
  const before=worldPosition(),beforeY=offTrailNow()||state.zone==='plaza'?before[1]:sample(state.s).y;
  // 출발 전(로딩 중)에는 입력을 읽어 버리고 이동·시간·자동 걷기를 진행하지 않는다.
- const cmd=started?input.read():{forward:0,side:0,run:false,turn:0};if(started)updateLook(look,dt,cmd.turn);
+ const cmd=walkInput(state,started?input.read():{forward:0,side:0,run:false,turn:0});if(started)updateLook(look,dt,cmd.turn);
+ // 이어하기·탭 복귀로 멈춘 상태에서도 첫 걷기 입력부터 바로 움직인다.
+ if(started&&resumeOnInput(state,cmd,{blocked:!!document.querySelector('dialog[open]')}))updateUI();
  // 광장에서 직접 걸으면 시선 방향을 이동 기준으로 삼는다(드래그한 쪽으로 걷기). 코스·광장 전환 때는 카메라 방향을 보존한다.
  if(state.zone==='plaza'&&(cmd.forward||cmd.side)&&!look.reset&&!state.paused){state.plaza.heading=wrapAngle(state.plaza.heading+look.yaw);look.yaw=0;}
  const zoneBefore=state.zone,cameraHeadingBefore=baseHeading()+look.yaw;
- speed=started?frameMetrics.stage('movement',()=>advance(state,cmd,dt,detail=>window.dispatchEvent(new CustomEvent('hiking:step',{detail})),walkingGround)):0;moving=speed>0;
+ speed=started?frameMetrics.stage('movement',()=>advance(state,{...cmd,yaw:look.yaw},dt,detail=>window.dispatchEvent(new CustomEvent('hiking:step',{detail})),walkingGround)):0;moving=speed>0;
  if(state.zone!==zoneBefore){look.yaw=wrapAngle(cameraHeadingBefore-baseHeading());look.reset=null;}
  const p=sample(state.s),[x,y,z]=worldPosition(),heading=baseHeading()+look.yaw;
  const routeT=(state.s-p.start)/p.length,referenceMetres=state.zone==='plaza'?0:p.a.referenceMetres+(p.b.referenceMetres-p.a.referenceMetres)*routeT;
@@ -128,26 +166,36 @@ function frame(now){
  avatar.position.set(x,y,z);
  if(firstHeading){hiker.snapTo(baseHeading());firstHeading=false;}
  // 카메라 기준과 독립. 충돌·정지 시에는 마지막 방향을 유지한다.
- if(moving)hiker.turnTo(movementHeading(before,[x,0,z],avatar.rotation.y),dt);
+ // 직접 걷기(앞·뒤·옆·대각선)는 몸이 카메라가 보는 쪽을 향한 채 움직이고, 자동 걷기는 실제 이동 방향을 향한다.
+ const direct=!state.auto&&!!(cmd.forward||cmd.side),backward=direct&&cmd.forward<0;
+ if(moving)hiker.turnTo(direct?heading:movementHeading(before,[x,0,z],avatar.rotation.y),dt);else if(selfieActive(state)||(state.gadget??'none')!=='none')hiker.turnTo(heading,dt); // 쌍안경·휴대폰을 든 동안은 몸이 보는 방향을 따른다
+ {const travelled=state.steps+state.stepPhase;walkPhase??=travelled;walkPhase+=(backward?-1:1)*(travelled-(lastTravelled??travelled));lastTravelled=travelled;}
  const horizontal=Math.hypot(x-before[0],z-before[2]);
  const travelSlope=horizontal>1e-7?((offTrailNow()||state.zone==='plaza'?y:p.y)-beforeY)/horizontal:0;
  const offGround=offTrailNow()||state.zone==='plaza',surfaceHeight=(x,z)=>walkingGround.height(x,z,offTrailNow());
- avatar.visible=state.view==='third';const stepCycle=(state.steps+state.stepPhase)*Math.PI;
- frameMetrics.stage('hiker',()=>hiker.update({clip:!moving?'Idle':travelSlope>.15?'Climb':'Walk',distance:state.steps+state.stepPhase,stride:1,stepLength:offGround?.7:strideFor(p),idleSeconds:inspectionMode?0:now/1000,slope:travelSlope,pose:state.pose,teaProgress:state.pose==='tea'?1-state.teaRemaining/3:0,running:state.running,speed,dt:state.paused?0:dt,surfaceHeight}));
- const footContact=frameMetrics.stage('contact',()=>hiker.ground({s:state.s,lateral:state.lateral,moving,phase:state.steps+state.stepPhase,floorHeight,sample,surfaceHeight,pose:state.pose}));
+ avatar.visible=state.view==='third'||selfieActive(state);const stepCycle=(state.steps+state.stepPhase)*Math.PI;
+ frameMetrics.stage('hiker',()=>hiker.update({clip:!moving?'Idle':travelSlope>.15?'Climb':'Walk',distance:walkPhase,stride:1,stepLength:strideAt({plaza:state.zone==='plaza',seg:p,off:offTrailNow(),backward}),idleSeconds:inspectionMode?0:now/1000,slope:travelSlope,pose:state.pose,teaProgress:state.pose==='tea'?1-state.teaRemaining/3:0,running:state.running,speed,dt:state.paused?0:dt,surfaceHeight,gadget:state.gadget??'none',selfie:!!state.phone?.selfie,lookYaw:wrapAngle(heading-avatar.rotation.y),lookPitch:look.pitch}));
+ const footContact=frameMetrics.stage('contact',()=>hiker.ground({s:state.s,lateral:state.lateral,moving,phase:walkPhase,floorHeight,sample,surfaceHeight,pose:state.pose}));
  frameMetrics.stage('camera',()=>{
-  const eye=y+hiker.eyeHeight+(moving&&!reduced?Math.sin(stepCycle*2)*.025:0);
+  const smoothY=followHeight(cameraHeight,y,cameraReady?dt:0),eye=smoothY+hiker.eyeHeight+(moving&&!reduced?Math.sin(stepCycle*2)*.025:0);
   const cameraHeading=inspectionBearing!==null?-Number(inspectionBearing)*Math.PI/180:heading;
   forward.set(-Math.sin(cameraHeading),0,-Math.cos(cameraHeading));
-  if(state.view==='first'){camGoal.set(x,eye,z);lookGoal.copy(camGoal).addScaledVector(forward,10);lookGoal.y+=Math.tan(look.pitch)*10;}
-  else{lookGoal.set(x,y+(1.15-(1.6-hiker.eyeHeight)*2/3),z);camGoal.copy(lookGoal).addScaledVector(forward,-look.orbit*Math.cos(look.pitch));camGoal.y+=1-look.orbit*Math.sin(look.pitch);camGoal.copy(retractCamera(lookGoal,camGoal,landscape.cameraCollisionObjects(lookGoal,camGoal),camera));}
+  if(state.view==='first'){camGoal.set(x,eye,z);lookGoal.copy(camGoal).addScaledVector(forward,10);lookGoal.y+=Math.tan(THREE.MathUtils.clamp(look.pitch+(hiker.viewPitch??0),-1.3,1.3))*10;}
+  else{lookGoal.set(x,smoothY+(1.15-(1.6-hiker.eyeHeight)*2/3),z);camGoal.copy(lookGoal).addScaledVector(forward,-look.orbit*Math.cos(look.pitch));camGoal.y+=1-look.orbit*Math.sin(look.pitch);camGoal.copy(retractCamera(lookGoal,camGoal,landscape.cameraCollisionObjects(lookGoal,camGoal),camera));}
   if(state.view==='third')camera.position.copy(camGoal);else camera.position.lerp(camGoal,cameraReady?1-Math.exp(-dt*10):1);
+  // 휴대폰 셀카(1인칭): 머리 앞 팔 길이에서 얼굴을 본다. 드래그하면 몸과 카메라가 같이 돈다.
+  if(selfieActive(state)){const lens=hiker.phoneCamera?.(true);if(lens?.visible){camera.position.copy(lens.position);lookGoal.copy(lens.position).add(lens.direction);}else{camera.position.fromArray(selfiePosition([x,eye,z],cameraHeading,look.pitch));lookGoal.set(x,eye-.04,z);}} // 셀카 카메라는 손에 든 휴대폰 전면 렌즈(산풍경 phoneCamera). 휴대폰을 꺼내는 중에는 기존 위치
+  // 쌍안경·휴대폰 배율은 camera.zoom으로 준다(THREE.LOD와 장면 거리 판정이 같은 값을 읽는다). 로그 공간에서 부드럽게 따라간다.
+  {const target=viewZoom(state),next=cameraReady&&!reduced?Math.exp(Math.log(camera.zoom)+(Math.log(target)-Math.log(camera.zoom))*(1-Math.exp(-dt*14))):target;const z=Math.abs(next-target)<1e-3?target:next;if(z!==camera.zoom){camera.zoom=z;camera.updateProjectionMatrix();}}
+  scene.fog.far=LOOK_PROFILE.far/hazeScale(camera.zoom);
+  if(camera.zoom>1.01&&state.view==='first'){camera.getWorldDirection(shadowAhead);shadowAhead.multiplyScalar((lighting.status.shadowDistance||30)/2).add(camera.position);lighting.setShadowFocus(shadowAhead);}else if(lighting.status.shadowFocus)lighting.setShadowFocus(null);
   if(entrancePhoto){const a=landscape.status.entrance.frame,front=new THREE.Vector3(Math.sin(a.yaw),0,Math.cos(a.yaw));const lateral=new THREE.Vector3(Math.cos(a.yaw),0,-Math.sin(a.yaw)).multiplyScalar(-.8);camera.position.set(a.x,a.y+1.6,a.z).addScaledVector(front,entrancePhotoDistance).add(lateral);lookGoal.set(a.x,a.y+2.75,a.z).add(lateral);camera.fov=55;camera.updateProjectionMatrix();}
   camera.lookAt(lookGoal);cameraReady=true;
  });
  frameMetrics.stage('terrain',()=>terrain.update(state.s,quality));
  night.update(dt,{camera,avatar,view:state.view,zone:state.zone,s:state.s,hiker,hatKind:OUTFITS.find(o=>o.id===outfits?.current)?.head.hat?.kind??'none'});
  frameMetrics.stage('render',()=>lighting.render(avatar.position));
+ if(photoRequested){photoRequested=false;takePhoto();}
  frameMetrics.frame(frameSeconds*1000,{drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,textures:renderer.info.memory.textures,breakdown:lighting.status.breakdown});
  if(firstFrameMs===null)firstFrameMs=performance.now()-clockStart;
  if(now-uiAt>150){updateUI();uiAt=now;}
@@ -212,6 +260,7 @@ beginHike=()=>{
 // 진단 전용 읽기 인터페이스. 위치 변경·시간 배속 기능은 제공하지 않는다.
 window.__hiker=hiker;window.__surface=landscape.surfaceHeight;Object.assign(window.hiking,{outfit:()=>outfits&&{current:outfits.current,plan:outfitPlan,attachments:outfits.attachments(),info:outfits.info},setOutfit:id=>{const applied=setOutfit(id);outfitMenu?.update(applied);return applied;},outfitPreviews:(options={})=>{if(!outfits)return {};const keep=outfits.current,result=renderOutfitPreviews({renderer,avatar,apply:id=>outfits.apply(id),...options});outfits.apply(keep);return result;},readiness:()=>readyInfo??readiness(),position:()=>playerPosition(state,walkingGround),snapshot:()=>({...state}),audio:()=>audio.snapshot(),metrics:()=>window.__hikingMetrics,rendering:()=>JSON.parse(JSON.stringify({...lighting.status,fov:camera.fov,exposure:renderer.toneMappingExposure})),orientation:()=>({...look,camera:camera.position.toArray(),avatarHeading:avatar.rotation.y,routeHeading:sample(state.s).heading,zone:state.zone,baseHeading:baseHeading(),cameraHeading:baseHeading()+look.yaw}),groundCheck:()=>{const p=sample(state.s);return [-.5,0,.5].map(l=>landscape.groundCheck(p.x+p.nx*l,p.z+p.nz*l));},landscape:()=>({...landscape.status}),coordinates:()=>{const p=sample(state.s);const [x,y,z]=worldPosition();return {x,y,z};}});
 window.hiking.night=()=>night.info();window.hiking.headlamp=on=>{if(typeof on==='boolean')night.toggleHeadlamp(),night.info().headlamp.on!==on&&night.toggleHeadlamp();else night.toggleHeadlamp();night.syncButton();return night.info().headlamp;};window.hiking.setOthers=list=>night.setOthers(list);
+window.hiking.gadgetView=()=>({gadget:state.gadget,phone:{...state.phone},binoculars:{...state.binoculars},view:state.view,selfie:selfieActive(state),cameraZoom:camera.zoom,targetZoom:viewZoom(state),fogFar:scene.fog.far,avatarVisible:avatar.visible,camera:camera.position.toArray()});
 window.hiking.adaptive=()=>({...adaptiveQuality.snapshot(),dpr:renderer.getPixelRatio()});
 window.hiking.contactOcclusion=value=>landscape.setContactOcclusion(value);
 window.hiking.contactProbes=()=>landscape.contactCandidates(camera.position.x,camera.position.z,35,Infinity).map(point=>{

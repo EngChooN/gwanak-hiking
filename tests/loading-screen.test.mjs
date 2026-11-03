@@ -24,7 +24,7 @@ test('흐림 노출·환경광이 맑음보다 낮지 않다(사진처럼 밝은
  const sun={elevation:30,azimuth:200},moon={elevation:-40,azimuth:0,illumination:0};
  const clear=composeEnvironment({sun,moon,weather:weatherLook({kind:'clear'})}),over=composeEnvironment({sun,moon,weather:weatherLook({kind:'overcast'})}),rain=composeEnvironment({sun,moon,weather:weatherLook({kind:'rain',level:'medium'})});
  assert.equal(clear.exposureMul,1);assert.ok(over.exposureMul>1.15);assert.ok(over.ambient>=clear.ambient&&rain.ambient>=.95);
- assert.ok(spread(over.fogColor)<.045&&spread(over.horizon)<.045);
+ assert.ok(spread(over.fogColor)<.12&&spread(over.horizon)<.12);
 });
 test('IBL 중성화 비율: 맑은 낮 0, 흐림 회색도, 해가 낮으면 증가, 밤 0',()=>{
  assert.equal(iblNeutral(30,0,0),0);assert.equal(iblNeutral(30,0,.85),.85);

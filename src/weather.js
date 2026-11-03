@@ -1,3 +1,4 @@
+import {SOFT_WEATHER} from './mood-config.js';
 // 실시간 날씨: Open-Meteo(키 없음, CC BY 4.0) 현재값 → 6단계(맑음·구름·흐림·비·눈·안개) → 화면 표현값.
 // 근거: docs/실시간날씨-기준.md. 코드 묶음은 문서 표(WMO) 기준이고, 구름량·연무·빛 수치는 설계 제안값이다.
 export const WEATHER_POINT={lat:37.4453,lon:126.9640};
@@ -38,10 +39,10 @@ const LEVEL_SCALE={light:.3,medium:.6,heavy:1};
 const TABLE={
  clear:{cloud:.05,sun:1,amb:1,fog:15000},
  cloud:{cloud:.45,sun:.75,amb:1,fog:12000},
- overcast:{cloud:.85,sun:.3,amb:1.12,fog:7000},
- rain:{cloud:.95,sun:.15,amb:1,fog:{light:4000,medium:2500,heavy:1200}},
- snow:{cloud:.9,sun:.25,amb:1,fog:{light:4000,medium:2500,heavy:1000}},
- fog:{cloud:1,sun:.1,amb:1.05,fog:{medium:400,heavy:200}}
+ overcast:{cloud:.85,sun:SOFT_WEATHER.sunMul.overcast,amb:SOFT_WEATHER.ambientMul.overcast,fog:7000},
+ rain:{cloud:.95,sun:SOFT_WEATHER.sunMul.rain,amb:SOFT_WEATHER.ambientMul.rain,fog:{light:4000,medium:2500,heavy:1200}},
+ snow:{cloud:.9,sun:SOFT_WEATHER.sunMul.snow,amb:SOFT_WEATHER.ambientMul.snow,fog:{light:4000,medium:2500,heavy:1000}},
+ fog:{cloud:1,sun:SOFT_WEATHER.sunMul.fog,amb:SOFT_WEATHER.ambientMul.fog,fog:{medium:400,heavy:200}}
 };
 // 날씨 → 화면 표현 목표값. visibility(m)가 오면 맑음·구름·흐림의 연무 거리에 그대로 쓴다.
 export function weatherLook({kind='clear',level=null,windSpeed=null,visibility=null}={}){

@@ -18,7 +18,7 @@ export async function loadOptionalModels(landscape,base,onProgress=()=>{}){
  let sliceStart=performance.now();
  mossGround(landscape);
  // 입구 광장 가까운 나무(줄기·수관이 보이는 거리)는 숲 혼합·색 보정 뒤에 붙인다. natureReady에 함께 포함된다.
- const mixedEntries=[...entranceSpecimenEntries(entranceFrame(landscape.route)),...colorForestEntries(structureForestEntries(entranceBroadleafEntries([...mixForestEntries(entries),...forestLayers(landscape)],landscape.route),landscape.route))];
+ const mixedEntries=[...entranceSpecimenEntries(entranceFrame(landscape.route)),...colorForestEntries(structureForestEntries(entranceBroadleafEntries([...mixForestEntries(entries,landscape.floorHeight),...forestLayers(landscape)],landscape.route),landscape.route))];
  const treeHeights=mixedEntries.filter(e=>e.kind==='tree').flatMap(e=>e.placements.map(p=>p.visualHeight).filter(Number.isFinite));
  landscape.status.treeStructure={status:'시각 높이 분포 · 현장 실측 아님',small:[4,7],medium:[8,13],tall:[16,22],tallCount:treeHeights.filter(h=>h>=16).length,maxHeight:treeHeights.reduce((max,h)=>Math.max(max,h),0)};
  landscape.status.forestMix={...FOREST_CONFIG,counts:mixedEntries.reduce((counts,e)=>{if(e.kind==='tree'){const key=FOREST_CONFIG.broadleafIds.includes(e.id)?'broadleaf':'pine';counts[key]+=e.placements.length;}return counts;},{broadleaf:0,pine:0})};

@@ -27,7 +27,7 @@ test('달: 위상은 0~1, 고도·방위 범위',()=>{
 });
 test('하늘 키프레임: 높은 태양은 낮 기준색, 밤은 어둡고, 노을은 따뜻한 지평선',()=>{
  const day=skyKeyframe(29),sunset=skyKeyframe(1),night=skyKeyframe(-20);
- assert.equal(day.sun,1);assert.equal(day.amb,1);assert.ok(night.sun===0&&night.amb<.1);
+ assert.equal(day.sun,1);assert.equal(day.amb,1);assert.ok(night.sun===0&&night.amb<.12);
  assert.ok(sunset.horizon[0]>sunset.horizon[2],'노을 지평선은 붉은 쪽');assert.ok(day.horizon[2]>day.horizon[0],'낮은 푸른 쪽');
  assert.equal(nightAmount(10),0);assert.equal(nightAmount(-20),1);assert.ok(nightAmount(-7)>0&&nightAmount(-7)<1);
 });
@@ -35,7 +35,7 @@ const env=(h,look)=>composeEnvironment({sun:sunPosition(seoul(h)),moon:moonPosit
 test('시각별 환경: 낮 맑음은 기준값, 밤은 별·달·야경·방향광 약함, 노을은 낮은 태양',()=>{
  const d=env(12),n=env(23),e=env(17,5);
  assert.ok(d.light.intensity>.95&&d.ambient>.95&&d.night===0&&d.stars===0&&d.exposureMul===1);
- assert.ok(n.night===1&&n.stars>.9&&n.city>.9&&n.light.intensity<.15&&n.ambient<.2&&n.ambient>.1&&n.exposureMul>1.5);
+ assert.ok(n.night===1&&n.stars>.9&&n.city>.9&&n.light.intensity<.4&&n.ambient<.35&&n.ambient>.18&&n.exposureMul>1.5);
  assert.ok(e.light.elevation<8&&e.light.intensity<d.light.intensity&&e.light.color[0]>e.light.color[2]);
 });
 test('날씨가 하늘을 바꾼다: 흐림은 직사광↓·구름↑·별↓, 비·눈 입자',()=>{

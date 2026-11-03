@@ -20,10 +20,22 @@ export const SPEED_SLOPE_LIMIT=.5;
 export const STAIR_CADENCE=1.2, STAIR_RISE=.18, STAIR_TREAD=.30;
 export const STAIR_STRIDE=Math.hypot(STAIR_RISE,STAIR_TREAD);
 export const STAIR_SPEED=STAIR_STRIDE*STAIR_CADENCE;
-export function baseSpeedFor(slope,material,direction=1){if(isStairs(material))return STAIR_SPEED;const grade=Math.max(-SPEED_SLOPE_LIMIT,Math.min(SPEED_SLOPE_LIMIT,slope*direction));return 6*Math.exp(-3.5*Math.abs(grade+.05))*MATERIALS[material].factor/3.6;}
 export const WALK_SPEED_MULTIPLIER=1.2;
-export function speedFor(slope,material,direction=1){return baseSpeedFor(slope,material,direction)*(isStairs(material)?1:SPEED_CALIBRATION)*WALK_SPEED_MULTIPLIER;}
-export function strideFor(seg){return isStairs(seg.material) ? STAIR_STRIDE : seg.slope>.05 ? .55 : .7;}
+// 걸음 빈도(걸음/초)×보폭 모델. 걷기 동작은 걸음 수에 맞춰 재생되므로 빈도가 곧 체감 속도다.
+// 계단은 기존 값(0.35m×1.44걸음/초) 그대로, 계단 아닌 길은 오르막에서 보폭을 먼저 줄이고 빈도는 계단 이상(1.45)을 유지한다.
+export const STAIR_WALK_CADENCE=STAIR_CADENCE*WALK_SPEED_MULTIPLIER;
+export const WALK_CADENCE={flat:1.9,uphill:1.45,downhill:1.6}, WALK_STRIDE={flat:.72,uphill:.42,downhill:.52,min:.36};
+export function gaitFor(slope,material,direction=1){
+ if(isStairs(material))return {stride:STAIR_STRIDE,cadence:STAIR_WALK_CADENCE};
+ const grade=Math.max(-SPEED_SLOPE_LIMIT,Math.min(SPEED_SLOPE_LIMIT,(Number.isFinite(slope)?slope:0)*direction));
+ const up=Math.max(0,grade)/SPEED_SLOPE_LIMIT,down=Math.min(1,Math.max(0,-grade-.1)/.4),rough=.6+.4*(MATERIALS[material]?.factor??1);
+ const cadence=WALK_CADENCE.flat-(WALK_CADENCE.flat-WALK_CADENCE.uphill)*up-(WALK_CADENCE.flat-WALK_CADENCE.downhill)*down;
+ const stride=Math.max(WALK_STRIDE.min,(WALK_STRIDE.flat-(WALK_STRIDE.flat-WALK_STRIDE.uphill)*up-(WALK_STRIDE.flat-WALK_STRIDE.downhill)*down)*rough);
+ return {stride,cadence};
+}
+export function speedFor(slope,material,direction=1){const g=gaitFor(slope,material,direction);return g.stride*g.cadence;}
+export const baseSpeedFor=speedFor;
+export function strideFor(seg,direction=1){return gaitFor(seg.slope,seg.material,direction).stride;}
 export function projectedRoute(points,origin){return buildRoute(points.map(p=>({...toLocal(p,origin),material:p.material,width:p.width??1.8})));}
 export function buildRoute(points){let distance=0;const segments=[];for(let i=0;i<points.length-1;i++){const a=points[i],b=points[i+1],dx=b.x-a.x,dy=b.y-a.y,dz=b.z-a.z;const horizontal=Math.hypot(dx,dz),length=Math.hypot(horizontal,dy);if(!length)continue;segments.push({a,b,dx,dy,dz,length,horizontal,slope:dy/Math.max(.001,horizontal),start:distance,end:distance+length,material:a.material,width:a.width});distance+=length;}return {points,segments,length:distance};}
 const localPoints=alignedPoints;
@@ -31,10 +43,11 @@ const geometry=buildRoute(localPoints);
 const assignedPoints=assignSurfaceRoute(localPoints);
 // 원본 337점은 보존하고 이동·ETA 선분만 노면 경계에서 나눈다.
 export const route={...buildRoute(assignedPoints),points:localPoints};
-export const UNCALIBRATED_MINUTES=route.segments.reduce((sum,s)=>sum+s.length/baseSpeedFor(s.slope,s.material),0)/60;
-export const STAIR_SECONDS=route.segments.filter(s=>isStairs(s.material)).reduce((t,s)=>t+s.length/STAIR_SPEED,0);
-export const NONSTAIR_BASE_SECONDS=route.segments.filter(s=>!isStairs(s.material)).reduce((t,s)=>t+s.length/baseSpeedFor(s.slope,s.material),0);
-export const SPEED_CALIBRATION=NONSTAIR_BASE_SECONDS/(150*60-STAIR_SECONDS);
+// 전 구간 150분 맞춤 보정은 2026-11-04에 폐지했다(일반 구간이 느려 보임). 보고 스크립트 호환용으로 1을 남긴다.
+export const SPEED_CALIBRATION=1;
+export const STAIR_SECONDS=route.segments.filter(s=>isStairs(s.material)).reduce((t,s)=>t+s.length/speedFor(s.slope,s.material),0);
+export const NONSTAIR_BASE_SECONDS=route.segments.filter(s=>!isStairs(s.material)).reduce((t,s)=>t+s.length/speedFor(s.slope,s.material),0);
+export const UNCALIBRATED_MINUTES=(STAIR_SECONDS+NONSTAIR_BASE_SECONDS)/60;
 export const DEMO_START=route.segments.find(s=>s.a.y>=545).start;
 // GPX의 s=0과 337점을 유지한다. 광장 접근 구간에만 음수 거리를 쓴다.
 const entranceLocal=p=>geographicToLocal(p.lat,p.lon,route.points[0].y);
