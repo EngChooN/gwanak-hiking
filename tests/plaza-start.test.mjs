@@ -90,7 +90,7 @@ test('출발 옵션: plaza(광장)·gate(일주문 아래)·demo(545m)',()=>{
 test('저장: 광장 x·z·방향 저장·복원, 예전 형식·다른 가설·경계 밖 저장 처리',()=>{
  const state=plazaAt(-3,15,.7);state.elapsed=12;state.steps=5;
  const restored=restore(JSON.stringify(state));
- assert.equal(restored.zone,'plaza');assert.deepEqual(restored.plaza,state.plaza);assert.equal(restored.elapsed,12);assert.equal(restored.paused,true);
+ assert.equal(restored.zone,'plaza');assert.deepEqual(restored.plaza,state.plaza);assert.equal(restored.elapsed,12);assert.equal('paused' in restored,false);
  // 경계 밖 좌표는 출발점으로
  const outside=restore(JSON.stringify({...state,plaza:{x:state.plaza.x+500,z:state.plaza.z,heading:0}}));assert.deepEqual(outside.plaza,{...PLAZA_START});
  // 다른 일주문 가설에서 저장한 광장은 새 출발

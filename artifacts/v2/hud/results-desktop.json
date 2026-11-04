@@ -1,0 +1,368 @@
+{
+ "checks": [
+  {
+   "label": "일시정지 버튼·화면 없음",
+   "ok": true
+  },
+  {
+   "label": "안 보이는 버튼 0개",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "label": "버튼끼리 겹침 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "label": "버튼 크기 36px 이상",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "label": "자동 걷기 켜짐",
+   "ok": true
+  },
+  {
+   "label": "자동 걷기 꺼짐",
+   "ok": true
+  },
+  {
+   "label": "앉기",
+   "ok": true
+  },
+  {
+   "label": "앉으면 차 버튼이 보임",
+   "ok": true,
+   "detail": {
+    "hidden": false,
+    "x": 598.109375,
+    "y": 842.015625,
+    "w": 97.03125,
+    "h": 40,
+    "disabled": false
+   }
+  },
+  {
+   "label": "차 버튼이 다른 버튼과 겹치지 않음",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "label": "차 마시기",
+   "ok": true,
+   "detail": "tea"
+  },
+  {
+   "label": "일어나기",
+   "ok": true,
+   "detail": "stand"
+  },
+  {
+   "label": "binoculars 켜짐",
+   "ok": true,
+   "detail": "binoculars"
+  },
+  {
+   "label": "binoculars: HUD가 숨겨지는 화면에서 닫는 방법",
+   "ok": true,
+   "detail": "기구 화면 닫기 버튼"
+  },
+  {
+   "label": "binoculars 꺼짐",
+   "ok": true,
+   "detail": "none"
+  },
+  {
+   "label": "phone 켜짐",
+   "ok": true,
+   "detail": "phone"
+  },
+  {
+   "label": "phone: HUD가 숨겨지는 화면에서 닫는 방법",
+   "ok": true,
+   "detail": "기구 화면 닫기 버튼"
+  },
+  {
+   "label": "phone 꺼짐",
+   "ok": true,
+   "detail": "none"
+  },
+  {
+   "label": "시점 3인칭",
+   "ok": true
+  },
+  {
+   "label": "시점 1인칭",
+   "ok": true
+  },
+  {
+   "label": "헤드랜턴 켜고 끄기",
+   "ok": true,
+   "detail": [
+    "false",
+    "true"
+   ]
+  },
+  {
+   "label": "정면 보기 누름(오류 없음)",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "label": "수첩 열림",
+   "ok": true
+  },
+  {
+   "label": "수첩 닫힘(데스크톱은 J 버튼, 터치는 수첩의 닫기 버튼)",
+   "ok": true
+  },
+  {
+   "label": "스트레칭 시작",
+   "ok": true
+  },
+  {
+   "label": "지도 열림",
+   "ok": true
+  },
+  {
+   "label": "지도 닫힘",
+   "ok": true
+  },
+  {
+   "label": "조작 안내 열림",
+   "ok": true
+  },
+  {
+   "label": "조작 안내에 일시정지 설명 없음",
+   "ok": true
+  },
+  {
+   "label": "조작 안내가 ESC로 닫힘",
+   "ok": true
+  },
+  {
+   "label": "소리 켜기/끄기",
+   "ok": true,
+   "detail": [
+    "true",
+    "false"
+   ]
+  },
+  {
+   "label": "화질 바꾸기",
+   "ok": true,
+   "detail": [
+    "화질 낮음 · 고정",
+    "화질 높음 · 자동"
+   ]
+  },
+  {
+   "label": "HUD 가려짐",
+   "ok": true
+  },
+  {
+   "label": "HUD 다시 보임",
+   "ok": true
+  },
+  {
+   "label": "구간 이동 목록 열림·다른 버튼과 안 겹침",
+   "ok": true,
+   "detail": {
+    "open": true,
+    "hits": [],
+    "right": 178,
+    "bottom": 672
+   }
+  },
+  {
+   "label": "Space는 아무 일도 안 함(일시정지 없음)",
+   "ok": true
+  },
+  {
+   "label": "ESC만으로는 아무 일도 안 일어남",
+   "ok": true
+  },
+  {
+   "label": "B 쌍안경",
+   "ok": true
+  },
+  {
+   "label": "ESC로 쌍안경 닫힘",
+   "ok": true
+  },
+  {
+   "label": "P 휴대폰",
+   "ok": true
+  },
+  {
+   "label": "ESC로 휴대폰 닫힘",
+   "ok": true
+  },
+  {
+   "label": "M 지도 열고 ESC로 닫기",
+   "ok": true
+  },
+  {
+   "label": "콘솔 오류 0건",
+   "ok": true,
+   "detail": []
+  }
+ ],
+ "errors": [],
+ "layout": {
+  "out": [
+   {
+    "s": "#auto",
+    "x": 525.703125,
+    "y": 842.015625,
+    "w": 90.109375,
+    "h": 40,
+    "shown": true,
+    "inside": true,
+    "top": true
+   },
+   {
+    "s": "#sit",
+    "x": 620.296875,
+    "y": 842.015625,
+    "w": 74.84375,
+    "h": 40,
+    "shown": true,
+    "inside": true,
+    "top": true
+   },
+   {
+    "s": "#binoculars",
+    "x": 699.625,
+    "y": 842.015625,
+    "w": 84.359375,
+    "h": 40,
+    "shown": true,
+    "inside": true,
+    "top": true
+   },
+   {
+    "s": "#phone",
+    "x": 788.46875,
+    "y": 842.015625,
+    "w": 84.359375,
+    "h": 40,
+    "shown": true,
+    "inside": true,
+    "top": true
+   },
+   {
+    "s": "#view",
+    "x": 877.3125,
+    "y": 842.015625,
+    "w": 81.8125,
+    "h": 40,
+    "shown": true,
+    "inside": true,
+    "top": true
+   },
+   {
+    "s": "#headlamp",
+    "x": 963.609375,
+    "y": 842.015625,
+    "w": 93.875,
+    "h": 40,
+    "shown": true,
+    "inside": true,
+    "top": true
+   },
+   {
+    "s": "#face-forward",
+    "x": 1061.96875,
+    "y": 842.015625,
+    "w": 97.03125,
+    "h": 40,
+    "shown": true,
+    "inside": true,
+    "top": true
+   },
+   {
+    "s": "#stamps",
+    "x": 1163.484375,
+    "y": 842.015625,
+    "w": 74.84375,
+    "h": 40,
+    "shown": true,
+    "inside": true,
+    "top": true
+   },
+   {
+    "s": "#stretch",
+    "x": 1242.8125,
+    "y": 842.015625,
+    "w": 93.875,
+    "h": 40,
+    "shown": true,
+    "inside": true,
+    "top": true
+   },
+   {
+    "s": "#map-toggle",
+    "x": 1341.171875,
+    "y": 842.015625,
+    "w": 74.84375,
+    "h": 40,
+    "shown": true,
+    "inside": true,
+    "top": true
+   },
+   {
+    "s": "#sound-toggle",
+    "x": 1132.15625,
+    "y": 17.984375,
+    "w": 68.5,
+    "h": 44,
+    "shown": true,
+    "inside": true,
+    "top": true
+   },
+   {
+    "s": "#hud-hide",
+    "x": 1223.140625,
+    "y": 17.984375,
+    "w": 92.078125,
+    "h": 44,
+    "shown": true,
+    "inside": true,
+    "top": true
+   },
+   {
+    "s": "#help-toggle",
+    "x": 1337.703125,
+    "y": 17.984375,
+    "w": 78.3125,
+    "h": 44,
+    "shown": true,
+    "inside": true,
+    "top": true
+   },
+   {
+    "s": "#quality",
+    "x": 1332.265625,
+    "y": 782.015625,
+    "w": 83.75,
+    "h": 34,
+    "shown": true,
+    "inside": true,
+    "top": true
+   },
+   {
+    "s": "#section-jump .sj-toggle",
+    "x": 10,
+    "y": 428,
+    "w": 96,
+    "h": 44,
+    "shown": true,
+    "inside": true,
+    "top": true
+   }
+  ],
+  "overlaps": []
+ }
+}

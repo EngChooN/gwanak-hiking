@@ -20,11 +20,11 @@ function setSelfie(state,on){
 export const viewLocked=state=>(state.gadget??'none')!=='none';
 function enterGadgetView(state){if(state.gadgetPrevView==null)state.gadgetPrevView=state.view;state.view='first';}
 function leaveGadgetView(state){if(state.gadgetPrevView!=null){state.view=state.gadgetPrevView;delete state.gadgetPrevView;}}
-// 켜면 걷기·자동 걷기·달리기를 멈추고 일시정지도 푼다(기구로 둘러보는 중에는 시간이 흐른다). 같은 기구를 다시 누르면 끈다.
+// 켜면 걷기·자동 걷기·달리기를 멈춘다(기구로 둘러보는 중에는 시간이 흐른다). 같은 기구를 다시 누르면 끈다.
 export function setGadget(state,kind){
  ensureGadget(state);if(!GADGETS.includes(kind))return false;
  const next=state.gadget===kind?'none':kind;state.gadget=next;
- if(next!=='none'){state.auto=false;state.running=false;state.paused=false;if(state.pose&&state.pose!=='stand'){state.pose='stand';state.teaRemaining=0;}}
+ if(next!=='none'){state.auto=false;state.running=false;if(state.pose&&state.pose!=='stand'){state.pose='stand';state.teaRemaining=0;}}
  if(next!=='phone')setSelfie(state,false);
  if(next!=='none')enterGadgetView(state);else leaveGadgetView(state);
  return true;

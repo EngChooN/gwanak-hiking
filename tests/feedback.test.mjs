@@ -32,5 +32,5 @@ test('3인칭 카메라 붐: 지형·계단 벽 앞에서 당김, 장애물 없�
 });
 test('?start=summit은 정상 10m 앞 코스에서 멈추지 않은 채 시작한다',()=>{
  const s=initialState({start:'summit'});
- assert.equal(s.zone,'route');assert.equal(s.s,route.length-10);assert.equal(s.paused,false);
+ assert.equal(s.zone,'route');assert.equal(s.s,route.length-10);assert.equal('paused' in s,false);
 });

@@ -23,7 +23,7 @@ test('모바일은 AO를 준비하지 않고 실패해도 설정을 복원한다
 test('보행·리사이즈에는 컴파일 경로가 없고 첫 rAF 전에만 준비한다',()=>{
  const main=readFileSync(new URL('../src/main.js',import.meta.url),'utf8');
  const rendering=readFileSync(new URL('../src/rendering.js',import.meta.url),'utf8');
- const resize=main.slice(main.indexOf('function resize()'),main.indexOf('function pause()'));
+ const resize=main.slice(main.indexOf('function resize()'),main.indexOf('function suspend()'));
  const frame=main.slice(main.indexOf('function frame(now)'),main.indexOf('updateUI();save();'));
  assert.doesNotMatch(resize+frame,/prepare|compile|shaderReady|shaderJobs/);
  assert.equal((main.match(/lighting\.prepare\(/g)||[]).length,1);

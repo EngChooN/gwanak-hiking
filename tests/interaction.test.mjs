@@ -131,7 +131,7 @@ test('키 배정: F는 알약이 있을 때만 실행, 없으면 정면 보기. 
  assert.equal(interactKeyId('KeyF',commandFor('KeyF'),true),'interact');assert.equal(interactKeyId('KeyF',commandFor('KeyF'),false),'face-forward');assert.equal(interactKeyId('KeyR','auto',true),'auto');
  assert.equal(KEY_COMMANDS.KeyJ,'stamps-toggle');assert.equal(KEY_COMMANDS.KeyN,'labels-toggle');assert.equal(KEY_COMMANDS.KeyZ,'stretch');assert.equal(KEY_COMMANDS.KeyX,'emote-menu');
  assert.equal(KEY_COMMANDS.Digit2,'choice-2');assert.equal(KEY_COMMANDS.KeyE,undefined,'E는 회전 그대로');assert.equal(KEY_COMMANDS.KeyG,undefined);assert.equal(KEY_COMMANDS.KeyK,undefined);
- const ids=Object.values(KEY_COMMANDS);for(const id of ['face-forward','auto','pause','view','sit','tea','map-toggle','help-toggle','hud-toggle','binoculars','phone'])assert.ok(ids.includes(id),id);
+ const ids=Object.values(KEY_COMMANDS);for(const id of ['face-forward','auto','escape','view','sit','tea','map-toggle','help-toggle','hud-toggle','binoculars','phone'])assert.ok(ids.includes(id),id);
  assert.equal(commandFor('KeyJ','phone'),'stamps-toggle');assert.equal(commandFor('KeyY','phone'),'selfie');
 });
 
@@ -166,8 +166,8 @@ test('이동하면 행동이 취소되고 효과가 지급되지 않는다(소�
 test('알약이 새로 뜰 때 아주 작은 틱 소리(재표시 쿨다운 1.5초)',()=>{
  const t=setup();t.tick(.2);assert.equal(t.sounds.filter(n=>n==='tick').length,1);t.pl.z=-40;t.tick(.2);t.pl.z=0;t.tick(.2);assert.equal(t.sounds.filter(n=>n==='tick').length,1,'1.5초 안에 다시 뜨면 울리지 않음');
 });
-test('앉으면·일시정지하면 알약이 숨고, 달리는 속도(2.2m/s 초과)에서도 숨는다',()=>{
- const t=setup();t.tick(.2);assert.ok(t.c.view);t.state.pose='sit';t.tick(.2);assert.equal(t.c.view,null);t.state.pose='stand';t.state.paused=true;t.tick(.2);assert.equal(t.c.view,null);t.state.paused=false;t.tick(.2,{},3);assert.equal(t.c.view,null);t.tick(.2,{},1);assert.ok(t.c.view);
+test('앉으면 알약이 숨고, 달리는 속도(2.2m/s 초과)에서도 숨는다',()=>{
+ const t=setup();t.tick(.2);assert.ok(t.c.view);t.state.pose='sit';t.tick(.2);assert.equal(t.c.view,null);t.state.pose='stand';t.tick(.2,{},3);assert.equal(t.c.view,null);t.tick(.2,{},1);assert.ok(t.c.view);
 });
 test('스트레칭(Z): 어디서나 시작, 끝나면 체력 +10, 이동하면 취소',()=>{
  const t=setup({sites:[]});t.c.handle('stretch');t.tick(1);assert.ok(t.c.action&&t.ui.action.breath);t.tick(ACTIONS.stretch.total);assert.equal(t.state.stamina,60);

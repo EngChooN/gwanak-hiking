@@ -40,7 +40,7 @@ test('통행 불가 지형 차단은 거리·걸음 불변, 스테미너는 정�
  const s=initialState();s.stamina=50;s.lateral=sample(s.s).width/2+1;const before={...s};advance(s,{forward:1,run:true},.1,()=>{assert.fail('발소리 발생');},{height:()=>0,canMove:()=>false});near(s.distance,before.distance);near(s.s,before.s);near(s.steps,before.steps);near(s.stamina,50.8);assert.equal(s.running,false);
 });
 test('저장 복원: 구버전 기본값·고갈·자세·차 진행·비정상 값과 범위',()=>{
- const s=initialState();s.stamina=12;s.runExhausted=true;setPose(s,'sit');setPose(s,'tea');tick(s,{},.4);let r=restore(JSON.stringify(s));near(r.stamina,s.stamina);assert.equal(r.runExhausted,true);assert.equal(r.pose,'tea');near(r.teaRemaining,s.teaRemaining);assert.equal(r.paused,true);
+ const s=initialState();s.stamina=12;s.runExhausted=true;setPose(s,'sit');setPose(s,'tea');tick(s,{},.4);let r=restore(JSON.stringify(s));near(r.stamina,s.stamina);assert.equal(r.runExhausted,true);assert.equal(r.pose,'tea');near(r.teaRemaining,s.teaRemaining);assert.equal('paused' in r,false);
  s.lateral=lateralLimit(s.s)-.1;r=restore(JSON.stringify(s));near(r.lateral,s.lateral);s.lateral=100;r=restore(JSON.stringify(s));assert.ok(Math.abs(r.lateral)<sample(s.s).width/2);
  s.stamina=-20;s.pose='invalid';s.ascent='oops';r=restore(JSON.stringify(s));near(r.stamina,0);assert.equal(r.runExhausted,true);assert.equal(r.pose,'stand');near(r.ascent,0);
  delete s.stamina;delete s.pose;delete s.runExhausted;r=restore(JSON.stringify(s));near(r.stamina,100);assert.equal(r.pose,'stand');
@@ -54,7 +54,6 @@ test('렌더링 지형 삼각형 높이 사용·35도 초과 경사와 절벽 �
 test('큰 바위의 실제 월드 경계가 몸통과 겹치면 막고 낮은 자갈·범위 밖은 허용',()=>{
  const rocks=[{kind:'rock',worldBounds:{min:[1,0,-1],max:[2,2,1]}},{kind:'rock',worldBounds:{min:[-2,0,-1],max:[-1,.1,1]}}];const ground=groundFor(0,rocks);ground.refreshObstacles();assert.equal(ground.canMove([.7,0,0],[.9,0,0]),false);assert.equal(ground.canMove([-1.5,0,0],[-1.4,0,0]),true);assert.equal(ground.canMove([0,0,3],[.1,0,3]),true);
 });
-test('일시정지 중 차 완료·스테미너 회복 없음',()=>{const s=initialState();s.stamina=20;setPose(s,'sit');setPose(s,'tea');s.paused=true;tick(s,{},10);near(s.stamina,20);near(s.teaRemaining,3);assert.deepEqual(positionAt(s.s,s.lateral,flat).slice(1,2),[0]);});
 test('길 밖에서 코스 꺾임을 넘어도 좌우 기준이 연속이고 실제 속도를 넘지 않음',()=>{
  const s=initialState();s.lateral=2.9;s.auto=true;
  const start=s.s;

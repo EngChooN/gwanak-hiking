@@ -7,9 +7,9 @@ test('기본 상태와 저장 복구: 기구는 이어하기에 남지 않는다
  const s=fresh();assert.equal(s.gadget,'none');assert.deepEqual(s.phone,{zoom:1,selfie:false});assert.equal(s.binoculars.zoom,8);
  setGadget(s,'phone');const back=ensureGadget(restore(JSON.stringify(s)));assert.equal(back.gadget,'none');
 });
-test('켜기·끄기·전환: 켜면 자동 걷기·달리기·일시정지·앉기를 푼다',()=>{
- const s=fresh({auto:true,running:true,paused:true,pose:'sit'});
- setGadget(s,'binoculars');assert.equal(s.gadget,'binoculars');assert.equal(s.auto,false);assert.equal(s.running,false);assert.equal(s.paused,false);assert.equal(s.pose,'stand');
+test('켜기·끄기·전환: 켜면 자동 걷기·달리기·앉기를 푼다',()=>{
+ const s=fresh({auto:true,running:true,pose:'sit'});
+ setGadget(s,'binoculars');assert.equal(s.gadget,'binoculars');assert.equal(s.auto,false);assert.equal(s.running,false);assert.equal(s.pose,'stand');
  setGadget(s,'phone');assert.equal(s.gadget,'phone');
  toggleSelfie(s);assert.equal(s.phone.selfie,true);
  setGadget(s,'binoculars');assert.equal(s.phone.selfie,false,'휴대폰을 내리면 셀카도 해제');
@@ -47,8 +47,8 @@ test('셀카: 휴대폰·1인칭에서만, 머리 앞 0.6m에서 얼굴을 본�
 });
 test('키 배정: 기구 모드 안에서만 Space·ESC·Tab·Y·± 의미가 바뀐다',()=>{
  assert.equal(commandFor('KeyB'),'binoculars');assert.equal(commandFor('KeyP'),'phone');
- assert.equal(commandFor('Space'),'pause');assert.equal(commandFor('Space','binoculars'),'pause');assert.equal(commandFor('Space','phone'),'shutter');
- assert.equal(commandFor('Escape'),'pause');assert.equal(commandFor('Escape','phone'),'gadget-off');assert.equal(commandFor('Escape','binoculars'),'gadget-off');
+ assert.equal(commandFor('Space'),null);assert.equal(commandFor('Space','binoculars'),null);assert.equal(commandFor('Space','phone'),'shutter');
+ assert.equal(commandFor('Escape'),'escape');assert.equal(commandFor('Escape','phone'),'gadget-off');assert.equal(commandFor('Escape','binoculars'),'gadget-off');
  assert.equal(commandFor('KeyY'),null);assert.equal(commandFor('Tab'),null);assert.equal(commandFor('KeyY','phone'),'selfie');assert.equal(commandFor('Tab','phone'),'selfie');
  assert.equal(commandFor('Equal','phone'),'zoom-in');assert.equal(commandFor('Minus','binoculars'),'zoom-out');assert.equal(commandFor('Equal'),null);
  for(const k of ['KeyW','KeyS','KeyH','KeyV','KeyC','KeyT','KeyR','KeyF','KeyM'])assert.equal(commandFor(k,'phone'),KEY_COMMANDS[k]??null,k);

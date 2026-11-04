@@ -1,0 +1,523 @@
+{
+ "checks": [
+  {
+   "label": "일시정지 버튼·화면 없음",
+   "ok": true
+  },
+  {
+   "label": "안 보이는 버튼 0개",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "label": "버튼끼리 겹침 0",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "label": "버튼 크기 36px 이상",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "label": "자동 걷기 켜짐",
+   "ok": true
+  },
+  {
+   "label": "자동 걷기 꺼짐",
+   "ok": true
+  },
+  {
+   "label": "앉기",
+   "ok": true
+  },
+  {
+   "label": "앉으면 차 버튼이 보임",
+   "ok": true,
+   "detail": {
+    "hidden": false,
+    "x": 792,
+    "y": 52,
+    "w": 42,
+    "h": 42,
+    "disabled": false
+   }
+  },
+  {
+   "label": "차 버튼이 다른 버튼과 겹치지 않음",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "label": "차 마시기",
+   "ok": true,
+   "detail": "tea"
+  },
+  {
+   "label": "일어나기",
+   "ok": true,
+   "detail": "stand"
+  },
+  {
+   "label": "binoculars 켜짐",
+   "ok": true,
+   "detail": "binoculars"
+  },
+  {
+   "label": "binoculars: HUD가 숨겨지는 화면에서 닫는 방법",
+   "ok": true,
+   "detail": "기구 화면 닫기 버튼"
+  },
+  {
+   "label": "binoculars 꺼짐",
+   "ok": true,
+   "detail": "none"
+  },
+  {
+   "label": "phone 켜짐",
+   "ok": true,
+   "detail": "phone"
+  },
+  {
+   "label": "phone: HUD가 숨겨지는 화면에서 닫는 방법",
+   "ok": true,
+   "detail": "기구 화면 닫기 버튼"
+  },
+  {
+   "label": "phone 꺼짐",
+   "ok": true,
+   "detail": "none"
+  },
+  {
+   "label": "시점 3인칭",
+   "ok": true
+  },
+  {
+   "label": "시점 1인칭",
+   "ok": true
+  },
+  {
+   "label": "헤드랜턴 켜고 끄기",
+   "ok": true,
+   "detail": [
+    "false",
+    "true"
+   ]
+  },
+  {
+   "label": "정면 보기 누름(오류 없음)",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "label": "수첩 열림",
+   "ok": true
+  },
+  {
+   "label": "수첩 닫힘(데스크톱은 J 버튼, 터치는 수첩의 닫기 버튼)",
+   "ok": true
+  },
+  {
+   "label": "스트레칭 시작",
+   "ok": true
+  },
+  {
+   "label": "지도 열림",
+   "ok": true
+  },
+  {
+   "label": "지도 닫힘",
+   "ok": true
+  },
+  {
+   "label": "조작 안내 열림",
+   "ok": true
+  },
+  {
+   "label": "조작 안내에 일시정지 설명 없음",
+   "ok": true
+  },
+  {
+   "label": "조작 안내가 ESC로 닫힘",
+   "ok": true
+  },
+  {
+   "label": "소리 켜기/끄기",
+   "ok": true,
+   "detail": [
+    "true",
+    "false"
+   ]
+  },
+  {
+   "label": "화질 바꾸기",
+   "ok": true,
+   "detail": [
+    "화질 낮음 · 고정",
+    "화질 균형 · 자동"
+   ]
+  },
+  {
+   "label": "HUD 가려짐",
+   "ok": true
+  },
+  {
+   "label": "HUD 다시 보임",
+   "ok": true
+  },
+  {
+   "label": "구간 이동 목록 열림·다른 버튼과 안 겹침",
+   "ok": true,
+   "detail": {
+    "open": true,
+    "hits": [],
+    "right": 352,
+    "bottom": 352
+   }
+  },
+  {
+   "label": "달리기 버튼이 눌림 반응",
+   "ok": true
+  },
+  {
+   "label": "조이스틱이 누른 자리(101,215)에 생김",
+   "ok": true,
+   "detail": {
+    "on": true,
+    "cx": 101.265625,
+    "cy": 214.5,
+    "opacity": 0.999737,
+    "kx": [
+     101.265625,
+     214.5
+    ]
+   }
+  },
+  {
+   "label": "손을 떼면 조이스틱이 사라짐",
+   "ok": true
+  },
+  {
+   "label": "조이스틱이 누른 자리(338,117)에 생김",
+   "ok": true,
+   "detail": {
+    "on": true,
+    "cx": 337.59375,
+    "cy": 117,
+    "opacity": 0.999589,
+    "kx": [
+     337.59375,
+     117
+    ]
+   }
+  },
+  {
+   "label": "손을 떼면 조이스틱이 사라짐",
+   "ok": true
+  },
+  {
+   "label": "조이스틱이 누른 자리(253,293)에 생김",
+   "ok": true,
+   "detail": {
+    "on": true,
+    "cx": 253.1875,
+    "cy": 292.5,
+    "opacity": 0.999575,
+    "kx": [
+     253.1875,
+     292.5
+    ]
+   }
+  },
+  {
+   "label": "손을 떼면 조이스틱이 사라짐",
+   "ok": true
+  },
+  {
+   "label": "오른쪽 절반 드래그는 시점만 돌림",
+   "ok": true,
+   "detail": {
+    "on": false,
+    "dHeading": -0.2400000000000002,
+    "dS": 0
+   }
+  },
+  {
+   "label": "데드존 안(8px)은 걷지 않음",
+   "ok": true,
+   "detail": {
+    "dS": 0,
+    "dLat": 0
+   }
+  },
+  {
+   "label": "왼쪽 드래그로 시점이 안 돌아감",
+   "ok": true,
+   "detail": 0
+  },
+  {
+   "label": "앞으로(0°): 곧게 앞으로",
+   "ok": true,
+   "detail": {
+    "dS": 1.94,
+    "dLat": 0
+   }
+  },
+  {
+   "label": "앞 20° 비껴 밀어도 곧게(직진 보정)",
+   "ok": true,
+   "detail": {
+    "dS": 1.94,
+    "dLat": 0
+   }
+  },
+  {
+   "label": "앞 −24° 비껴 밀어도 곧게(직진 보정)",
+   "ok": true,
+   "detail": {
+    "dS": 1.94,
+    "dLat": 0
+   }
+  },
+  {
+   "label": "앞오른쪽 45° 사선 이동",
+   "ok": true,
+   "detail": {
+    "dS": 1.1,
+    "dLat": 1.1
+   }
+  },
+  {
+   "label": "오른쪽 90° 옆걸음",
+   "ok": true,
+   "detail": {
+    "dS": 0,
+    "dLat": 1.1
+   }
+  },
+  {
+   "label": "왼쪽 90° 옆걸음",
+   "ok": true,
+   "detail": {
+    "dS": 0,
+    "dLat": -1.1
+   }
+  },
+  {
+   "label": "뒤로(180°) 뒷걸음",
+   "ok": true,
+   "detail": {
+    "dS": -1.33,
+    "dLat": 0
+   }
+  },
+  {
+   "label": "멀리 끌어도 조이스틱 기준점이 따라와 손가락이 고리 안에 있음",
+   "ok": true,
+   "detail": {
+    "base": 55.997291368645676,
+    "knobToFinger": 0.00318727222630235
+   }
+  },
+  {
+   "label": "직진 30m 걷기(손가락이 좌우로 ±18° 흔들려도)",
+   "ok": true,
+   "detail": {
+    "start": "acacia",
+    "dS": 30.15,
+    "seconds": 25.7,
+    "maxLateralDrift": 0,
+    "samples": 48
+   }
+  },
+  {
+   "label": "콘솔 오류 0건",
+   "ok": true,
+   "detail": []
+  }
+ ],
+ "errors": [],
+ "layout": {
+  "out": [
+   {
+    "s": "#auto",
+    "x": 696,
+    "y": 52,
+    "w": 42,
+    "h": 42,
+    "shown": true,
+    "inside": true,
+    "top": true
+   },
+   {
+    "s": "#sit",
+    "x": 744,
+    "y": 52,
+    "w": 42,
+    "h": 42,
+    "shown": true,
+    "inside": true,
+    "top": true
+   },
+   {
+    "s": "#binoculars",
+    "x": 792,
+    "y": 52,
+    "w": 42,
+    "h": 42,
+    "shown": true,
+    "inside": true,
+    "top": true
+   },
+   {
+    "s": "#phone",
+    "x": 696,
+    "y": 100,
+    "w": 42,
+    "h": 42,
+    "shown": true,
+    "inside": true,
+    "top": true
+   },
+   {
+    "s": "#view",
+    "x": 744,
+    "y": 100,
+    "w": 42,
+    "h": 42,
+    "shown": true,
+    "inside": true,
+    "top": true
+   },
+   {
+    "s": "#headlamp",
+    "x": 792,
+    "y": 100,
+    "w": 42,
+    "h": 42,
+    "shown": true,
+    "inside": true,
+    "top": true
+   },
+   {
+    "s": "#face-forward",
+    "x": 696,
+    "y": 148,
+    "w": 42,
+    "h": 42,
+    "shown": true,
+    "inside": true,
+    "top": true
+   },
+   {
+    "s": "#stamps",
+    "x": 744,
+    "y": 148,
+    "w": 42,
+    "h": 42,
+    "shown": true,
+    "inside": true,
+    "top": true
+   },
+   {
+    "s": "#stretch",
+    "x": 792,
+    "y": 148,
+    "w": 42,
+    "h": 42,
+    "shown": true,
+    "inside": true,
+    "top": true
+   },
+   {
+    "s": "#map-toggle",
+    "x": 696,
+    "y": 196,
+    "w": 42,
+    "h": 42,
+    "shown": true,
+    "inside": true,
+    "top": true
+   },
+   {
+    "s": "#sound-toggle",
+    "x": 714,
+    "y": 8,
+    "w": 36,
+    "h": 36,
+    "shown": true,
+    "inside": true,
+    "top": true
+   },
+   {
+    "s": "#hud-hide",
+    "x": 756,
+    "y": 8,
+    "w": 36,
+    "h": 36,
+    "shown": true,
+    "inside": true,
+    "top": true
+   },
+   {
+    "s": "#help-toggle",
+    "x": 798,
+    "y": 8,
+    "w": 36,
+    "h": 36,
+    "shown": true,
+    "inside": true,
+    "top": true
+   },
+   {
+    "s": "#quality",
+    "x": 91.546875,
+    "y": 144,
+    "w": 83.78125,
+    "h": 34,
+    "shown": true,
+    "inside": true,
+    "top": true
+   },
+   {
+    "s": "#section-jump .sj-toggle",
+    "x": 10,
+    "y": 190,
+    "w": 74,
+    "h": 34,
+    "shown": true,
+    "inside": true,
+    "top": true
+   },
+   {
+    "s": "#run",
+    "x": 762,
+    "y": 292,
+    "w": 68,
+    "h": 68,
+    "shown": true,
+    "inside": true,
+    "top": true
+   }
+  ],
+  "overlaps": []
+ },
+ "jumpTargets": [
+  "plaza",
+  "gate",
+  "plaza-1",
+  "acacia",
+  "shelter-4",
+  "yeonju-spring",
+  "pass-3",
+  "summit"
+ ],
+ "walkStart": "acacia",
+ "walk30": {
+  "start": "acacia",
+  "dS": 30.15,
+  "seconds": 25.7,
+  "maxLateralDrift": 0,
+  "samples": 48
+ }
+}

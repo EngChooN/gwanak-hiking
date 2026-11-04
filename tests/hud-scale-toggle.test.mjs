@@ -8,7 +8,7 @@ test('HUD 길이는 --u 비례이고 휴대폰 배치는 1px로 되돌린다',()
  assert.match(css,/--u:max\(\.6px,min\(\.0520833vw,\.0925926vh\)\)/);
  assert.match(css,/@media\(max-width:700px\),\(max-height:540px\) and \(orientation:landscape\)\{:root\{--u:1px\}\}/);
  assert.match(css,/\.brand\{[^}]*font-size:max\(10px,calc\(29\*var\(--u\)\)\)/);
- assert.match(css,/\.pause-overlay button\{[^}]*padding:16px 28px/,'일시정지 표시는 HUD 비율과 무관');
+ assert.ok(!/pause-overlay/.test(css),'일시정지 표시 CSS가 없다');
 });
 test('H 키는 input·main의 이벤트로만 오고 HUD 모듈은 keydown을 받지 않는다',()=>{
  const src=read('src/hud-toggle.js');

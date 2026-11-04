@@ -24,7 +24,7 @@ test('실제 계단 걸음 이벤트: 단마다 한 번·1/1.44초·정지하면
  // 17초 끝 경계의 24번째 걸음이 부동소수 누적으로 빠지지 않도록 17.1초를 걷는다.
  for(let i=0;i<171;i++)advance(s,{forward:1},.1,e=>events.push(e));assert.equal(events.length,24);assert.ok(events.every(e=>e.material==='stairs'));
  for(let i=1;i<events.length;i++)assert.ok(Math.abs(events[i].elapsed-events[i-1].elapsed-1/(STAIR_CADENCE*1.2))<1e-8);
- s.paused=true;for(let i=0;i<20;i++)advance(s,{forward:1},.1,e=>events.push(e));assert.equal(events.length,24);
+ for(let i=0;i<20;i++)advance(s,{},.1,e=>events.push(e));assert.equal(events.length,24);
 });
 test('재질 경계에 닿은 걸음은 이전 프레임 재질이 아닌 접지 위치 재질',()=>{
  const boundary=route.segments.findIndex((s,i)=>i>0&&s.material!==route.segments[i-1].material);const next=route.segments[boundary],s=initialState(),events=[];s.s=next.start-.001;s.stepPhase=.99;

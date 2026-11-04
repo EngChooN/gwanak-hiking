@@ -20,7 +20,7 @@ const ZONES=['route','plaza','summit'];
 // start: 'plaza'(일주문 앞 광장) | 'gate'(일주문 아래 s=GATE_S) | 'demo'(545m 구간) | 'summit'(정상 10m 앞, 도착 화면이 바로 뜨지 않게). entrance:true는 'plaza'와 같다.
 export function initialState({entrance=false,start=entrance?'plaza':'demo'}={}){
  const plaza=start==='plaza',s=start==='demo'?DEMO_START:start==='summit'?route.length-SUMMIT_START_BACK:ROUTE_MIN_S;
- return {version:1,routeId:ROUTE_ID,routeRevision:currentRevision,entranceHypothesis:ENTRANCE_HYPOTHESIS,zone:plaza?'plaza':'route',plaza:plaza?{...PLAZA_START}:null,summit:null,summitArrived:false,s,lateral:0,elapsed:0,distance:0,ascent:0,steps:0,stepPhase:0,checkpoints:[],paused:false,auto:false,view:'first',sessions:1,stamina:100,runExhausted:false,running:false,pose:'stand',teaRemaining:0};
+ return {version:1,routeId:ROUTE_ID,routeRevision:currentRevision,entranceHypothesis:ENTRANCE_HYPOTHESIS,zone:plaza?'plaza':'route',plaza:plaza?{...PLAZA_START}:null,summit:null,summitArrived:false,s,lateral:0,elapsed:0,distance:0,ascent:0,steps:0,stepPhase:0,checkpoints:[],auto:false,view:'first',sessions:1,stamina:100,runExhausted:false,running:false,pose:'stand',teaRemaining:0};
 }
 // 일주문 기준 거리(코스 표시용). 광장은 0m다.
 export const courseDistance=state=>state.zone==='plaza'?0:Math.max(0,state.s-GATE_S);
@@ -52,7 +52,7 @@ export function restore(raw){try{
  const plazaSave=v.zone==='plaza'||(!ZONES.includes(v.zone)&&v.s<ROUTE_MIN_S);
  if(plazaSave&&v.entranceHypothesis!==ENTRANCE_HYPOTHESIS)return initialState({entrance:true});
  const stamina=Number.isFinite(v.stamina)?clamp(v.stamina,0,100):100,pose=['stand','sit','tea'].includes(v.pose)?v.pose:'stand';
- const result={...initialState(),elapsed:Math.max(0,v.elapsed),distance:Math.max(0,v.distance),ascent:Number.isFinite(v.ascent)?Math.max(0,v.ascent):0,steps:Math.max(0,Math.floor(v.steps)),stepPhase:clamp(v.stepPhase,0,1-1e-12),checkpoints:Array.isArray(v.checkpoints)?[...new Set(v.checkpoints.filter(x=>checkpoints.some(c=>c.id===x)))]:[],paused:true,auto:false,view:v.view==='third'?'third':'first',sessions:Math.max(1,Number(v.sessions)||1)+1,stamina,runExhausted:stamina===0||(v.runExhausted===true&&stamina<30),running:false,pose,teaRemaining:pose==='tea'?clamp(Number.isFinite(v.teaRemaining)?v.teaRemaining:TEA_SECONDS,.001,TEA_SECONDS):0};
+ const result={...initialState(),elapsed:Math.max(0,v.elapsed),distance:Math.max(0,v.distance),ascent:Number.isFinite(v.ascent)?Math.max(0,v.ascent):0,steps:Math.max(0,Math.floor(v.steps)),stepPhase:clamp(v.stepPhase,0,1-1e-12),checkpoints:Array.isArray(v.checkpoints)?[...new Set(v.checkpoints.filter(x=>checkpoints.some(c=>c.id===x)))]:[],auto:false,view:v.view==='third'?'third':'first',sessions:Math.max(1,Number(v.sessions)||1)+1,stamina,runExhausted:stamina===0||(v.runExhausted===true&&stamina<30),running:false,pose,teaRemaining:pose==='tea'?clamp(Number.isFinite(v.teaRemaining)?v.teaRemaining:TEA_SECONDS,.001,TEA_SECONDS):0};
  if(plazaSave){
   // 새 형식은 plaza{x,z,heading}, 예전 형식(s<0 접근로)은 그 자리의 월드 좌표로 옮긴다. 경계 밖이면 출발점.
   let plaza=v.zone==='plaza'?v.plaza:null;
@@ -74,8 +74,6 @@ const wrapAngle=a=>Math.atan2(Math.sin(a),Math.cos(a));
 const PLAZA_TURN_RATE=3;
 // 카메라 기준 입력(W 앞·S 뒤·A/D 옆)을 이동 기준 방향(along 앞, right 오른쪽)으로 돌린다. yaw는 카메라가 기준 방향에서 왼쪽으로 돈 각.
 export function cameraRelative(forward,side,yaw=0){const c=Math.cos(yaw),s=Math.sin(yaw);return {along:forward*c+side*s,right:side*c-forward*s};}
-// 일시정지 중 걷기 입력이 들어오면 바로 이어 걷는다(이어하기·탭 복귀 뒤 첫 입력). 창이 열려 있으면 그대로 둔다.
-export function resumeOnInput(state,input,{blocked=false}={}){if(!state.paused||blocked||!(Math.sign(input.forward||0)||Math.sign(input.side||0)))return false;state.paused=false;return true;}
 // 광장 한 프레임 이동 후보. 문 통로를 지나 s≥ROUTE_MIN_S가 되면 코스 좌표로 넘긴다.
 function planPlaza(state,f,side,budget,ground,yaw=0){
  const P=state.plaza;let dx,dz;
@@ -94,7 +92,7 @@ function planPlaza(state,f,side,budget,ground,yaw=0){
  return {hit:null,direction:{x:dx,z:dz}};
 }
 export function advance(state,input,dt,onStep=()=>{},ground){
- state.running=false;if(state.paused||dt<=0||!Number.isFinite(dt))return 0;dt=Math.min(dt,.1);
+ state.running=false;if(dt<=0||!Number.isFinite(dt))return 0;dt=Math.min(dt,.1);
  let f=Math.sign(input.forward||0),side=Math.sign(input.side||0);const direct=!!(f||side);
  if(direct&&state.pose!=='stand')setPose(state,'stand');
  if(state.pose!=='stand'){
@@ -167,7 +165,7 @@ export function advance(state,input,dt,onStep=()=>{},ground){
   if(oldS===null||next.zone==='plaza'){const position=oldWorld.map((v,j)=>v+(b[j]-v)*fraction);onStep({step:state.steps,material:'paved',slope:0,s:state.zone==='route'?state.s:null,zone:state.zone,position,distance:state.distance-distance+distance*fraction,elapsed:state.elapsed-dt+dt*fraction});continue;}
   const contactS=oldS+(state.s-oldS)*fraction,contactLateral=oldLateral+(state.lateral-oldLateral)*fraction,contact=sample(contactS);onStep({step:state.steps,material:isOffTrail(contactS,contactLateral)?'soil':contact.material,slope:contact.slope,s:contactS,zone:'route',position:positionAt(contactS,contactLateral,ground),distance:state.distance-distance+distance*fraction,elapsed:state.elapsed-dt+dt*fraction});}
  if(oldS!==null&&state.zone==='route')checkpoints.forEach(c=>{if(Math.min(oldS,state.s)<=c.s&&c.s<=Math.max(oldS,state.s)&&!state.checkpoints.includes(c.id))state.checkpoints.push(c.id);});
- if(state.zone==='route'&&state.s>=route.length){state.auto=false;state.paused=true;state.summitArrived=true;}return distance/dt;
+ if(state.zone==='route'&&state.s>=route.length){state.auto=false;state.summitArrived=true;}return distance/dt;
 }
 
 // 코스 끝 40m 앞부터는 코스 이동 대신 정상 자유 이동으로 넘어간다. 서 있는 월드 위치·시선은 그대로 둔다.
@@ -207,6 +205,6 @@ function advanceSummit(state,f,side,yaw,run,dt,onStep,ground){
  state.stepPhase+=distance/stride;let crossed=0;
  while(state.stepPhase>=1){state.stepPhase--;state.steps++;const fraction=Math.min(1,((1-oldPhase)+crossed++)*stride/distance);
   onStep({step:state.steps,material:stepMaterial,slope:hit.slope,s:r.s,zone:state.zone,position:[from.x+(q.x-from.x)*fraction,from.y+(hit.qy-from.y)*fraction,from.z+(q.z-from.z)*fraction],distance:state.distance-distance+distance*fraction,elapsed:state.elapsed-dt+dt*fraction});}
- if(state.zone==='summit'&&!state.summitArrived&&reachedSummit(q.x,q.z,sites)){state.summitArrived=true;state.auto=false;state.paused=true;}
+ if(state.zone==='summit'&&!state.summitArrived&&reachedSummit(q.x,q.z,sites)){state.summitArrived=true;state.auto=false;}
  return distance/dt;
 }

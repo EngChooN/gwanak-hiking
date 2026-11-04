@@ -47,7 +47,7 @@ export function createInteraction({state,sites=[],streams=[],player,ui,sound,sto
   if(c.action==='greet')return {key,label:'인사하기',sub:c.name,state:'ready'};
   return {key,label:c.label??'',sub:'',state:'ready'};
  }
- const hidden=()=>state.paused||(state.pose&&state.pose!=='stand')||!!action||ui.boardOpen||ui.bookOpen||ui.cardOpen||curSpeed>RULES.runSpeed;
+ const hidden=()=>(state.pose&&state.pose!=='stand')||!!action||ui.boardOpen||ui.bookOpen||ui.cardOpen||curSpeed>RULES.runSpeed;
  function personCandidate(p){
   const m=multi();if(!m?.nearest)return null;const n=m.nearest(RULES.show);if(!n)return null;
   return {id:'greet',action:'greet',x:n.player.x,z:n.player.z,name:n.player.name,showRadius:RULES.show,group:'greet',glyph:'👋'};
@@ -159,17 +159,17 @@ export function createInteraction({state,sites=[],streams=[],player,ui,sound,sto
   if(!started)return;t+=dt;curSpeed=speed;const p=player(),moving=!!(cmd.forward||cmd.side);
   if(ui.boardOpen&&moving)closeBoard();
   if(action){
-   if(moving||state.pose!=='stand'||state.paused||gadget()!=='none')cancel(moving?'움직여서 멈췄어요':'멈췄어요');
+   if(moving||state.pose!=='stand'||gadget()!=='none')cancel(moving?'움직여서 멈췄어요':'멈췄어요');
    else{action.t+=dt;const a=ACTIONS[action.id],frac=action.t/action.total,i=Math.min(a.steps.length-1,Math.floor(frac*a.steps.length));
     ui.setAction({label:action.label,step:a.steps[i],progress:Math.min(1,frac),breath:action.id==='stretch',tint:action.id==='dip'?'water':null,hint:action.id==='cairn'?STONE_NOTICE:'움직이면 멈춰요'});
     if(action.t>=action.total)finish();}
   }
   // 알약
   const g=gadget();let next=null;
-  if(g==='binoculars'&&!state.paused){const m=binoModel();lastBino=m;ui.setBino({bearing:m.bearing,tape:m.tape,labels:m.labels,edges:m.edges,focus:m.focus,note:m.note});
+  if(g==='binoculars'){const m=binoModel();lastBino=m;ui.setBino({bearing:m.bearing,tape:m.tape,labels:m.labels,edges:m.edges,focus:m.focus,note:m.note});
    if(m.focus)next={kind:'bino',rows:[{key:'F',label:`${m.focus.name} 자세히`,sub:'',state:'ready'}],focus:m.focus,cands:[]};}
   else{lastBino=null;ui.setBino(null);}
-  if(g==='phone'&&!state.paused&&p.zone==='summit'&&nearSummitStone(RULES.showStamp)&&gadget()==='phone'){next={kind:'frame',rows:[frameRow()],cands:[],where:'phone'};}
+  if(g==='phone'&&p.zone==='summit'&&nearSummitStone(RULES.showStamp)&&gadget()==='phone'){next={kind:'frame',rows:[frameRow()],cands:[],where:'phone'};}
   if(!next&&g==='none'&&!hidden()){
    const list=[...cands];const person=personCandidate(p);if(person)list.push(person);
    const hit=pickCandidate(list,p,current);
@@ -208,10 +208,10 @@ export function createInteraction({state,sites=[],streams=[],player,ui,sound,sto
   }
   if(id==='panel-close'){if(ui.cardOpen)ui.closeCard();else if(ui.boardOpen)closeBoard();else if(ui.bookOpen)ui.closeBook();else return false;return true;}
   if(id==='page-prev'||id==='page-next'){return ui.stepBoard(id==='page-next'?1:-1);}
-  if(id==='stamps-toggle'){if(ui.bookOpen){ui.closeBook();return true;}if(action||state.paused)return true;closeBoard();ui.closeCard();openBook();return true;}
+  if(id==='stamps-toggle'){if(ui.bookOpen){ui.closeBook();return true;}if(action)return true;closeBoard();ui.closeCard();openBook();return true;}
   if(id==='card-open'){openCard();return true;}
   if(id==='labels-toggle'){tagsOn=!tagsOn;multi()?.setTags?.(tagsOn);ui.toast(tagsOn?'이름표 켜짐':'이름표 꺼짐 (방위 띠는 남아요)');return true;}
-  if(id==='stretch'){if(action||state.paused||ui.bookOpen||ui.cardOpen||gadget()!=='none')return true;closeBoard();stopAutoFor();begin('stretch','스트레칭');return true;}
+  if(id==='stretch'){if(action||ui.bookOpen||ui.cardOpen||gadget()!=='none')return true;closeBoard();stopAutoFor();begin('stretch','스트레칭');return true;}
   if(id==='emote-menu'){
    if(value==='down'){if(holdX===null)holdX=t;return true;}
    if(value==='up'){const quick=!wheelOn&&holdX!==null&&t-holdX<.25;holdX=null;if(wheelOn){wheelOn=false;ui.hideWheel();}else if(quick){if(multi())multi().doGesture('hello');else ui.toast('인사는 함께 걷기(?multi=방이름)에서 쓸 수 있어요');}return true;}

@@ -23,17 +23,17 @@ test('코스 좌표↔월드 좌표 투영이 positionAt과 맞는다(길 위·�
 test('ground.summit이 있으면 정상 구역으로 넘어가고, 길 끝에 닿아도 멈추지 않는다(처음 한 번만 도착 표시)',()=>{
  const ground=makeGround([]),state=initialState({start:'summit'});
  advance(state,{forward:1},.05,()=>{},ground);
- assert.equal(state.zone,'summit');assert.equal(state.paused,false);assert.equal(state.summitArrived,false);
- // 길 끝 쪽으로 걷는다. 도착하면 한 번 멈춰 안내 화면을 띄운다.
+ assert.equal(state.zone,'summit');assert.equal(state.summitArrived,false);
+ // 길 끝 쪽으로 걷는다. 도착해도 멈추지 않는다.
  let arrivedAt=null;for(let i=0;i<2400&&arrivedAt===null;i++){advance(state,{forward:1},.05,()=>{},ground);if(state.summitArrived)arrivedAt=i;}
- assert.notEqual(arrivedAt,null,'도착 표시');assert.equal(state.paused,true);assert.equal(state.zone,'summit');
- // 그 뒤에는 멈추지 않고 계속 걷는다(첫 입력이 곧바로 이어 걷기).
- state.paused=false;const at={...state.summit};run(state,{forward:1},3,ground);
- assert.equal(state.paused,false);assert.equal(state.summitArrived,true);assert.ok(Math.hypot(state.summit.x-at.x,state.summit.z-at.z)>.5,'도착 뒤에도 걷는다');
+ assert.notEqual(arrivedAt,null,'도착 표시');assert.equal('paused' in state,false);assert.equal(state.zone,'summit');
+ // 그 뒤에도 계속 걷는다.
+ const at={...state.summit};run(state,{forward:1},3,ground);
+ assert.equal(state.summitArrived,true);assert.ok(Math.hypot(state.summit.x-at.x,state.summit.z-at.z)>.5,'도착 뒤에도 걷는다');
 });
 test('ground.summit이 없으면 예전처럼 길 끝에서 멈춘다',()=>{
  const state=initialState({start:'summit'});run(state,{forward:1},60,undefined);
- assert.equal(state.zone,'route');assert.equal(state.s,route.length);assert.equal(state.paused,true);
+ assert.equal(state.zone,'route');assert.equal(state.s,route.length);
 });
 test('정상 구역에서는 길 밖으로도 W/A/S/D로 걷는다(옆걸음·뒷걸음 포함)',()=>{
  const ground=makeGround([]),h=headingTo(SUMMIT_CENTER.x,SUMMIT_CENTER.z,SUMMIT_CENTER.x,SUMMIT_CENTER.z+10);
@@ -101,7 +101,7 @@ test('저장·복원: 정상 구역 위치와 도착 표시가 그대로 돌아�
  const ground=makeGround([]),state=stateAt(SUMMIT_CENTER.x+3,SUMMIT_CENTER.z+3,1.2,{summitArrived:true,s:route.length-10});
  run(state,{side:1},1,ground);const raw=JSON.stringify(state),back=restore(raw);
  assert.equal(back.zone,'summit');assert.ok(Math.abs(back.summit.x-state.summit.x)<1e-9&&Math.abs(back.summit.z-state.summit.z)<1e-9&&back.summit.heading===state.summit.heading);
- assert.equal(back.summitArrived,true);assert.equal(back.paused,true);assert.equal(back.plaza,null);
+ assert.equal(back.summitArrived,true);assert.equal('paused' in back,false);assert.equal(back.plaza,null);
  // 구역 원 밖으로 저장돼 있으면 코스 위치로 되돌린다.
  const bad=JSON.parse(raw);bad.summit.x=SUMMIT_CENTER.x+500;const fallback=restore(JSON.stringify(bad));assert.equal(fallback.zone,'route');assert.equal(fallback.summit??null,null);
 });

@@ -11,6 +11,6 @@ export function mountRestUI(){
   const sit=panel.querySelector('[data-rest="sit"]'),tea=panel.querySelector('[data-rest="tea"]');
   sit.setAttribute('aria-pressed',String(s.pose!=='stand'));sit.querySelector('span').textContent=s.pose==='stand'?'앉기':'일어나기';
   tea.disabled=!s.teaReady;tea.querySelector('span').textContent=s.pose==='tea'?`차 마시는 중 ${s.teaRemaining.toFixed(1)}초`:'차 마시기';
-  panel.querySelector('small').textContent=s.paused?'일시정지 · 계속하기를 누르면 이어집니다':s.pose==='tea'?'3초 후 회복 · 이동하면 취소':s.pose==='sit'?(s.teaReady?'T 차 마시기 · C 또는 이동으로 일어나기':'앉는 중 · 잠시 후 차를 마실 수 있어요'):s.runExhausted?'스테미너 30%에서 달리기 재개':'Shift 달리기 · 앉아서 스테미너 회복';
+  panel.querySelector('small').textContent=s.pose==='tea'?'3초 후 회복 · 이동하면 취소':s.pose==='sit'?(s.teaReady?'T 차 마시기 · C 또는 이동으로 일어나기':'앉는 중 · 잠시 후 차를 마실 수 있어요'):s.runExhausted?'스테미너 30%에서 달리기 재개':'Shift 달리기 · 앉아서 스테미너 회복';
  });
 }

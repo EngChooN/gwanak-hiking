@@ -18,10 +18,10 @@ for(const [name,viewport] of [['portrait',{width:390,height:844}],['landscape',{
  await page.addStyleTag({content:'#resume-note{display:none!important}'});await page.waitForTimeout(1000);
  const r={};const snap=()=>page.evaluate(()=>{const s=hiking.snapshot(),o=hiking.orientation();return {zone:s.zone,s:+s.s.toFixed(2),paused:s.paused,arrived:s.summitArrived,yaw:+o.cameraHeading.toFixed(3),pos:hiking.position()};});
  // 구간 이동 버튼 위치: 조이스틱·시점 영역과 겹치지 않는가
- r.layout=await page.evaluate(()=>{const R=s=>document.querySelector(s).getBoundingClientRect(),j=R('#joystick'),l=R('#look-zone'),b=R('#section-jump .sj-toggle');document.querySelector('#section-jump .sj-toggle').click();const p=R('#section-jump .sj-list');document.querySelector('#section-jump .sj-toggle').click();
+ r.layout=await page.evaluate(()=>{const R=s=>document.querySelector(s).getBoundingClientRect(),j={left:0,right:0,top:0,bottom:0},l=R('#look-zone'),b=R('#section-jump .sj-toggle');document.querySelector('#section-jump .sj-toggle').click();const p=R('#section-jump .sj-list');document.querySelector('#section-jump .sj-toggle').click();
   const hit=(a,c)=>a.left<c.right&&a.right>c.left&&a.top<c.bottom&&a.bottom>c.top;return {button:[b.left,b.top,b.width,b.height].map(Math.round),list:[p.left,p.top,p.width,p.height].map(Math.round),buttonOverJoystick:hit(b,j),listOverJoystick:hit(p,j),buttonOverLook:hit(b,l),listOverLook:hit(p,l),listInViewport:p.bottom<=innerHeight&&p.top>=0};});
  // 조이스틱 걷기(터치 드래그)
- const before=await snap();const jb=await page.locator('#joystick').boundingBox(),cx=jb.x+jb.width/2,cy=jb.y+jb.height/2;
+ const before=await snap();const vp=page.viewportSize(),cx=vp.width*.25,cy=vp.height*.65; // 조이스틱은 왼쪽 절반을 누른 자리에 생긴다
  const cdp=await context.newCDPSession(page);
  const touch=(type,x,y)=>cdp.send('Input.dispatchTouchEvent',{type,touchPoints:type==='touchEnd'?[]:[{x,y,id:1}]});
  await page.evaluate(()=>{if(hiking.snapshot().paused)window.dispatchEvent(new KeyboardEvent('keydown',{code:'Space'}));});

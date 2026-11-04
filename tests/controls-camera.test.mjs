@@ -1,31 +1,25 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {initialState,restore,advance,resumeOnInput,cameraRelative,BACKWARD_MULTIPLIER,ROUTE_MIN_S} from '../src/movement.js';
+import {initialState,restore,advance,cameraRelative,BACKWARD_MULTIPLIER,ROUTE_MIN_S} from '../src/movement.js';
 import {sample,speedFor} from '../src/route.js';
 import {createHeightFollow,followHeight,CAMERA_RISE_SECONDS,CAMERA_FALL_SECONDS} from '../src/view.js';
-import {KEY_COMMANDS,escapeTogglesPause,POINTER_UNLOCK_GRACE_MS} from '../src/input.js';
+import {KEY_COMMANDS,escapeClosesPanel,POINTER_UNLOCK_GRACE_MS} from '../src/input.js';
 const main=readFileSync(new URL('../src/main.js',import.meta.url),'utf8');
 const where=s=>s.zone==='plaza'?{x:s.plaza.x,z:s.plaza.z,s:null}:{s:s.s,lateral:s.lateral};
 
-// (9) 자동걷기를 켰다 꺼야 WASD가 먹던 문제: 이어하기는 paused:true로 복원되는데 걷기 입력으로는 풀리지 않았다.
+// 일시정지 개념이 없다: 저장에서 이어와도 첫 걷기 입력부터 바로 움직인다.
 test('처음 시작·광장 출발·이어하기 모두 첫 W 입력부터 움직인다',()=>{
  const cases={first:initialState({start:'plaza'}),gate:initialState({start:'gate'}),demo:initialState({start:'demo'}),
   resumeRoute:restore(JSON.stringify({...initialState(),s:2500})),resumePlaza:restore(JSON.stringify(initialState({start:'plaza'})))};
- assert.equal(cases.resumeRoute.paused,true);assert.equal(cases.resumePlaza.paused,true);
  for(const [name,state] of Object.entries(cases)){
-  assert.equal(state.auto,false,name);
+  assert.equal('paused' in state,false,`${name}: 일시정지 상태가 없다`);assert.equal(state.auto,false,name);
   const before=JSON.stringify(where(state)),input={forward:1,side:0};
-  resumeOnInput(state,input);assert.equal(state.paused,false,name);
   assert.ok(advance(state,input,.1)>0,`${name}: 첫 입력 이동`);assert.notEqual(JSON.stringify(where(state)),before,name);
  }
 });
-test('일시정지 해제는 걷기 입력일 때만, 창이 열려 있으면 하지 않는다',()=>{
- const s=restore(JSON.stringify({...initialState(),s:2500}));
- assert.equal(resumeOnInput(s,{forward:0,side:0,turn:1}),false);assert.equal(s.paused,true);
- assert.equal(resumeOnInput(s,{side:-1},{blocked:true}),false);assert.equal(s.paused,true);
- assert.equal(resumeOnInput(s,{side:-1}),true);assert.equal(s.paused,false);
- assert.match(main,/resumeOnInput\(state,cmd,\{blocked:!!document\.querySelector\('dialog\[open\]'\)\}\)[\s\S]*advance\(state,\{\.\.\.cmd,yaw:look\.yaw\}/);
+test('창이 열려 있는 동안은 걷기 입력을 막는다(일시정지가 아니라 입력 차단)',()=>{
+ assert.match(main,/document\.querySelector\('dialog\[open\]'\)\)Object\.assign\(cmd,\{forward:0,side:0/);
 });
 
 // (5) 카메라 기준 이동과 뒷걸음
@@ -89,20 +83,20 @@ test('main: 1인칭 눈높이와 3인칭 카메라·바라보는 점 모두 추�
  assert.match(main,/avatar\.position\.set\(x,y,z\)/);
 });
 
-// (1) ESC 일시정지와 키 배정
-test('ESC·Space 일시정지, H는 HUD 가리기 자리, 마우스 고정 해제 ESC와 충돌하지 않음',()=>{
- assert.equal(KEY_COMMANDS.Escape,'pause');assert.equal(KEY_COMMANDS.Space,'pause');assert.equal(KEY_COMMANDS.KeyH,'hud-toggle');
+// (1) ESC는 닫기 전용, Space는 일시정지가 아니다
+test('ESC는 닫기 전용이고 Space는 일시정지가 아니다, H는 HUD 가리기 자리, 마우스 고정 해제 ESC와 충돌하지 않음',()=>{
+ assert.equal(KEY_COMMANDS.Escape,'escape');assert.equal(KEY_COMMANDS.Space,undefined);assert.equal(KEY_COMMANDS.KeyH,'hud-toggle');
+ assert.ok(!Object.values(KEY_COMMANDS).includes('pause'),'pause 명령이 없다');
  assert.ok(!['KeyW','KeyA','KeyS','KeyD','KeyQ','KeyE','KeyL'].some(k=>k in KEY_COMMANDS),'걷기·둘러보기·헤드랜턴 키와 겹치지 않음');
- assert.equal(escapeTogglesPause({}),true);
- assert.equal(escapeTogglesPause({locked:true}),false,'고정 중 ESC는 브라우저가 고정 해제');
- assert.equal(escapeTogglesPause({sinceUnlockMs:POINTER_UNLOCK_GRACE_MS-1}),false,'해제 직후 같은 ESC');
- assert.equal(escapeTogglesPause({dialogOpen:true}),false,'열린 창은 ESC로 닫힘');
+ assert.equal(escapeClosesPanel({}),true);
+ assert.equal(escapeClosesPanel({locked:true}),false,'고정 중 ESC는 브라우저가 고정 해제');
+ assert.equal(escapeClosesPanel({sinceUnlockMs:POINTER_UNLOCK_GRACE_MS-1}),false,'해제 직후 같은 ESC');
+ assert.equal(escapeClosesPanel({dialogOpen:true}),false,'열린 창은 ESC로 닫힘');
  assert.match(main,/if\(id==='hud-toggle'\)\{window\.dispatchEvent\(new CustomEvent\('hiking:hud-toggle'\)\)/);
+ assert.match(main,/if\(id==='escape'\)\{if\(interaction\.anyPanel\(\)\)interaction\.handle\('panel-close'\);return;\}/);
 });
-test('일시정지 표시는 #app(HUD) 밖에 있고 멈춰 있을 때만 보인다',()=>{
+test('일시정지·계속하기 화면과 버튼이 없다',()=>{
  const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
- const overlay=html.indexOf('id="pause-overlay"'),app=html.indexOf('<div id="app">');
- assert.ok(overlay>0&&overlay<app,'HUD 컨테이너 밖');
- assert.match(html,/일시정지<\/b> · 계속하기<span>\(Space\/ESC\)<\/span>/);
- assert.match(main,/\$\('pause-overlay'\)\.hidden=!\(started&&state\.paused\)/);
+ assert.ok(!/pause|일시정지|계속하기/.test(html.replace(/<style[\s\S]*?<\/style>/g,'')),'index.html에 일시정지 표현이 없다');
+ assert.ok(!/\$\('pause[-\w]*'\)|state\.paused|id==='pause'/.test(main),'main.js에 일시정지 처리가 없다');
 });

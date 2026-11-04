@@ -9,7 +9,7 @@ export function staminaView({stamina=100,runExhausted=false}={}){
  const level=runExhausted||value<=0?'empty':value>=99.5?'full':value<RUN_RECOVER_AT?'low':'normal';
  return {percent:Math.round(value),width:value,level,text:level==='empty'?`${Math.round(value)} · 회복 중(${RUN_RECOVER_AT}부터 달리기)`:String(Math.round(value))};
 }
-export function buttonView({pose='stand',paused=false,teaReady}={}){
+export function buttonView({pose='stand',teaReady}={}){
  const seated=pose==='sit'||pose==='tea';
  // 앉는 동작(0.8초)이 끝나기 전에는 main.js가 차 명령을 받지 않으므로 버튼도 잠근다.
  return {sitLabel:seated?'일어나기':'앉기',sitPressed:seated,teaHidden:!seated,teaDisabled:pose==='tea'||(pose==='sit'&&teaReady===false),teaLabel:pose==='tea'?'마시는 중':'차 마시기'};

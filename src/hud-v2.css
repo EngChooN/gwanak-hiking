@@ -1,0 +1,86 @@
+/* HUD 2차 정리: 모든 기능 버튼을 화면에 보이게 하고, 휴대폰은 아이콘 위주로 오른쪽 위에 묶는다.
+   조이스틱은 왼쪽 절반을 누른 자리에 생기는 떠다니는 방식이다. 다른 CSS 뒤에 불러와 같은 무게의 규칙을 덮는다. */
+
+/* 버튼 공통: 아이콘 + 이름 + 단축키. 이름은 화면 읽기 프로그램에 남긴다. */
+#app nav{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:calc(6*var(--u))}
+#app nav button{min-width:0;min-height:max(40px,calc(42*var(--u)));padding:calc(7*var(--u)) calc(9*var(--u));gap:calc(5*var(--u));font-size:max(11px,calc(12*var(--u)));white-space:nowrap}
+#app nav .ic{font-style:normal;font-size:max(14px,calc(15*var(--u)));line-height:1}
+#app nav button.active{background:#e9d7a0;color:#233}
+#app nav button.primary.active{background:#e9d7a0;color:#233}
+#app footer{justify-content:flex-end}
+@media(max-width:1500px){.key-hint{display:none}}
+
+/* 손가락 조작: 왼쪽 절반 어디든 누르면 그 자리에 생기는 조이스틱 */
+#joystick{display:none}
+body.touch #joystick{display:grid;place-items:center;position:fixed;left:var(--sx,calc(86px + env(safe-area-inset-left)));top:var(--sy,calc(100dvh - 130px));width:112px;height:112px;margin:-56px 0 0 -56px;border:2px solid #ffffffa6;border-radius:50%;background:#173e3666;box-shadow:0 0 0 1px #0003;z-index:5;pointer-events:none;opacity:0;transition:opacity .12s}
+body.touch #joystick span{display:block;width:46px;height:46px;border:2px solid #fffc;border-radius:50%;background:#f0edceb3}
+body.touch #joystick.on{opacity:1}
+/* 처음 쓰기 전에만 흐린 안내 고리를 둔다. 한 번 쓰면 사라진다. */
+body.touch #joystick:not(.on):not(.used){opacity:.38}
+body.touch #joystick:not(.on):not(.used)::after{content:'왼쪽 화면을 누른 채 밀어 걷기';position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);width:max-content;max-width:180px;text-align:center;font-size:11px;color:#fff;text-shadow:0 1px 4px #000a}
+#look-zone{display:none}
+body.touch #look-zone{display:block;position:fixed;top:0;bottom:0;left:50%;right:0;touch-action:none;z-index:0}
+body.touch .ix-quick{display:none}
+body.touch #app nav #stamps,body.touch #app nav #stretch{display:flex}
+
+/* 휴대폰 세로·가로(작은 창 포함): 왼쪽에는 정보를 작게 쌓고, 오른쪽 위에는 아이콘 버튼을 2~3열로 묶는다. */
+@media(max-width:700px),(max-height:540px){
+ :root{--u:1px}
+ #app{padding:calc(8px + env(safe-area-inset-top)) calc(10px + env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) calc(10px + env(safe-area-inset-left))}
+ header{gap:6px;min-height:36px}header::before{height:60px}
+ header .brand{font-size:19px;letter-spacing:1px}header .brand span,header .route-title{display:none}
+ header .env-chip{margin-left:auto;padding:4px 8px;font-size:11px}header .env-chip span{display:none}
+ header button,header #sound-toggle,header #hud-hide,header #help-toggle{margin:0;min-width:36px;min-height:36px;width:36px;padding:0;font-size:0;display:grid;place-items:center;border-radius:10px}
+ header #sound-toggle{font-size:16px}header #sound-toggle span{display:none}
+ header button kbd{display:block;font-size:13px;line-height:1;border:0;padding:0;color:#fff}
+ header .env-chip+#sound-toggle{margin-left:0}
+ #app .notice{display:none}
+ #app .progress-panel{position:static;margin:6px 0 0;width:min(250px,calc(100vw - 112px));padding:7px 10px;border-radius:3px 12px 12px 12px}
+ #app .progress-panel h1{display:none}
+ #app .progress-panel .eyebrow{font-size:10px;margin-bottom:6px}
+ #app .progress-panel .progress-label{font-size:10px;margin-top:5px}
+ #app .progress-panel .progress-label span{font-size:10px}
+ #app .metrics{position:static;margin:6px 0 0!important;width:min(250px,calc(100vw - 112px));padding:6px 0;flex-wrap:nowrap;border-radius:12px}
+ #app .metrics>div{padding:0 5px;flex:1 1 0;min-width:0}
+ #app .metrics>div:nth-child(5){display:none}
+ #app .metrics small{font-size:9px;margin-bottom:2px;white-space:nowrap}
+ #app .metrics strong{font-size:12px;letter-spacing:-.4px;white-space:nowrap}
+ #app .metrics em{font-size:8px;margin-left:1px}
+ #app .metrics .stamina-cell{min-width:0;flex:1.2 1 0}
+ #app .trail-label{position:static;margin:6px 0 0;align-self:flex-start;gap:6px;font-size:10px}
+ #app .trail-label .compass{width:26px;height:26px;font-size:10px}
+ #app .trail-label #quality{min-height:30px;min-width:0;padding:4px 9px;font-size:10px}
+ #app footer{position:static}
+ #app nav{position:fixed;top:calc(52px + env(safe-area-inset-top));right:calc(10px + env(safe-area-inset-right));display:grid;grid-template-columns:repeat(2,42px);gap:6px;justify-content:end;pointer-events:none}
+ #app nav button{width:42px;height:42px;min-width:42px;min-height:42px;padding:0;display:grid;place-items:center;border-radius:12px;font-size:0;background:#173e36e6}
+ #app nav .ic{font-size:20px}
+ #app nav button.primary{background:#e9d7a0;color:#233}
+ #app nav button.primary .ic{color:#233}
+ #app nav button span,#app nav button kbd{position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+ #app nav button.active{box-shadow:0 0 0 2px #f4d67c}
+ #app nav button:disabled{opacity:.45}
+ body.touch #app nav #run{position:fixed;right:calc(14px + env(safe-area-inset-right));bottom:calc(30px + env(safe-area-inset-bottom));width:68px;height:68px;min-width:68px;min-height:68px;border-radius:50%;background:#173e36f2;border:2px solid #fff6}
+ body.touch #app nav #run .ic{font-size:30px;font-weight:700}
+ #resume-note{position:fixed;left:50%;top:auto;bottom:calc(210px + env(safe-area-inset-bottom));transform:translateX(-50%);width:max-content;max-width:min(80vw,460px);font-size:11px;padding:8px 12px}
+ .plaza-banner{bottom:calc(210px + env(safe-area-inset-bottom));max-width:min(78vw,360px);padding:7px 12px}
+ .source-line{left:calc(10px + env(safe-area-inset-left));transform:none;font-size:8px;bottom:calc(24px + env(safe-area-inset-bottom));max-width:60vw;overflow:hidden;text-overflow:ellipsis}
+ body #section-jump{position:fixed;left:calc(10px + env(safe-area-inset-left));top:calc(238px + env(safe-area-inset-top));transform:none;flex-direction:row;align-items:flex-start}
+ body #section-jump button{min-height:34px;font-size:12px;padding:0 10px}
+ body #section-jump .sj-toggle{min-width:74px}
+ body .ix-pill-wrap{right:calc(14px + env(safe-area-inset-right));bottom:calc(150px + env(safe-area-inset-bottom))}
+}
+/* 가로 화면은 높이가 모자라 버튼을 3열로 묶고, 왼쪽 정보는 더 작게 줄인다. */
+@media(max-height:540px) and (orientation:landscape){
+ #app nav{grid-template-columns:repeat(3,42px)}
+ #app .progress-panel{margin-top:4px;width:min(236px,calc(50vw - 20px));padding:5px 10px}
+ #app .progress-panel .eyebrow{margin-bottom:4px}
+ #app .progress-panel .progress-label{margin-top:3px}
+ #app .metrics{margin-top:4px!important;width:min(236px,calc(50vw - 20px));padding:4px 0}
+ #app .trail-label{margin-top:4px}
+ body #section-jump{top:calc(190px + env(safe-area-inset-top))}
+ body .ix-pill-wrap{right:calc(104px + env(safe-area-inset-right));bottom:calc(20px + env(safe-area-inset-bottom))}
+ body.touch #joystick{--sy:calc(100dvh - 78px)}
+ #resume-note{bottom:calc(20px + env(safe-area-inset-bottom));max-width:min(40vw,400px)}
+ .plaza-banner{bottom:calc(20px + env(safe-area-inset-bottom));max-width:min(36vw,320px)}
+}
+#app .trail-label #quality{min-height:34px}
