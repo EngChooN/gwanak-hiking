@@ -2,12 +2,14 @@ import * as THREE from 'three';
 import {contactGroundError} from './contact-footprint.js';
 import './style.css';
 import './gadget-ui.css';
+import './section-jump.css';
 import {mountRestUI} from './rest-ui.js';
 import {installHudToggle} from './hud-toggle.js';
 import {installGadgetUI} from './gadget-ui.js';
 import {route,sample,MATERIALS,checkpoints,DEMO_START,durationBetween,floorHeight as routeFloorHeight} from './route.js';
 import {initialState,restore,SAVE_KEY,advance,setPose,resumeOnInput,positionAt,isOffTrail,playerPosition,setPlayerPosition,courseDistance,COURSE_LENGTH,strideAt,lateralLimit} from './movement.js';
-import {summitWalkMap} from './summit.js';
+import {summitWalkMap,ROUTE_END} from './summit.js';
+import {sectionJumpEnabled,jumpTargets,summitSpot,mountSectionJump} from './section-jump.js';
 import {createLoadingTracker,createStabilityCounter,LOADING_EVENT,START_EVENT} from './loading.js';
 import {insidePlaza,fromGate} from './plaza.js';
 import {createNightLighting} from './night-lighting.js';
@@ -261,6 +263,25 @@ beginHike=()=>{
  started=true;window.hiking.started=true;input.clear();look.yaw=0;look.reset=null;last=performance.now();loading.start();
  updateUI();hideResumeNote();window.dispatchEvent(new CustomEvent('hiking:started',{detail:{...loading.snapshot(),position:playerPosition(state,walkingGround)}}));
 };
+// 개발용 구간 이동(section-jump.js). 걷기·정상 구역·저장 상태를 한 번에 정리하고, 한 번만 뜨는 정상 도착 화면은 띄우지 않는다.
+if(sectionJumpEnabled(location.search)){
+ const targets=jumpTargets({summit:summitSpot(walkingGround.summit.sites(),ROUTE_END)});
+ const jump=target=>{
+  if(!started)return false;
+  closeGadget(state);setPose(state,'stand');
+  if(!setPlayerPosition(state,target.pos,walkingGround))return false;
+  Object.assign(state,{paused:false,auto:false,running:false,teaRemaining:0});
+  for(const c of checkpoints)if(c.s<=state.s&&!state.checkpoints.includes(c.id))state.checkpoints.push(c.id);
+  if(target.summit)state.summitArrived=true;
+  summitShown=state.summitArrived||state.s>=route.length;
+  document.querySelectorAll('dialog[open]').forEach(d=>d.close());
+  input.clear();look.yaw=0;look.pitch=-.04;look.reset=null;cameraReady=false;
+  save();updateUI();return true;
+ };
+ const jumpUI=mountSectionJump({targets,onJump:jump});
+ window.addEventListener('hiking:started',jumpUI.show);if(started)jumpUI.show();
+ window.hiking.jumpTargets=()=>targets.map(t=>t.id);window.hiking.jumpTo=id=>{const t=targets.find(x=>x.id===id);return !!t&&jump(t);};
+}
 // 진단 전용 읽기 인터페이스. 위치 변경·시간 배속 기능은 제공하지 않는다.
 window.__hiker=hiker;window.hiking.summitMap=()=>summitWalkMap(walkingGround.summit,lateralLimit);window.__surface=landscape.surfaceHeight;window.__walkingGround=walkingGround;window.__landscape=landscape;Object.assign(window.hiking,{outfit:()=>outfits&&{current:outfits.current,plan:outfitPlan,attachments:outfits.attachments(),info:outfits.info},setOutfit:id=>{const applied=setOutfit(id);outfitMenu?.update(applied);return applied;},outfitPreviews:(options={})=>{if(!outfits)return {};const keep=outfits.current,result=renderOutfitPreviews({renderer,avatar,apply:id=>outfits.apply(id),...options});outfits.apply(keep);return result;},readiness:()=>readyInfo??readiness(),position:()=>playerPosition(state,walkingGround),snapshot:()=>({...state}),audio:()=>audio.snapshot(),metrics:()=>window.__hikingMetrics,rendering:()=>JSON.parse(JSON.stringify({...lighting.status,fov:camera.fov,exposure:renderer.toneMappingExposure})),orientation:()=>({...look,camera:camera.position.toArray(),avatarHeading:avatar.rotation.y,routeHeading:sample(state.s).heading,zone:state.zone,baseHeading:baseHeading(),cameraHeading:baseHeading()+look.yaw}),groundCheck:()=>{const p=sample(state.s);return [-.5,0,.5].map(l=>landscape.groundCheck(p.x+p.nx*l,p.z+p.nz*l));},landscape:()=>({...landscape.status}),coordinates:()=>{const p=sample(state.s);const [x,y,z]=worldPosition();return {x,y,z};}});
 window.hiking.night=()=>night.info();window.hiking.headlamp=on=>{if(typeof on==='boolean')night.toggleHeadlamp(),night.info().headlamp.on!==on&&night.toggleHeadlamp();else night.toggleHeadlamp();night.syncButton();return night.info().headlamp;};window.hiking.setOthers=list=>night.setOthers(list);

@@ -1,0 +1,11 @@
+/* 개발용 구간 이동: 왼쪽 가운데. 조이스틱(왼쪽 아래)·시점 영역(오른쪽 55%)과 겹치지 않는다. */
+#section-jump{position:fixed;z-index:60;left:calc(10px + env(safe-area-inset-left));top:50%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:flex-start;gap:6px;pointer-events:none;font-size:14px}
+#section-jump[hidden]{display:none}
+#section-jump button{pointer-events:auto;min-height:44px;padding:0 14px;border-radius:12px;border:1px solid #ffffff55;background:#183a30e6;color:#f6f5e9;font:inherit;font-weight:600;touch-action:manipulation;cursor:pointer}
+#section-jump .sj-toggle{min-width:96px;background:#e9c46aee;color:#16302a;border-color:#e9c46a}
+#section-jump .sj-list{pointer-events:auto;list-style:none;margin:0;padding:6px;display:flex;flex-direction:column;gap:4px;width:min(168px,40vw);max-height:calc(100vh - 150px);max-height:calc(100dvh - 150px);overflow-y:auto;border-radius:14px;background:#0c211ccc;border:1px solid #ffffff2b}
+#section-jump .sj-list[hidden]{display:none}
+#section-jump .sj-list button{width:100%;text-align:left}
+#section-jump .sj-list button:active{background:#e9c46a;color:#16302a}
+/* 가로 화면: 버튼을 위쪽에 두고 목록은 버튼 오른쪽에 2열로 펼쳐 조이스틱(왼쪽 아래) 위로 내려오지 않게 한다. */
+@media(max-height:540px){#section-jump{top:calc(92px + env(safe-area-inset-top));transform:none;flex-direction:row;align-items:flex-start}#section-jump button{min-height:40px}#section-jump .sj-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:min(262px,36vw);max-height:calc(100dvh - 92px - 112px);overflow-y:auto}#section-jump .sj-list[hidden]{display:none}}

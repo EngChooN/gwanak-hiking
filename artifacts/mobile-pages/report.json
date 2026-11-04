@@ -1,0 +1,464 @@
+{
+ "errors": [],
+ "failed": [],
+ "views": {
+  "portrait": {
+   "layout": {
+    "button": [
+     10,
+     400,
+     96,
+     44
+    ],
+    "list": [
+     10,
+     250,
+     156,
+     394
+    ],
+    "buttonOverJoystick": false,
+    "listOverJoystick": false,
+    "buttonOverLook": false,
+    "listOverLook": false,
+    "listInViewport": true
+   },
+   "joystickWalk": {
+    "before": {
+     "zone": "plaza",
+     "s": -26.12,
+     "paused": false,
+     "arrived": false,
+     "yaw": -2.304,
+     "pos": {
+      "zone": "plaza",
+      "x": -40.78150300483763,
+      "z": -38.62327926715025,
+      "heading": -2.303834612632515,
+      "s": null,
+      "lateral": null
+     }
+    },
+    "after": {
+     "zone": "plaza",
+     "s": -26.12,
+     "paused": false,
+     "arrived": false,
+     "yaw": -2.304,
+     "pos": {
+      "zone": "plaza",
+      "x": -38.37657764831316,
+      "z": -36.457874749901194,
+      "heading": -2.303834612632515,
+      "s": null,
+      "lateral": null
+     }
+    },
+    "moved": true
+   },
+   "lookTurn": {
+    "before": -2.304,
+    "after": -2.784,
+    "turned": true
+   },
+   "jumps": {
+    "plaza": {
+     "zone": "plaza",
+     "s": -26.12,
+     "paused": false,
+     "arrived": false,
+     "yaw": -2.304,
+     "pos": {
+      "zone": "plaza",
+      "x": -40.78150300483763,
+      "z": -38.62327926715025,
+      "heading": -2.303834612632515,
+      "s": null,
+      "lateral": null
+     },
+     "dialog": false,
+     "listClosed": true,
+     "walked": true,
+     "zoneAfter": "plaza"
+    },
+    "gate": {
+     "zone": "route",
+     "s": -26.12,
+     "paused": false,
+     "arrived": false,
+     "yaw": -2.36,
+     "pos": {
+      "zone": "route",
+      "x": -18.40033036923993,
+      "z": -18.534733881559674,
+      "heading": -2.359833387857947,
+      "s": -26.117207311606073,
+      "lateral": 0
+     },
+     "dialog": false,
+     "listClosed": true,
+     "walked": true,
+     "zoneAfter": "route"
+    },
+    "plaza-1": {
+     "zone": "route",
+     "s": 1075.4,
+     "paused": false,
+     "arrived": false,
+     "yaw": 2.788,
+     "pos": {
+      "zone": "route",
+      "x": 62.720359284955556,
+      "z": 975.9037200963919,
+      "heading": 2.7879466738784897,
+      "s": 1075.4028875871857,
+      "lateral": 0
+     },
+     "dialog": false,
+     "listClosed": true,
+     "walked": true,
+     "zoneAfter": "route"
+    },
+    "acacia": {
+     "zone": "route",
+     "s": 1620.7,
+     "paused": false,
+     "arrived": false,
+     "yaw": -2.526,
+     "pos": {
+      "zone": "route",
+      "x": 209.39222909296066,
+      "z": 1467.0186935335123,
+      "heading": -2.5257866465514898,
+      "s": 1620.6975679426134,
+      "lateral": 0
+     },
+     "dialog": false,
+     "listClosed": true,
+     "walked": true,
+     "zoneAfter": "route"
+    },
+    "shelter-4": {
+     "zone": "route",
+     "s": 2633.61,
+     "paused": false,
+     "arrived": false,
+     "yaw": -0.989,
+     "pos": {
+      "zone": "route",
+      "x": 71.4782091715177,
+      "z": 2286.431540738255,
+      "heading": -0.9889887667004891,
+      "s": 2633.6070946084783,
+      "lateral": 0
+     },
+     "dialog": false,
+     "listClosed": true,
+     "walked": true,
+     "zoneAfter": "route"
+    },
+    "yeonju-spring": {
+     "zone": "route",
+     "s": 3247.66,
+     "paused": false,
+     "arrived": false,
+     "yaw": -1.158,
+     "pos": {
+      "zone": "route",
+      "x": 566.3409592970842,
+      "z": 2440.7026849364893,
+      "heading": -1.158257056856137,
+      "s": 3247.6554593745227,
+      "lateral": 0
+     },
+     "dialog": false,
+     "listClosed": true,
+     "walked": true,
+     "zoneAfter": "route"
+    },
+    "pass-3": {
+     "zone": "route",
+     "s": 4663.76,
+     "paused": false,
+     "arrived": false,
+     "yaw": 0.524,
+     "pos": {
+      "zone": "route",
+      "x": 1643.9988109323392,
+      "z": 2811.064417446962,
+      "heading": 0.5242816012330693,
+      "s": 4663.757915518112,
+      "lateral": 0
+     },
+     "dialog": false,
+     "listClosed": true,
+     "walked": true,
+     "zoneAfter": "route"
+    },
+    "summit": {
+     "zone": "summit",
+     "s": 5054.81,
+     "paused": false,
+     "arrived": true,
+     "yaw": -2.607,
+     "pos": {
+      "zone": "summit",
+      "x": 1563.5709131419878,
+      "z": 2545.723088087298,
+      "heading": -2.606681846562126,
+      "s": 5054.810004570062,
+      "lateral": 0.8286590281456276
+     },
+     "dialog": false,
+     "listClosed": true,
+     "walked": true,
+     "zoneAfter": "summit"
+    }
+   },
+   "reload": {
+    "zone": "summit",
+    "s": 5054.81,
+    "paused": true,
+    "arrived": true,
+    "yaw": -2.607,
+    "pos": {
+     "zone": "summit",
+     "x": 1563.5709131419878,
+     "z": 2545.723088087298,
+     "heading": -2.606681846562126,
+     "s": 5054.810004570062,
+     "lateral": 0.8286590281456276
+    },
+    "dialog": false
+   }
+  },
+  "landscape": {
+   "layout": {
+    "button": [
+     10,
+     92,
+     96,
+     40
+    ],
+    "list": [
+     112,
+     92,
+     262,
+     186
+    ],
+    "buttonOverJoystick": false,
+    "listOverJoystick": false,
+    "buttonOverLook": false,
+    "listOverLook": false,
+    "listInViewport": true
+   },
+   "joystickWalk": {
+    "before": {
+     "zone": "plaza",
+     "s": -26.12,
+     "paused": false,
+     "arrived": false,
+     "yaw": -2.304,
+     "pos": {
+      "zone": "plaza",
+      "x": -40.78150300483763,
+      "z": -38.62327926715025,
+      "heading": -2.303834612632515,
+      "s": null,
+      "lateral": null
+     }
+    },
+    "after": {
+     "zone": "plaza",
+     "s": -26.12,
+     "paused": false,
+     "arrived": false,
+     "yaw": -2.304,
+     "pos": {
+      "zone": "plaza",
+      "x": -38.37667321079251,
+      "z": -36.457960794744125,
+      "heading": -2.303834612632515,
+      "s": null,
+      "lateral": null
+     }
+    },
+    "moved": true
+   },
+   "lookTurn": {
+    "before": -2.304,
+    "after": -2.784,
+    "turned": true
+   },
+   "jumps": {
+    "plaza": {
+     "zone": "plaza",
+     "s": -26.12,
+     "paused": false,
+     "arrived": false,
+     "yaw": -2.304,
+     "pos": {
+      "zone": "plaza",
+      "x": -40.78150300483763,
+      "z": -38.62327926715025,
+      "heading": -2.303834612632515,
+      "s": null,
+      "lateral": null
+     },
+     "dialog": false,
+     "listClosed": true,
+     "walked": true,
+     "zoneAfter": "plaza"
+    },
+    "gate": {
+     "zone": "route",
+     "s": -26.12,
+     "paused": false,
+     "arrived": false,
+     "yaw": -2.36,
+     "pos": {
+      "zone": "route",
+      "x": -18.40033036923993,
+      "z": -18.534733881559674,
+      "heading": -2.359833387857947,
+      "s": -26.117207311606073,
+      "lateral": 0
+     },
+     "dialog": false,
+     "listClosed": true,
+     "walked": true,
+     "zoneAfter": "route"
+    },
+    "plaza-1": {
+     "zone": "route",
+     "s": 1075.4,
+     "paused": false,
+     "arrived": false,
+     "yaw": 2.788,
+     "pos": {
+      "zone": "route",
+      "x": 62.720359284955556,
+      "z": 975.9037200963919,
+      "heading": 2.7879466738784897,
+      "s": 1075.4028875871857,
+      "lateral": 0
+     },
+     "dialog": false,
+     "listClosed": true,
+     "walked": true,
+     "zoneAfter": "route"
+    },
+    "acacia": {
+     "zone": "route",
+     "s": 1620.7,
+     "paused": false,
+     "arrived": false,
+     "yaw": -2.526,
+     "pos": {
+      "zone": "route",
+      "x": 209.39222909296066,
+      "z": 1467.0186935335123,
+      "heading": -2.5257866465514898,
+      "s": 1620.6975679426134,
+      "lateral": 0
+     },
+     "dialog": false,
+     "listClosed": true,
+     "walked": true,
+     "zoneAfter": "route"
+    },
+    "shelter-4": {
+     "zone": "route",
+     "s": 2633.61,
+     "paused": false,
+     "arrived": false,
+     "yaw": -0.989,
+     "pos": {
+      "zone": "route",
+      "x": 71.4782091715177,
+      "z": 2286.431540738255,
+      "heading": -0.9889887667004891,
+      "s": 2633.6070946084783,
+      "lateral": 0
+     },
+     "dialog": false,
+     "listClosed": true,
+     "walked": true,
+     "zoneAfter": "route"
+    },
+    "yeonju-spring": {
+     "zone": "route",
+     "s": 3247.66,
+     "paused": false,
+     "arrived": false,
+     "yaw": -1.158,
+     "pos": {
+      "zone": "route",
+      "x": 566.3409592970842,
+      "z": 2440.7026849364893,
+      "heading": -1.158257056856137,
+      "s": 3247.6554593745227,
+      "lateral": 0
+     },
+     "dialog": false,
+     "listClosed": true,
+     "walked": true,
+     "zoneAfter": "route"
+    },
+    "pass-3": {
+     "zone": "route",
+     "s": 4663.76,
+     "paused": false,
+     "arrived": false,
+     "yaw": 0.524,
+     "pos": {
+      "zone": "route",
+      "x": 1643.9988109323392,
+      "z": 2811.064417446962,
+      "heading": 0.5242816012330693,
+      "s": 4663.757915518112,
+      "lateral": 0
+     },
+     "dialog": false,
+     "listClosed": true,
+     "walked": true,
+     "zoneAfter": "route"
+    },
+    "summit": {
+     "zone": "summit",
+     "s": 5054.81,
+     "paused": false,
+     "arrived": true,
+     "yaw": -2.607,
+     "pos": {
+      "zone": "summit",
+      "x": 1563.5709131419878,
+      "z": 2545.723088087298,
+      "heading": -2.606681846562126,
+      "s": 5054.810004570062,
+      "lateral": 0.8286590281456276
+     },
+     "dialog": false,
+     "listClosed": true,
+     "walked": true,
+     "zoneAfter": "summit"
+    }
+   },
+   "reload": {
+    "zone": "summit",
+    "s": 5054.81,
+    "paused": true,
+    "arrived": true,
+    "yaw": -2.607,
+    "pos": {
+     "zone": "summit",
+     "x": 1563.5709131419878,
+     "z": 2545.723088087298,
+     "heading": -2.606681846562126,
+     "s": 5054.810004570062,
+     "lateral": 0.8286590281456276
+    },
+    "dialog": false
+   }
+  }
+ }
+}
