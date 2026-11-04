@@ -33,6 +33,13 @@ export function lampStations(fromS=PARK_LAMP_FROM_S,toS=PARK_END_S,spacing=PARK_
 export function nearestLamps(lamps,x,z,count=REAL_LIGHT_COUNT){
  return lamps.map((l,i)=>({i,d:(l.x-x)**2+(l.z-z)**2})).sort((a,b)=>a.d-b.d).slice(0,count).map(v=>v.i);
 }
+// 실제 점광원을 받는 가까운 등과 그 세기 비율(0~1). 다음 순번 등(count+1번째)과의 거리 차가 fade(m) 안이면 줄여서,
+// 순번이 바뀌는 순간(거리가 같아지는 순간) 빠지는 등과 들어오는 등이 둘 다 0이 되게 한다. 그래야 광원이 옮겨 갈 때 번쩍이지 않는다.
+export const LAMP_HANDOFF_FADE=8;
+export function lampWeights(lamps,x,z,count=REAL_LIGHT_COUNT,fade=LAMP_HANDOFF_FADE){
+ const sorted=lamps.map((l,i)=>({i,d:Math.hypot(l.x-x,l.z-z)})).sort((a,b)=>a.d-b.d),next=sorted[count]?.d??Infinity;
+ return sorted.slice(0,count).map(({i,d})=>({i,w:Math.max(0,Math.min(1,(next-d)/fade))}));
+}
 // 이마 램프 장착 위치(머리 중심 기준 위·앞 m). 복장 4종의 모자·두건과 겹치지 않도록 모자 종류별로 다르게 둔다.
 export const HEADLAMP_MOUNT=Object.freeze({none:{up:.10,forward:.105},bandana:{up:.125,forward:.10},cap:{up:.165,forward:.105},panama:{up:.215,forward:.10}});
 export const mountFor=kind=>HEADLAMP_MOUNT[kind]??HEADLAMP_MOUNT.none;

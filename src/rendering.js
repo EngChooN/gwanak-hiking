@@ -24,6 +24,15 @@ import {updateLightFx,createLightShafts,canopyAt,LIGHT_FX} from './light-fx.js';
 const GRADE_SHADER={name:'MoodGrade',uniforms:{tDiffuse:{value:null},saturation:{value:1},shadowTint:{value:new THREE.Vector3(1,1,1)},shadowAmount:{value:0},warm:{value:new THREE.Vector3(1,1,1)},exposure:{value:1}},
  vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
  fragmentShader:'uniform sampler2D tDiffuse;uniform float saturation,shadowAmount,exposure;uniform vec3 shadowTint,warm;varying vec2 vUv;void main(){vec4 c=texture2D(tDiffuse,vUv);float l=dot(c.rgb,vec3(0.2126,0.7152,0.0722));c.rgb=mix(vec3(l),c.rgb,saturation);float v=l*exposure;c.rgb*=mix(vec3(1.0),shadowTint,shadowAmount*(1.0-smoothstep(0.0,0.4,v)));c.rgb*=mix(vec3(1.0),warm,smoothstep(0.35,1.0,v));gl_FragColor=c;}'};
+// 블룸 밝기 추출 단계에 밝기 상한(BLOOM.cap)과 부드러운 문턱(BLOOM.knee)을 둔다. NaN·무한대 픽셀도 0으로 지운다.
+// 상한이 없으면 가로등 전구·갓 밑처럼 점광원 바로 옆 면이 보이는 순간 블룸이 화면 전체로 번쩍인다.
+export function capBloomInput(bloom,{cap=BLOOM.cap,knee=BLOOM.knee}={}){
+ const m=bloom.materialHighPassFilter,anchor='vec4 texel = texture2D( tDiffuse, vUv );';
+ if(!m.fragmentShader.includes(anchor))return false;
+ m.defines={...m.defines,BLOOM_CAP:cap.toFixed(3)};
+ m.fragmentShader=m.fragmentShader.replace(anchor,`${anchor}\n\t\t\tif(any(isnan(texel))||any(isinf(texel)))texel=vec4(0.);\n\t\t\ttexel.rgb*=min(1.,BLOOM_CAP/max(luminance(texel.rgb),1e-4));`);
+ bloom.highPassUniforms.smoothWidth.value=knee;m.needsUpdate=true;return true;
+}
 export function setupRendering(renderer,scene,camera,mobile,environmentSky){
   const parameters=new URLSearchParams(location.search),requestedMode=parameters.get('aoMode');
   const diagnosticMode=['off','normal','full'].includes(requestedMode)?requestedMode:null;
@@ -83,7 +92,7 @@ export function setupRendering(renderer,scene,camera,mobile,environmentSky){
       ao._renderOverride=(...args)=>profiler.measure('법선 장면 재렌더',()=>normal(...args));
       ao._renderPass=(...args)=>profiler.measure('AO 후처리 합계',()=>fullscreen(...args));
       composer.addPass(ao);
-      bloom=new UnrealBloomPass(new THREE.Vector2(width,height),BLOOM.strength.day,BLOOM.radius,BLOOM.threshold);composer.addPass(bloom);
+      bloom=new UnrealBloomPass(new THREE.Vector2(width,height),BLOOM.strength.day,BLOOM.radius,BLOOM.threshold);capBloomInput(bloom);composer.addPass(bloom);
       grade=new ShaderPass(GRADE_SHADER);composer.addPass(grade);
       composer.addPass(new OutputPass());
     }

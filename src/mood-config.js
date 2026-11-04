@@ -37,7 +37,10 @@ export const NIGHT_GRADE={exposure:1,saturation:1.1,shadowTint:[.88,.97,1.18],sh
 export const BLOOM={
  strength:{day:.3,golden:.4,night:.5},radius:.55,threshold:.82,
  scale:{high:.5,balanced:.35}, // 블룸 패스 해상도 비율(화면 대비)
- minQuality:1
+ minQuality:1,
+ // 블룸 입력 밝기 상한과 문턱의 부드러운 폭. 가로등 점광원 바로 옆 면(전구·갓 밑)은 밝기가 수천 배로 튀어서,
+ // 시점이 바뀌어 그 면이 보이는 순간 블룸이 화면 전체로 번쩍였다. 상한을 두면 밝은 점은 남고 번쩍임만 사라진다.
+ cap:1.6,knee:.25
 };
 
 // 공기 원근감: 멀수록 푸르고 옅게. veil은 하늘색 덧칠 세기, scale(m)은 작을수록 가까운 능선부터 옅어진다. 이전 값은 .32 / 7000.

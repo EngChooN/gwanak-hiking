@@ -4,7 +4,7 @@
 import * as THREE from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {sunPosition,resolveUtcMs} from './daytime.js';
-import {PARK_LAMP_LATERAL,PARK_END_S,LAMP_HEIGHT,REAL_LIGHT_COUNT,PLAZA_LAMPS,FACILITY_LAMPS,HEADLAMP,OTHERS,lampAmount,headlampDark,headlampOn,lampStations,nearestLamps,selectOthers,mountFor,crowdFromSearch} from './night-lighting-config.js';
+import {PARK_LAMP_LATERAL,PARK_END_S,LAMP_HEIGHT,REAL_LIGHT_COUNT,PLAZA_LAMPS,FACILITY_LAMPS,HEADLAMP,OTHERS,lampAmount,headlampDark,headlampOn,lampStations,lampWeights,selectOthers,mountFor,crowdFromSearch} from './night-lighting-config.js';
 
 const LAMP_COLOR=0xffd9a0,LAMP_INTENSITY=95,DECAL_COLOR=[1,.78,.46],OTHER_COLOR=[1,.95,.82];
 const smooth=(k,dt)=>1-Math.exp(-Math.max(0,Math.min(dt,.5))/k);
@@ -128,11 +128,11 @@ export function createNightLighting({scene,renderer=null,place,groundHeight,gate
   state.headOn=on;state.head+=((on?1:0)-state.head)*smooth(.2,dt);
   // 가로등 밝기(모든 가로등 같은 값). 낮에는 0이라 꺼진 등으로 보인다.
   const a=state.lamps;bulbMat.emissiveIntensity=a*4.5;lampDecalMat.uniforms.uAmount.value=a*.42;halos.uniforms.uAmount.value=a*.9;
-  const near=nearestLamps(lamps,camera.position.x,camera.position.z,REAL_LIGHT_COUNT),assigned=new Set(near);
+  const weighted=lampWeights(lamps,camera.position.x,camera.position.z,REAL_LIGHT_COUNT),near=weighted.map(v=>v.i),assigned=new Set(near),weight=new Map(weighted.map(v=>[v.i,v.w]));
   for(const l of pool)if(!assigned.has(l.userData.lamp))l.userData.lamp=-1;
   const taken=new Set(pool.map(l=>l.userData.lamp));
   for(const l of pool){if(l.userData.lamp>=0)continue;const pick=near.find(i=>!taken.has(i));if(pick!==undefined){l.userData.lamp=pick;taken.add(pick);}}
-  for(const l of pool){const lamp=lamps[l.userData.lamp];if(!lamp){l.intensity=0;continue;}l.position.set(lamp.lx,lamp.ly,lamp.lz);l.intensity=LAMP_INTENSITY*lamp.boost*a;}
+  for(const l of pool){const lamp=lamps[l.userData.lamp];if(!lamp){l.intensity=0;continue;}l.position.set(lamp.lx,lamp.ly,lamp.lz);l.intensity=LAMP_INTENSITY*lamp.boost*a*(weight.get(l.userData.lamp)??0);}
   // 내 헤드랜턴
   const h=state.head;head.intensity=HEADLAMP.intensity*h;
   if(h>.003){
