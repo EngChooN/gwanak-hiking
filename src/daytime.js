@@ -69,7 +69,7 @@ export const nightAmount=elevation=>smooth(-2,-12,elevation);
 
 const NEUTRAL_WEATHER={rain:0,snow:0,windSpeed:2,windSound:.2,cloud:0.05,sunMul:1,ambientMul:1,gray:0,fogDistance:Infinity,fogTint:0,starsMul:1};
 // 반구광(그늘을 채우는 하늘빛): 맑은 낮은 푸른 하늘색 그대로, 흐림·비·안개일수록 중성 회색, 해가 낮으면(14° 이하) 따뜻하게. 밤은 기존 푸른 색.
-const HEMI_CLEAR=hexToRgb('#CFE0F5'),HEMI_OVERCAST=hexToRgb('#D9D8D3'),HEMI_WARM=hexToRgb('#EBCDAA');
+const HEMI_CLEAR=hexToRgb('#CFE0F5'),HEMI_OVERCAST=hexToRgb('#D9D8D3'),HEMI_WARM=hexToRgb('#E3D0BC');
 export function hemiColor(elevation,night,gray){
  const day=mixRgb(HEMI_CLEAR,HEMI_OVERCAST,smooth(0,.9,gray)),low=1-smooth(3,14,elevation);
  return mixRgb(mixRgb(day,HEMI_WARM,low*(1-.5*gray)*.8),[.36,.43,.64],night);

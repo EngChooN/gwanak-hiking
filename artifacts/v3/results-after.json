@@ -1,0 +1,42 @@
+[
+  {
+    "id": "forest-golden",
+    "clock": "16:30",
+    "errors": [],
+    "shaderErrors": [],
+    "elevation": 10.322314009286819,
+    "night": 0
+  },
+  {
+    "id": "forest-day",
+    "clock": "11:00",
+    "errors": [],
+    "shaderErrors": [],
+    "elevation": 34.30298038917898,
+    "night": 0
+  },
+  {
+    "id": "summit-day",
+    "clock": "11:00",
+    "errors": [],
+    "shaderErrors": [],
+    "elevation": 34.30298038917898,
+    "night": 0
+  },
+  {
+    "id": "forest-night",
+    "clock": "20:30",
+    "errors": [],
+    "shaderErrors": [],
+    "elevation": 38,
+    "night": 1
+  },
+  {
+    "id": "summit-night",
+    "clock": "20:30",
+    "errors": [],
+    "shaderErrors": [],
+    "elevation": 38,
+    "night": 1
+  }
+]

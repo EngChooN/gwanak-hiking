@@ -15,8 +15,8 @@ export const SKY_KEYS=Object.freeze([
  {e:-18,zenith:'#142149',horizon:'#2a3a6c',haze:'#222f5a',sunColor:'#9bb0e8',sun:0,amb:.1},
  {e:-8,zenith:'#1f2f66',horizon:'#6a5486',haze:'#443f74',sunColor:'#e7a0a0',sun:0,amb:.14},
  {e:-3,zenith:'#37508f',horizon:'#f5a083',haze:'#c98a96',sunColor:'#ffa86a',sun:.05,amb:.25},
- {e:1,zenith:'#4a5fa0',horizon:'#ffb066',haze:'#eaa088',sunColor:'#ffb45e',sun:.3,amb:.52},
- {e:6,zenith:'#5a8fd0',horizon:'#ffd9ac',haze:'#e2c4b4',sunColor:'#ffd69a',sun:.66,amb:.78},
+ {e:1,zenith:'#4a5fa0',horizon:'#ffb066',haze:'#c6b0aa',sunColor:'#ffc88e',sun:.3,amb:.52},
+ {e:6,zenith:'#5a8fd0',horizon:'#ffd9ac',haze:'#c4c0c4',sunColor:'#ffe2bc',sun:.66,amb:.78},
  {e:14,zenith:'#4a8fd6',horizon:'#dcecf9',haze:'#b4d2ee',sunColor:'#ffeac8',sun:.9,amb:.9},
  {e:25,zenith:'#3F8FDE',horizon:'#C9E4F8',haze:'#A6CBEA',sunColor:'#FFEBCB',sun:1,amb:1}
 ]);
@@ -27,8 +27,9 @@ export const NIGHT={moonFloor:.7,phaseFloor:.7,moonElevation:38,moonLight:.34,mo
 
 // 낮 보정(2차 개선: 더 화사하고 맑게 — 노출 1.06→1.18, 채도 1.14→1.26, 그늘 남색 .18→.14, 맑은 하늘색·연무색을 더 푸르고 밝게): 노출·채도를 소폭 올리고 그늘은 남색 쪽으로. 낮(고도 높음)일수록 크게, 밤·흐림에서는 약하게 적용한다.
 export const DAY_GRADE={exposure:1.18,saturation:1.26,shadowTint:[.93,.98,1.08],shadowTintAmount:.14,highlightWarm:[1.05,1.0,.93]};
+// 3차 개선: 하늘·햇빛만 노을빛이고 숲·바위·도심은 제 색이 남도록 채도 1.28→1.08, 따뜻함 [1.08,1,.88]→[1.04,1,.95], 햇빛색(e=1·6, #ffb45e→#ffc88e·#ffd69a→#ffe2bc)과 연무색(fog, #eaa088→#c6b0aa·#e2c4b4→#c4c0c4)의 주황을 옅게 했다. 하늘 지평선색(horizon)은 그대로다.
 // 노을 보정: 금빛 하이라이트와 분홍 그늘. 2차 개선에서 화면 전체가 너무 주황이라는 지적에 따라 따뜻함 [1.18,1,.8]→[1.08,1,.88]로 낮추고 대신 노출 1.26→1.32로 밝혔다.
-export const GOLDEN_GRADE={exposure:1.32,saturation:1.28,shadowTint:[1.05,.93,1.1],shadowTintAmount:.24,highlightWarm:[1.08,1,.88]};
+export const GOLDEN_GRADE={exposure:1.32,saturation:1.08,shadowTint:[1.05,.93,1.1],shadowTintAmount:.24,highlightWarm:[1.04,1,.95]};
 // 밤 보정: 채도는 유지하고 그늘을 푸르게.
 export const NIGHT_GRADE={exposure:1,saturation:1.1,shadowTint:[.88,.97,1.18],shadowTintAmount:.3,highlightWarm:[1.06,1,.92]};
 

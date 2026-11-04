@@ -46,7 +46,7 @@ hanEmit=vec3(0.0);
  vec3 R=reflect(-V,N);
  // 하늘 반사: 수평선 근처는 연무색, 위로 갈수록 조금 짙은 푸른색. 노을엔 주황빛.
  vec3 sky=mix(skyC,skyC*vec3(.78,.88,1.06),clamp(R.y*3.0,0.0,1.0));
- sky=mix(sky,sky*vec3(1.3,.86,.6),cityDusk*.7);
+ sky=mix(sky,sky*vec3(1.18,.92,.76),cityDusk*.6);
  // 맞은편 강변 건물·산이 비치는 어두운 띠(반사 각이 수평선 아래로 내려간 곳).
  sky*=mix(.62,1.0,smoothstep(-.02,.06,R.y));
  vec3 body=vec3(.16,.21,.21)*diffuseColor.rgb;

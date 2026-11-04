@@ -140,7 +140,7 @@ seoulEmit=vec3(0.0);
   vec3 R=reflect(-V,N);
   float fres=.05+.95*pow(1.0-max(dot(N,V),0.0),5.0);
   vec3 skyRef=mix(skyC*.55,skyC*vec3(.82,.9,1.05),clamp(R.y*4.0+.5,0.0,1.0));
-  skyRef=mix(skyRef,skyRef*vec3(1.25,.85,.62),cityDusk*.6);
+  skyRef=mix(skyRef,skyRef*vec3(1.12,.92,.8),cityDusk*.5);
   float reflAmt=(glassy>.5?mix(.22,.55,fres):fres*.6)*(1.0-night*.85);
   if(cityDetail>.5){
    // 층·칸마다 유리 기울기가 달라 반사가 얼룩진다.

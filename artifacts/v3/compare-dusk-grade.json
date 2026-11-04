@@ -1,0 +1,122 @@
+[
+  {
+    "id": "forest-day",
+    "meanDiff": 3,
+    "bigDiffPct": 3.27,
+    "meanRgbBefore": [
+      96.2,
+      84.7,
+      55.2
+    ],
+    "meanRgbAfter": [
+      96.7,
+      85.1,
+      55.5
+    ]
+  },
+  {
+    "id": "summit-day",
+    "meanDiff": 1.04,
+    "bigDiffPct": 0.73,
+    "meanRgbBefore": [
+      122,
+      149.6,
+      166.9
+    ],
+    "meanRgbAfter": [
+      122.4,
+      150,
+      167.3
+    ]
+  },
+  {
+    "id": "forest-night",
+    "meanDiff": 2.6,
+    "bigDiffPct": 5.73,
+    "meanRgbBefore": [
+      59.7,
+      62.4,
+      63.2
+    ],
+    "meanRgbAfter": [
+      59.1,
+      61.8,
+      62.6
+    ]
+  },
+  {
+    "id": "summit-night",
+    "meanDiff": 1.66,
+    "bigDiffPct": 1.24,
+    "meanRgbBefore": [
+      143.1,
+      132.8,
+      125.9
+    ],
+    "meanRgbAfter": [
+      142,
+      131.7,
+      124.8
+    ]
+  },
+  {
+    "id": "forest-dusk",
+    "meanDiff": 7.57,
+    "bigDiffPct": 5.07,
+    "meanRgbBefore": [
+      85.6,
+      57.7,
+      15.9
+    ],
+    "meanRgbAfter": [
+      77.4,
+      55.9,
+      24.8
+    ]
+  },
+  {
+    "id": "summit-dusk",
+    "meanDiff": 6.91,
+    "bigDiffPct": 14.04,
+    "meanRgbBefore": [
+      132.4,
+      106.6,
+      98.1
+    ],
+    "meanRgbAfter": [
+      125.1,
+      109.6,
+      106.1
+    ]
+  },
+  {
+    "id": "city-dusk",
+    "meanDiff": 14.18,
+    "bigDiffPct": 45.92,
+    "meanRgbBefore": [
+      116.4,
+      83.5,
+      63
+    ],
+    "meanRgbAfter": [
+      105,
+      93,
+      84.6
+    ]
+  },
+  {
+    "id": "forest-golden",
+    "meanDiff": 5.99,
+    "bigDiffPct": 7.43,
+    "meanRgbBefore": [
+      99.5,
+      78.8,
+      38.7
+    ],
+    "meanRgbAfter": [
+      97.9,
+      79.6,
+      44.8
+    ]
+  }
+]

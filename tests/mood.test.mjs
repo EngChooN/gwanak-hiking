@@ -8,8 +8,8 @@ const at=(time,look)=>{const t=resolveUtcMs({time,nowMs:Date.UTC(2026,10,4,3,0)}
 test('낮은 노출·채도가 오르되(2차 개선: 화사하게, 노출 <1.25·채도 <1.35) 그늘은 푸르다',()=>{
  const m=moodBlend(34,0);assert.ok(m.exposure>1&&m.exposure<1.25&&m.saturation>1&&m.saturation<1.35);assert.ok(m.shadowTint[2]>m.shadowTint[0]);
 });
-test('노을은 금빛(따뜻한 하이라이트)과 더 높은 채도·블룸',()=>{
- const g=moodBlend(4,0),d=moodBlend(34,0);assert.ok(g.warm[0]>g.warm[2]&&g.saturation>=d.saturation&&g.bloom>d.bloom);
+test('노을은 금빛(따뜻한 하이라이트)과 더 높은 블룸이되 낮보다 채도는 낮다(3차 개선: 숲·도심이 주황으로 물들지 않게)',()=>{
+ const g=moodBlend(4,0),d=moodBlend(34,0);assert.ok(g.warm[0]>g.warm[2]&&g.saturation<d.saturation&&g.saturation>1&&g.warm[0]<1.1&&g.bloom>d.bloom);
 });
 test('밤은 푸른 그늘, 블룸 최대',()=>{
  const n=moodBlend(-30,1);assert.ok(n.shadowTint[2]>n.shadowTint[0]&&n.bloom===BLOOM.strength.night);
