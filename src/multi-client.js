@@ -50,7 +50,7 @@ export async function mountMultiplayer({scene,camera,hikerUrl,night,groundHeight
  document.body.append(ui,tagLayer,toast,request);
  const buttons=ui.querySelector('.multi-buttons'),mk=(label,key,fn)=>{const b=el('button','multi-btn',`${label}`);if(key)b.append(el('kbd','',key));b.type='button';b.onclick=()=>{fn();b.blur();};buttons.append(b);return b;};
  const bHello=mk('인사','X',()=>doGesture('hello')),bWave=mk('손 흔들기','G',()=>doGesture('wave')),bSelfie=mk('같이 셀카','K',()=>selfieKey());
- mk('이름표','N',()=>{tagsOn=!tagsOn;});mk('목록','',()=>{rosterEl.hidden=!rosterEl.hidden;});
+ mk('이름표','N',()=>{if(command)command('labels-toggle');else tagsOn=!tagsOn;});mk('목록','',()=>{rosterEl.hidden=!rosterEl.hidden;});
  const rosterEl=ui.querySelector('.multi-roster'),nearEl=ui.querySelector('.multi-near'),countEl=ui.querySelector('.multi-count');
  let toastTimer=0;const say=text=>{toast.textContent=text;toast.classList.add('on');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove('on'),2600);};
 
@@ -111,7 +111,7 @@ export async function mountMultiplayer({scene,camera,hikerUrl,night,groundHeight
  addEventListener('keydown',e=>{
   if(e.repeat||e.ctrlKey||e.metaKey||e.altKey||/INPUT|TEXTAREA|SELECT/.test(e.target?.tagName))return;
   if(document.querySelector('dialog[open]'))return;
-  if(e.code==='KeyX')doGesture('hello');else if(e.code==='KeyG')doGesture('wave');else if(e.code==='KeyK')selfieKey();else if(e.code==='KeyN')tagsOn=!tagsOn;
+  if(e.code==='KeyG')doGesture('wave');else if(e.code==='KeyK')selfieKey(); // X(인사·누르고 있으면 메뉴)·N(이름표)은 input.js→interaction-controller가 맡는다
  });
 
  // ── 이름표(DOM). 가까운 8명은 이름, 60m까지 작은 점. 카메라 뒤는 숨긴다.
@@ -225,7 +225,7 @@ export async function mountMultiplayer({scene,camera,hikerUrl,night,groundHeight
   }
  }
  const info=()=>({id:myId,name:myName,room,transport:transport.kind,roster:[...roster.values()].map(r=>({id:r.id,name:r.name,x:r.sample?.x,z:r.sample?.z,heading:r.sample?.heading,speed:r.sample?.speed,moving:r.sample?.moving,model:!!r.entry,gesture:r.gesture&&performance.now()/1000<r.gesture.until?r.gesture.kind:null,blocked:moderation.isBlocked(r.id)})),stats:{...stats},hub:hub?.stats??null,social:{session:social.state.session,incoming:social.state.incoming,outgoing:social.state.outgoing,log:social.state.log.slice(-12)},fullCap,pool:pool.length,moderation:moderation.data,sim:sim?.info()??null});
- return {update,afterLocalGround,info,social,doGesture,selfieKey,roster,send,moderation,teleport:pos=>local.setPosition(pos),
+ return {update,afterLocalGround,info,social,doGesture,selfieKey,roster,nearest:range=>nearestTarget(range),setTags:on=>{tagsOn=!!on;},get tagsOn(){return tagsOn;},send,moderation,teleport:pos=>local.setPosition(pos),
   get frozen(){return performance.now()/1000<frozenUntil&&!!social.state.session;},
   group:scene};
 }

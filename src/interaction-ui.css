@@ -1,0 +1,156 @@
+/* 상호작용 화면(알약·마커·안내판 패널·수첩·완등 카드·쌍안경 이름표·행동 안내·인사 메뉴). 크기는 HUD와 같은 --u(1920×1080에서 1px) 비율을 따른다.
+   색은 기존 HUD 유리 패널(#173e36)·금색(#e4d6aa)을 쓴다. 시안: design/상호작용-시안.html */
+#interaction-ui,#ix-bino,#ix-frame{position:fixed;inset:0;pointer-events:none;color:#f6f5e9;font-size:max(12px,calc(15*var(--u)));--gold:#e4d6aa;--gold2:#f4d67c;--ink:#254034;--paper:#f1ead2;--red:#b3382a}
+#interaction-ui{z-index:32}#ix-bino{z-index:31}#ix-frame{z-index:31}
+#interaction-ui [hidden],#ix-bino [hidden],#ix-frame [hidden]{display:none!important}
+#interaction-ui button,#ix-bino button{pointer-events:auto;font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+#interaction-ui kbd,#ix-bino kbd{font:600 max(11px,calc(13*var(--u)))/1 ui-monospace,monospace;border:1px solid #ffffff38;border-bottom-width:2px;border-radius:5px;padding:2px 7px;background:#ffffff14;color:#e1e6d8}
+body.gadget-on #interaction-ui .ix-markers,body.gadget-on #interaction-ui .ix-vignette{display:none}
+/* ── 월드 마커 ── */
+.ix-marker{position:absolute;left:0;top:0;width:max(26px,calc(40*var(--u)));height:max(26px,calc(40*var(--u)));margin:calc(-20*var(--u)) 0 0 calc(-20*var(--u));border-radius:50%;background:#173e36d9;border:2px solid var(--gold2);display:grid;place-items:center;font-size:max(13px,calc(19*var(--u)));font-weight:800;color:var(--gold2);box-shadow:0 0 0 6px #f4d67c22;will-change:transform}
+.ix-marker.far{width:max(14px,calc(20*var(--u)));height:max(14px,calc(20*var(--u)));margin:calc(-10*var(--u)) 0 0 calc(-10*var(--u));font-size:0;opacity:.75;box-shadow:none}
+/* ── 알약 ── */
+.ix-pill-wrap{position:absolute;left:50%;bottom:calc(112*var(--u) + env(safe-area-inset-bottom));transform:translateX(-50%);display:flex;flex-direction:column;align-items:flex-start;gap:calc(8*var(--u))}
+.ix-pill{display:inline-flex;align-items:center;gap:calc(14*var(--u));padding:calc(8*var(--u)) calc(24*var(--u)) calc(8*var(--u)) calc(8*var(--u));min-height:max(44px,calc(56*var(--u)));border-radius:999px;background:#173e36ea;border:1px solid #f4d67c70;box-shadow:0 10px 34px #112d2255;backdrop-filter:blur(6px);text-align:left;max-width:92vw}
+.ix-pill .key{display:grid;place-items:center;flex:none;width:max(34px,calc(40*var(--u)));height:max(34px,calc(40*var(--u)));border-radius:10px;background:var(--gold);color:var(--ink);border:0;border-bottom:3px solid #b9a870;font-weight:800;font-size:max(15px,calc(19*var(--u)));padding:0}
+.ix-pill b{display:block;font-size:max(14px,calc(19*var(--u)));font-weight:650;line-height:1.25}
+.ix-pill small{display:block;font-size:max(11px,calc(13*var(--u)));color:#dbdfc5;opacity:.9;margin-top:1px}
+.ix-pill.done{border-color:#8fbf7a66}.ix-pill.done .key{background:#8fbf7a;border-bottom-color:#5e8a4c}
+.ix-pill.lock{border-color:#ffffff2a;color:#ffffffb3}.ix-pill.lock .key{background:#ffffff2a;color:#ffffffa0;border-bottom-color:#ffffff22}
+.ix-pill.sub{min-height:max(38px,calc(46*var(--u)));padding:calc(5*var(--u)) calc(20*var(--u)) calc(5*var(--u)) calc(7*var(--u));opacity:.94}.ix-pill.sub b{font-size:max(12px,calc(16*var(--u)))}
+.ix-pill-hint{font-size:max(10px,calc(12*var(--u)));color:#e9e8d9;opacity:.8;padding-left:calc(10*var(--u));text-shadow:0 1px 3px #000a}
+/* 휴대폰·태블릿 같은 터치 화면: 오른쪽 둥근 큰 단추 + 이름표(둘러보기 드래그 영역을 가리지 않게 오른쪽 아래) */
+body.in-plaza .ix-pill-wrap{bottom:calc(200*var(--u) + env(safe-area-inset-bottom))}
+body.touch .ix-pill-wrap{left:auto;right:calc(14px + env(safe-area-inset-right));bottom:calc(168px + env(safe-area-inset-bottom));transform:none;align-items:flex-end;flex-direction:column-reverse}
+body.touch .ix-pill{flex-direction:column;justify-content:center;gap:2px;width:84px;height:84px;min-height:0;padding:6px;border-radius:50%;background:var(--gold);color:var(--ink);border:0;box-shadow:0 8px 24px #0006,0 0 0 8px #f4d67c33;text-align:center}
+body.touch .ix-pill .key{display:none}
+body.touch .ix-pill b{font-size:13px;line-height:1.15;white-space:normal;max-width:70px;margin-top:0}
+body.touch .ix-pill small{display:none}
+body.touch .ix-pill::before{content:'☝';font-size:26px;line-height:1}
+body.touch .ix-pill.sub{width:56px;height:56px}body.touch .ix-pill.sub::before{content:attr(data-num);font-size:20px;font-weight:800}body.touch .ix-pill.sub b{display:none}
+body.touch .ix-pill.done{background:#8fbf7a}body.touch .ix-pill.lock{background:#ffffff40;color:#fff}
+body.touch .ix-pill-hint{display:none}
+@media(max-height:540px) and (orientation:landscape){body.touch .ix-pill-wrap{bottom:calc(96px + env(safe-area-inset-bottom));right:calc(120px + env(safe-area-inset-right))}}
+/* 휴대폰 카메라 화면 안: 줌 단추 위(자리는 JS가 .phone-zooms 위로 잡는다) */
+.ix-pill-wrap[data-where=phone]{position:fixed;transform:translateX(-50%);flex-direction:column;align-items:center}
+body.touch .ix-pill-wrap[data-where=phone]{right:auto;bottom:auto;flex-direction:column}
+.ix-pill-wrap[data-where=phone] .ix-pill{background:#173e36ea;color:#f6f5e9}
+/* ── 행동 안내(진행 막대·호흡 원·비네트) ── */
+.ix-action{position:absolute;left:50%;bottom:calc(190*var(--u) + env(safe-area-inset-bottom));transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:calc(10*var(--u));padding:calc(14*var(--u)) calc(26*var(--u));border-radius:22px;background:#173e36e6;border:1px solid #ffffff2a;min-width:min(86vw,calc(330*var(--u)));text-align:center}
+.ix-action b{font-size:max(15px,calc(21*var(--u)))}.ix-action small{font-size:max(11px,calc(14*var(--u)));color:#dbdfc5}
+.ix-action .bar{width:min(70vw,calc(300*var(--u)));height:6px;background:#ffffff25;border-radius:3px;overflow:hidden}.ix-action .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#8fbf7a,#e9c46a)}
+.ix-breath{width:max(80px,calc(150*var(--u)));height:max(80px,calc(150*var(--u)));border-radius:50%;border:3px solid #cfe3c4;background:radial-gradient(#cfe3c455,#cfe3c411);animation:ix-br 3.6s ease-in-out infinite}
+@keyframes ix-br{0%,100%{transform:scale(.62)}50%{transform:scale(1.12)}}
+.ix-vignette{position:absolute;inset:0;opacity:0;transition:opacity .4s;background:radial-gradient(ellipse at 50% 55%,#0000 45%,#2d6a8c66 100%)}.ix-vignette.on{opacity:1}
+.ix-sub{position:absolute;left:50%;bottom:calc(120*var(--u) + env(safe-area-inset-bottom));transform:translateX(-50%);padding:6px 16px;border-radius:8px;background:#000b;font-size:max(12px,calc(18*var(--u)));color:#fff}
+/* ── 알림(스탬프·안내) ── */
+.ix-toast{position:absolute;left:50%;top:calc(34*var(--u) + env(safe-area-inset-top));transform:translateX(-50%);display:flex;align-items:center;gap:calc(22*var(--u));padding:calc(14*var(--u)) calc(32*var(--u)) calc(14*var(--u)) calc(16*var(--u));border-radius:999px;background:#0c211cf0;border:1px solid #f4d67c80;box-shadow:0 14px 44px #000a;width:max-content;max-width:94vw;animation:ix-toast .5s ease both}
+@keyframes ix-toast{from{transform:translate(-50%,-30px);opacity:0}}
+.ix-toast.plain{padding:calc(10*var(--u)) calc(22*var(--u));gap:10px}
+.ix-toast .tx b{display:block;font-size:max(14px,calc(21*var(--u)));font-weight:650}.ix-toast .tx small{display:block;font-size:max(11px,calc(14*var(--u)));color:#dbdfc5;margin-top:2px}
+.ix-toast .tx .bar{height:5px;margin-top:6px;background:#ffffff2a;border-radius:3px;overflow:hidden}.ix-toast .tx .bar i{display:block;height:100%;background:#dbbf7d}
+/* 붉은 도장 */
+.ix-stp{position:relative;flex:none;width:var(--sz,92px);height:var(--sz,92px);border-radius:50%;display:grid;place-items:center;color:var(--red);font-weight:800;transform:rotate(var(--rot,-6deg))}
+.ix-stp::before{content:"";position:absolute;inset:0;border-radius:50%;border:calc(var(--sz,92px)*.035) solid currentColor;box-shadow:inset 0 0 0 calc(var(--sz,92px)*.03) var(--paper),inset 0 0 0 calc(var(--sz,92px)*.05) currentColor;opacity:.92}
+.ix-stp span{font-size:calc(var(--sz,92px)*.46);font-family:'Apple SD Gothic Neo','Noto Serif KR',serif;line-height:1;opacity:.92}
+.ix-stp.dark{color:#dcb8b0}.ix-stp.dark::before{box-shadow:inset 0 0 0 calc(var(--sz,92px)*.03) #173e36,inset 0 0 0 calc(var(--sz,92px)*.05) currentColor}
+.ix-stp.empty{color:#8a9a82;--rot:0deg}.ix-stp.empty::before{border-style:dashed;box-shadow:none;opacity:.7}.ix-stp.empty span{font-size:calc(var(--sz,92px)*.28);font-family:inherit}
+.ix-stp.slam{animation:ix-slam .75s cubic-bezier(.2,1.3,.4,1) both}
+@keyframes ix-slam{0%{transform:scale(2) rotate(-18deg);opacity:0}60%{transform:scale(.92) rotate(-6deg);opacity:1}100%{transform:scale(1) rotate(var(--rot,-6deg))}}
+/* ── 안내판 패널 ── */
+.ix-board{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(94vw,calc(760*var(--u)));max-height:88vh;overflow:auto;padding:calc(30*var(--u)) calc(36*var(--u)) calc(26*var(--u));border-radius:4px 22px 22px 22px;background:#173e36f0;border:1px solid #d9dfb340;box-shadow:0 18px 60px #0007;pointer-events:auto;z-index:2}
+.ix-scrim{position:absolute;inset:0;background:#06140f33;pointer-events:auto}
+.ix-board .eyebrow{display:flex;justify-content:space-between;gap:12px;font-size:max(11px,calc(12*var(--u)));letter-spacing:1px;color:#dbdfc5}.ix-board .eyebrow em{font-style:normal;letter-spacing:0;color:#ffe7aa}
+.ix-board h2{margin:8px 0 14px;font-size:max(20px,calc(34*var(--u)));font-weight:600;letter-spacing:-.5px}
+.ix-board p{margin:0 0 12px;font-size:max(16px,calc(21*var(--u)));line-height:1.75;color:#eef0e2;word-break:keep-all}
+.ix-chips{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 4px}
+.ix-chip{display:inline-flex;align-items:center;padding:3px 11px;border-radius:99px;font-size:max(12px,calc(14*var(--u)));background:#ffffff1f;color:#dfe5d8}
+.ix-chip.ok{background:#8fbf7a30;color:#cfe3c4}.ix-chip.lore{background:#f4d67c30;color:var(--gold2)}.ix-chip.est{background:#e9a98a30;color:#f2c3a8}
+.ix-board .src{margin-top:14px;padding-top:12px;border-top:1px solid #ffffff1f;font-size:max(11px,calc(14*var(--u)));line-height:1.6;color:#bdcbbf}
+.ix-board .why{font-size:max(11px,calc(14*var(--u)));color:#f2c3a8;margin:6px 0 0}
+.ix-board .foot{display:flex;align-items:center;justify-content:space-between;margin-top:16px;gap:12px}
+.ix-board .foot button,.ix-book button.btn,.ix-card button{min-width:48px;min-height:48px;padding:10px 16px;font-size:max(14px,calc(17*var(--u)));border-radius:12px;border:1px solid #ffffff35;background:#203e35c9}
+.ix-board .foot button:disabled{opacity:.4;cursor:default}
+.ix-btn-gold{background:var(--gold)!important;color:var(--ink)!important;border-color:var(--gold)!important;font-weight:700}
+.ix-dots{display:flex;gap:8px}.ix-dots i{width:10px;height:10px;border-radius:50%;background:#ffffff30}.ix-dots i.on{background:var(--gold2)}
+.ix-signrow{display:flex;align-items:center;gap:18px;padding:12px 6px;border-bottom:1px solid #ffffff1a;font-size:max(16px,calc(23*var(--u)))}
+.ix-signrow .arr{width:max(40px,calc(54*var(--u)));height:max(40px,calc(54*var(--u)));border-radius:50%;background:#ffffff18;display:grid;place-items:center;font-size:max(18px,calc(26*var(--u)));flex:none}
+.ix-signrow .arr span{display:block;transition:transform .2s}
+.ix-signrow small{font-size:max(11px,calc(14*var(--u)));color:#bdcbbf;margin-left:auto}
+/* 모바일: 바닥 시트 */
+body.touch .ix-board{top:auto;bottom:0;left:0;right:0;transform:none;width:auto;max-height:72vh;border-radius:20px 20px 0 0;padding:18px 18px calc(20px + env(safe-area-inset-bottom))}
+body.touch .ix-board h2{font-size:22px}body.touch .ix-board p{font-size:16px}
+/* ── 수첩 ── */
+.ix-book{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(96vw,calc(1180*var(--u)));max-height:92vh;overflow:auto;padding:calc(26*var(--u)) calc(30*var(--u)) calc(28*var(--u));border-radius:6px 26px 26px 26px;background:#173e36f4;border:1px solid #d9dfb340;box-shadow:0 24px 80px #000a;pointer-events:auto;z-index:2}
+.ix-book .hd{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:14px;flex-wrap:wrap}.ix-book h2{margin:0;font-size:max(18px,calc(28*var(--u)));font-weight:600}.ix-book h2 small{font-size:max(11px,calc(15*var(--u)));font-weight:400;opacity:.8;margin-left:10px}
+.ix-book .prog{height:5px;background:#ffffff2a;border-radius:3px;overflow:hidden;width:min(220px,40vw)}.ix-book .prog i{display:block;height:100%;background:#dbbf7d}
+.ix-book .pg{background:var(--paper);color:var(--ink);border-radius:14px;padding:calc(26*var(--u)) calc(28*var(--u)) calc(20*var(--u));background-image:repeating-linear-gradient(0deg,#0000 0 31px,#25403414 31px 32px)}
+.ix-slots{display:grid;grid-template-columns:repeat(3,1fr);gap:18px 10px}
+.ix-slot{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}.ix-slot b{font-size:max(14px,calc(20*var(--u)))}.ix-slot small{font-size:max(11px,calc(14*var(--u)));color:#5b6d5b;line-height:1.4}.ix-slot.todo b{color:#7d8c78}
+.ix-prof{margin:12px 0 4px;height:74px}.ix-prof svg{width:100%;height:100%}.ix-profl{font-size:12px;color:#5b6d5b;display:flex;justify-content:space-between}
+.ix-book .cardbtn{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:14px;flex-wrap:wrap}.ix-book .cardbtn span{font-size:max(11px,calc(13*var(--u)));color:#cfd8c6}
+.ix-book .stats{margin-top:8px;font-size:max(11px,calc(13*var(--u)));color:#cfd8c6}
+@media(max-width:700px){.ix-book{padding:16px 12px}.ix-book .pg{padding:14px 10px}.ix-stp{--sz:84px!important}}
+/* ── 완등 카드 ── */
+.ix-card{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:#06140fb0;pointer-events:auto;z-index:3;padding:10px}
+.ix-card canvas{height:min(76vh,calc(86vw*1.25));aspect-ratio:4/5;border-radius:12px;box-shadow:0 8px 30px #0006;background:#173e36}
+.ix-card .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+/* ── 쌍안경 이름표 ── */
+#ix-bino{display:none}#ix-bino.on{display:block}
+.ix-tape{position:absolute;left:50%;top:calc(176*var(--u));width:min(94vw,calc(760*var(--u)));height:max(60px,calc(84*var(--u)));transform:translateX(-50%);border-radius:12px;background:#0c211cc4;border:1px solid #ffffff2a;overflow:hidden}
+.ix-tape .tk{position:absolute;bottom:0;width:1px;height:12px;background:#ffffff77}.ix-tape .tk.m{height:20px;background:#fff}
+.ix-tape .tn{position:absolute;bottom:14px;top:auto!important;font-size:max(10px,calc(13*var(--u)));color:#d6dccf;transform:translateX(-50%)}
+.ix-tape .mk{position:absolute;top:2px;transform:translateX(-50%);font-size:max(11px,calc(15*var(--u)));font-weight:650;color:var(--gold2);white-space:nowrap}
+.ix-tape .mk::after{content:"";display:block;width:0;height:0;margin:0 auto;border:5px solid transparent;border-top-color:var(--gold2)}.ix-tape .mk.dirOnly{opacity:.65;font-weight:500}
+.ix-tape .cur{position:absolute;left:50%;top:0;bottom:0;width:2px;background:#ff6b5a}
+.ix-lm{position:absolute;transform:translate(-50%,-100%);text-align:center;white-space:nowrap}
+.ix-lm .tag{display:inline-block;padding:4px 12px 5px;border-radius:10px;background:#0c211ccf;border:1px solid #ffffff38;font-size:max(12px,calc(20*var(--u)));font-weight:650;line-height:1.2}
+.ix-lm .tag small{display:block;font-size:max(10px,calc(14*var(--u)));font-weight:400;color:#cfd8c6}
+.ix-lm .ln{display:block;width:1.5px;margin:0 auto;background:#ffffffb0}
+.ix-lm .dot{display:block;width:9px;height:9px;margin:0 auto;border-radius:50%;background:#fff;box-shadow:0 0 0 3px #0008}
+.ix-lm.focus .tag{background:#f4d67c;color:#16261f;border-color:#f4d67c}.ix-lm.focus .tag small{color:#3b3a22}
+.ix-lm.dim .tag{opacity:.62;font-weight:500}.ix-lm.dim .dot{opacity:.5}
+.ix-lm.dirOnly .tag{border-style:dashed}
+.ix-edge{position:absolute;top:50%;transform:translateY(-50%);padding:6px 14px;border-radius:99px;background:#0c211ccf;border:1px solid #ffffff38;font-size:max(12px,calc(17*var(--u)));white-space:nowrap}
+.ix-edge.dirOnly{border-style:dashed}
+.ix-edge.l{left:calc(50% - min(44vw,calc(500*var(--u))))}.ix-edge.r{right:calc(50% - min(44vw,calc(500*var(--u))))}
+.ix-focus{position:absolute;left:50%;bottom:calc(86*var(--u) + env(safe-area-inset-bottom));transform:translateX(-50%);display:flex;align-items:center;gap:calc(16*var(--u));padding:calc(12*var(--u)) calc(24*var(--u));border-radius:18px;background:#0c211cf0;border:1px solid #f4d67c80;max-width:94vw;pointer-events:auto}
+.ix-focus b{display:block;font-size:max(15px,calc(21*var(--u)))}.ix-focus small{display:block;font-size:max(11px,calc(14*var(--u)));color:#dbdfc5;line-height:1.5;margin-top:2px}
+.ix-focus .key{display:grid;place-items:center;flex:none;min-width:max(34px,calc(40*var(--u)));height:max(34px,calc(40*var(--u)));border-radius:10px;background:var(--gold);color:var(--ink);border:0;border-bottom:3px solid #b9a870;font-weight:800;font-size:max(14px,calc(19*var(--u)))}
+.ix-bino-note{position:absolute;left:50%;top:calc(250*var(--u));transform:translateX(-50%);padding:4px 14px;border-radius:99px;background:#0c211ccf;font-size:max(11px,calc(14*var(--u)));color:#dfe8d6;white-space:nowrap}
+/* ── 인사 메뉴(X 누르고 있기) ── */
+.ix-wheel{position:absolute;left:50%;top:50%;width:min(86vw,calc(520*var(--u)));height:min(86vw,calc(520*var(--u)));transform:translate(-50%,-50%)}
+.ix-wheel button{position:absolute;width:30%;aspect-ratio:1;border-radius:50%;background:#173e36ee;border:2px solid #ffffff38;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:max(13px,calc(20*var(--u)));font-weight:650;box-shadow:0 10px 34px #0008}
+.ix-wheel button .e{font-size:max(24px,calc(44*var(--u)));line-height:1}
+.ix-wheel button.sel{background:var(--gold);color:var(--ink);border-color:#fff}
+.ix-wheel .c{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:34%;text-align:center;font-size:max(11px,calc(16*var(--u)));line-height:1.45;color:#e9ece0}
+.ix-wheel button:nth-child(1){left:35%;top:2%}.ix-wheel button:nth-child(2){left:4%;top:56%}.ix-wheel button:nth-child(3){right:4%;top:56%}
+/* ── 인증샷 틀(저장 사진에도 구워 넣는다) ── */
+#ix-frame .brd{position:absolute;border:2px solid #f1ead2cc;border-radius:12px}
+#ix-frame .badge{position:absolute;padding:6px 16px;border-radius:99px;background:#f1ead2;color:var(--ink);font-weight:800;font-size:max(12px,calc(19*var(--u)));letter-spacing:.5px}
+#ix-frame .band{position:absolute;display:flex;align-items:flex-end;justify-content:space-between;padding:0 24px 10px;background:linear-gradient(#0000,#0c211cb0);font-size:max(10px,calc(15*var(--u)));text-shadow:0 1px 3px #000}
+#ix-frame .band b{display:block;font-size:max(12px,calc(20*var(--u)));line-height:1.2}
+@media(prefers-reduced-motion:reduce){.ix-stp.slam,.ix-toast,.ix-breath{animation:none!important}.ix-vignette{transition:none}}
+
+.ix-tagbtn{position:absolute;left:calc(14px + env(safe-area-inset-left));bottom:calc(86*var(--u) + env(safe-area-inset-bottom));min-height:44px;padding:0 14px;border-radius:12px;border:1px solid #ffffff38;background:#0c211ccf;font-size:max(12px,calc(15*var(--u)))}
+@media(max-width:700px){.ix-focus{bottom:calc(150px + env(safe-area-inset-bottom))}.ix-tagbtn{bottom:calc(150px + env(safe-area-inset-bottom))}}
+
+/* 터치 화면: 수첩·스트레칭은 조작줄(nav)이 이미 꽉 차서 왼쪽 아래(조이스틱 위) 둥근 단추로 둔다. 키보드 화면은 nav에 있다. */
+.ix-quick{display:none}
+body.touch .ix-quick{display:flex;position:absolute;left:calc(14px + env(safe-area-inset-left));bottom:calc(150px + env(safe-area-inset-bottom));gap:8px}
+body.touch .ix-quick button{pointer-events:auto;width:48px;height:48px;border-radius:50%;background:#173e36ea;border:1px solid #f4d67c70;font-size:20px;line-height:1;display:grid;place-items:center;color:#f4d67c}
+body.touch nav #stamps,body.touch nav #stretch{display:none}
+body.gadget-on .ix-quick{display:none}
+@media(max-height:540px) and (orientation:landscape){body.touch .ix-quick{bottom:calc(138px + env(safe-area-inset-bottom));left:auto;right:calc(14px + env(safe-area-inset-right))}}
+
+/* 가로 휴대폰(높이 540 이하): 안내판은 오른쪽 옆 시트, 알림·수첩은 작게 */
+@media(max-height:540px) and (orientation:landscape){
+ body.touch .ix-board{top:0;bottom:0;left:auto;right:0;width:min(58vw,520px);max-height:none;border-radius:20px 0 0 20px;padding:12px 16px calc(12px + env(safe-area-inset-bottom)) 16px}
+ body.touch .ix-board h2{font-size:18px;margin:4px 0 8px}body.touch .ix-board p{font-size:14px;line-height:1.55;margin-bottom:8px}
+ body.touch .ix-signrow{padding:6px 4px;font-size:16px;gap:12px}body.touch .ix-signrow .arr{width:34px;height:34px;font-size:18px}
+ body.touch .ix-board .src{margin-top:6px;padding-top:6px}body.touch .ix-chips{margin:2px 0}body.touch .ix-board .foot{margin-top:4px}body.touch .ix-board .foot button{min-height:40px;padding:6px 12px}
+ .ix-toast{top:calc(8px + env(safe-area-inset-top));padding:6px 22px 6px 8px;gap:12px}.ix-toast .ix-stp{--sz:54px!important}.ix-toast .tx b{font-size:14px}.ix-toast .tx small{font-size:11px}
+ .ix-book{padding:10px 14px;max-height:96vh}.ix-book h2{font-size:16px}.ix-book .pg{padding:8px 10px}.ix-slots{grid-template-columns:repeat(6,1fr);gap:4px}.ix-slot .ix-stp{--sz:54px!important}.ix-slot b{font-size:11px}.ix-slot small{font-size:9px}.ix-prof{height:40px;margin:4px 0 0}
+ .ix-book .cardbtn{margin-top:6px}.ix-book .stats{display:none}
+ .ix-action{bottom:calc(8px + env(safe-area-inset-bottom));padding:8px 18px;gap:4px}.ix-breath{width:60px;height:60px}
+}

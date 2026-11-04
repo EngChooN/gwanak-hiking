@@ -40,8 +40,12 @@ export function createWalkingGround(landscape){
   }return true;
  }
  // 정상 자유 이동 구역(summit.js): 걷는 면 높이 = 길 안 노면 규칙(surfaceHeight), 시설은 풍경이 정한 배치.
+ let avoidCache=null;
  const summit={
-  sites:()=>landscape.status?.summitFacilities?.sites??[],
+  // 정상 시설 + 정상 둘레 상호작용 소품(피할 반경은 소품 collisionRadius). 소품은 풍경이 다 올라온 뒤 한 번만 합친다.
+  sites:()=>{const f=landscape.status?.summitFacilities?.sites??[],props=landscape.status?.interactionProps?.sites;if(!props)return f;
+   if(avoidCache?.base!==f)avoidCache={base:f,list:[...f,...props.filter(p=>p.anchor==='marker'||p.anchor==='eungjinjeon').map(p=>({id:p.id,x:p.x,z:p.z,supportRadius:p.collisionRadius??.3}))]};
+   return avoidCache.list;},
   height:(x,z)=>landscape.surfaceHeight(x,z),
   canStep:(a,b,{rocks=true}={})=>summitStepOk((x,z)=>landscape.surfaceHeight(x,z),a,b,{rockBlocked:rocks?rockBlocked:null}),
  };

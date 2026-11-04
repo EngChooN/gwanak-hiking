@@ -9,7 +9,8 @@ export const SUMMIT_RADIUS=45;
 export const SUMMIT_MAX_SLOPE=Math.tan(40*Math.PI/180);
 export const SUMMIT_STEP=.4;
 // 걷기 막는 시설(받침 반경 + 여유). helipad는 평평한 공터라 걷는다.
-export const SUMMIT_BLOCKERS=Object.freeze({radar:.4,eungjinjeon:.4,marker:.3,fork:.3});
+// 상호작용 소품(스탬프함·정상 안내판·응진전 안내판)은 소품의 걷기 막기 반경(collisionRadius)이 supportRadius로 넘어온다.
+export const SUMMIT_BLOCKERS=Object.freeze({radar:.4,eungjinjeon:.4,marker:.3,fork:.3,'stamp-6':.15,'board-summit':.15,'board-eungjinjeon':.15});
 export const SUMMIT_ARRIVAL_RADIUS=2.5;
 const SEARCH_BACK=130;
 export const SUMMIT_CENTER=(()=>{let best=sample(route.length),bs=route.length;for(let d=0;d<=80;d+=1){const p=sample(route.length-d);if(p.y>best.y){best=p;bs=route.length-d;}}return {x:best.x,z:best.z,y:best.y,s:bs};})();
