@@ -23,7 +23,7 @@ export function forestLayers(landscape){
  const add=(map,key,p)=>{if(!map.has(key))map.set(key,[]);map.get(key).push(p);};
  const cell=p=>`${Math.floor(p.gridX/12)},${Math.floor(p.gridZ/12)}`;
  // 포장·계단·데크와 입구 광장 위에는 풀·덤불을 두지 않는다(ground-cover-mask.js). 포기 반경만큼 더 비운다.
- const sectionSites=landscape.status.sectionScenery?.sites??[],mask=groundCoverMask(points,{nearest,sites:sectionSites}),GRASS_REACH=.35,shrubReach=scale=>.8*scale;
+ const sectionSites=[...(landscape.status.sectionScenery?.sites??[]),...(landscape.status.interactionProps?.clearSites??[])],mask=groundCoverMask(points,{nearest,sites:sectionSites}),GRASS_REACH=.35,shrubReach=scale=>.8*scale;
  const entranceGrid=[];
  // 30m 등산로 띠. 굽은 길의 반대편까지 최근접 거리로 검사한다.
  for(let z=minZ;z<maxZ;z+=2)for(let x=minX;x<maxX;x+=2){

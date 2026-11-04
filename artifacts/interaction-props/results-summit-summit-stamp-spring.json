@@ -1,0 +1,108 @@
+[
+  {
+    "id": "summit",
+    "target": "board-summit",
+    "errors": [],
+    "shaderErrors": [],
+    "visibleProps": [
+      "stamp-6:L0",
+      "board-eungjinjeon:L1",
+      "board-summit:L0"
+    ],
+    "on": {
+      "drawCalls": 360,
+      "triangles": 1426198,
+      "renderMs": 2.821666673819224,
+      "props": {
+        "triangles": 199.99999999999974,
+        "drawCalls": 10.000000000000002,
+        "maxTriangles": 200,
+        "maxDrawCalls": 10
+      }
+    },
+    "off": {
+      "drawCalls": 350,
+      "triangles": 1425998,
+      "renderMs": 2.7491666813691458,
+      "props": null
+    },
+    "position": {
+      "zone": "summit",
+      "x": 1562.6504146602729,
+      "z": 2544.589536977718,
+      "heading": -1.9905802563114847,
+      "s": 5056.281439241537,
+      "lateral": 0.5134319437785124
+    }
+  },
+  {
+    "id": "summit-stamp",
+    "target": "stamp-6",
+    "errors": [],
+    "shaderErrors": [],
+    "visibleProps": [
+      "stamp-6:L0",
+      "board-eungjinjeon:L1",
+      "board-summit:L0"
+    ],
+    "on": {
+      "drawCalls": 234,
+      "triangles": 1387929,
+      "renderMs": 2.235833336909612,
+      "props": {
+        "triangles": 150,
+        "drawCalls": 5.000000000000001,
+        "maxTriangles": 150,
+        "maxDrawCalls": 5
+      }
+    },
+    "off": {
+      "drawCalls": 229,
+      "triangles": 1387779,
+      "renderMs": 2.1176470468024244,
+      "props": null
+    },
+    "position": {
+      "zone": "summit",
+      "x": 1562.840343192082,
+      "z": 2546.2319831085006,
+      "heading": -2.701201350061484,
+      "s": 5054.67817909673,
+      "lateral": -0.05247090527870836
+    }
+  },
+  {
+    "id": "spring",
+    "target": "spring",
+    "errors": [],
+    "shaderErrors": [],
+    "visibleProps": [
+      "spring:L0"
+    ],
+    "on": {
+      "drawCalls": 590,
+      "triangles": 1906832,
+      "renderMs": 3.532499990860621,
+      "props": {
+        "triangles": 1203.9999999999986,
+        "drawCalls": 7.000000000000005,
+        "maxTriangles": 1204,
+        "maxDrawCalls": 7
+      }
+    },
+    "off": {
+      "drawCalls": 583,
+      "triangles": 1905628,
+      "renderMs": 3.555833331743876,
+      "props": null
+    },
+    "position": {
+      "zone": "route",
+      "x": 82.86451136620796,
+      "z": 229.23069730812384,
+      "heading": -2.8867769550306637,
+      "s": 256.5,
+      "lateral": 1.2
+    }
+  }
+]

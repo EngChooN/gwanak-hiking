@@ -1,0 +1,213 @@
+[
+  {
+    "id": "spring-close",
+    "target": "spring",
+    "errors": [],
+    "shaderErrors": [],
+    "visibleProps": [
+      "spring:L0"
+    ],
+    "on": {
+      "drawCalls": 472,
+      "triangles": 1672335,
+      "renderMs": 2.796666665871938,
+      "props": {
+        "triangles": 1203.9999999999986,
+        "drawCalls": 7.000000000000005,
+        "maxTriangles": 1204,
+        "maxDrawCalls": 7
+      }
+    },
+    "off": {
+      "drawCalls": 465,
+      "triangles": 1671131,
+      "renderMs": 2.819166668256124,
+      "props": null
+    },
+    "position": {
+      "zone": "route",
+      "x": 77.95004874474272,
+      "z": 235.17766767607935,
+      "heading": 3.0666476831336804,
+      "s": 263.5,
+      "lateral": 7.2
+    }
+  },
+  {
+    "id": "signpost",
+    "target": "sign-1935",
+    "errors": [],
+    "shaderErrors": [],
+    "visibleProps": [
+      "sign-1935:L0"
+    ],
+    "on": {
+      "drawCalls": 510,
+      "triangles": 2176229,
+      "renderMs": 2.8950000007947287,
+      "props": {
+        "triangles": 91.99999999999991,
+        "drawCalls": 5.000000000000001,
+        "maxTriangles": 92,
+        "maxDrawCalls": 5
+      }
+    },
+    "off": {
+      "drawCalls": 505,
+      "triangles": 2176137,
+      "renderMs": 2.8633333146572113,
+      "props": null
+    },
+    "position": {
+      "zone": "route",
+      "x": 269.4902873165085,
+      "z": 1768.8360394033666,
+      "heading": -2.720456496566652,
+      "s": 1945,
+      "lateral": 0.5
+    }
+  },
+  {
+    "id": "yeonjuam-junction",
+    "target": "stamp-5",
+    "errors": [],
+    "shaderErrors": [],
+    "visibleProps": [
+      "stamp-5:L0",
+      "sign-4474:L0",
+      "sign-4484:L1",
+      "sign-4569:L1",
+      "board-yeonjuam:L1"
+    ],
+    "on": {
+      "drawCalls": 636,
+      "triangles": 2417149,
+      "renderMs": 3.3239669543652495,
+      "props": {
+        "triangles": 446.00000000000136,
+        "drawCalls": 18.000000000000032,
+        "maxTriangles": 446,
+        "maxDrawCalls": 18
+      }
+    },
+    "off": {
+      "drawCalls": 618,
+      "triangles": 2416703,
+      "renderMs": 3.384999990463257,
+      "props": null
+    },
+    "position": {
+      "zone": "route",
+      "x": 1622.853099465153,
+      "z": 2890.2655998879854,
+      "heading": -1.8810984376730893,
+      "s": 4545.5,
+      "lateral": 0
+    }
+  },
+  {
+    "id": "plaza-stamp",
+    "target": "stamp-1",
+    "errors": [],
+    "shaderErrors": [],
+    "visibleProps": [
+      "stamp-1:L0"
+    ],
+    "on": {
+      "drawCalls": 969,
+      "triangles": 1873702,
+      "renderMs": 4.992499989271164,
+      "props": {
+        "triangles": 150,
+        "drawCalls": 5.000000000000001,
+        "maxTriangles": 150,
+        "maxDrawCalls": 5
+      }
+    },
+    "off": {
+      "drawCalls": 964,
+      "triangles": 1873552,
+      "renderMs": 5.457851244398385,
+      "props": null
+    },
+    "position": {
+      "zone": "plaza",
+      "x": -25.139663382463944,
+      "z": -32.307231768033446,
+      "heading": -1.954976214195015,
+      "s": null,
+      "lateral": null
+    }
+  },
+  {
+    "id": "magpie",
+    "target": "magpie-1",
+    "errors": [],
+    "shaderErrors": [],
+    "visibleProps": [
+      "stamp-1:L0",
+      "magpie-1:L0",
+      "magpie-2:L1"
+    ],
+    "on": {
+      "drawCalls": 884,
+      "triangles": 1745521,
+      "renderMs": 4.628925622987353,
+      "props": {
+        "triangles": 1562.0000000000027,
+        "drawCalls": 9.999999999999993,
+        "maxTriangles": 1562,
+        "maxDrawCalls": 10
+      }
+    },
+    "off": {
+      "drawCalls": 874,
+      "triangles": 1743959,
+      "renderMs": 4.846666669845581,
+      "props": null
+    },
+    "position": {
+      "zone": "plaza",
+      "x": -28.78742253000763,
+      "z": -32.330854170834016,
+      "heading": -2.0539513118512653,
+      "s": null,
+      "lateral": null
+    }
+  },
+  {
+    "id": "squirrel",
+    "target": "squirrel-1",
+    "errors": [],
+    "shaderErrors": [],
+    "visibleProps": [
+      "board-valley:L1",
+      "squirrel-1:L0"
+    ],
+    "on": {
+      "drawCalls": 500,
+      "triangles": 1805286,
+      "renderMs": 2.6766666571299234,
+      "props": {
+        "triangles": 1451.9999999999982,
+        "drawCalls": 3.9999999999999956,
+        "maxTriangles": 1452,
+        "maxDrawCalls": 4
+      }
+    },
+    "off": {
+      "drawCalls": 496,
+      "triangles": 1803834,
+      "renderMs": 2.677500017484029,
+      "props": null
+    },
+    "position": {
+      "zone": "route",
+      "x": 221.33940625877165,
+      "z": 1491.6108120788515,
+      "heading": -2.7573787926380744,
+      "s": 1648.5,
+      "lateral": 1.2
+    }
+  }
+]

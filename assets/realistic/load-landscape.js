@@ -2,6 +2,7 @@ import {maskCoveredBaseGeometry} from '../../src/terrain-base-mask.js';
 import {createEntrance,clearEntranceEntries,createEntranceGround} from './entrance-scenery.js';
 import {SPECIMEN_TREES,PLAZA_FACILITIES,plazaFootprint} from './entrance-plaza.js';
 import {createSectionScenery,scenerySites,clearSceneryPlacements} from './section-scenery.js';
+import {createInteractionProps} from './interaction-sites.js';
 import * as THREE from 'three';
 import {RGBELoader} from 'three/addons/loaders/RGBELoader.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
@@ -195,6 +196,11 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
   sectionSites=scenerySites(route,floorHeight);groundSites=[...summitSites,...sectionSites];
   const facilities=createSummitFacilities(route,floorHeight,summitSites);group.add(facilities.group);
   const entrance=createEntrance(route,floorHeight),sectionScenery=createSectionScenery(route,floorHeight);group.add(entrance.group,sectionScenery.group);
+  // 상호작용 소품(스탬프함·안내판·약수터·돌탑, 동물 자리). 배치는 interaction-sites.js. ?animals=preview면 동물 자리를 보인다.
+  const summitFrame=id=>{const s=summitSites.find(site=>site.id===id);return s&&{x:s.x,z:s.z,yaw:s.yaw};};
+  const interactionProps=createInteractionProps(route,surfaceHeight,{frames:{gate:entrance.frame,marker:summitFrame('marker'),eungjinjeon:summitFrame('eungjinjeon')},avoid:[...summitSites,...sectionSites],previewAnimals:new URLSearchParams(location.search).get('animals')==='preview'});
+  group.add(interactionProps.group);const natureClearSites=[...sectionSites,...interactionProps.clearSites];
+  status.interactionProps={sites:interactionProps.sites,spawns:interactionProps.spawns,clearSites:interactionProps.clearSites,stats:interactionProps.stats()};
   status.entrance={frame:entrance.frame,counts:facilityTriangleCounts(entrance.items),status:'입구 설정의 일주문 가설 위치 · 현장 실측 전 · 치수·현판 색 미확인'};
   // 광장 준비 상태: 바닥·시설(동기 생성), 가까운 나무(숲 로드 중 addInstances), 광장 아래 64m 지형 청크(update에서 한 프레임에 하나).
   // 로딩 화면은 status.entrancePlaza.ready 또는 entranceReady()(Promise)로 기다린다. 규약: docs/이동-휴식-통합규약.md.
@@ -227,7 +233,7 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
   let natureQuality=2;
   function update(camera,quality=2){
     if(disposed)return;
-    facilities.update(camera);entrance.update(camera);sectionScenery.update(camera);
+    facilities.update(camera);entrance.update(camera);sectionScenery.update(camera);interactionProps.update(camera);
     baseMesh.geometry=baseGeometries[quality];
     const size=64,radius=3,cx=Math.floor(camera.position.x/size),cz=Math.floor(camera.position.z/size),wanted=new Set();
     const cell=`${cx},${cz}`;
@@ -384,7 +390,7 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
     return ()=>{sun.removeFromParent();ambient.removeFromParent();if(scene.background===sky)scene.background=old.background;if(scene.environment===sky)scene.environment=old.environment;scene.fog=old.fog;renderer.toneMapping=old.toneMapping;renderer.toneMappingExposure=old.exposure;renderer.outputColorSpace=old.colorSpace;};
   }
   freezeStatic(group);
-  return {group,get manifest(){return manifest;},status,route,entranceReady:()=>plazaReady,materials,sky,rawHeight,floorHeight,surfaceHeight,update,streamFar,streamCity,finalizeCities:()=>city.finalize(),streamWater,applyEnvironment,
+  return {group,get manifest(){return manifest;},status,route,interactionProps,entranceReady:()=>plazaReady,materials,sky,rawHeight,floorHeight,surfaceHeight,update,streamFar,streamCity,finalizeCities:()=>city.finalize(),streamWater,applyEnvironment,
     collisionObjects:()=>[path,...chunks.values()],
     cameraCollisionObjects(a,b){
       // 붐과 근평면 폭을 포함한 XZ 상자. 정적 월드 좌표 지형만 대상으로 한다.
@@ -402,12 +408,12 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
       if(JSON.stringify(next.near)!==JSON.stringify(manifest.near)&&['width','height','spacing','x0','z0'].some(k=>next.near[k]!==manifest.near[k]))throw new Error('높이 격자 변경: 새로고침 필요');
       next.water=[...new Set([...manifest.water,...next.water])];manifest=next;status.source='manifest';return true;
     },
-    addGrass(placements){grasses.add(...grassClumps(clearSceneryPlacements(clearEntranceEntries([{kind:'grass',placements}],route)[0]?.placements??[],sectionSites),floorHeight).children.slice());freezeStatic(grasses);},
+    addGrass(placements){grasses.add(...grassClumps(clearSceneryPlacements(clearEntranceEntries([{kind:'grass',placements}],route)[0]?.placements??[],natureClearSites),floorHeight).children.slice());freezeStatic(grasses);},
     async addInstances(options){
       // 입구 전용 나무는 성공·생략·실패와 상관없이 처리 끝을 광장 준비 상태에 알린다(무한 대기 방지).
       if(options.entranceSpecimen)try{return await this.addInstances({...options,entranceSpecimen:false,keepAtEntrance:true});}finally{status.entrancePlaza.nearTrees.loaded+=options.placements.length;checkPlaza();}
       const cleared=clearEntranceEntries([options],route)[0];if(!cleared)return new THREE.LOD();
-      cleared.placements=clearSceneryPlacements(cleared.placements,sectionSites,options.kind==='tree'?3:1);if(!cleared.placements.length)return new THREE.LOD();
+      cleared.placements=clearSceneryPlacements(cleared.placements,natureClearSites,options.kind==='tree'?3:1);if(!cleared.placements.length)return new THREE.LOD();
       const lod=await addInstances({...cleared,height:floorHeight,rockGround,materials,protectedSites:summitSites,nearTrees:options.priority||options.keepAtEntrance?null:nearTrees});lod.userData.metricKind=options.kind==='rock'?'바위':'숲';
       if(options.priority)lod.userData.priority=true;
       if(!lod.levels.length)return lod;

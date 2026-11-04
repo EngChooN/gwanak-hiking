@@ -1,0 +1,40 @@
+[
+  {
+    "id": "yeonjuam-junction",
+    "target": "stamp-5",
+    "errors": [],
+    "shaderErrors": [],
+    "visibleProps": [
+      "stamp-5:L0",
+      "sign-4474:L0",
+      "sign-4484:L0",
+      "sign-4569:L1",
+      "board-yeonjuam:L0"
+    ],
+    "on": {
+      "drawCalls": 525,
+      "triangles": 2222818,
+      "renderMs": 3.087500003973643,
+      "props": {
+        "triangles": 464.0000000000005,
+        "drawCalls": 19.00000000000002,
+        "maxTriangles": 464,
+        "maxDrawCalls": 19
+      }
+    },
+    "off": {
+      "drawCalls": 506,
+      "triangles": 2222354,
+      "renderMs": 3.117500003178914,
+      "props": null
+    },
+    "position": {
+      "zone": "route",
+      "x": 1623.7254507172242,
+      "z": 2890.5453286055103,
+      "heading": -1.8810984376730893,
+      "s": 4546.5,
+      "lateral": 0
+    }
+  }
+]
