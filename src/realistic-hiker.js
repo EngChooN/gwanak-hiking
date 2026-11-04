@@ -1,5 +1,5 @@
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
-import {AnimationMixer,Box3,Group,Vector3,Quaternion,MathUtils} from 'three';
+import {AnimationMixer,Box3,Group,Vector3,Quaternion,MathUtils,Euler} from 'three';
 import {armSide,armWristTarget} from './hiker-arms.js';
 import {followHeading,headingDelta} from './hiker-facing.js';
 import {legTargets,pelvisDrop,poleRotation} from './hiker-ik.js';
@@ -133,11 +133,11 @@ export function createRealisticHiker(gltf,{height=1.7}={}){
  const offset=(x,y,z)=>new Vector3(x,y,z).applyQuaternion(rootQ()); // 루트 기준 거리(m) → 월드
  const blendPose=(a,b,t)=>({position:a.position.clone().lerp(b.position,t),quaternion:a.quaternion.clone().slerp(b.quaternion,t)});
  // 브이 손가락 모양(V_FINGERS는 hiker-gadgets.js). 애니메이션이 덮은 값을 쓰지 않고 바인드 자세에서 직접 계산해 손가락이 꺾이거나 늘어나지 않게 한다.
- const vAxisX=new Vector3(1,0,0),vAxisZ=new Vector3(0,0,1),vQa=new Quaternion(),vQb=new Quaternion();
+ const vAxisX=new Vector3(1,0,0),vAxisZ=new Vector3(0,0,1),vQa=new Quaternion(),vQb=new Quaternion(),vEul=new Euler();
  const poseVFingers=(arm,w)=>{
   for(const [name,cfg] of Object.entries(V_FINGERS))for(let n=0;n<3;n++){const b=bone(`${arm.side}Hand${name}${n+1}`),bind=fingerBind.get(b);if(!b||!bind)continue;
    const sp=n===0?cfg.splay*(arm.side==='Left'?1:-1):0;
-   vQa.setFromAxisAngle(vAxisX,cfg.flex[n]);vQb.setFromAxisAngle(vAxisZ,sp);vQb.multiply(vQa).multiply(bind);b.quaternion.slerp(vQb,w);}
+   if(cfg.rot){const r=cfg.rot[n],m=arm.side==='Left'?1:-1;vQa.setFromEuler(vEul.set(r[0],r[1]*m,r[2]*m));}else vQa.setFromAxisAngle(vAxisX,cfg.flex[n]);vQb.setFromAxisAngle(vAxisZ,sp);vQb.multiply(vQa).multiply(bind);b.quaternion.slerp(vQb,w);}
  };
  const V_CURL=[-.05,-.05,-.05,-.05,-.05,-.05,-1.45,-1.45,-1.45,-1.45,-1.45,-1.45]; // 브이: 검지·중지는 펴고 약지·새끼는 접는다
  // 쌍안경·휴대폰 자세: 소품 월드 자세와 두 손 목표(위치·회전·팔꿈치 방향·가중치·손가락)를 정한다.

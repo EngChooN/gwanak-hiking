@@ -105,5 +105,5 @@ export function phoneLensPose(props,selfie=false,out={}){
  out.direction=new Vector3(0,0,-1).applyQuaternion(out.quaternion);out.lens=selfie?'front':'back';out.visible=props.phone.visible;return out;
 }
 
-// 셀카 브이 손가락 모양: 마디별 굽힘(라디안, 음수=손바닥 쪽)과 첫 마디 벌림(부모 Z축, 왼손 기준). 검지·중지는 곧게 V자로 벌리고 약지·새끼는 주먹 쥐듯 접으며 엄지가 그 위를 덮는다.
-export const V_FINGERS=Object.freeze({Index:{flex:[-.04,-.02,-.02],splay:.2},Middle:{flex:[-.04,-.02,-.02],splay:-.2},Ring:{flex:[-1.45,-1.55,-1.1],splay:0},Pinky:{flex:[-1.4,-1.6,-1.1],splay:0},Thumb:{flex:[-1,-1,-.9],splay:0}});
+// 셀카 브이 손가락 모양: 마디별 굽힘(라디안, 음수=손바닥 쪽)과 첫 마디 벌림(부모 Z축, 왼손 기준). 검지·중지는 곧게 V자로 벌리고 약지·새끼는 첫 마디를 손바닥 안쪽으로 눕혀 손 윤곽 밖으로 나오지 않게 접고 엄지가 그 위를 덮는다.
+export const V_FINGERS=Object.freeze({Index:{flex:[-.04,-.02,-.02],splay:.2},Middle:{flex:[-.04,-.02,-.02],splay:-.2},Ring:{flex:[-1.45,-1.55,-1.1],splay:0,rot:[[-1.45,0,-1.5],[-1.55,0,0],[-1.1,0,0]]},Pinky:{flex:[-1.4,-1.6,-1.1],splay:0,rot:[[-1.4,0,-1.5],[-1.6,0,0],[-1.1,0,0]]},Thumb:{flex:[-1,-1,-.9],splay:0,rot:[[-1.2,0.4,0],[-1,0.3,0],[-0.8,0.2,0]]}});

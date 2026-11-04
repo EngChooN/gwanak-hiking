@@ -1,0 +1,106 @@
+[
+  {
+    "name": "selfie-lime-polo",
+    "info": {
+      "gadget": "phone",
+      "phone": {
+        "zoom": 0.5,
+        "selfie": true,
+        "restoreZoom": 1
+      },
+      "binoculars": {
+        "zoom": 8
+      },
+      "view": "first",
+      "selfie": true,
+      "cameraZoom": 0.5,
+      "targetZoom": 0.5,
+      "fogFar": 30000,
+      "avatarVisible": true,
+      "camera": [
+        157.32242520207046,
+        70.91329430223989,
+        549.817170376657
+      ]
+    },
+    "errors": []
+  },
+  {
+    "name": "selfie-navy-zip",
+    "info": {
+      "gadget": "phone",
+      "phone": {
+        "zoom": 0.5,
+        "selfie": true,
+        "restoreZoom": 1
+      },
+      "binoculars": {
+        "zoom": 8
+      },
+      "view": "first",
+      "selfie": true,
+      "cameraZoom": 0.5,
+      "targetZoom": 0.5,
+      "fogFar": 30000,
+      "avatarVisible": true,
+      "camera": [
+        157.31921974148474,
+        70.91354468197599,
+        549.8075699095588
+      ]
+    },
+    "errors": []
+  },
+  {
+    "name": "selfie-red-zip",
+    "info": {
+      "gadget": "phone",
+      "phone": {
+        "zoom": 0.5,
+        "selfie": true,
+        "restoreZoom": 1
+      },
+      "binoculars": {
+        "zoom": 8
+      },
+      "view": "first",
+      "selfie": true,
+      "cameraZoom": 0.5,
+      "targetZoom": 0.5,
+      "fogFar": 30000,
+      "avatarVisible": true,
+      "camera": [
+        157.32064061356786,
+        70.9120658767306,
+        549.8133578812544
+      ]
+    },
+    "errors": []
+  },
+  {
+    "name": "selfie-floral-shirt",
+    "info": {
+      "gadget": "phone",
+      "phone": {
+        "zoom": 0.5,
+        "selfie": true,
+        "restoreZoom": 1
+      },
+      "binoculars": {
+        "zoom": 8
+      },
+      "view": "first",
+      "selfie": true,
+      "cameraZoom": 0.5,
+      "targetZoom": 0.5,
+      "fogFar": 30000,
+      "avatarVisible": true,
+      "camera": [
+        157.32201342436625,
+        70.91249180319,
+        549.8168814901401
+      ]
+    },
+    "errors": []
+  }
+]
