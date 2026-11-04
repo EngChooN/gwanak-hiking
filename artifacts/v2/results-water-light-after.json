@@ -1,0 +1,98 @@
+[
+  {
+    "id": "water-1096",
+    "errors": [],
+    "performance": null,
+    "position": {
+      "zone": "route",
+      "x": 72.79494461765383,
+      "z": 994.2990809036626,
+      "heading": -2.8974781340594538,
+      "s": 1096,
+      "lateral": -3
+    },
+    "shaderErrors": [],
+    "triangles": 3686714,
+    "drawCalls": 968
+  },
+  {
+    "id": "water-1500",
+    "errors": [],
+    "performance": null,
+    "position": {
+      "zone": "route",
+      "x": 167.13920512856598,
+      "z": 1356.8912381290268,
+      "heading": -2.4987019169614806,
+      "s": 1500,
+      "lateral": -3
+    },
+    "shaderErrors": [],
+    "triangles": 3783072,
+    "drawCalls": 951
+  },
+  {
+    "id": "water-1500-low",
+    "errors": [],
+    "performance": null,
+    "position": {
+      "zone": "route",
+      "x": 167.13920512856598,
+      "z": 1356.8912381290268,
+      "heading": -2.4987019169614806,
+      "s": 1500,
+      "lateral": -3
+    },
+    "shaderErrors": [],
+    "triangles": 3436310,
+    "drawCalls": 255
+  },
+  {
+    "id": "light-sun",
+    "errors": [],
+    "performance": null,
+    "position": {
+      "zone": "route",
+      "x": 96.4961802925988,
+      "z": 1184.5378228185368,
+      "heading": -2.60078605534561,
+      "s": 1300,
+      "lateral": 0
+    },
+    "shaderErrors": [],
+    "triangles": 4753570,
+    "drawCalls": 1144
+  },
+  {
+    "id": "light-sun-golden",
+    "errors": [],
+    "performance": null,
+    "position": {
+      "zone": "route",
+      "x": 96.4961802925988,
+      "z": 1184.5378228185368,
+      "heading": -2.60078605534561,
+      "s": 1300,
+      "lateral": 0
+    },
+    "shaderErrors": [],
+    "triangles": 3762106,
+    "drawCalls": 947
+  },
+  {
+    "id": "light-golden",
+    "errors": [],
+    "performance": null,
+    "position": {
+      "zone": "route",
+      "x": 96.4961802925988,
+      "z": 1184.5378228185368,
+      "heading": -2.60078605534561,
+      "s": 1300,
+      "lateral": 0
+    },
+    "shaderErrors": [],
+    "triangles": 4677790,
+    "drawCalls": 1144
+  }
+]

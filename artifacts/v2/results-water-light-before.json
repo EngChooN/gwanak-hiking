@@ -1,0 +1,92 @@
+[
+  {
+    "id": "water-1500",
+    "errors": [],
+    "performance": {
+      "fps": 32.473954899116436
+    },
+    "position": {
+      "zone": "route",
+      "x": 167.13920512856598,
+      "z": 1356.8912381290268,
+      "heading": -2.4987019169614806,
+      "s": 1500,
+      "lateral": -3
+    },
+    "shaderErrors": [],
+    "triangles": 3782816,
+    "drawCalls": 949
+  },
+  {
+    "id": "light-day",
+    "errors": [],
+    "performance": {
+      "fps": 39.11753493229021
+    },
+    "position": {
+      "zone": "route",
+      "x": 96.4961802925988,
+      "z": 1184.5378228185368,
+      "heading": -2.60078605534561,
+      "s": 1300,
+      "lateral": 0
+    },
+    "shaderErrors": [],
+    "triangles": 4677534,
+    "drawCalls": 1142
+  },
+  {
+    "id": "light-sun",
+    "errors": [],
+    "performance": {
+      "fps": 39.4490394656147
+    },
+    "position": {
+      "zone": "route",
+      "x": 96.4961802925988,
+      "z": 1184.5378228185368,
+      "heading": -2.60078605534561,
+      "s": 1300,
+      "lateral": 0
+    },
+    "shaderErrors": [],
+    "triangles": 4753314,
+    "drawCalls": 1142
+  },
+  {
+    "id": "light-sun-golden",
+    "errors": [],
+    "performance": {
+      "fps": 40.60930533225043
+    },
+    "position": {
+      "zone": "route",
+      "x": 96.4961802925988,
+      "z": 1184.5378228185368,
+      "heading": -2.60078605534561,
+      "s": 1300,
+      "lateral": 0
+    },
+    "shaderErrors": [],
+    "triangles": 3761850,
+    "drawCalls": 945
+  },
+  {
+    "id": "light-ground",
+    "errors": [],
+    "performance": {
+      "fps": 36.56732543257482
+    },
+    "position": {
+      "zone": "route",
+      "x": 245.99843301320726,
+      "z": 1536.341029065693,
+      "heading": -2.484920834945162,
+      "s": 1700,
+      "lateral": 0
+    },
+    "shaderErrors": [],
+    "triangles": 3538044,
+    "drawCalls": 280
+  }
+]

@@ -61,7 +61,7 @@ test('잎 재질: 잎 색 입히기·투과광·바람을 기존 셰이더 뒤�
  leaf.onBeforeCompile(shader);assert.ok(previous);assert.equal(shader.uniforms.foliageTime,foliageUniforms.foliageTime);
  assert.match(shader.fragmentShader,/foliageBack/);assert.match(shader.fragmentShader,/vFoliageTint/);assert.match(shader.vertexShader,/foliageGust/);
  assert.equal(shader.fragmentShader.split('foliageGlow=').length-1,1,'두 번 패치해도 한 번만 들어간다');
- assert.match(leaf.customProgramCacheKey(),/^old\|foliage-v1-leaf/);
+ assert.match(leaf.customProgramCacheKey(),/^old\|foliage-v2-leaf/);
  const bark=patchFoliage(Object.assign(new THREE.MeshStandardMaterial(),{name:'pine_tree_01_bark'}),{pine:true});
  const s2={uniforms:{},vertexShader:THREE.ShaderLib.standard.vertexShader,fragmentShader:THREE.ShaderLib.standard.fragmentShader};bark.onBeforeCompile(s2);
  assert.match(s2.fragmentShader,/foliageLeafMask=0\./);

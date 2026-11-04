@@ -1,0 +1,56 @@
+[
+  {
+    "id": "water-1096",
+    "errors": [],
+    "performance": {
+      "fps": 60.00200006666893
+    },
+    "position": {
+      "zone": "route",
+      "x": 72.79494461765383,
+      "z": 994.2990809036626,
+      "heading": -2.8974781340594538,
+      "s": 1096,
+      "lateral": -3
+    },
+    "shaderErrors": [],
+    "triangles": 761936,
+    "drawCalls": 252
+  },
+  {
+    "id": "light-day",
+    "errors": [],
+    "performance": {
+      "fps": 60.00200006666893
+    },
+    "position": {
+      "zone": "route",
+      "x": 96.4961802925988,
+      "z": 1184.5378228185368,
+      "heading": -2.60078605534561,
+      "s": 1300,
+      "lateral": 0
+    },
+    "shaderErrors": [],
+    "triangles": 849592,
+    "drawCalls": 325
+  },
+  {
+    "id": "light-back",
+    "errors": [],
+    "performance": {
+      "fps": 60.00300015000753
+    },
+    "position": {
+      "zone": "route",
+      "x": 96.4961802925988,
+      "z": 1184.5378228185368,
+      "heading": -2.60078605534561,
+      "s": 1300,
+      "lateral": 0
+    },
+    "shaderErrors": [],
+    "triangles": 778704,
+    "drawCalls": 261
+  }
+]

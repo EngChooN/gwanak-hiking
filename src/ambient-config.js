@@ -18,6 +18,9 @@ export const dbGain=db=>db===null||db===-Infinity?0:10**(db/20);
 export const powerDb=values=>{const p=values.reduce((s,d)=>s+dbGain(d)**2,0);return p?10*Math.log10(p):-Infinity;};
 export const ambientSectionAt=m=>surfaceAt(m).section;
 export function streamDistance(m){for(let i=1;i<STREAM_DISTANCE_M.length;i++){const [b,y]=STREAM_DISTANCE_M[i],[a,x]=STREAM_DISTANCE_M[i-1];if(m<=b)return x+(y-x)*clamp((m-a)/(b-a));}return 90;}
+// 눈에 보이는 계곡 물줄기까지의 거리(m). section-scenery가 프레임마다 넣는다. null이면 구간표(streamDistance)를 쓴다.
+export const STREAM_NEAR={distance:null};
+export const setStreamDistance=d=>{STREAM_NEAR.distance=Number.isFinite(d)?d:null;};
 export const streamDb=d=>{const db=-38-20*Math.log10(Math.max(d,5)/5);return db<STREAM_CUTOFF_DB?null:db;};
 // 날씨(weather.js)가 정하는 바람·비 소리. wind는 0~1 소리 세기(null이면 영향 없음), rain은 0~1.
 // 바람은 숲·능선 바람 층을 키우거나 줄이고, 비는 새소리를 줄인다. 빗소리 자체는 weather-sound.js가 만든다.
@@ -27,7 +30,7 @@ export function setWeatherSound({wind=WEATHER_SOUND.wind,rain=WEATHER_SOUND.rain
 }
 export const windShiftDb=wind=>wind===null?0:clamp(14*(wind-.2),-4,10);
 export function ambientTargets(m,h,{birds=true,gust=0}={}){
- const section=ambientSectionAt(m),t=clamp((h-WIND_RIDGE.h0)/(WIND_RIDGE.h1-WIND_RIDGE.h0)),e=t*t*(3-2*t)*(WIND_RIDGE.exposure[section]||0),distance=streamDistance(m);
+ const section=ambientSectionAt(m),t=clamp((h-WIND_RIDGE.h0)/(WIND_RIDGE.h1-WIND_RIDGE.h0)),e=t*t*(3-2*t)*(WIND_RIDGE.exposure[section]||0),distance=STREAM_NEAR.distance===null?streamDistance(m):Math.min(STREAM_NEAR.distance,streamDistance(m)*2.5);
  const forest=WIND_FOREST.dbMin+8*clamp((h-100)/460);
  const shift=windShiftDb(WEATHER_SOUND.wind),rain=WEATHER_SOUND.rain,birdDb=birds&&rain<.6?SECTION_TARGET_DB.birds[section]:null;
  const targets={stream:section<=3?streamDb(distance):null,forest:section<7&&e<1?forest+20*Math.log10(1-e)+shift:null,ridge:e>0?-48+15*e+gust+shift:null,birds:birdDb===null?null:birdDb-14*rain,city:SECTION_TARGET_DB.city[section],crowd:section===7?-44:section===6&&m>=4609?-54+6*clamp((m-4609)/200):null};

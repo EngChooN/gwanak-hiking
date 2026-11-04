@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {patchDapple} from '../../src/light-fx.js';
 // 노면 경계 노이즈 마스크(값 노이즈 3옥타브). 재질이 바뀌는 겹침 구간(trailEntry 0→1)에서 뒤 노면을 들쭉날쭉하게 드러낸다.
 const SURFACE_NOISE=`float surfaceHash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
 float surfaceValue(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(surfaceHash(i),surfaceHash(i+vec2(1.,0.)),f.x),mix(surfaceHash(i+vec2(0.,1.)),surfaceHash(i+vec2(1.,1.)),f.x),f.y);}
@@ -24,8 +25,9 @@ vec4 landWeights(){float slope=1.0-abs(normalize(landNormal).y); float landPatch
    .replace('#include <roughnessmap_fragment>','float roughnessFactor=roughness*landR().g;')
    // 반복 노멀의 원거리 명암 줄무늬를 줄인다. 근거리 PBR은 유지한다.
    .replace('#include <normal_fragment_maps>',THREE.ShaderChunk.normal_fragment_maps.replace('texture2D( normalMap, vNormalMapUv )','mix(landN(),vec4(.5,.5,1.0,1.0),smoothstep(35.0,120.0,length(vViewPosition)))'));
+ patchDapple(shader,'landWorld');
  };
- material.customProgramCacheKey=()=> 'gwanak-slope-altitude-forest-v5-distance-detail';return material;
+ material.customProgramCacheKey=()=> 'gwanak-slope-altitude-forest-v6-dapple';return material;
 }
 
 // 노면 중심은 흙, 가장자리는 낙엽·풀. 세 PBR 채널에 같은 가중치를 적용한다.
@@ -38,8 +40,9 @@ export function trailMaterial(materials,meta){
   declarations+=`vec3 trailWeights(){float edge=smoothstep(.2,.82,abs(trailSide));float leafPatch=.5+.5*sin(trailWorld.x*1.7+sin(trailWorld.z*.8));float grass=edge*.25*leafPatch;float leaves=.08+edge*.55;return vec3(1.0-leaves-grass,leaves,grass);}\n`;
   for(const ch of ['D','N','R'])declarations+=`vec4 trail${ch}(){vec3 w=trailWeights();return ${keys.map((k,i)=>`texture2D(trail${i}${ch},trailWorld.xz/${Number(meta[k].metres).toFixed(3)})*w[${i}]`).join('+')};}\n`;
   shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\n'+declarations).replace('#include <map_fragment>','diffuseColor *= trailD(); float edgeNoise=.5+.25*sin(trailWorld.x*7.1+sin(trailWorld.z*4.7))+.25*sin(trailWorld.z*17.3+trailWorld.x*11.7); float raggedSide=abs(trailSide)+edgeNoise*.20; diffuseColor.a *= 1.0-smoothstep(.55,1.0,raggedSide); diffuseColor.a *= surfaceEntry(trailIn,trailWorld.xz);').replace('#include <roughnessmap_fragment>','float roughnessFactor=roughness*trailR().g;').replace('#include <normal_fragment_maps>',THREE.ShaderChunk.normal_fragment_maps.replace('texture2D( normalMap, vNormalMapUv )','trailN()'));
+ patchDapple(shader,'trailWorld');
  };
- material.customProgramCacheKey=()=> 'gwanak-trail-soil-leaf-grass-v3-entry';return material;
+ material.customProgramCacheKey=()=> 'gwanak-trail-soil-leaf-grass-v4-dapple';return material;
 }
 
 // 기존 돌 PBR로 포장 골재를 만들고 길 양쪽에 흙·낙엽 퇴적을 섞는다.
@@ -92,6 +95,7 @@ export function rockTrailMaterial(materials,meta,key){
     diffuseColor.a*=surfaceEntry(rockIn,rockWorld.xz);`)
    .replace('#include <roughnessmap_fragment>','float roughnessFactor=roughness*rockTex(roughnessMap,rockWorld.xz/'+metres+').g;')
    .replace('#include <normal_fragment_maps>',THREE.ShaderChunk.normal_fragment_maps.replace('texture2D( normalMap, vNormalMapUv )','rockTex(normalMap,rockWorld.xz/'+metres+')'));
+ patchDapple(shader,'rockWorld');
  };
- material.customProgramCacheKey=()=>`gwanak-rock-trail-${key}-v2-edge-noise`;return material;
+ material.customProgramCacheKey=()=>`gwanak-rock-trail-${key}-v3-dapple`;return material;
 }

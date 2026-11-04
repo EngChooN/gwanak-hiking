@@ -38,6 +38,6 @@ test('포장 광장은 GPX 첫 고도로 접합하고 외곽에서는 원래 지
 
 test('위에서 보는 계곡 수면의 앞면은 위를 향한다',()=>{
  const scenery=createSectionScenery(route,()=>100);let count=0;
- scenery.group.traverse(o=>{if(o.isMesh&&o.material===materials.get('water')){const n=o.geometry.attributes.normal;for(let i=0;i<n.count;i++)assert.ok(n.getY(i)>.99);count++;}});
+ scenery.group.traverse(o=>{if(o.isMesh&&o.material.userData.fxWater){const n=o.geometry.attributes.normal;for(let i=0;i<n.count;i++)assert.ok(n.getY(i)>.99);count++;}});
  assert.ok(count>20);
 });

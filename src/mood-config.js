@@ -16,25 +16,25 @@ export const SKY_KEYS=Object.freeze([
  {e:-8,zenith:'#1f2f66',horizon:'#6a5486',haze:'#443f74',sunColor:'#e7a0a0',sun:0,amb:.14},
  {e:-3,zenith:'#37508f',horizon:'#f5a083',haze:'#c98a96',sunColor:'#ffa86a',sun:.05,amb:.25},
  {e:1,zenith:'#4a5fa0',horizon:'#ffb066',haze:'#eaa088',sunColor:'#ffb45e',sun:.3,amb:.52},
- {e:6,zenith:'#5584c6',horizon:'#ffd19a',haze:'#dcb8a6',sunColor:'#ffcf8a',sun:.66,amb:.74},
- {e:14,zenith:'#4f88cb',horizon:'#d6e6f4',haze:'#acc8e6',sunColor:'#ffe6bf',sun:.9,amb:.86},
- {e:25,zenith:'#4A86C8',horizon:'#BAD6EE',haze:'#9DBEDF',sunColor:'#FFE9C8',sun:1,amb:1}
+ {e:6,zenith:'#5a8fd0',horizon:'#ffd9ac',haze:'#e2c4b4',sunColor:'#ffd69a',sun:.66,amb:.78},
+ {e:14,zenith:'#4a8fd6',horizon:'#dcecf9',haze:'#b4d2ee',sunColor:'#ffeac8',sun:.9,amb:.9},
+ {e:25,zenith:'#3F8FDE',horizon:'#C9E4F8',haze:'#A6CBEA',sunColor:'#FFEBCB',sun:1,amb:1}
 ]);
 
 // 밤: 푸른 달빛 방향광과 주변광. 이전 값은 방향광 .14, 주변광 .12(+.06), 노출 1.9배였다.
 // moonFloor/phaseFloor: 실제 달이 지평선 아래거나 초승달이어도 게임 속 밤은 푸른 달빛이 있도록 하한을 둔다. moonElevation은 달이 낮을 때 빛이 오는 가상 높이(°).
 export const NIGHT={moonFloor:.7,phaseFloor:.7,moonElevation:38,moonLight:.34,moonColor:[.56,.68,1],ambientBase:.22,ambientMoon:.08,exposure:2.4,basicLevelFloor:.17,basicTint:[.62,.8,1.16]};
 
-// 낮 보정: 노출·채도를 소폭 올리고 그늘은 남색 쪽으로. 낮(고도 높음)일수록 크게, 밤·흐림에서는 약하게 적용한다.
-export const DAY_GRADE={exposure:1.06,saturation:1.14,shadowTint:[.9,.97,1.1],shadowTintAmount:.18,highlightWarm:[1.04,1.0,.94]};
-// 노을 보정: 금빛 하이라이트와 분홍 그늘.
-export const GOLDEN_GRADE={exposure:1.26,saturation:1.26,shadowTint:[1.08,.9,1.1],shadowTintAmount:.3,highlightWarm:[1.18,1,.8]};
+// 낮 보정(2차 개선: 더 화사하고 맑게 — 노출 1.06→1.18, 채도 1.14→1.26, 그늘 남색 .18→.14, 맑은 하늘색·연무색을 더 푸르고 밝게): 노출·채도를 소폭 올리고 그늘은 남색 쪽으로. 낮(고도 높음)일수록 크게, 밤·흐림에서는 약하게 적용한다.
+export const DAY_GRADE={exposure:1.18,saturation:1.26,shadowTint:[.93,.98,1.08],shadowTintAmount:.14,highlightWarm:[1.05,1.0,.93]};
+// 노을 보정: 금빛 하이라이트와 분홍 그늘. 2차 개선에서 화면 전체가 너무 주황이라는 지적에 따라 따뜻함 [1.18,1,.8]→[1.08,1,.88]로 낮추고 대신 노출 1.26→1.32로 밝혔다.
+export const GOLDEN_GRADE={exposure:1.32,saturation:1.28,shadowTint:[1.05,.93,1.1],shadowTintAmount:.24,highlightWarm:[1.08,1,.88]};
 // 밤 보정: 채도는 유지하고 그늘을 푸르게.
 export const NIGHT_GRADE={exposure:1,saturation:1.1,shadowTint:[.88,.97,1.18],shadowTintAmount:.3,highlightWarm:[1.06,1,.92]};
 
 // 블룸(빛 번짐). 화질 낮음에서는 끈다. 균형은 해상도를 더 줄여 비용을 아낀다.
 export const BLOOM={
- strength:{day:.22,golden:.42,night:.5},radius:.55,threshold:.82,
+ strength:{day:.3,golden:.4,night:.5},radius:.55,threshold:.82,
  scale:{high:.5,balanced:.35}, // 블룸 패스 해상도 비율(화면 대비)
  minQuality:1
 };

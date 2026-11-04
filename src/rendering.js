@@ -18,6 +18,7 @@ import {INDIRECT_PROFILE,neutralizeEnvironment} from './indirect-light.js';
 import {installRenderBreakdown} from './render-breakdown.js';
 import {warmRenderingPaths} from './rendering-preparation.js';
 import {createAOProfiler} from './ao-profiler.js';
+import {updateLightFx,createLightShafts,canopyAt,LIGHT_FX} from './light-fx.js';
 
 // 색 보정 패스(톤매핑 전 선형 값): 채도, 그늘의 푸른/분홍 기운, 밝은 곳의 따뜻한 기운. 값은 mood-config.js.
 const GRADE_SHADER={name:'MoodGrade',uniforms:{tDiffuse:{value:null},saturation:{value:1},shadowTint:{value:new THREE.Vector3(1,1,1)},shadowAmount:{value:0},warm:{value:new THREE.Vector3(1,1,1)},exposure:{value:1}},
@@ -49,6 +50,8 @@ export function setupRendering(renderer,scene,camera,mobile,environmentSky){
   const groundFill=new THREE.HemisphereLight(INDIRECT_PROFILE.skyColor,INDIRECT_PROFILE.groundColor,INDIRECT_PROFILE.hemisphereIntensity);scene.add(groundFill);
   const solarOffset=new THREE.Vector3().fromArray(sunDir).multiplyScalar(80);
   const sky=createSkyDome(LOOK_PROFILE,sunDir);scene.add(sky);
+  // 나뭇잎 사이로 새는 빛줄기(볼륨 빛 카드). 바닥 그림자 얼룩·계곡 물 uniform은 light-fx.js가 함께 갱신한다.
+  const shafts=createLightShafts({mobile});scene.add(shafts.mesh);globalThis.__lightFx={shafts,LIGHT_FX}; // 화면 조정·검증용
   sun.castShadow=true;sun.shadow.bias=-.001;sun.shadow.normalBias=.12;sun.shadow.radius=2;
   Object.assign(sun.shadow.camera,{left:-28,right:28,top:28,bottom:-28,near:1,far:140});
   scene.add(sun,sun.target);
@@ -142,6 +145,7 @@ export function setupRendering(renderer,scene,camera,mobile,environmentSky){
     scene.fog.near=Number.isFinite(e.fogDistance)?Math.max(0,3/e.fogDistance-3/15000):0;
     direction(e.elevation,e.azimuth,sunVector);direction(e.moon.elevation,e.moon.azimuth,moonVector);
     updateSky(sky,e,sunVector,moonVector);applyBasic(e);
+    {const fx=updateLightFx({time:clock.elapsed,sunVector,environment:e,quality:Math.max(0,current),mobile});shafts.update({camera,sunColor:e.light.color,quality:Math.max(0,current),canopy:canopyAt(camera.position.y),lowSun:fx.direct?Math.max(0,Math.min(1,(38-e.elevation)/32)):0});status.lightFx={direct:fx.direct,shafts:shafts.mesh.visible,count:shafts.mesh.geometry.instanceCount};}
     precipitation.update({time:clock.elapsed,camera,rain:e.rain,snow:e.snow,wind:e.windSpeed,viewHeight:renderer.domElement.height||900,fov:camera.fov});
     setWeatherSound({wind:e.windSound,rain:e.rain});
     status.environment={basicFactor:basic.factor,time:environment.info.timeLabel,legacySun:environment.info.legacySun,manualTime:environment.info.manualTime,weather:environment.info.kind,level:environment.info.level,source:environment.info.source,error:environment.weather.state.error,calls:environment.weather.state.calls,rain:e.rain,snow:e.snow,fogDistance:e.fogDistance,fogDensity:scene.fog.near,night:e.night,lightIntensity:e.light.intensity,ambient:e.ambient,exposure:renderer.toneMappingExposure,windSound:e.windSound,windSpeed:e.windSpeed,cloud:e.cloud,stars:e.stars,moon:e.moon,light:{elevation:e.light.elevation,azimuth:e.light.azimuth}};
