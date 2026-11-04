@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import {mix,nearestRoute} from './geo.js';
 import {foliageUniforms} from './foliage-shader.js';
+import {HARD_SURFACES} from './ground-cover-mask.js';
 
 // 기존 CC0 모델을 재사용한 시각 보완. 현장 개체 위치를 뜻하지 않는다.
 // 64m 청크·고정 난수. 길 중앙은 비우고 정상 직전에는 낮은 관목만 둔다.
@@ -28,7 +29,10 @@ export function nearDetailPlacements(route){
       if(gh.distance<=gh.width/2+.15)continue;
       const roll=random(),kind=roll<.48?'litter':roll<.9?'grass':'shrub';
       if(y>600&&kind==='shrub')continue;
-      grass.push({x:gx,z:gz,kind,scale:.65+random()*.7,yaw:random()*Math.PI*2});
+      const scale=.65+random()*.7,yaw=random()*Math.PI*2;
+      // 포장·계단·데크 노면에는 포기 가장자리(낙엽 .36m, 풀·관목 .2m × 배율)도 걸치지 않게 한다. 난수는 이미 뽑아 순서를 지킨다.
+      if(HARD_SURFACES.includes(route[gh.index]?.material)||HARD_SURFACES.includes(route[gh.index+1]?.material))if(gh.distance<gh.width/2+(kind==='litter'?.36:.2)*scale)continue;
+      grass.push({x:gx,z:gz,kind,scale,yaw});
      }
     }
     if(y>430&&next%12<2){const d=width/2+2.5+random()*6,px=cx-(b.z-a.z)/length*d*side,pz=cz+(b.x-a.x)/length*d*side;

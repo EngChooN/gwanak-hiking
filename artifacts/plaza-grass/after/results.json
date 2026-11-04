@@ -1,0 +1,62 @@
+[
+  {
+    "id": "plaza-third",
+    "start": "entrance",
+    "drag": 0,
+    "errors": [],
+    "shaderErrors": [],
+    "scenery": {
+      "visibleGrass": 1840,
+      "visibleShrubs": 229,
+      "pavedGrassCleared": 2998
+    }
+  },
+  {
+    "id": "gate-under",
+    "start": "gate",
+    "drag": 0,
+    "errors": [],
+    "shaderErrors": [],
+    "scenery": {
+      "visibleGrass": 14380,
+      "visibleShrubs": 335,
+      "pavedGrassCleared": 2998
+    }
+  },
+  {
+    "id": "gate-inner",
+    "start": "gate",
+    "drag": 600,
+    "errors": [],
+    "shaderErrors": [],
+    "scenery": {
+      "visibleGrass": 772,
+      "visibleShrubs": 55,
+      "pavedGrassCleared": 2998
+    }
+  },
+  {
+    "id": "plaza-edge-left",
+    "start": "entrance",
+    "drag": -300,
+    "errors": [],
+    "shaderErrors": [],
+    "scenery": {
+      "visibleGrass": 1062,
+      "visibleShrubs": 133,
+      "pavedGrassCleared": 2998
+    }
+  },
+  {
+    "id": "plaza-edge-right",
+    "start": "entrance",
+    "drag": 300,
+    "errors": [],
+    "shaderErrors": [],
+    "scenery": {
+      "visibleGrass": 1079,
+      "visibleShrubs": 135,
+      "pavedGrassCleared": 2998
+    }
+  }
+]

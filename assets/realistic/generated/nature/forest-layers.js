@@ -5,6 +5,7 @@ import {createChunkCuller} from '../../../../src/chunk-culling.js';
 import {freezeStatic} from '../../../../src/static-scene.js';
 import {treeDensity,shrubDensity,grassDensity,broadleafRatio} from '../../forest-zones.js';
 import {shrubMaterial,foliageUniforms} from '../../foliage-shader.js';
+import {groundCoverMask} from '../../ground-cover-mask.js';
 
 // 표시되는 2m 지형의 삼각형과 같은 보간. 함수 표면 높이만 쓰면 풀 밑동이 묻힌다.
 export function grassGround(height,x,z){
@@ -21,12 +22,16 @@ export function forestLayers(landscape){
  const points=landscape.route,minX=Math.min(...points.map(p=>p.x))-30,maxX=Math.max(...points.map(p=>p.x))+30,minZ=Math.min(...points.map(p=>p.z))-30,maxZ=Math.max(...points.map(p=>p.z))+30;
  const add=(map,key,p)=>{if(!map.has(key))map.set(key,[]);map.get(key).push(p);};
  const cell=p=>`${Math.floor(p.gridX/12)},${Math.floor(p.gridZ/12)}`;
+ // 포장·계단·데크와 입구 광장 위에는 풀·덤불을 두지 않는다(ground-cover-mask.js). 포기 반경만큼 더 비운다.
+ const sectionSites=landscape.status.sectionScenery?.sites??[],mask=groundCoverMask(points,{nearest,sites:sectionSites}),GRASS_REACH=.35,shrubReach=scale=>.8*scale;
+ const entranceGrid=[];
  // 30m 등산로 띠. 굽은 길의 반대편까지 최근접 거리로 검사한다.
  for(let z=minZ;z<maxZ;z+=2)for(let x=minX;x<maxX;x+=2){
   const px=x+random()*1.9,pz=z+random()*1.9,h=nearest(px,pz);
   if(h.distance>30||h.distance<h.width/2+.65)continue;
-  const entrance=entranceLocal(points,px,pz);if(Math.abs(entrance.x)<11.4&&entrance.z> -12.4&&entrance.z<34.4)continue;
-  if(landscape.status.sectionScenery?.sites.some(s=>Math.hypot(px-s.x,pz-s.z)<s.supportRadius+1.4))continue;
+  // 일주문 둘레 사각형은 아래 별도 난수로 채운다. 여기서 건너뛰어 나머지 구간의 배치(난수 순서)는 그대로 둔다.
+  const entrance=entranceLocal(points,px,pz);if(Math.abs(entrance.x)<11.4&&entrance.z> -12.4&&entrance.z<34.4){entranceGrid.push({px,pz,x,z,h});continue;}
+  if(sectionSites.some(s=>Math.hypot(px-s.x,pz-s.z)<s.supportRadius+1.4))continue;
   const y=landscape.floorHeight(px,pz),p={x:px,z:pz,y,gridX:x,gridZ:z,distance:h.distance,yaw:random()*6.283,scale:.65+random()*.8};
   // 구간별 밀도(forest-zones.js): 숲 구간은 빽빽하게, 능선·정상부는 지금처럼 성기게.
   if(random()<.98*grassDensity(y))add(cells,cell(p),p);
@@ -34,7 +39,8 @@ export function forestLayers(landscape){
   if(h.distance>h.width/2+1.4&&random()<.55*shrubDensity(y)){
    const key=`${Math.floor(px/24)},${Math.floor(pz/24)}`;if(!shrubs.has(key))shrubs.set(key,[]);
    const edge=Math.min(1,(h.distance-h.width/2-1.4)/4);
-   shrubs.get(key).push({x:px+random()*.6-.3,z:pz+random()*.6-.3,yaw:random()*6.283,scale:(.8+random()*.95)*(.55+.45*edge),roll:random()});
+   const shrub={x:px+random()*.6-.3,z:pz+random()*.6-.3,yaw:random()*6.283,scale:(.8+random()*.95)*(.55+.45*edge),roll:random()};
+   if(!mask.blocked(shrub.x,shrub.z,shrubReach(shrub.scale)))shrubs.get(key).push(shrub);
   }
   // 교목: 숲 구간 간격 약 4.5m(이전 .13 → .2). 늘린 몫(dense)은 화질 낮음에서 감춘다.
   const treeRoll=random(),density=treeDensity(y);
@@ -51,6 +57,17 @@ export function forestLayers(landscape){
    const id='rock_face_02',key=`${Math.floor(px/48)},${Math.floor(pz/48)}`;
    if(!rocks.has(key))rocks.set(key,{id,kind:'rock',levels:[{url:`${id}-lod2.glb`,distance:0}],placements:[]});
    rocks.get(key).placements.push({x:px,z:pz,scale:y>590?1+random()*.6:.5+random()*.45,stretch:y>590?[1.1,2.2+random()*1.2,1.1]:undefined,yaw:p.yaw,embed:.3});
+  }
+ }
+ // 일주문 둘레: 포장 밖(화단·생울타리 둘레, 문 안쪽 길 양옆)만 풀과 덤불을 채운다. 별도 난수라 다른 구간 배치는 바뀌지 않는다.
+ {let entranceSeed=20261104;const r=()=>((entranceSeed=(Math.imul(entranceSeed,1664525)+1013904223)>>>0)/4294967296);
+  for(const {px,pz,x,z,h} of entranceGrid){
+   const y=landscape.floorHeight(px,pz),grass=r()<.98*grassDensity(y),yaw=r()*6.283,scale=.65+r()*.8;
+   if(grass&&!mask.entrance(px,pz,-1))add(cells,`entrance:${cell({gridX:x,gridZ:z})}`,{x:px,z:pz,y,gridX:x,gridZ:z,distance:h.distance,yaw,scale});
+   if(h.distance>h.width/2+1.4&&r()<.55*shrubDensity(y)){
+    const edge=Math.min(1,(h.distance-h.width/2-1.4)/4),shrub={x:px+r()*.6-.3,z:pz+r()*.6-.3,yaw:r()*6.283,scale:(.8+r()*.95)*(.55+.45*edge),roll:r()};
+    if(!mask.blocked(shrub.x,shrub.z,shrubReach(shrub.scale))){const key=`entrance:${Math.floor(px/24)},${Math.floor(pz/24)}`;if(!shrubs.has(key))shrubs.set(key,[]);shrubs.get(key).push(shrub);}
+   }
   }
  }
  // 정상 주변의 넓은 암반 봉우리. 시설과 노면의 실제 여유를 검사한다.
@@ -124,7 +141,7 @@ export function forestLayers(landscape){
   shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nvarying float grassHeight;').replace('#include <color_fragment>','#include <color_fragment>\ndiffuseColor.rgb*=mix(.62,1.12,grassHeight);');
  };
  material.customProgramCacheKey=()=> 'forest-blades-wind-v3-understory';
- const dummy=new THREE.Object3D(),tint=new THREE.Color(),items=[];
+ const dummy=new THREE.Object3D(),tint=new THREE.Color(),items=[];let pavedCleared=0;
  for(const list of cells.values()){
   const mesh=new THREE.InstancedMesh(geometry,material,list.reduce((n,p)=>n+(p.distance<=14?49:21),0));let i=0;
   // 포기 순서를 영역 전체에 교차 배치한다. 낮음에서도 한쪽 띠만 남기지 않는다.
@@ -134,12 +151,15 @@ export function forestLayers(landscape){
    const j=step*(total===49?17:8)%total;
    const x=p.gridX+(j%7+.15+random()*.7)*2/7,z=p.gridZ+(Math.floor(j/7)+.15+random()*.7)*2/rows;
    if(nearest(x,z).distance<nearest(x,z).width/2+.25)continue;
+   // 포장·계단·데크·광장 위 포기는 버린다. 다음 포기들의 난수 순서를 지키려고 크기·색 난수 3개는 그대로 쓴다.
+   if(mask.blocked(x,z,GRASS_REACH)){random();random();random();pavedCleared++;continue;}
    dummy.position.set(x,grassGround(landscape.floorHeight,x,z)+.012,z);dummy.rotation.y=p.yaw+j;
    dummy.scale.setScalar(p.scale*(.75+random()*.25));dummy.updateMatrix();mesh.setMatrixAt(i,dummy.matrix);
    const patch=.5+.25*Math.sin(x*.11)+.25*Math.sin(z*.09);
    // HSL은 화면에서 고른 sRGB 값이다. 선형 공간으로 오인하면 풀이 희게 뜬다.
    tint.setHSL(.105+patch*.095,.22+random()*.13,.25+patch*.07+random()*.035,THREE.SRGBColorSpace);mesh.setColorAt(i,tint);i++;
   }
+  if(!i){mesh.dispose();continue;}
   mesh.count=i;mesh.userData.metricKind='하층 식생';mesh.receiveShadow=true;
   mesh.computeBoundingBox();mesh.computeBoundingSphere();mesh.boundingBox.expandByScalar(.5);mesh.boundingSphere.radius+=.5;root.add(mesh);items.push({mesh,box:mesh.boundingBox.clone(),count:i});
  }
@@ -148,6 +168,7 @@ export function forestLayers(landscape){
  // 11월 덤불 색(sRGB): 팥배·당단풍 붉은·주황, 참나무 어린나무 갈색, 노랑, 남은 초록.
  const shrubPalette=[0x7c4630,0x8f5a36,0x6f5134,0x857242,0x56603a,0x6a3428];
  for(const list of shrubs.values()){
+  if(!list.length)continue;
   const mesh=new THREE.InstancedMesh(shrubGeometry,shrubMat,list.length);
   list.forEach((p,i)=>{
    dummy.position.set(p.x,grassGround(landscape.floorHeight,p.x,p.z)-.02,p.z);dummy.rotation.set(0,p.yaw,0);
@@ -170,7 +191,7 @@ export function forestLayers(landscape){
   for(const {mesh,box,count} of shrubItems){mesh.visible=culler.visible(box,camera,[22,34,48][quality]);mesh.count=Math.ceil(count*[.3,.65,1][quality]);if(mesh.visible)visibleShrubs+=mesh.count;}
   landscape.status.scenery.visibleShrubs=visibleShrubs;
  };
- landscape.status.scenery={forestCorridor:30,grassRadius:[20,30,40],grassDensityPerM2:[12.25,5.25],grassBlades:BLADES,shrubs:shrubItems.reduce((n,i)=>n+i.count,0),shrubRadius:[22,34,48],denseTrees:[...treeGroups.values()].reduce((n,e)=>n+e.placements.filter(p=>p.dense).length,0),zones:'forest-zones.js',grassChunkSize:12,grassInstances:items.reduce((n,i)=>n+i.count,0),trees:[...treeGroups.values()].reduce((n,e)=>n+e.placements.length,0),outcrops:[...rocks.values()].reduce((n,e)=>n+e.placements.length,0),speciesStatus:'임상도 미확보 · 구간별 활엽 비율(숲 75~80%, 능선 25%) 시각 대용',wind:true,layers:['소나무·참나무류 교목 시각 대용','덤불층(1~3m)','관목','고사리·조릿대형 하층'],ground:'낙엽층 PBR + 이끼 군락 · 등산로 별도 재질 유지'};
+ landscape.status.scenery={forestCorridor:30,grassRadius:[20,30,40],grassDensityPerM2:[12.25,5.25],grassBlades:BLADES,shrubs:shrubItems.reduce((n,i)=>n+i.count,0),shrubRadius:[22,34,48],denseTrees:[...treeGroups.values()].reduce((n,e)=>n+e.placements.filter(p=>p.dense).length,0),zones:'forest-zones.js',grassChunkSize:12,pavedGrassCleared:pavedCleared,grassInstances:items.reduce((n,i)=>n+i.count,0),trees:[...treeGroups.values()].reduce((n,e)=>n+e.placements.length,0),outcrops:[...rocks.values()].reduce((n,e)=>n+e.placements.length,0),speciesStatus:'임상도 미확보 · 구간별 활엽 비율(숲 75~80%, 능선 25%) 시각 대용',wind:true,layers:['소나무·참나무류 교목 시각 대용','덤불층(1~3m)','관목','고사리·조릿대형 하층'],ground:'낙엽층 PBR + 이끼 군락 · 등산로 별도 재질 유지'};
  return [...treeGroups.values(),...rocks.values()];
 }
 
