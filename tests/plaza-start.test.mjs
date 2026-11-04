@@ -123,7 +123,7 @@ test('main.js 연결: 로딩 전 입력·시간 차단, 광장 표시·zone 신�
  assert.match(main,/speed=started\?frameMetrics\.stage\('movement'/);
  assert.match(main,/if\(started&&now-saveAt>700\)/);
  assert.match(main,/zone:state\.zone,courseDistance:course/);assert.match(main,/출발 전 · 광장 · /);
- assert.match(main,/\{entrance:'plaza',plaza:'plaza',gate:'gate',demo:'demo'\}\[startParam\]/);
+ assert.match(main,/\{entrance:'plaza',plaza:'plaza',gate:'gate',demo:'demo',summit:'summit'\}\[startParam\]/);
  assert.match(main,/saved\?restore\(saved\):initialState\(\{start:'plaza'\}\)/);
  assert.match(main,/window\.hiking=\{started:false,ready:\(\)=>readyPromise/);
  assert.match(main,/surfaceHeight|walkingGround\.height\(state\.plaza\.x,state\.plaza\.z,false\)/);

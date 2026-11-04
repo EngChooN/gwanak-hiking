@@ -41,8 +41,8 @@ window.addEventListener('unhandledrejection',e=>{if(!started&&loading.phase==='l
 window.hiking={started:false,ready:()=>readyPromise,start:()=>{startRequested=true;beginHike();return started;},loading:()=>loading.snapshot()};
 window.addEventListener(START_EVENT,()=>window.hiking.start());
 const $=id=>document.getElementById(id);let saved=null,storageOK=true;try{saved=localStorage.getItem(SAVE_KEY);}catch{storageOK=false;}
-// ?start=entrance|gate|demo. 저장이 없는 첫 실행은 광장 출발이다.
-const startParam=new URLSearchParams(location.search).get('start'),startOption={entrance:'plaza',plaza:'plaza',gate:'gate',demo:'demo'}[startParam];
+// ?start=entrance|gate|demo|summit. 저장이 없는 첫 실행은 광장 출발이다.
+const startParam=new URLSearchParams(location.search).get('start'),startOption={entrance:'plaza',plaza:'plaza',gate:'gate',demo:'demo',summit:'summit'}[startParam];
 const state=ensureGadget(startOption?initialState({start:startOption}):saved?restore(saved):initialState({start:'plaza'}));
 loading.set('terrain',0);
 function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(state.gadgetPrevView?{...state,view:state.gadgetPrevView}:state)); // 기구로 강제한 1인칭은 저장하지 않는다

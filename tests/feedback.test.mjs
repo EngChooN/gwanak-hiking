@@ -30,3 +30,7 @@ test('3인칭 카메라 붐: 지형·계단 벽 앞에서 당김, 장애물 없�
  const wall=new Mesh(new BoxGeometry(10,10,.5),new MeshBasicMaterial({side:DoubleSide}));wall.position.z=3;wall.updateMatrixWorld(true);
  const safe=retractCamera(target,desired,[wall],camera);assert.ok(safe.z<2.75&&safe.z>2);assert.deepEqual(retractCamera(target,desired,[],camera).toArray(),desired.toArray());
 });
+test('?start=summit은 정상 10m 앞 코스에서 멈추지 않은 채 시작한다',()=>{
+ const s=initialState({start:'summit'});
+ assert.equal(s.zone,'route');assert.equal(s.s,route.length-10);assert.equal(s.paused,false);
+});

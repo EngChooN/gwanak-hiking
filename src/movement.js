@@ -14,10 +14,11 @@ export const isOffTrail=(s,lateral)=>s>=0&&Math.abs(lateral)>sample(s).width/2;
 export function positionAt(s,lateral,ground){const p=sample(s),a=sample(s-2),b=sample(s+2),length=Math.hypot(b.x-a.x,b.z-a.z),nx=s<0?p.nx:-(b.z-a.z)/length,nz=s<0?p.nz:(b.x-a.x)/length,x=p.x+nx*lateral,z=p.z+nz*lateral;return [x,ground?.height(x,z,isOffTrail(s,lateral))??p.y,z];}
 // 코스(zone 'route')의 시작은 일주문 아래(GATE_S). 그보다 뒤는 광장(zone 'plaza')의 자유이동이다.
 export const ROUTE_MIN_S=GATE_S+1e-6;
+export const SUMMIT_START_BACK=10;
 const ZONES=['route','plaza'];
-// start: 'plaza'(일주문 앞 광장) | 'gate'(일주문 아래 s=GATE_S) | 'demo'(545m 구간). entrance:true는 'plaza'와 같다.
+// start: 'plaza'(일주문 앞 광장) | 'gate'(일주문 아래 s=GATE_S) | 'demo'(545m 구간) | 'summit'(정상 10m 앞, 도착 화면이 바로 뜨지 않게). entrance:true는 'plaza'와 같다.
 export function initialState({entrance=false,start=entrance?'plaza':'demo'}={}){
- const plaza=start==='plaza',s=start==='demo'?DEMO_START:ROUTE_MIN_S;
+ const plaza=start==='plaza',s=start==='demo'?DEMO_START:start==='summit'?route.length-SUMMIT_START_BACK:ROUTE_MIN_S;
  return {version:1,routeId:ROUTE_ID,routeRevision:currentRevision,entranceHypothesis:ENTRANCE_HYPOTHESIS,zone:plaza?'plaza':'route',plaza:plaza?{...PLAZA_START}:null,s,lateral:0,elapsed:0,distance:0,ascent:0,steps:0,stepPhase:0,checkpoints:[],paused:false,auto:false,view:'first',sessions:1,stamina:100,runExhausted:false,running:false,pose:'stand',teaRemaining:0};
 }
 // 일주문 기준 거리(코스 표시용). 광장은 0m다.
