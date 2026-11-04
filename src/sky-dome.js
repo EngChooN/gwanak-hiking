@@ -15,8 +15,8 @@ const CLOUD_FRAGMENT=`
   retColor=mix(retColor,cloudColor*max(retColor.b,0.62),cover);
  }
 `;
-// 밤하늘: 별(방향 해시), 달 원반·달무리, 서울 야경(북쪽 지평선 주변의 불빛 알갱이와 도시 불빛 번짐. 번짐은 노을로 읽히지 않게 푸른 회색).
-// 지형·건물에 가려지는 부분은 가려지고, 지평선 위로 드러난 먼 불빛만 하늘 셰이더가 그린다. 건물 창문 자체는 발광시키지 않는다.
+// 밤하늘: 별(방향 해시), 달 원반·달무리, 서울 쪽 지평선 불빛 번짐(노을로 읽히지 않게 푸른 회색).
+// 별은 방향 공간의 정육면체 칸(1/300rad) 안 구이라 어느 배율·화면비에서도 둥글다. 도시 불빛 알갱이는 도시 모형이 그린다.
 const NIGHT_FRAGMENT=`
   if(nightAmt>0.002){
    float horizonFade=smoothstep(0.0,0.08,gd.y);
@@ -31,11 +31,8 @@ const NIGHT_FRAGMENT=`
    float mask=smoothstep(1.4,0.25,da);
    float glow=exp(-max(gd.y,0.0)*16.0)*step(-0.03,gd.y);
    base+=vec3(0.46,0.52,0.78)*0.07*mask*glow*cityAmt;
-   vec2 cp=vec2(az*900.0,gd.y*320.0),cell=floor(cp);
-   float lh=fract(sin(dot(cell,vec2(41.3,289.1)))*43758.5453);
-   float lamp=step(0.88,lh)*smoothstep(0.5,0.05,length(fract(cp)-0.5))*step(-0.012,gd.y)*step(gd.y,0.028+0.012*fract(lh*13.0));
-   vec3 lampColor=mix(vec3(1.0,0.72,0.38),vec3(0.85,0.92,1.0),fract(lh*7.0));
-   base+=lampColor*lamp*mask*cityAmt*1.6;
+   // 지평선의 먼 불빛 알갱이(가로 1/900·세로 1/320rad 칸)는 뺐다. 쌍안경으로 보면 북쪽 먼 산 위 하늘에 세로로 늘어진 타원 '별'로 보였다.
+   // 서울 불빛은 도시 모형의 창·가로등이 맡고, 하늘 셰이더는 지평선 번짐만 그린다.
   }`;
 // Preetham 모델은 태양 방향·대기 감쇠의 기준으로 두고, 화면에 나오는 색은 목표색(천정·지평선) 그라데이션으로 맞춘다.
 // 모델 출력만 쓰면 Neutral 톤매핑 뒤 회청색으로 바래기 때문이다.
@@ -63,7 +60,7 @@ ${clouds?CLOUD_FRAGMENT:''}
     shader.fragmentShader=shader.fragmentShader.replace('void main()','uniform float skyGain,cloudCover,nightAmt,starAmt,moonAmt,cityAmt,glowAmt;uniform vec3 zenithColor,horizonColor,sunDir,cloudColor,moonDir;\nvoid main()')
       .replace('gl_FragColor = vec4( retColor, 1.0 );',gradient);
   };
-  sky.material.customProgramCacheKey=()=>`clear-sky-v3-${sunGlow}-${clouds}`;
+  sky.material.customProgramCacheKey=()=>`clear-sky-v4-${sunGlow}-${clouds}`;
   return sky;
 }
 // 환경광 전용: 하늘 + 낮은 채도의 땅색 반구를 PMREM으로 구워 푸른 천공광과 따뜻한 지면 반사광을 만든다.

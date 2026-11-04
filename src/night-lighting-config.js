@@ -10,8 +10,10 @@ export const REAL_LIGHT_COUNT=4;          // 실제 점광원(그림자 없음)�
 export const PLAZA_LAMPS=Object.freeze([
  {gx:-5.2,gz:4,boost:1.3},{gx:5.2,gz:4,boost:1.3},{gx:-5.2,gz:15,boost:1.1},{gx:5.2,gz:24,boost:1.1},{gx:-5.2,gz:33,boost:1}
 ]);
-// 연주암·정상 시설 보안등(작은 등 1~2개). metres는 참고 거리(route.points.referenceMetres), 정상은 코스 끝에서 거꾸로.
-export const FACILITY_LAMPS=Object.freeze([{id:'yeonjuam',metres:4545,side:4.5,height:3.2},{id:'summit',fromEnd:6,side:3.2,height:3.2}]);
+// 연주암·정상 시설 보안등(작은 등 1~2개). metres는 참고 거리(route.points.referenceMetres), fromEnd는 코스 끝에서 거꾸로.
+// 정상 등은 정상석(anchor) 기준 남동쪽(offset: X 동 / Z 남, m)에 둔다. 정상 출발 자리에서 서울(북서~동) 쪽 쌍안경 시야를 가리지 않고,
+// 스탬프함(정상석 남 2.5m)·안내판(북동 2.9m)과 3.5m 이상 떨어진다. 정상석 자료가 없으면 fromEnd·side로 둔다. 위치는 추정.
+export const FACILITY_LAMPS=Object.freeze([{id:'yeonjuam',metres:4545,side:4.5,height:3.2},{id:'summit',anchor:'marker',offset:[3.5,5.5],fromEnd:14,side:3.2,height:3.2}]);
 // 실제 헤드랜턴은 거리 제곱 감쇠보다 완만하게(decay 1.1) 해서 가까운 바닥이 하얗게 타지 않고 15m 앞까지 보이게 한다.
 export const HEADLAMP=Object.freeze({reach:15,distance:24,decay:1.1,angle:.45,penumbra:.9,intensity:14,color:0xfff2dc});
 // 자동 점등은 해가 진 뒤. 공원등은 해질 무렵(고도 +2°부터 서서히), 헤드랜턴은 어두워진 뒤(−3°).

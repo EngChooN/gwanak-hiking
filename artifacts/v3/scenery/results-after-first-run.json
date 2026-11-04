@@ -1,0 +1,190 @@
+[
+  {
+    "id": "valley-1096",
+    "errors": [],
+    "performance": {
+      "fps": 41.769571198886105,
+      "p95": null
+    },
+    "position": {
+      "zone": "route",
+      "x": 72.79494461765383,
+      "z": 994.2990809036626,
+      "heading": -2.8974781340594538,
+      "s": 1096,
+      "lateral": -3
+    },
+    "shaderErrors": []
+  },
+  {
+    "id": "valley-1096-wide",
+    "errors": [],
+    "performance": {
+      "fps": 45.58187333211783,
+      "p95": null
+    },
+    "position": {
+      "zone": "route",
+      "x": 70.88178415950011,
+      "z": 994.8820192034483,
+      "heading": -2.8974781340594538,
+      "s": 1096,
+      "lateral": -1
+    },
+    "shaderErrors": []
+  },
+  {
+    "id": "valley-1500",
+    "errors": [],
+    "performance": {
+      "fps": 40.27780079892594,
+      "p95": null
+    },
+    "position": {
+      "zone": "route",
+      "x": 167.13920512856598,
+      "z": 1356.8912381290268,
+      "heading": -2.4987019169614806,
+      "s": 1500,
+      "lateral": -3
+    },
+    "shaderErrors": []
+  },
+  {
+    "id": "valley-1500-wide",
+    "errors": [],
+    "performance": {
+      "fps": 39.4490394656147,
+      "p95": null
+    },
+    "position": {
+      "zone": "route",
+      "x": 165.47605564341347,
+      "z": 1358.0020638534484,
+      "heading": -2.4987019169614806,
+      "s": 1500,
+      "lateral": -1
+    },
+    "shaderErrors": []
+  },
+  {
+    "id": "summit-nne-night",
+    "clock": "19:40",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "errors": [],
+    "performance": {
+      "fps": 60.00265939764648,
+      "p95": null
+    },
+    "bearing": 22.50000057650891,
+    "pitch": -1.5000002466469786,
+    "zoom": 8,
+    "camera": [
+      1561.91075416126,
+      636.0880902432035,
+      2544.2594165777855
+    ],
+    "night": 1,
+    "stars": 1,
+    "shaderErrors": []
+  },
+  {
+    "id": "summit-nne-night-wide",
+    "clock": "19:40",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "errors": [],
+    "performance": {
+      "fps": 60.00300015000745,
+      "p95": null
+    },
+    "bearing": 22.500004073565776,
+    "pitch": -3.9999983263540333,
+    "zoom": 1,
+    "camera": [
+      1561.91075416126,
+      636.0880902432035,
+      2544.2594165777855
+    ],
+    "night": 1,
+    "stars": 1,
+    "shaderErrors": []
+  },
+  {
+    "id": "summit-lotte-night",
+    "clock": "19:40",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "errors": [],
+    "performance": {
+      "fps": 60.00100001666693,
+      "p95": null
+    },
+    "bearing": 58.49999950192267,
+    "pitch": -1.1999999787515292,
+    "zoom": 8,
+    "camera": [
+      1561.91075416126,
+      636.0880902432035,
+      2544.2594165777855
+    ],
+    "night": 1,
+    "stars": 1,
+    "shaderErrors": []
+  },
+  {
+    "id": "summit-lotte-night-low",
+    "clock": "19:40",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "errors": [],
+    "performance": {
+      "fps": 60.003656732543234,
+      "p95": null
+    },
+    "bearing": 58.49999950192267,
+    "pitch": -3.50000028408821,
+    "zoom": 8,
+    "camera": [
+      1561.91075416126,
+      636.0880902432035,
+      2544.2594165777855
+    ],
+    "night": 1,
+    "stars": 1,
+    "shaderErrors": []
+  },
+  {
+    "id": "stars-bino8",
+    "clock": "21:30",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "errors": [],
+    "performance": {
+      "fps": 60.00300015000753,
+      "p95": null
+    },
+    "bearing": 200.00000021992113,
+    "pitch": 37.99999983711917,
+    "zoom": 8,
+    "camera": [
+      1561.91075416126,
+      636.0880902432035,
+      2544.2594165777855
+    ],
+    "night": 1,
+    "stars": 1,
+    "shaderErrors": []
+  }
+]

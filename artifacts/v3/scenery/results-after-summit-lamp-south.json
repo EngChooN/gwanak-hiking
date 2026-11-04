@@ -1,0 +1,23 @@
+[
+  {
+    "id": "summit-lamp-south",
+    "clock": "19:40",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "errors": [],
+    "performance": null,
+    "bearing": 139.99999534493548,
+    "pitch": -11.999998476118959,
+    "zoom": 1,
+    "camera": [
+      1561.91075416126,
+      636.0880902432035,
+      2544.2594165777855
+    ],
+    "night": 1,
+    "stars": 1,
+    "shaderErrors": []
+  }
+]

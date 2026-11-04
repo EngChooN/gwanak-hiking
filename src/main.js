@@ -256,7 +256,7 @@ loading.set('facilities',ready.facilities?1:.5);if(!ready.facilities)failLoading
 // 준비 실패는 위 error/unhandledrejection 수신기가 로딩 오류 신호로 바꾼다.
 // 밤 조명: 가로등(공원 구간)·헤드랜턴·보안등. 실제 광원 수는 고정이라 여기서 한 번 만들고 prepare()가 함께 컴파일한다.
 const sOfReference=m=>{const g=route.segments.find(seg=>seg.b.referenceMetres>=m)??route.segments.at(-1),a=g.a.referenceMetres,b=g.b.referenceMetres;return g.start+Math.max(0,Math.min(1,(m-a)/((b-a)||1)))*g.length;};
-const facilityPoints=FACILITY_LAMPS.map(f=>{const s=f.metres!==undefined?sOfReference(f.metres):route.length-f.fromEnd,[cx,,cz]=positionAt(s,0,walkingGround),[x,,z]=positionAt(s,f.side,walkingGround);return {x,z,tx:cx,tz:cz,height:f.height};});
+const facilityPoints=FACILITY_LAMPS.map(f=>{const anchor=f.anchor&&landscape.status.summitFacilities?.sites?.find(site=>site.id===f.anchor);if(anchor)return {x:anchor.x+f.offset[0],z:anchor.z+f.offset[1],tx:anchor.x,tz:anchor.z,height:f.height};const s=f.metres!==undefined?sOfReference(f.metres):route.length-f.fromEnd,[cx,,cz]=positionAt(s,0,walkingGround),[x,,z]=positionAt(s,f.side,walkingGround);return {x,z,tx:cx,tz:cz,height:f.height};});
 const night=createNightLighting({scene,renderer,place:(s,l)=>positionAt(s,l,walkingGround),groundHeight:(x,z)=>walkingGround.height(x,z,false),gatePoint:fromGate,facilityPoints,routeLength:route.length});
 let multi=null;
 // 함께 걷기 시제품(?multi). 켜지 않으면 코드를 불러오지도 않는다. 실제 서버 없이 이 컴퓨터의 창끼리만 연결한다.

@@ -13,6 +13,7 @@ import {terrainMaterial,trailMaterial,pavedMaterial,rockTrailMaterial} from './t
 import {LOOK_PROFILE} from '../../src/look-profile.js';
 import {applyAtmosphere} from './skyline-reference.js';
 import {grassClumps,updateGroundCover} from './near-detail.js';
+import {waterClearance} from './water-clearance.js';
 import {instanceGeometry} from './instance-geometry.js';
 import {twigCutout} from './foliage-material.js';
 import {patchFoliage,foliageUniforms} from './foliage-shader.js';
@@ -421,7 +422,8 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
       if(JSON.stringify(next.near)!==JSON.stringify(manifest.near)&&['width','height','spacing','x0','z0'].some(k=>next.near[k]!==manifest.near[k]))throw new Error('높이 격자 변경: 새로고침 필요');
       next.water=[...new Set([...manifest.water,...next.water])];manifest=next;status.source='manifest';return true;
     },
-    addGrass(placements){grasses.add(...grassClumps(clearSceneryPlacements(clearEntranceEntries([{kind:'grass',placements}],route)[0]?.placements??[],natureClearSites),floorHeight).children.slice());freezeStatic(grasses);},
+    // 길가 풀·낙엽·관목 포기도 계곡 물줄기 띠·호수 수면에는 두지 않는다(water-clearance.js, 포기 반경 .35m×배율).
+    addGrass(placements){const water=waterClearance(route),kept=clearSceneryPlacements(clearEntranceEntries([{kind:'grass',placements}],route)[0]?.placements??[],natureClearSites),dry=kept.filter(p=>!water.blocked(p.x,p.z,.35*(p.scale??1)));status.waterGroundCoverCleared=kept.length-dry.length;grasses.add(...grassClumps(dry,floorHeight).children.slice());freezeStatic(grasses);},
     async addInstances(options){
       // 입구 전용 나무는 성공·생략·실패와 상관없이 처리 끝을 광장 준비 상태에 알린다(무한 대기 방지).
       if(options.entranceSpecimen)try{return await this.addInstances({...options,entranceSpecimen:false,keepAtEntrance:true});}finally{status.entrancePlaza.nearTrees.loaded+=options.placements.length;checkPlaza();}

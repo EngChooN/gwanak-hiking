@@ -6,6 +6,7 @@ import {freezeStatic} from '../../../../src/static-scene.js';
 import {treeDensity,shrubDensity,grassDensity,broadleafRatio} from '../../forest-zones.js';
 import {shrubMaterial,foliageUniforms} from '../../foliage-shader.js';
 import {groundCoverMask} from '../../ground-cover-mask.js';
+import {waterClearance} from '../../water-clearance.js';
 
 // 표시되는 2m 지형의 삼각형과 같은 보간. 함수 표면 높이만 쓰면 풀 밑동이 묻힌다.
 export function grassGround(height,x,z){
@@ -22,9 +23,10 @@ export function forestLayers(landscape){
  const points=landscape.route,minX=Math.min(...points.map(p=>p.x))-30,maxX=Math.max(...points.map(p=>p.x))+30,minZ=Math.min(...points.map(p=>p.z))-30,maxZ=Math.max(...points.map(p=>p.z))+30;
  const add=(map,key,p)=>{if(!map.has(key))map.set(key,[]);map.get(key).push(p);};
  const cell=p=>`${Math.floor(p.gridX/12)},${Math.floor(p.gridZ/12)}`;
- // 포장·계단·데크와 입구 광장 위에는 풀·덤불을 두지 않는다(ground-cover-mask.js). 포기 반경만큼 더 비운다.
- const sectionSites=[...(landscape.status.sectionScenery?.sites??[]),...(landscape.status.interactionProps?.clearSites??[])],mask=groundCoverMask(points,{nearest,sites:sectionSites}),GRASS_REACH=.35,shrubReach=scale=>.8*scale;
- const entranceGrid=[];
+ // 포장·계단·데크와 입구 광장, 계곡 물줄기 띠·호수 수면 위에는 풀·덤불을 두지 않는다(ground-cover-mask.js·water-clearance.js). 포기 반경만큼 더 비운다.
+ const sectionSites=[...(landscape.status.sectionScenery?.sites??[]),...(landscape.status.interactionProps?.clearSites??[])],water=waterClearance(points),mask=groundCoverMask(points,{nearest,sites:sectionSites,water}),GRASS_REACH=.35,shrubReach=scale=>.8*scale;
+ const entranceGrid=[];let shrubWaterCleared=0;
+ const summitView=summitViewCap(landscape,points),summitShrubView=summitView.stats;
  // 30m 등산로 띠. 굽은 길의 반대편까지 최근접 거리로 검사한다.
  for(let z=minZ;z<maxZ;z+=2)for(let x=minX;x<maxX;x+=2){
   const px=x+random()*1.9,pz=z+random()*1.9,h=nearest(px,pz);
@@ -40,7 +42,8 @@ export function forestLayers(landscape){
    const key=`${Math.floor(px/24)},${Math.floor(pz/24)}`;if(!shrubs.has(key))shrubs.set(key,[]);
    const edge=Math.min(1,(h.distance-h.width/2-1.4)/4);
    const shrub={x:px+random()*.6-.3,z:pz+random()*.6-.3,yaw:random()*6.283,scale:(.8+random()*.95)*(.55+.45*edge),roll:random()};
-   if(!mask.blocked(shrub.x,shrub.z,shrubReach(shrub.scale)))shrubs.get(key).push(shrub);
+   if(water.blocked(shrub.x,shrub.z,shrubReach(shrub.scale)))shrubWaterCleared++;
+   else if(!mask.blocked(shrub.x,shrub.z,shrubReach(shrub.scale))&&summitView.fit(shrub))shrubs.get(key).push(shrub);
   }
   // 교목: 숲 구간 간격 약 4.5m(이전 .13 → .2). 늘린 몫(dense)은 화질 낮음에서 감춘다.
   const treeRoll=random(),density=treeDensity(y);
@@ -141,7 +144,7 @@ export function forestLayers(landscape){
   shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nvarying float grassHeight;').replace('#include <color_fragment>','#include <color_fragment>\ndiffuseColor.rgb*=mix(.62,1.12,grassHeight);');
  };
  material.customProgramCacheKey=()=> 'forest-blades-wind-v3-understory';
- const dummy=new THREE.Object3D(),tint=new THREE.Color(),items=[];let pavedCleared=0;
+ const dummy=new THREE.Object3D(),tint=new THREE.Color(),items=[];let pavedCleared=0,waterCleared=0;
  for(const list of cells.values()){
   const mesh=new THREE.InstancedMesh(geometry,material,list.reduce((n,p)=>n+(p.distance<=14?49:21),0));let i=0;
   // 포기 순서를 영역 전체에 교차 배치한다. 낮음에서도 한쪽 띠만 남기지 않는다.
@@ -152,6 +155,7 @@ export function forestLayers(landscape){
    const x=p.gridX+(j%7+.15+random()*.7)*2/7,z=p.gridZ+(Math.floor(j/7)+.15+random()*.7)*2/rows;
    if(nearest(x,z).distance<nearest(x,z).width/2+.25)continue;
    // 포장·계단·데크·광장 위 포기는 버린다. 다음 포기들의 난수 순서를 지키려고 크기·색 난수 3개는 그대로 쓴다.
+   if(water.blocked(x,z,GRASS_REACH)){random();random();random();waterCleared++;continue;}
    if(mask.blocked(x,z,GRASS_REACH)){random();random();random();pavedCleared++;continue;}
    dummy.position.set(x,grassGround(landscape.floorHeight,x,z)+.012,z);dummy.rotation.y=p.yaw+j;
    dummy.scale.setScalar(p.scale*(.75+random()*.25));dummy.updateMatrix();mesh.setMatrixAt(i,dummy.matrix);
@@ -191,12 +195,25 @@ export function forestLayers(landscape){
   for(const {mesh,box,count} of shrubItems){mesh.visible=culler.visible(box,camera,[22,34,48][quality]);mesh.count=Math.ceil(count*[.3,.65,1][quality]);if(mesh.visible)visibleShrubs+=mesh.count;}
   landscape.status.scenery.visibleShrubs=visibleShrubs;
  };
- landscape.status.scenery={forestCorridor:30,grassRadius:[20,30,40],grassDensityPerM2:[12.25,5.25],grassBlades:BLADES,shrubs:shrubItems.reduce((n,i)=>n+i.count,0),shrubRadius:[22,34,48],denseTrees:[...treeGroups.values()].reduce((n,e)=>n+e.placements.filter(p=>p.dense).length,0),zones:'forest-zones.js',grassChunkSize:12,pavedGrassCleared:pavedCleared,grassInstances:items.reduce((n,i)=>n+i.count,0),trees:[...treeGroups.values()].reduce((n,e)=>n+e.placements.length,0),outcrops:[...rocks.values()].reduce((n,e)=>n+e.placements.length,0),speciesStatus:'임상도 미확보 · 구간별 활엽 비율(숲 75~80%, 능선 25%) 시각 대용',wind:true,layers:['소나무·참나무류 교목 시각 대용','덤불층(1~3m)','관목','고사리·조릿대형 하층'],ground:'낙엽층 PBR + 이끼 군락 · 등산로 별도 재질 유지'};
+ landscape.status.scenery={forestCorridor:30,grassRadius:[20,30,40],grassDensityPerM2:[12.25,5.25],grassBlades:BLADES,shrubs:shrubItems.reduce((n,i)=>n+i.count,0),shrubRadius:[22,34,48],denseTrees:[...treeGroups.values()].reduce((n,e)=>n+e.placements.filter(p=>p.dense).length,0),zones:'forest-zones.js',grassChunkSize:12,pavedGrassCleared:pavedCleared,waterGrassCleared:waterCleared,waterShrubsCleared:shrubWaterCleared,summitShrubs:summitShrubView,grassInstances:items.reduce((n,i)=>n+i.count,0),trees:[...treeGroups.values()].reduce((n,e)=>n+e.placements.length,0),outcrops:[...rocks.values()].reduce((n,e)=>n+e.placements.length,0),speciesStatus:'임상도 미확보 · 구간별 활엽 비율(숲 75~80%, 능선 25%) 시각 대용',wind:true,layers:['소나무·참나무류 교목 시각 대용','덤불층(1~3m)','관목','고사리·조릿대형 하층'],ground:'낙엽층 PBR + 이끼 군락 · 등산로 별도 재질 유지'};
  return [...treeGroups.values(),...rocks.values()];
 }
 
 // 덤불 한 포기: 가는 줄기 5개 + 높이를 셋으로 나눈 잎판 층. 높이 약 1.2m, 반경 약 .7m(배율 1).
 // 아래층 잎판은 작고 어둡게(shrubShade), 위층은 크고 밝게 해 잎 무더기가 층져 보이게 한다.
+// 정상 쌍안경 시야(서울·롯데월드타워 방향 아래쪽)를 덤불이 가리지 않게: 정상 주변 45m 안 덤불은 서서 보는 눈높이(1.6m)에서
+// 아래로 SUMMIT_SIGHT_DEG 내려간 시선보다 낮게 배율을 줄인다(덤불층 세로 배율 .8~1.4 포함). 자리는 그대로 두고, 너무 작아지면(배율 .3 미만) 뺀다.
+// 보는 자리: 코스 마지막 15m(정상 출발 자리 포함)와 정상석. 정상석·스탬프함·안내판 자리는 바꾸지 않는다.
+export const SUMMIT_SIGHT_DEG=6,SHRUB_TOP=1.12;
+export function summitViewCap(landscape,points,{radius=45,eye=1.6,margin=.3}={}){
+ const end=points.at(-1),marker=landscape.status.summitFacilities?.sites?.find(s=>s.id==='marker');
+ const viewers=[...points.filter(p=>Number.isFinite(p.s)&&Number.isFinite(end.s)&&end.s-p.s<=15),...(marker?[marker]:[])].map(p=>({x:p.x,z:p.z,eye:landscape.floorHeight(p.x,p.z)+eye}));
+ const slope=Math.tan(SUMMIT_SIGHT_DEG*Math.PI/180),stats={viewers:viewers.length,lowered:0,removed:0};
+ // (x,z) 덤불 꼭대기가 넘지 말아야 할 지면 위 높이(m). 보는 자리에서 radius 밖이면 Infinity.
+ function maxTop(x,z){const ground=landscape.floorHeight(x,z);let top=Infinity;for(const v of viewers){const d=Math.hypot(x-v.x,z-v.z);if(d<radius)top=Math.min(top,v.eye-d*slope-margin-ground);}return top;}
+ return {viewers,maxTop,stats,fit(shrub){const top=maxTop(shrub.x,shrub.z),k=SHRUB_TOP*(.8+((shrub.roll*7)%1)*.6);if(k*shrub.scale<=top)return true;const scale=top/k;if(scale<.3){stats.removed++;return false;}shrub.scale=scale;stats.lowered++;return true;}};
+}
+
 export function makeShrubGeometry(){
  const v=[],shade=[];let seed=7;const r=()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/4294967296);
  for(let i=0;i<5;i++){const a=i*1.256+r()*.4,tx=Math.cos(a)*.35,tz=Math.sin(a)*.35,top=.75+r()*.45,w=.012;
