@@ -1,4 +1,5 @@
 import {surfaceIndex} from '../assets/realistic/surface-index.js';
+import {summitStepOk} from './summit.js';
 export const MAX_WALK_SLOPE=Math.tan(35*Math.PI/180);
 // 렌더링에 쓰는 clearance 적용 삼각형을 그대로 조회한다. 분석용 floorHeight와 계단 옆 실제 바닥의 차이를 보존한다.
 export function createWalkingGround(landscape){
@@ -20,6 +21,12 @@ export function createWalkingGround(landscape){
    }
   }
  }
+ // 바위 덩어리(높이 0.35m 이상) 몸 높이 안에 (x,z)가 들면 막힌다.
+ function rockBlocked(x,z,y){
+  for(const rock of rocks.get(`${Math.floor(x/cell)},${Math.floor(z/cell)}`)??[]){const {min,max}=rock.worldBounds;
+   if(x>=min[0]-.2&&x<=max[0]+.2&&z>=min[2]-.2&&z<=max[2]+.2&&max[1]>y+.25&&min[1]<y+1.7)return true;
+  }return false;
+ }
  function canMove(a,b){
   const horizontal=Math.hypot(b[0]-a[0],b[2]-a[2]);if(Math.abs(b[1]-a[1])>MAX_WALK_SLOPE*horizontal+1e-5)return false;
   const n=Math.max(1,Math.ceil(horizontal/.15));
@@ -32,5 +39,11 @@ export function createWalkingGround(landscape){
    }
   }return true;
  }
- return {height,canMove,refreshObstacles};
+ // 정상 자유 이동 구역(summit.js): 걷는 면 높이 = 길 안 노면 규칙(surfaceHeight), 시설은 풍경이 정한 배치.
+ const summit={
+  sites:()=>landscape.status?.summitFacilities?.sites??[],
+  height:(x,z)=>landscape.surfaceHeight(x,z),
+  canStep:(a,b,{rocks=true}={})=>summitStepOk((x,z)=>landscape.surfaceHeight(x,z),a,b,{rockBlocked:rocks?rockBlocked:null}),
+ };
+ return {height,canMove,refreshObstacles,rockBlocked,summit};
 }

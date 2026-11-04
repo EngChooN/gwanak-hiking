@@ -6,7 +6,8 @@ import {mountRestUI} from './rest-ui.js';
 import {installHudToggle} from './hud-toggle.js';
 import {installGadgetUI} from './gadget-ui.js';
 import {route,sample,MATERIALS,checkpoints,DEMO_START,durationBetween,floorHeight as routeFloorHeight} from './route.js';
-import {initialState,restore,SAVE_KEY,advance,setPose,resumeOnInput,positionAt,isOffTrail,playerPosition,setPlayerPosition,courseDistance,COURSE_LENGTH,strideAt} from './movement.js';
+import {initialState,restore,SAVE_KEY,advance,setPose,resumeOnInput,positionAt,isOffTrail,playerPosition,setPlayerPosition,courseDistance,COURSE_LENGTH,strideAt,lateralLimit} from './movement.js';
+import {summitWalkMap} from './summit.js';
 import {createLoadingTracker,createStabilityCounter,LOADING_EVENT,START_EVENT} from './loading.js';
 import {insidePlaza,fromGate} from './plaza.js';
 import {createNightLighting} from './night-lighting.js';
@@ -69,9 +70,11 @@ const mobile=matchMedia('(pointer: coarse)').matches||navigator.maxTouchPoints>0
 const landscape=await guard(loadLandscape({base:`${import.meta.env.BASE_URL}assets/realistic/generated/`,maxContactMapSize:renderer.capabilities.maxTextureSize}));loading.set('terrain',.6);
 const walkingGround=createWalkingGround(landscape);
 // 광장(zone 'plaza')은 경로와 무관한 x,z. 높이는 landscape.surfaceHeight(길 안 노면 규칙)를 쓴다.
-const worldPosition=()=>state.zone==='plaza'?[state.plaza.x,walkingGround.height(state.plaza.x,state.plaza.z,false),state.plaza.z]:positionAt(state.s,state.lateral,walkingGround);
+const worldPosition=()=>state.zone==='plaza'?[state.plaza.x,walkingGround.height(state.plaza.x,state.plaza.z,false),state.plaza.z]:state.zone==='summit'?[state.summit.x,walkingGround.summit.height(state.summit.x,state.summit.z),state.summit.z]:positionAt(state.s,state.lateral,walkingGround);
+// 광장·정상 구역은 코스와 무관한 x,z를 직접 걷는다(zone 'summit'은 정상 둘레 자유 이동).
+const freeZone=()=>state.zone==='plaza'||state.zone==='summit';
 const offTrailNow=()=>state.zone==='route'&&isOffTrail(state.s,state.lateral);
-const baseHeading=()=>state.zone==='plaza'?state.plaza.heading:sample(state.s).heading;
+const baseHeading=()=>state.zone==='plaza'?state.plaza.heading:state.zone==='summit'?state.summit.heading:sample(state.s).heading;
 const floorHeight=s=>s===state.s?worldPosition()[1]:positionAt(s,state.lateral,walkingGround)[1];
 const lighting=setupRendering(renderer,scene,camera,mobile,landscape.sky);
 const {TerrainStream}=await import('./terrain.js');const terrain=new TerrainStream(scene,landscape,camera);
@@ -137,7 +140,7 @@ const minX=Math.min(...route.points.map(p=>p.x)),maxX=Math.max(...route.points.m
 const mapScale=Math.min(250/(maxX-minX),250/(maxZ-minZ)),mapX=p=>160+(p.x-(minX+maxX)/2)*mapScale,mapY=p=>150+(p.z-(minZ+maxZ)/2)*mapScale;$('map-path').setAttribute('d',route.points.map((p,i)=>`${i?'L':'M'}${mapX(p)} ${mapY(p)}`).join(' '));
 function updateUI(){const p=sample(state.s),plaza=state.zone==='plaza',course=courseDistance(state);window.dispatchEvent(new CustomEvent('hiking:state',{detail:{...state,plaza:state.plaza&&{...state.plaza},phone:{...state.phone},binoculars:{...state.binoculars},viewZoom:viewZoom(state),speed,teaReady:teaReady(),offTrail:offTrailNow(),zone:state.zone,courseDistance:course,courseLength:COURSE_LENGTH,position:playerPosition(state,walkingGround),started}}));$('status').textContent=state.paused?'일시정지':state.pose==='tea'?'차 마시는 중':state.pose==='sit'?'앉아서 쉬는 중':state.running?'달리는 중':moving?'걷는 중':'쉬는 중';$('progress-fill').style.width=`${course/COURSE_LENGTH*100}%`;{const total=Math.round(COURSE_LENGTH),done=Math.min(total,Math.round(course)),fmt=n=>n.toLocaleString('ko-KR');$('distance').textContent=`${plaza?'출발 전 · 광장 · ':''}${fmt(done)} / ${fmt(total)} m`;$('remaining').textContent=`정상까지 ${fmt(total-done)} m`;}$('altitude').innerHTML=`${worldPosition()[1].toFixed(0)} <em>m</em>`;$('elapsed').textContent=time(state.elapsed);$('speed').innerHTML=`${(speed*3.6).toFixed(1)} <em>km/h</em>`;$('eta').textContent=`${Math.ceil(durationBetween(state.s,route.length)/60)}분`;$('surface').textContent=plaza?'광장 · 포장':offTrailNow()?'길 밖 · 흙·낙엽':MATERIALS[p.material].label;$('quality').textContent=`화질 ${['낮음','균형','높음'][quality]} · ${qualityMode==='auto'?'자동':'고정'}`;$('auto').classList.toggle('active',state.auto);$('auto').setAttribute('aria-pressed',state.auto);$('pause').setAttribute('aria-pressed',state.paused);$('pause').querySelector('span').textContent=state.paused?'계속하기':'일시정지';$('pause-overlay').hidden=!(started&&state.paused)||!!document.querySelector('dialog[open]');$('view').querySelector('span').textContent=state.view==='first'?'3인칭':'1인칭';$('view').disabled=viewLocked(state);$('view').title=viewLocked(state)?'쌍안경·휴대폰을 쓰는 동안은 1인칭 고정':'';{const [x,,z]=worldPosition();$('map-dot').setAttribute('cx',mapX({x,z}));$('map-dot').setAttribute('cy',mapY({x,z}));}$('checkpoints').innerHTML=checkpoints.map((c,i)=>`<div>${state.checkpoints.includes(c.id)?'●':'○'} ${c.name} · 임시${c.s<state.s&&!state.checkpoints.includes(c.id)?' · 시범 시작 전 구간':''}</div>`).join('');}
 if(state.zone==='plaza'){$('resume-note').textContent='출발 전 · 일주문 앞 광장 · W/A/S/D로 둘러보거나 자동 걷기(R)로 출발하세요';}else if(saved&&!startOption){$('resume-note').textContent=`${[...checkpoints].reverse().find(c=>state.checkpoints.includes(c.id))?.name||'정상 접근'} · ${Math.round(state.s)}m 지점에서 이어왔습니다 · W로 걷거나 계속하기(Space/ESC)를 눌러 주세요`;}else{$('resume-note').textContent='정상 접근 시범 구간 · 자동 걷기 또는 W로 출발하세요';}const hideResumeNote=()=>setTimeout(()=>{if(storageOK)$('resume-note').style.opacity='0';},3500);
-const camGoal=new THREE.Vector3(),lookGoal=new THREE.Vector3();let cameraReady=false,summitShown=state.s>=route.length;let firstFrameMs=null;const clockStart=performance.now();
+const camGoal=new THREE.Vector3(),lookGoal=new THREE.Vector3();let cameraReady=false,summitShown=state.summitArrived||state.s>=route.length;let firstFrameMs=null;const clockStart=performance.now();
 const frameMetrics=createFrameMetrics();
 window.__hikingPerformance={reset:()=>frameMetrics.reset(),report:()=>frameMetrics.report()};
 const inspectionBearing=new URLSearchParams(location.search).get('bearing');
@@ -151,13 +154,13 @@ function frame(now){
  const workStarted=performance.now();
  requestAnimationFrame(frame);
  const frameSeconds=(now-last)/1000,dt=Math.min(frameSeconds,.1);last=now;
- const before=worldPosition(),beforeY=offTrailNow()||state.zone==='plaza'?before[1]:sample(state.s).y;
+ const before=worldPosition(),beforeY=offTrailNow()||freeZone()?before[1]:sample(state.s).y;
  // 출발 전(로딩 중)에는 입력을 읽어 버리고 이동·시간·자동 걷기를 진행하지 않는다.
  const cmd=walkInput(state,started?input.read():{forward:0,side:0,run:false,turn:0});if(started)updateLook(look,dt,cmd.turn);
  // 이어하기·탭 복귀로 멈춘 상태에서도 첫 걷기 입력부터 바로 움직인다.
  if(started&&resumeOnInput(state,cmd,{blocked:!!document.querySelector('dialog[open]')}))updateUI();
  // 광장에서 직접 걸으면 시선 방향을 이동 기준으로 삼는다(드래그한 쪽으로 걷기). 코스·광장 전환 때는 카메라 방향을 보존한다.
- if(state.zone==='plaza'&&(cmd.forward||cmd.side)&&!look.reset&&!state.paused){state.plaza.heading=wrapAngle(state.plaza.heading+look.yaw);look.yaw=0;}
+ if(freeZone()&&(cmd.forward||cmd.side)&&!look.reset&&!state.paused){const free=state.zone==='plaza'?state.plaza:state.summit;free.heading=wrapAngle(free.heading+look.yaw);look.yaw=0;}
  const zoneBefore=state.zone,cameraHeadingBefore=baseHeading()+look.yaw;
  speed=started?frameMetrics.stage('movement',()=>advance(state,{...cmd,yaw:look.yaw},dt,detail=>window.dispatchEvent(new CustomEvent('hiking:step',{detail})),walkingGround)):0;moving=speed>0;
  if(state.zone!==zoneBefore){look.yaw=wrapAngle(cameraHeadingBefore-baseHeading());look.reset=null;}
@@ -172,8 +175,8 @@ function frame(now){
  if(moving)hiker.turnTo(direct?heading:movementHeading(before,[x,0,z],avatar.rotation.y),dt);else if(selfieActive(state)||(state.gadget??'none')!=='none')hiker.turnTo(heading,dt); // 쌍안경·휴대폰을 든 동안은 몸이 보는 방향을 따른다
  {const travelled=state.steps+state.stepPhase;walkPhase??=travelled;walkPhase+=(backward?-1:1)*(travelled-(lastTravelled??travelled));lastTravelled=travelled;}
  const horizontal=Math.hypot(x-before[0],z-before[2]);
- const travelSlope=horizontal>1e-7?((offTrailNow()||state.zone==='plaza'?y:p.y)-beforeY)/horizontal:0;
- const offGround=offTrailNow()||state.zone==='plaza',surfaceHeight=(x,z)=>walkingGround.height(x,z,offTrailNow());
+ const travelSlope=horizontal>1e-7?((offTrailNow()||freeZone()?y:p.y)-beforeY)/horizontal:0;
+ const offGround=offTrailNow()||freeZone(),surfaceHeight=(x,z)=>walkingGround.height(x,z,offTrailNow());
  avatar.visible=state.view==='third'||selfieActive(state);const stepCycle=(state.steps+state.stepPhase)*Math.PI;
  frameMetrics.stage('hiker',()=>hiker.update({clip:!moving?'Idle':travelSlope>.15?'Climb':'Walk',distance:walkPhase,stride:1,stepLength:strideAt({plaza:state.zone==='plaza',seg:p,off:offTrailNow(),backward}),idleSeconds:inspectionMode?0:now/1000,slope:travelSlope,pose:state.pose,teaProgress:state.pose==='tea'?1-state.teaRemaining/3:0,running:state.running,speed,dt:state.paused?0:dt,surfaceHeight,gadget:state.gadget??'none',selfie:!!state.phone?.selfie,lookYaw:wrapAngle(heading-avatar.rotation.y),lookPitch:look.pitch}));
  const footContact=frameMetrics.stage('contact',()=>hiker.ground({s:state.s,lateral:state.lateral,moving,phase:walkPhase,floorHeight,sample,surfaceHeight,pose:state.pose}));
@@ -194,7 +197,7 @@ function frame(now){
   camera.lookAt(lookGoal);cameraReady=true;
  });
  frameMetrics.stage('terrain',()=>terrain.update(state.s,quality));
- night.update(dt,{camera,avatar,view:state.view,zone:state.zone,s:state.s,hiker,hatKind:OUTFITS.find(o=>o.id===outfits?.current)?.head.hat?.kind??'none'});
+ night.update(dt,{camera,avatar,view:state.view,zone:state.zone==='summit'?'route':state.zone,s:state.s,hiker,hatKind:OUTFITS.find(o=>o.id===outfits?.current)?.head.hat?.kind??'none'});
  frameMetrics.stage('render',()=>lighting.render(avatar.position));
  if(photoRequested){photoRequested=false;takePhoto();}
  frameMetrics.frame(frameSeconds*1000,{drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,textures:renderer.info.memory.textures,breakdown:lighting.status.breakdown});
@@ -202,7 +205,7 @@ function frame(now){
  if(now-uiAt>150){updateUI();uiAt=now;}
  if(started&&now-saveAt>700){save();saveAt=now;}
  if(!started&&loading.phase==='loading')checkStability(frameSeconds*1000,now);
- if(state.zone==='route'&&state.s>=route.length&&!summitShown){summitShown=true;$('summit-summary').textContent=`이번 체험 ${state.distance.toFixed(1)}m · 걸은 시간 ${time(state.elapsed)} · ${state.steps}걸음 · 상승 ${state.ascent.toFixed(1)}m · ${state.sessions}회 접속. DSM 지형 체험 기록입니다.`;$('summit').showModal();save();}
+ if((state.summitArrived||(state.zone==='route'&&state.s>=route.length))&&!summitShown){summitShown=true;state.summitArrived=true;$('summit-summary').textContent=`이번 체험 ${state.distance.toFixed(1)}m · 걸은 시간 ${time(state.elapsed)} · ${state.steps}걸음 · 상승 ${state.ascent.toFixed(1)}m · ${state.sessions}회 접속. DSM 지형 체험 기록입니다.`;$('summit').showModal();save();}
  if(!document.hidden&&frameSeconds>0){frameSum+=frameSeconds;frames++;}
  if(now-qualityWindow>4000){
   const fps=frames/frameSum;
@@ -259,7 +262,7 @@ beginHike=()=>{
  updateUI();hideResumeNote();window.dispatchEvent(new CustomEvent('hiking:started',{detail:{...loading.snapshot(),position:playerPosition(state,walkingGround)}}));
 };
 // 진단 전용 읽기 인터페이스. 위치 변경·시간 배속 기능은 제공하지 않는다.
-window.__hiker=hiker;window.__surface=landscape.surfaceHeight;Object.assign(window.hiking,{outfit:()=>outfits&&{current:outfits.current,plan:outfitPlan,attachments:outfits.attachments(),info:outfits.info},setOutfit:id=>{const applied=setOutfit(id);outfitMenu?.update(applied);return applied;},outfitPreviews:(options={})=>{if(!outfits)return {};const keep=outfits.current,result=renderOutfitPreviews({renderer,avatar,apply:id=>outfits.apply(id),...options});outfits.apply(keep);return result;},readiness:()=>readyInfo??readiness(),position:()=>playerPosition(state,walkingGround),snapshot:()=>({...state}),audio:()=>audio.snapshot(),metrics:()=>window.__hikingMetrics,rendering:()=>JSON.parse(JSON.stringify({...lighting.status,fov:camera.fov,exposure:renderer.toneMappingExposure})),orientation:()=>({...look,camera:camera.position.toArray(),avatarHeading:avatar.rotation.y,routeHeading:sample(state.s).heading,zone:state.zone,baseHeading:baseHeading(),cameraHeading:baseHeading()+look.yaw}),groundCheck:()=>{const p=sample(state.s);return [-.5,0,.5].map(l=>landscape.groundCheck(p.x+p.nx*l,p.z+p.nz*l));},landscape:()=>({...landscape.status}),coordinates:()=>{const p=sample(state.s);const [x,y,z]=worldPosition();return {x,y,z};}});
+window.__hiker=hiker;window.hiking.summitMap=()=>summitWalkMap(walkingGround.summit,lateralLimit);window.__surface=landscape.surfaceHeight;window.__walkingGround=walkingGround;window.__landscape=landscape;Object.assign(window.hiking,{outfit:()=>outfits&&{current:outfits.current,plan:outfitPlan,attachments:outfits.attachments(),info:outfits.info},setOutfit:id=>{const applied=setOutfit(id);outfitMenu?.update(applied);return applied;},outfitPreviews:(options={})=>{if(!outfits)return {};const keep=outfits.current,result=renderOutfitPreviews({renderer,avatar,apply:id=>outfits.apply(id),...options});outfits.apply(keep);return result;},readiness:()=>readyInfo??readiness(),position:()=>playerPosition(state,walkingGround),snapshot:()=>({...state}),audio:()=>audio.snapshot(),metrics:()=>window.__hikingMetrics,rendering:()=>JSON.parse(JSON.stringify({...lighting.status,fov:camera.fov,exposure:renderer.toneMappingExposure})),orientation:()=>({...look,camera:camera.position.toArray(),avatarHeading:avatar.rotation.y,routeHeading:sample(state.s).heading,zone:state.zone,baseHeading:baseHeading(),cameraHeading:baseHeading()+look.yaw}),groundCheck:()=>{const p=sample(state.s);return [-.5,0,.5].map(l=>landscape.groundCheck(p.x+p.nx*l,p.z+p.nz*l));},landscape:()=>({...landscape.status}),coordinates:()=>{const p=sample(state.s);const [x,y,z]=worldPosition();return {x,y,z};}});
 window.hiking.night=()=>night.info();window.hiking.headlamp=on=>{if(typeof on==='boolean')night.toggleHeadlamp(),night.info().headlamp.on!==on&&night.toggleHeadlamp();else night.toggleHeadlamp();night.syncButton();return night.info().headlamp;};window.hiking.setOthers=list=>night.setOthers(list);
 window.hiking.gadgetView=()=>({gadget:state.gadget,phone:{...state.phone},binoculars:{...state.binoculars},view:state.view,selfie:selfieActive(state),cameraZoom:camera.zoom,targetZoom:viewZoom(state),fogFar:scene.fog.far,avatarVisible:avatar.visible,camera:camera.position.toArray()});
 window.hiking.adaptive=()=>({...adaptiveQuality.snapshot(),dpr:renderer.getPixelRatio()});

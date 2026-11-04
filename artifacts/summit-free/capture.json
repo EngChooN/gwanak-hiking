@@ -1,0 +1,332 @@
+{
+  "errors": [],
+  "steps": {
+    "marker": {
+      "x": 1568.0645732015869,
+      "z": 2550.022089268002,
+      "heading": 1.1270780720030744,
+      "walk": true,
+      "note": "정상석 앞 3m",
+      "state": {
+        "zone": "summit",
+        "s": 5046.34,
+        "lateral": 1.32,
+        "x": 1568.06,
+        "z": 2550.02,
+        "arrived": false,
+        "paused": true,
+        "view": "first"
+      }
+    },
+    "end": {
+      "x": 1557.5703327634624,
+      "z": 2535.5960865837123,
+      "heading": -2.674004621958816,
+      "walk": true,
+      "note": "길 끝(계단 끝)",
+      "state": {
+        "zone": "summit",
+        "s": 5066.93,
+        "lateral": 0,
+        "x": 1557.57,
+        "z": 2535.6,
+        "arrived": false,
+        "paused": true,
+        "view": "first"
+      }
+    },
+    "eungjinjeon": {
+      "x": 1541.4185819643033,
+      "z": 2527.1391661675248,
+      "heading": 2.087268734077094,
+      "walk": true,
+      "note": "eungjinjeon 앞(9.0m)",
+      "state": {
+        "zone": "summit",
+        "s": 5066.93,
+        "lateral": -10.65,
+        "x": 1541.42,
+        "z": 2527.14,
+        "arrived": false,
+        "paused": true,
+        "view": "first"
+      }
+    },
+    "radar": {
+      "x": 1539.9185819643033,
+      "z": 2567.6391661675248,
+      "heading": 3.1241443773898077,
+      "walk": true,
+      "note": "radar 앞(20.0m)",
+      "state": {
+        "zone": "summit",
+        "s": 5046.19,
+        "lateral": -18.44,
+        "x": 1539.92,
+        "z": 2567.64,
+        "arrived": false,
+        "paused": true,
+        "view": "first"
+      }
+    },
+    "far": {
+      "x": 1523.4185819643033,
+      "z": 2566.1391661675248,
+      "heading": -1.2277723863741932,
+      "walk": true,
+      "note": "길 끝에서 가장 먼 자유 이동 칸(46m)",
+      "state": {
+        "zone": "summit",
+        "s": 5054.53,
+        "lateral": -44.22,
+        "x": 1523.42,
+        "z": 2566.14,
+        "arrived": false,
+        "paused": true,
+        "view": "first"
+      }
+    },
+    "blocked-cliff": {
+      "start": {
+        "x": 1564.3579217925235,
+        "z": 2563.5785059957448
+      },
+      "afterHold": {
+        "zone": "summit",
+        "s": 5047.42,
+        "lateral": -13.26,
+        "x": 1565.85,
+        "z": 2564.53,
+        "arrived": false,
+        "paused": false,
+        "view": "first"
+      },
+      "afterMore": {
+        "zone": "summit",
+        "s": 5047.42,
+        "lateral": -13.26,
+        "x": 1565.85,
+        "z": 2564.53,
+        "arrived": false,
+        "paused": false,
+        "view": "first"
+      },
+      "movedLast4s": 0,
+      "walkedFromStart": 1.77,
+      "edge": {
+        "x": 1565.4185819643033,
+        "z": 2564.6391661675248
+      },
+      "siteDistance": null,
+      "blockRadius": null,
+      "drop": 3.7438595350306514
+    },
+    "blocked-wall": {
+      "start": {
+        "x": 1540.81509261202,
+        "z": 2536.041697310792
+      },
+      "afterHold": {
+        "zone": "summit",
+        "s": 5066.93,
+        "lateral": -14.17,
+        "x": 1540.28,
+        "z": 2532.71,
+        "arrived": false,
+        "paused": false,
+        "view": "first"
+      },
+      "afterMore": {
+        "zone": "summit",
+        "s": 5066.93,
+        "lateral": -14.17,
+        "x": 1540.28,
+        "z": 2532.71,
+        "arrived": false,
+        "paused": false,
+        "view": "first"
+      },
+      "movedLast4s": 0,
+      "walkedFromStart": 3.37,
+      "site": {
+        "x": 1533.5703327634624,
+        "z": 2531.5960865837123,
+        "r": 5
+      },
+      "siteDistance": 6.8,
+      "blockRadius": 5.65
+    },
+    "descend": {
+      "log": [
+        {
+          "zone": "summit",
+          "s": 5036.93,
+          "lateral": 0,
+          "x": 1576.8,
+          "z": 2553.45,
+          "arrived": false,
+          "paused": true,
+          "view": "first"
+        },
+        {
+          "zone": "summit",
+          "s": 5032.84,
+          "lateral": 0,
+          "x": 1580.3,
+          "z": 2555.41,
+          "arrived": false,
+          "paused": false,
+          "view": "first"
+        },
+        {
+          "zone": "summit",
+          "s": 5028.79,
+          "lateral": 0,
+          "x": 1583.78,
+          "z": 2557.36,
+          "arrived": false,
+          "paused": false,
+          "view": "first"
+        },
+        {
+          "zone": "route",
+          "s": 5026.29,
+          "lateral": -0.26,
+          "x": null,
+          "z": null,
+          "arrived": false,
+          "paused": false,
+          "view": "first"
+        }
+      ],
+      "down": {
+        "zone": "route",
+        "s": 5026.29,
+        "lateral": -0.26,
+        "x": null,
+        "z": null,
+        "arrived": false,
+        "paused": false,
+        "view": "first"
+      },
+      "more": {
+        "zone": "route",
+        "s": 5024.7,
+        "lateral": -0.9,
+        "x": null,
+        "z": null,
+        "arrived": false,
+        "paused": false,
+        "view": "first"
+      },
+      "back": {
+        "zone": "summit",
+        "s": 5028.15,
+        "lateral": 0,
+        "x": 1584.33,
+        "z": 2557.67,
+        "arrived": false,
+        "paused": false,
+        "view": "first"
+      }
+    },
+    "saved": {
+      "version": 1,
+      "routeId": "dem-valley-632-v2",
+      "routeRevision": "geometry-v1-ff567394",
+      "entranceHypothesis": "B",
+      "zone": "summit",
+      "plaza": null,
+      "summit": {
+        "x": 1584.3279174763795,
+        "z": 2557.6659712801734,
+        "heading": -2.0810924834597624
+      },
+      "summitArrived": false,
+      "s": 5028.150546574483,
+      "lateral": 0.0004338076422172317,
+      "elapsed": 33.065399999999556,
+      "distance": 15.918288251733362,
+      "ascent": 1.4164030468615465,
+      "steps": 48,
+      "stepPhase": 0.9328725614431178,
+      "checkpoints": [],
+      "paused": false,
+      "auto": false,
+      "view": "first",
+      "sessions": 2,
+      "stamina": 61.797199999999954,
+      "runExhausted": false,
+      "running": false,
+      "pose": "stand",
+      "teaRemaining": 0,
+      "gadget": "none",
+      "phone": {
+        "zoom": 1,
+        "selfie": false
+      },
+      "binoculars": {
+        "zoom": 8
+      }
+    },
+    "restore": {
+      "before": {
+        "zone": "summit",
+        "s": 5054.31,
+        "lateral": -42.42,
+        "x": 1525.12,
+        "z": 2565.53,
+        "arrived": false,
+        "paused": false,
+        "view": "first"
+      },
+      "after": {
+        "zone": "summit",
+        "s": 5054.53,
+        "lateral": -44.22,
+        "x": 1523.42,
+        "z": 2566.14,
+        "arrived": false,
+        "paused": true,
+        "view": "first"
+      },
+      "saved": "summit"
+    },
+    "gadgets": {
+      "binoculars": {
+        "zone": "summit",
+        "gadget": "binoculars",
+        "pose": "stand",
+        "view": "first"
+      },
+      "phone": {
+        "zone": "summit",
+        "gadget": "phone",
+        "pose": "stand",
+        "view": "first"
+      },
+      "sit": {
+        "zone": "summit",
+        "gadget": "none",
+        "pose": "sit",
+        "view": "first"
+      },
+      "third": {
+        "zone": "summit",
+        "gadget": "none",
+        "pose": "stand",
+        "view": "third"
+      },
+      "thirdWalk": {
+        "zone": "summit",
+        "s": 5046.36,
+        "lateral": 1.33,
+        "x": 1568.05,
+        "z": 2550.02,
+        "arrived": true,
+        "paused": true,
+        "view": "third"
+      }
+    }
+  }
+}
