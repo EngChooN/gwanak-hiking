@@ -17,14 +17,32 @@ export const WALK_CONTACT_OFFSET=0; // 걷기 클립 0초가 왼발 접지가 �
 // 이 모델은 팔(어깨~손목 50cm)이 짧고 어깨가 눈보다 16cm 뒤라, 상체를 왼쪽으로 twist 비틀고 오른 쇄골을 protract·shrug만큼 내밀고 들며 lean만큼 뒤로 젖힌다.
 // 그래도 닿지 않는 만큼은 앞 거리를 줄인다(실측 눈~휴대폰 약 50cm). 왼손 브이 손목은 얼굴 왼쪽 vSide·휴대폰 쪽 vFront·눈 아래 vDrop.
 export const SELFIE=Object.freeze({forward:.55,up:.12,right:.10,elbow:MathUtils.degToRad(154),twist:MathUtils.degToRad(36),protract:MathUtils.degToRad(52),shrug:MathUtils.degToRad(28),lean:0,vSide:.16,vFront:-.05,vDrop:.12});
-const A=new Vector3(),B=new Vector3(),C=new Vector3(),T=new Vector3(),U=new Vector3(),P=new Vector3(),NB=new Vector3(),q1=new Quaternion(),q2=new Quaternion(),q3=new Quaternion();
+const A=new Vector3(),B=new Vector3(),C=new Vector3(),T=new Vector3(),U=new Vector3(),P=new Vector3(),NB=new Vector3(),q1=new Quaternion(),q2=new Quaternion(),q3=new Quaternion(),N=new Vector3();
 function aim(bone,from,to){ // from→to 방향 변화를 월드 회전으로 적용
  q1.setFromUnitVectors(from,to);bone.getWorldQuaternion(q2);q2.premultiply(q1);bone.parent.getWorldQuaternion(q3);bone.quaternion.copy(q3.invert().multiply(q2));bone.updateMatrixWorld(true);
 }
 export async function loadRealisticHiker(url,options){return createRealisticHiker(await new GLTFLoader().loadAsync(url),options);}
 // 이미 읽은 glTF로 등산객을 만든다(노드 테스트에서 파일을 직접 파싱해 쓴다).
+// 남성 가슴: 원본 MPFB 몸이 가슴 양쪽(x ±7.5cm, 높이 1.255m)을 가운데보다 1.5cm 앞으로 내밀어 여성형으로 보인다.
+// 몸·상의·칼라·지퍼·어깨끈을 같은 양만큼 뒤로 눌러 겹침 간격은 그대로 두고, 노멀은 같은 기울기로 돌린다.
+export const CHEST_FLATTEN={x:.075,y:1.255,rx:.075,ry:.085,depth:.013,frontFrom:.03,frontTo:.08};
+export function flattenChest(model){
+ const {x:cx,y:cy,rx,ry,depth,frontFrom,frontTo}=CHEST_FLATTEN;
+ model.traverse(o=>{if(!o.isSkinnedMesh||!/^human(jacket|collar|zipper|straps)?$/i.test(o.name.replace(/[:._]/g,'')))return;
+  const g=o.geometry;if(g.userData.chestFlattened)return;g.userData.chestFlattened=true; // 여럿이 복제해도 형상은 한 번만
+  const p=g.attributes.position,n=g.attributes.normal;
+  for(let i=0;i<p.count;i++){const x=p.getX(i),y=p.getY(i),z=p.getZ(i);
+   const front=MathUtils.smoothstep(z,frontFrom,frontTo);if(!front)continue;
+   let d=0,dx=0,dy=0;
+   for(const s of [-1,1]){const u=(x-s*cx)/rx,v=(y-cy)/ry,r2=u*u+v*v;if(r2>=1)continue;const f=1-r2;d+=f*f;dx+=-4*f*u/rx;dy+=-4*f*v/ry;}
+   if(!d)continue;
+   const a=depth*front;p.setZ(i,z-a*d);
+   if(n){const nz=n.getZ(i);N.set(n.getX(i)+a*dx*nz,n.getY(i)+a*dy*nz,nz).normalize();n.setXYZ(i,N.x,N.y,N.z);}}
+  p.needsUpdate=true;if(n)n.needsUpdate=true;g.computeBoundingBox();g.computeBoundingSphere();});
+}
 export function createRealisticHiker(gltf,{height=1.7}={}){
  const model=gltf.scene,root=new Group();
+ flattenChest(model);
  root.add(model);model.rotation.y=Math.PI;model.updateMatrixWorld(true); // glTF는 +Z가 앞, 이 앱의 앞(heading 0)은 -Z
  const box=new Box3().setFromObject(model),k=height/HIKER_HEIGHT;model.scale.multiplyScalar(k);model.position.y=-box.min.y*k;model.updateMatrixWorld(true);
  const bone=n=>model.getObjectByName('mixamorig'+n);
