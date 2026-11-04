@@ -1,0 +1,76 @@
+[
+  {
+    "id": "mobile-63-night",
+    "bearing": 345.6,
+    "clock": "19:40",
+    "bino": true,
+    "errors": [],
+    "performance": {
+      "fps": 60.00300015000751,
+      "p95": null
+    },
+    "bearingActual": 345.59999997314463,
+    "pitch": -3.200000016192762,
+    "zoom": 8,
+    "cityGrid": {
+      "cellSize": 2000,
+      "cells": 148,
+      "nodes": 149,
+      "silhouetteStrips": 128,
+      "visibleCells": 13,
+      "detailedCells": 3,
+      "simpleCells": 1,
+      "silhouetteCells": 9,
+      "proxyCells": 0,
+      "frustumTests": 148,
+      "distanceRejected": 0,
+      "baseTriangles": 148618,
+      "baseDrawCalls": 5,
+      "baseTriangleBudget": 150000,
+      "zoom": 8
+    },
+    "city": null,
+    "night": 1,
+    "time": "19:40",
+    "shaderErrors": [],
+    "drawCalls": 226,
+    "triangles": 822365
+  },
+  {
+    "id": "mobile-wide-night",
+    "bearing": 10,
+    "clock": "19:40",
+    "bino": false,
+    "errors": [],
+    "performance": {
+      "fps": 60.00300015000751,
+      "p95": null
+    },
+    "bearingActual": 10.000001653897527,
+    "pitch": -3.000000930426063,
+    "zoom": 1,
+    "cityGrid": {
+      "cellSize": 2000,
+      "cells": 148,
+      "nodes": 149,
+      "silhouetteStrips": 128,
+      "visibleCells": 42,
+      "detailedCells": 0,
+      "simpleCells": 0,
+      "silhouetteCells": 42,
+      "proxyCells": 0,
+      "frustumTests": 148,
+      "distanceRejected": 0,
+      "baseTriangles": 10264,
+      "baseDrawCalls": 1,
+      "baseTriangleBudget": 100000,
+      "zoom": 1
+    },
+    "city": null,
+    "night": 1,
+    "time": "19:40",
+    "shaderErrors": [],
+    "drawCalls": 99,
+    "triangles": 705069
+  }
+]

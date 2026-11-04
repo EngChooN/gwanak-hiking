@@ -19,9 +19,11 @@ import {patchFoliage,foliageUniforms} from './foliage-shader.js';
 import {createNearTrees,NEAR_TREE_IDS} from './near-trees.js';
 import {surfaceIndex} from './surface-index.js';
 import {stairTerrainClearance} from './terrain-clearance.js';
+import {createStairBase,stairGapReport} from './stair-base.js';
 import {indexStaticRaycast} from '../../src/static-raycast.js';
 import {chunkBounds,createChunkCuller,boxDistanceSquared} from '../../src/chunk-culling.js';
 import {createCityGrid,seoulRoadGeometry,createSeoulLandmark,bindSeoulLabels} from '../../src/city-grid.js';
+import {seoulWaterMaterial,seoulBridgeStructure,seoulRoadLights} from '../../src/city-water.js';
 import {freezeStatic,applyNatureQuality} from '../../src/static-scene.js';
 import {pineImpostorParts} from '../../src/pine-impostor.js';
 import {assignSurfaceRoute,isStairSurface} from '../../src/route-surfaces.js';
@@ -228,6 +230,12 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
     }
     return rockTerrainIndices.get(key)(x,z);
   }
+  // 계단 몸체(측벽·끝면): 디딤판 아래를 최종 2m 지형(계단 회랑 보정 후)까지 채워 떠 보이지 않게 한다. 돌계단은 돌, 나무계단은 흙 측벽.
+  // 걷는 면(노면 띠)과 충돌 대상은 그대로다. 검사: stairBaseCheck() — 측벽 아래 틈 0.05m 이하, 지형이 디딤판을 뚫지 않음.
+  const soilSide=materials.soil.clone();soilSide.side=THREE.DoubleSide;soilSide.onBeforeCompile=materials.soil.onBeforeCompile;soilSide.customProgramCacheKey=materials.soil.customProgramCacheKey;
+  const stairGround=(x,z)=>rockGround(x,z,0,true,true);
+  const stairBase=createStairBase(pathPoints,stairGround,{stairs:stoneStairs,deck_stairs:soilSide},1);group.add(stairBase.group);
+  status.stairBase=stairBase.group.userData.counts;
   let lastCell='',pendingChunks=[];const culler=createChunkCuller(),bounds=new WeakMap();
   const boundsOf=o=>{if(!bounds.has(o))bounds.set(o,chunkBounds(o));return bounds.get(o);};
   let natureQuality=2;
@@ -332,7 +340,10 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
       }
       if(manifest.seoulSurface){
         const surface=await readJSON(base+manifest.seoulSurface),roads=seoulRoadGeometry(surface.roads,(x,z)=>gridHeight(grid,x,z));
-        const roadMesh=new THREE.Mesh(roads,applyAtmosphere(new THREE.MeshBasicMaterial({vertexColors:true,side:THREE.DoubleSide}),manifest.atmosphere));roadMesh.name='서울 간선도로·교량';holder.add(roadMesh);status.seoulRoads=surface.roads.length;status.seoulBridges=surface.roads.filter(r=>r.bridge).length;
+        const roadMesh=new THREE.Mesh(roads,applyAtmosphere(new THREE.MeshBasicMaterial({vertexColors:true,side:THREE.DoubleSide}),manifest.atmosphere));roadMesh.name='서울 간선도로·교량';holder.add(roadMesh);
+        // 교량 측판·교각과 밤 거리 불빛(산풍경 city-water.js). 불빛은 도시 격자가 시각·화질에 맞춰 켜고 끈다.
+        const bridges=new THREE.Mesh(seoulBridgeStructure(surface.roads,(x,z)=>gridHeight(grid,x,z)),roadMesh.material);bridges.name='서울 교량 측판·교각';holder.add(bridges);
+        const lamps=seoulRoadLights(surface.roads,(x,z)=>gridHeight(grid,x,z));holder.add(lamps);city.addNightLights(lamps);status.seoulLamps=lamps.userData.lampCount;status.seoulRoads=surface.roads.length;status.seoulBridges=surface.roads.filter(r=>r.bridge).length;
       }
       for(const p of manifest.landmarks)holder.add(createSeoulLandmark(p,manifest.atmosphere));
       if(disposed){disposeGeometry(holder);throw new Error('해제한 자산');}
@@ -342,7 +353,9 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
   }
   const unbindCityLabels=bindSeoulLabels(group,status);
   const loadedCities=new Map(),cityMaterial=applyAtmosphere(new THREE.MeshStandardMaterial({color:0x78878b,roughness:.92}),manifest.atmosphere);
-  const city=createCityGrid({parent:group,material:cityMaterial,atmosphere:manifest.atmosphere,status});
+  // 전용 모델이 있는 랜드마크 자리의 OSM 중복 건물(63빌딩 등)은 뺀다.
+  const cityExclude=manifest.landmarks.filter(p=>p.shape!=='reference'&&Number.isFinite(p.height)).map(p=>({x:p.x,z:p.z,radius:45,minHeight:p.height*.5}));
+  const city=createCityGrid({parent:group,material:cityMaterial,atmosphere:manifest.atmosphere,status,exclude:cityExclude});
   async function streamCity(id){
     if(disposed)throw new Error('해제한 자산');
     if(loadedCities.has(id))return loadedCities.get(id);
@@ -374,7 +387,7 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
     // DSM의 교량·둑·보간값이 수면을 덮지 않도록 실제 물 윤곽 안의 원경 바닥만 낮춘다.
     const ground=farGroup.children.find(o=>o.isMesh)?.geometry;
     if(ground){const pos=ground.attributes.position,p=new THREE.Vector2();for(let i=0;i<pos.count;i++){p.set(pos.getX(i),-pos.getZ(i));if(waterMasks.some(m=>m.box.containsPoint(p)&&insideRing(p,m.points)&&!m.holes.some(h=>insideRing(p,h))))pos.setY(i,Math.min(pos.getY(i),4));}pos.needsUpdate=true;ground.computeVertexNormals();}
-    if(waterGeometries.length){const merged=mergeGeometries(waterGeometries,false);waterGeometries.forEach(g=>g.dispose());holder.add(new THREE.Mesh(merged,new THREE.MeshStandardMaterial({color:0x8eb9cf,roughness:.14,metalness:.55,envMapIntensity:1.6,side:THREE.DoubleSide})));}
+    if(waterGeometries.length){const merged=mergeGeometries(waterGeometries,false);waterGeometries.forEach(g=>g.dispose());/* 한강 물빛: 물결·하늘 반사·노을·밤 불빛 일렁임(산풍경 city-water.js) */holder.add(new THREE.Mesh(merged,applyAtmosphere(seoulWaterMaterial(),manifest.atmosphere)));}
     if(disposed){disposeGeometry(holder);throw new Error('해제한 자산');}if(waterGroup){waterGroup.traverse(o=>o.material?.dispose());disposeGeometry(waterGroup);}waterGroup=holder;group.add(holder);freezeStatic(holder);return holder;
   }
   function applyEnvironment(scene,renderer){
@@ -434,6 +447,8 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
       const ray=new THREE.Raycaster(new THREE.Vector3(x,floorHeight(x,z)+100,z),new THREE.Vector3(0,-1,0),0,300);
       return ray.intersectObjects([...terrain.children.filter(mesh=>mesh.visible),baseMesh],true)[0]?.point.y;
     },
+    stairBaseCheck(ground=stairGround){return stairGapReport(stairBase.layout,ground,(x,z)=>roadHeight(x,z));},
+    stairBaseLayout:()=>stairBase.layout,
     stairRockGrounding(){
       const rows=vegetation.flatMap(lod=>(lod.userData.contactOccluders??[]).filter(p=>p.terrainAligned&&isStairSurface(route[nearest(p.x,p.z).index].material)).map(p=>{
         const terrainY=rockGround(p.x,p.z,p.radius,p.nearDetail);return {...p,terrainY,signedGroundError:Number.isFinite(terrainY)?p.y-terrainY:null,error:contactGroundError(p,terrainY)};
