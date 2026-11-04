@@ -7,6 +7,8 @@ import {LIGHT_FX,FX_OFF} from './light-fx.js';
 export const STREAM_HALF_WIDTH=1.5;   // 물+젖은 둑 전체 반폭(m)
 export const STREAM_ROCK_CELL=6.5;    // 물속 바위 한 칸 길이(m). 셰이더와 같은 값.
 export const STREAM_LEDGE_CELL=18;    // 턱(작은 낙차) 간격(m). 셰이더와 같은 값.
+export const STREAM_BED_HALF=1.9;     // 암반 홈 전체 반폭(m). 물 띠(반폭 1.5m)보다 조금 넓어 홈처럼 보인다.
+export const LEDGE_LENGTH=3.5;        // 낙수 위쪽 고인 암반 단의 길이(m)
 const hash=n=>{n=(n*.1031)%1;n*=n+33.33;n*=n+n;return n-Math.floor(n);};
 // 칸 번호 c의 물속 바위. 셰이더(sH)와 같은 식이라 돌 모델과 거품 고리가 같은 자리에 겹친다. 없는 칸은 null.
 export function streamRock(c){
@@ -14,13 +16,29 @@ export function streamRock(c){
  return {across:(hash(c*7.3+2)-.5)*1.0,along:(c+.15+.7*hash(c*5.7+3))*STREAM_ROCK_CELL,radius:.2+.22*hash(c*11.9+4)};
 }
 
+// 칸 번호 c의 낙수 턱. 셰이더(lc·ledgeOn·lx)와 같은 식이라 거품 선과 암반 단 가장자리가 같은 자리에 겹친다.
+// along: 턱 가장자리(여기서 물이 떨어진다). height: 위쪽 물 높이가 지면보다 높은 만큼(m). 위쪽 LEDGE_LENGTH(m)에 걸쳐 0으로 낮아진다.
+export function streamLedge(c){
+ if(hash(c*5.1+1)<.4)return null;
+ return {along:c*STREAM_LEDGE_CELL+(hash(c*2.3+7)-.5)*5,height:.35+.5*hash(c*9.7+2)};
+}
+// 물줄기 길이 좌표 along에서 낙수 단이 지면 위로 올리는 높이(m). 턱 아래(하류)는 0.
+export function ledgeRaise(along){
+ const c=Math.floor(along/STREAM_LEDGE_CELL+.5),l=streamLedge(c);if(!l)return 0;
+ const d=along-l.along;return d<0||d>=LEDGE_LENGTH?0:l.height*Math.pow(1-d/LEDGE_LENGTH,1.4);
+}
+
 // 중심선(점 배열 {x,z})을 1m 간격으로 다시 찍고 폭 방향 7열의 띠를 만든다. along0은 이 조각 시작의 누적 거리.
 // points는 상류 쪽으로 갈수록 뒤에 온다. 반환: {mesh, samples, alongEnd}. samples[i]={x,z,along,dir:[x,z],side:[x,z]}
-export function buildStreamGeometry(points,height,along0=0,step=1){
+export function buildStreamGeometry(points,height,along0=0,step=1,raise=null){
  const lens=[0];for(let i=1;i<points.length;i++)lens.push(lens[i-1]+Math.hypot(points[i].x-points[i-1].x,points[i].z-points[i-1].z));
- const total=lens.at(-1),count=Math.max(2,Math.round(total/step)+1),samples=[];
+ const total=lens.at(-1),base=Math.max(2,Math.round(total/step)+1),samples=[];
+ const ds=Array.from({length:base},(_,k)=>total*k/(base-1));
+ // 낙수 턱 가장자리에는 아래(0.02m 전)·위 표본을 따로 넣어 물높이가 한 번에 꺾이게 한다.
+ if(raise)for(let c=Math.floor((along0-STREAM_LEDGE_CELL)/STREAM_LEDGE_CELL);c<=Math.ceil((along0+total)/STREAM_LEDGE_CELL);c++){const l=streamLedge(c);if(!l)continue;const d=l.along-along0;if(d>.03&&d<total)ds.push(d-.02,d);}
+ ds.sort((a,b)=>a-b);const count=ds.length;
  for(let k=0;k<count;k++){
-  const d=total*k/(count-1);let i=1;while(i<points.length-1&&lens[i]<d)i++;
+  const d=ds[k];let i=1;while(i<points.length-1&&lens[i]<d)i++;
   const t=(d-lens[i-1])/Math.max(1e-6,lens[i]-lens[i-1]);
   samples.push({x:points[i-1].x+(points[i].x-points[i-1].x)*t,z:points[i-1].z+(points[i].z-points[i-1].z)*t,along:along0+d});
  }
@@ -34,12 +52,40 @@ export function buildStreamGeometry(points,height,along0=0,step=1){
  const cols=[-1,-.62,-.3,0,.3,.62,1],pos=[],stream=[],frame=[],idx=[];
  for(let k=0;k<count;k++){const s=samples[k];for(const u of cols){
   const x=s.x+s.side[0]*u*STREAM_HALF_WIDTH,z=s.z+s.side[1]*u*STREAM_HALF_WIDTH;
-  pos.push(x,height(x,z)+.035,z);stream.push(u,s.along);frame.push(s.dir[0],s.dir[1],s.side[0],s.side[1]);
+  pos.push(x,height(x,z)+.035+(raise?raise(s.along):0),z);stream.push(u,s.along);frame.push(s.dir[0],s.dir[1],s.side[0],s.side[1]);
   }if(k){const j=k*cols.length,p=j-cols.length;for(let c=0;c<cols.length-1;c++)idx.push(p+c,p+c+1,j+c,p+c+1,j+c+1,j+c);}}
  const g=new THREE.BufferGeometry();
  g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('aStream',new THREE.Float32BufferAttribute(stream,2));g.setAttribute('aFrame',new THREE.Float32BufferAttribute(frame,4));
  g.setIndex(idx);g.computeVertexNormals();g.computeBoundingSphere();
+ // 낙수 턱 가장자리의 가파른 면도 수면 셰이더가 법선을 따로 계산하므로, 정점 법선은 위쪽으로 고정한다.
+ if(raise){const n=g.attributes.normal;for(let i=0;i<n.count;i++)n.setXYZ(i,0,1,0);}
  return {geometry:g,samples,alongEnd:samples.at(-1).along};
+}
+// 암반 홈: 물 띠 아래·옆에 깔리는 회색 판. 낙수 단에서는 물과 같이 올라간다(턱 가장자리 아래 정점은 어둡게 칠해 젖은 암벽처럼 보인다).
+// 정점 색은 판마다 다른 회색 톤(층·판 경계는 재질 셰이더가 그린다). 반환: BufferGeometry(position, color).
+export function buildBedGeometry(samples,height,raise=null){
+ const cols=[-1,-.78,-.55,-.28,0,.28,.55,.78,1],pos=[],col=[],idx=[],c=new THREE.Color();
+ for(let k=0;k<samples.length;k++){const s=samples[k],r=raise?raise(s.along):0,low=raise&&r===0&&k+1<samples.length&&raise(samples[k+1].along)>0&&samples[k+1].along-s.along<.05;
+  for(const u of cols){const a=u*STREAM_BED_HALF,x=s.x+s.side[0]*a,z=s.z+s.side[1]*a,fw=1-Math.min(1,Math.max(0,(Math.abs(a)-1.5)/(STREAM_BED_HALF-1.5)));
+   const tone=.5+.5*Math.sin(x*.9+Math.sin(z*.7)*1.8)*Math.cos(z*.8-x*.3);
+   pos.push(x,height(x,z)+.02+r*fw,z);c.setRGB(.082+.035*tone,.078+.033*tone,.07+.03*tone);c.multiplyScalar(1-.4*Math.min(1,Math.max(0,(Math.abs(a)-.9)/(STREAM_BED_HALF-.9))));if(low&&Math.abs(a)<1.8)c.multiplyScalar(.6);col.push(c.r,c.g,c.b);}
+  if(k){const j=k*cols.length,p=j-cols.length;for(let q=0;q<cols.length-1;q++)idx.push(p+q,p+q+1,j+q,p+q+1,j+q+1,j+q);}}
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('color',new THREE.Float32BufferAttribute(col,3));g.setIndex(idx);g.computeVertexNormals();g.computeBoundingSphere();
+ return g;
+}
+// 낙수: 턱 가장자리마다 폭 1.3m 물 막이 위에서 아래로 곡선을 그리며 떨어진다. 정점 uv=(가로 0~1, 위 0→아래 1). 턱이 없으면 null.
+export function buildFallGeometry(samples,height){
+ const pos=[],uv=[],idx=[],cols=[-.65,-.33,0,.33,.65],rows=[0,.5,1];
+ for(let k=1;k<samples.length;k++){const s=samples[k],h=ledgeRaise(s.along);if(!(h>0&&ledgeRaise(samples[k-1].along)===0))continue;
+  const base=pos.length/3;
+  for(let j=0;j<rows.length;j++){const t=rows[j],out=.02+t*t*(.22+.5*h);
+   for(let i=0;i<cols.length;i++){const x=s.x+s.side[0]*cols[i]+s.dir[0]*out,z=s.z+s.side[1]*cols[i]+s.dir[1]*out,y0=height(s.x+s.side[0]*cols[i],s.z+s.side[1]*cols[i])+.03;
+    pos.push(x,y0+(h+.005)*(1-t)+.0*t,z);uv.push(i/(cols.length-1),t);}}
+  for(let j=0;j<rows.length-1;j++)for(let i=0;i<cols.length-1;i++){const a=base+j*cols.length+i,b=a+1,c=a+cols.length,d=c+1;idx.push(a,b,c,b,d,c);}
+ }
+ if(!pos.length)return null;
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeBoundingSphere();
+ return g;
 }
 // 연못(호수): 같은 물 재질을 쓰되 흐르지 않고 가장자리만 젖은 돌로 녹인다. 원판의 정점마다 aStream=(반지름/반경,0)을 넣는다.
 export function buildPondGeometry(cx,cz,radius,height,segments=28){
@@ -153,28 +199,15 @@ const FRAGMENT_BODY=`
  // 거품: 바위 둘레(하류 쪽으로 길게), 턱 아래, 물가 가는 띠.
  float foam=0.;
  #ifndef STREAM_POND
- float rc=floor(along/${STREAM_ROCK_CELL.toFixed(1)});
- for(int i=-1;i<=1;i++){
-  float c=rc+float(i);
-  if(sH(c*3.1+1.)<=.72){
-   vec2 rr=vec2((sH(c*7.3+2.)-.5)*1.,(c+.15+.7*sH(c*5.7+3.))*${STREAM_ROCK_CELL.toFixed(1)});
-   float rad=.2+.22*sH(c*11.9+4.);
-   vec2 d=vec2(across-rr.x,along-rr.y);
-   // 하류(along 감소) 쪽은 늘이고 상류는 짧게: 거리를 비등방으로 잰다.
-   d.y*=d.y<0.?.42:1.5;
-   float dd=length(d);
-   foam=max(foam,(1.-smoothstep(rad*.9,rad+.5,dd))*(.65+.35*(1.-smoothstep(rad,rad+.5,dd))));
-  }
- }
- foam=max(foam,lip*.95);
- foam=max(foam,tail*.55*sV(vec2(across*3.,q*.8)));
+ foam=max(foam,lip*.4*(.4+.6*sV(vec2(across*6.,3.))));
+ foam=max(foam,tail*.4*sV(vec2(across*3.,q*.8)));
  #endif
  float edgeF=(1.-smoothstep(0.,.14,abs(dW)))*.38*step(0.,dW+.04);
  foam=max(foam,edgeF);
  float ft=sV(vec2(across*5.,q*2.2))*.6+sV(vec2(across*11.,q*4.7)+3.)*.4;
  float foamMask=smoothstep(.22,.55,foam*(.45+1.1*ft)-.06)*inside;
- vec3 foamC=vec3(.9,.93,.94)*(.2+.8*level)*(.9+.2*fxSunVis);
- col=mix(col,foamC,foamMask);
+ vec3 foamC=vec3(.72,.77,.78)*(.2+.8*level)*(.9+.1*fxSunVis);
+ col=mix(col,foamC,foamMask*.8);
 
  // 젖은 돌 둑: 물가 0.6m는 어두운 젖은 자갈에서 마른 지면으로 녹아든다.
  float bank=smoothstep(-.7,-.04,dW)*(1.-inside);
@@ -182,7 +215,7 @@ const FRAGMENT_BODY=`
  wet*=.7+.3*smoothstep(-.7,0.,dW);
  col=mix(wet,col,inside);
  float aWater=inside*mix(.62,.97,1.-transmit*.85);
- float a=max(bank*.88,aWater);a=max(a,foamMask*.92);
+ float a=max(bank*.88,aWater);a=max(a,foamMask*.8);
  diffuseColor=vec4(col,a*smoothstep(0.,.02,a));
 }
 `;
@@ -200,7 +233,7 @@ export function streamWaterMaterial({pond=false,pondRadius=5}={}){
   const legacy='{float la=sStream.x*'+STREAM_HALF_WIDTH.toFixed(2)+';diffuseColor=vec4(vec3(.13,.36,.5)*diffuseColor.rgb,step(abs(la),.75));}';
   shader.fragmentShader=shader.fragmentShader.replace('#include <common>',defs+'#include <common>\n'+FRAGMENT_PARS).replace('#include <color_fragment>','#include <color_fragment>\n'+(FX_OFF&&!pond?legacy:FRAGMENT_BODY));
  };
- material.customProgramCacheKey=()=>`stream-water-v1-${pond?'pond':'stream'}-${pondRadius}-${FX_OFF?'off':'on'}`;
+ material.customProgramCacheKey=()=>`stream-water-v3-${pond?'pond':'stream'}-${pondRadius}-${FX_OFF?'off':'on'}`;
  return material;
 }
 
@@ -209,4 +242,37 @@ export function distanceToStream(samples,x,z){
  let best=Infinity;
  for(let i=0;i<samples.length;i+=2){const s=samples[i],d=Math.hypot(s.x-x,s.z-z);if(d<best)best=d;}
  return best;
+}
+
+// 낙수 막 재질: 위에서 아래로 흐르는 세로 줄무늬. 가장자리·위쪽은 투명하게 풀어 흰 판처럼 보이지 않게 한다. 밝기는 다른 MeshBasic처럼 rendering.js가 곱한다.
+export function fallWaterMaterial(){
+ const material=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,depthWrite:false,side:THREE.DoubleSide});
+ material.onBeforeCompile=shader=>{
+  shader.uniforms.fxTime=LIGHT_FX.fxTime;
+  shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nvarying vec2 fUv;').replace('#include <begin_vertex>','#include <begin_vertex>\nfUv=uv;');
+  shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nvarying vec2 fUv;uniform float fxTime;float fH(float n){return fract(sin(n*12.9898)*43758.5453);}')
+   .replace('#include <color_fragment>',`#include <color_fragment>
+{float lane=floor(fUv.x*9.);float r=fH(lane+3.);float flow=fract(fUv.y*1.4-fxTime*(1.5+r)+r*7.);
+ float lane2=step(.35,fH(lane+11.));float a=(.12+.6*smoothstep(.2,.9,flow)*lane2)*(1.-smoothstep(.3,.5,abs(fUv.x-.5)))*(1.-.6*smoothstep(.5,1.,fUv.y))*smoothstep(0.,.1,fUv.y);
+ diffuseColor=vec4(vec3(.42,.5,.52)*diffuseColor.rgb,a*.55);}`);
+ };
+ material.customProgramCacheKey=()=>'fall-water-v2';
+ return material;
+}
+
+// 암반 홈 재질: 정점 색(판별 회색 톤)에 판 경계선·낱알 무늬를 세계 좌표로 얹는다. 햇빛에 하얗게 날아가지 않도록 어두운 회색(반사율 약 0.2)이다.
+export function bedRockMaterial(){
+ const material=new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:.96,metalness:0,emissive:0x2a2825,flatShading:true,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1});
+ material.onBeforeCompile=shader=>{
+  shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 bWorld;').replace('#include <begin_vertex>','#include <begin_vertex>\nbWorld=(modelMatrix*vec4(transformed,1.0)).xyz;');
+  shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nvarying vec3 bWorld;')
+   .replace('#include <color_fragment>',`#include <color_fragment>
+{vec2 w=bWorld.xz;vec2 p=vec2(w.x*.94+w.y*.34,-w.x*.34+w.y*.94)/vec2(3.4,2.2);float row=floor(p.y);
+ p.x+=row*.37+fract(sin(row*7.1)*43758.5)*.9;vec2 f=fract(p);vec2 id=vec2(floor(p.x),row);
+ float d=min(min(f.x,1.-f.x)*3.4,min(f.y,1.-f.y)*2.2);float crack=1.-smoothstep(.02,.1,d);
+ float h=fract(sin(dot(id,vec2(12.9898,78.233)))*43758.5453);float g=fract(sin(dot(floor(w*8.),vec2(41.3,17.7)))*9631.7);
+ diffuseColor.rgb*=(.8+.34*h)*(1.-.6*crack)*(.95+.1*g);}`);
+ };
+ material.customProgramCacheKey=()=>'bed-rock-v2';
+ return material;
 }

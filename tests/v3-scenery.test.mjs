@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 import * as THREE from 'three';
 import {assignSurfaceRoute} from '../src/route-surfaces.js';
 import {forestLayers,summitViewCap,SUMMIT_SIGHT_DEG} from '../assets/realistic/generated/nature/forest-layers.js';
-import {scenerySites,sectionPoint} from '../assets/realistic/section-scenery.js';
+import {scenerySites,sectionPoint,streamSide} from '../assets/realistic/section-scenery.js';
 import {waterClearance,STREAM_COURSE,POND} from '../assets/realistic/water-clearance.js';
 import {groundCoverMask} from '../assets/realistic/ground-cover-mask.js';
 import {FACILITY_LAMPS} from '../src/night-lighting-config.js';
@@ -22,10 +22,10 @@ const water=waterClearance(route);
 
 test('물줄기 중심선은 계곡 물을 그리는 자리(코스 800~2560m, 왼쪽 6m)와 같다',()=>{
  assert.equal(water.line.length,(STREAM_COURSE.to-STREAM_COURSE.from)/STREAM_COURSE.step+1);
- for(const m of [800,1096,1500,2560]){const p=sectionPoint(route,m,-6);assert.ok(water.streamDistance(p.x,p.z)<1e-6,`${m}m`);}
+ for(const m of [800,1096,1500,2560]){const p=sectionPoint(route,m,streamSide(m));assert.ok(water.streamDistance(p.x,p.z)<1e-6,`${m}m`);}
  const lake=sectionPoint(route,POND.metres,POND.side);assert.ok(water.inPond(lake.x,lake.z));
  // 1096·1500m 지점의 물 가운데·띠 가장자리 안쪽은 막고, 띠 바깥 물가는 막지 않는다.
- for(const m of [1096,1500]){const c=sectionPoint(route,m,-6),inside=sectionPoint(route,m,-6+1.3),bank=sectionPoint(route,m,-6+3);
+ for(const m of [1096,1500]){const c=sectionPoint(route,m,streamSide(m)),inside=sectionPoint(route,m,streamSide(m)+1.3),bank=sectionPoint(route,m,streamSide(m)+3);
   assert.ok(water.blocked(c.x,c.z)&&water.blocked(inside.x,inside.z),`${m}m 띠 안`);assert.ok(!water.blocked(bank.x,bank.z),`${m}m 물가`);}
 });
 
@@ -44,7 +44,7 @@ test('물가(띠 바깥 0.5~3m)에는 풀이 남는다',()=>{
 });
 
 test('groundCoverMask에 물 자리를 넘기면 띠 안을 막는다',()=>{
- const mask=groundCoverMask(route,{water}),c=sectionPoint(route,1500,-6),bank=sectionPoint(route,1500,-6+4);
+ const mask=groundCoverMask(route,{water}),c=sectionPoint(route,1500,streamSide(1500)),bank=sectionPoint(route,1500,streamSide(1500)+4);
  assert.ok(mask.blocked(c.x,c.z));assert.ok(!mask.blocked(bank.x,bank.z));
  assert.ok(!groundCoverMask(route).blocked(c.x,c.z),'물 자리 없이 부르면 이전과 같다');
 });

@@ -6,6 +6,33 @@ float surfaceValue(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix
 float surfaceMask(vec2 p){return .55*surfaceValue(p*.9)+.3*surfaceValue(p*2.3+17.)+.15*surfaceValue(p*6.1+41.);}
 float surfaceEntry(float entry,vec2 p){float m=surfaceMask(p);return smoothstep(m*.6,m*.6+.4,entry);}
 `;
+// 4차 개선 S3: 능선·정상에서 내려다본 사면. 산리서치 비교표 P5·P9 — 짙은 숲(활엽·소나무) 지붕 사이로 회백색 화강암 노두가 드러난다.
+// 표고 490m 위를 바위로 덮는 근경 규칙(mossGround) 대신, 50m 밖 사면은 수관 얼룩 + 급경사·마루 노두로 칠한다.
+// 카메라가 450m 위에 있고 지면을 내려다볼 때만 적용해 계곡·중턱 구간의 원경 색은 그대로 둔다. 형상은 바꾸지 않아 서울 쪽 시야를 가리지 않는다.
+// 수관 크기 약 6m·노두 얼룩 약 45m는 사진 비율로 잡은 시각 가정이다(측량값 아님).
+const SLOPE_CANOPY=`float slopeDist=length(vViewPosition);
+ float overlook=smoothstep(.03,.12,(cameraPosition.y-landWorld.y)/max(slopeDist,1.0))*smoothstep(450.0,520.0,cameraPosition.y);
+ if(overlook>0.0){
+  vec2 cp=landWorld.xz/6.0; vec2 ci=floor(cp),cf=fract(cp)-.5;
+  float jitter=fract(sin(dot(ci,vec2(127.1,311.7)))*43758.5453);
+  float crown=1.0-smoothstep(.18,.62,length(cf-(jitter-.5)*.35));
+  float crownDetail=1.0-smoothstep(260.0,900.0,slopeDist);
+  float stand=.5+.25*sin(landWorld.x*.031+sin(landWorld.z*.027)*2.3)+.25*sin(landWorld.z*.043-landWorld.x*.017);
+  vec3 broadleaf=vec3(.056,.092,.030),pine=vec3(.032,.058,.026);
+  vec3 canopy=mix(broadleaf,pine,smoothstep(.35,.75,stand))*mix(1.0,.62+.62*crown+.18*jitter,crownDetail);
+  float slopeN=1.0-abs(normalize(landNormal).y);
+  // 노두: 값 노이즈 덩이(약 70m)가 관악산 중턱 위(150m~) 급경사에만 드러나고 낮은 언덕은 숲이 덮는다.
+  // 4차 재대조: 사인 띠 얼룩은 300°·해질녘 먼 사면에서 흰 소용돌이로 보여 뺐다. 먼 노두는 옅고 어둡게 해 숲에 묻히게 한다.
+  float fine=1.0-smoothstep(350.0,1400.0,slopeDist);
+  float clump=.7*surfaceValue(landWorld.xz/70.0)+.3*mix(.5,surfaceValue(landWorld.xz/23.0+17.0),fine);
+  float upper=smoothstep(150.0,450.0,landWorld.y);
+  float rockiness=upper*smoothstep(.12,.32,slopeN)*clump+smoothstep(600.0,632.0,landWorld.y)*.25;
+  float farFade=1.0-.65*smoothstep(500.0,2000.0,slopeDist);
+  float outcrop=smoothstep(.36,.56,rockiness)*farFade*mix(1.0,.55+.45*crown,crownDetail);
+  vec3 granite=vec3(.25,.25,.24)*(.86+.22*jitter);
+  vec3 slopeColor=mix(canopy,granite,outcrop);
+  farGround=mix(farGround,slopeColor,overlook);
+ }`;
 // PBR 네 층이 같은 세계 좌표·혼합 가중치를 사용한다. 색 텍스처만 sRGB이다.
 export function terrainMaterial(materials,meta){
  const keys=['granite','soil','grass','leaves'];
@@ -14,20 +41,24 @@ export function terrainMaterial(materials,meta){
   const uniforms={};for(const [i,key] of keys.entries())for(const [suffix,field] of [['D','map'],['N','normalMap'],['R','roughnessMap']])uniforms[`land${i}${suffix}`]={value:materials[key][field]};
   Object.assign(shader.uniforms,uniforms);
   shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 landWorld; varying vec3 landNormal;').replace('#include <worldpos_vertex>','#include <worldpos_vertex>\nlandWorld=(modelMatrix*vec4(transformed,1.0)).xyz; landNormal=normalize(mat3(modelMatrix)*objectNormal);');
-  let declarations='varying vec3 landWorld; varying vec3 landNormal;\n';
+  let declarations='varying vec3 landWorld; varying vec3 landNormal;\n'+SURFACE_NOISE;
   for(let i=0;i<4;i++)for(const suffix of ['D','N','R'])declarations+=`uniform sampler2D land${i}${suffix};\n`;
   declarations+=`vec4 landTex(sampler2D tex,vec2 uv){float w=smoothstep(-1.0,1.0,sin(landWorld.x*.021)+sin(landWorld.z*.017));return mix(texture2D(tex,uv),texture2D(tex,uv*.731+vec2(.37,.61)),w);}
 vec4 graniteTex(sampler2D tex){float nearWeight=1.0-smoothstep(12.0,65.0,length(vViewPosition));vec2 uv=landWorld.xz/${Number(meta.granite.metres).toFixed(3)};return mix(landTex(tex,uv*.3),texture2D(tex,uv*2.4),nearWeight*.78);}
 vec4 landWeights(){float slope=1.0-abs(normalize(landNormal).y); float landPatch=.5+.25*sin(landWorld.x*.23+sin(landWorld.z*.19)*2.0)+.25*sin(landWorld.z*.08+landWorld.x*.09); float outcrop=smoothstep(.36,.76,landPatch); float rock=smoothstep(.10,.34,slope)*(.38+.62*outcrop); rock=max(rock,smoothstep(490.0,625.0,landWorld.y)*(.18+.65*outcrop));float grass=(1.0-rock)*(.42+.32*landPatch);float soil=(1.0-rock-grass)*(.45+.35*(1.0-landPatch));return vec4(rock,soil,grass,1.0-rock-grass-soil);}\n`;
   for(const channel of ['D','N','R'])declarations+=`vec4 land${channel}(){vec4 w=landWeights();return ${keys.map((k,i)=>`${i===0?`graniteTex(land0${channel})`:`landTex(land${i}${channel},landWorld.xz/${Number(meta[k].metres).toFixed(3)})`}*w[${i}]`).join('+')};}\n`;
   shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\n'+declarations)
-   .replace('#include <map_fragment>','vec4 groundColor=landD(); float rockCover=landWeights().x; float mottling=.92+.08*sin(landWorld.x*.019+sin(landWorld.z*.015)*2.0); vec3 forestColor=groundColor.rgb*mottling; vec3 stone=graniteTex(land0D).rgb; float stoneLuma=dot(stone,vec3(.2126,.7152,.0722)); vec3 graniteColor=mix(vec3(stoneLuma),stone,.12)*vec3(.94,.98,1.0); groundColor.rgb=mix(forestColor,graniteColor,rockCover); float farBlend=smoothstep(50.0,180.0,length(vViewPosition)); vec3 farGround=mix(vec3(.19,.24,.14),vec3(.38,.39,.37),rockCover); groundColor.rgb=mix(groundColor.rgb,farGround,farBlend*.92); diffuseColor *= groundColor;')
+   .replace('#include <map_fragment>','vec4 groundColor=landD(); float rockCover=landWeights().x; float mottling=.92+.08*sin(landWorld.x*.019+sin(landWorld.z*.015)*2.0); vec3 forestColor=groundColor.rgb*mottling; vec3 stone=graniteTex(land0D).rgb; float stoneLuma=dot(stone,vec3(.2126,.7152,.0722)); vec3 graniteColor=mix(vec3(stoneLuma),stone,.12)*vec3(.94,.98,1.0); groundColor.rgb=mix(forestColor,graniteColor,rockCover); float farBlend=smoothstep(50.0,180.0,length(vViewPosition)); vec3 farGround=mix(vec3(.19,.24,.14),vec3(.38,.39,.37),rockCover); '+SLOPE_CANOPY+' groundColor.rgb=mix(groundColor.rgb,farGround,farBlend*mix(.92,1.0,overlook)); diffuseColor *= groundColor;')
    .replace('#include <roughnessmap_fragment>','float roughnessFactor=roughness*landR().g;')
    // 반복 노멀의 원거리 명암 줄무늬를 줄인다. 근거리 PBR은 유지한다.
-   .replace('#include <normal_fragment_maps>',THREE.ShaderChunk.normal_fragment_maps.replace('texture2D( normalMap, vNormalMapUv )','mix(landN(),vec4(.5,.5,1.0,1.0),smoothstep(35.0,120.0,length(vViewPosition)))'));
+   .replace('#include <normal_fragment_maps>',THREE.ShaderChunk.normal_fragment_maps.replace('texture2D( normalMap, vNormalMapUv )','mix(landN(),vec4(.5,.5,1.0,1.0),smoothstep(35.0,120.0,length(vViewPosition)))'))
+   // 내려다본 숲 지붕은 빛을 거의 거울반사하지 않는다. 낮은 각도에서 하늘이 비쳐 사면이 청백색으로 바래는 것을 막는다.
+   .replace('#include <lights_fragment_end>','#include <lights_fragment_end>\nfloat canopyMatte=farBlend*overlook; reflectedLight.indirectSpecular*=1.0-.9*canopyMatte; reflectedLight.directSpecular*=1.0-.9*canopyMatte;')
+   // 4km 안쪽 사면은 연무를 일부 덜어 낸다(P5에서 가까운 능선은 짙은 초록). 도심(10km 밖)과 하늘 연무 식은 그대로다.
+   .replace('#include <fog_fragment>','vec3 canopyPreFog=gl_FragColor.rgb;\n#include <fog_fragment>\ngl_FragColor.rgb=mix(gl_FragColor.rgb,canopyPreFog,canopyMatte*.55*(1.0-smoothstep(2500.0,6000.0,slopeDist)));');
  patchDapple(shader,'landWorld');
  };
- material.customProgramCacheKey=()=> 'gwanak-slope-altitude-forest-v6-dapple';return material;
+ material.customProgramCacheKey=()=> 'gwanak-slope-altitude-forest-v8-outcrop';return material;
 }
 
 // 노면 중심은 흙, 가장자리는 낙엽·풀. 세 PBR 채널에 같은 가중치를 적용한다.

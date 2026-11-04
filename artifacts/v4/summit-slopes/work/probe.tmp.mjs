@@ -1,0 +1,11 @@
+import {chromium} from '@playwright/test';
+import {initialState} from '/Users/pc-2311001/gwanak-hiking/src/movement.js';
+import {route} from '/Users/pc-2311001/gwanak-hiking/src/route.js';
+const b=await chromium.launch({channel:'chrome',headless:true,args:['--enable-webgl','--ignore-gpu-blocklist']});
+const c=await b.newContext({viewport:{width:1280,height:800}});
+const st={...initialState({start:'summit'}),zone:'summit',summit:{x:1557.57,z:2535.6,heading:-(+process.env.B)*Math.PI/180},plaza:null,s:route.length-10,lateral:0};
+await c.addInitScript(s=>{localStorage.clear();localStorage.setItem('gwanak-sound-enabled','false');localStorage.setItem('gwanak-hiking:v1',s);},JSON.stringify(st));
+const p=await c.newPage();await p.goto('http://127.0.0.1:5412/?quality=high&time=11:00&weather=clear');
+await p.waitForFunction(()=>window.hiking?.started&&hiking.landscape().ready&&!hiking.rendering().compiling,null,{timeout:300000});await p.waitForTimeout(1500);
+for(const [x,y] of JSON.parse(process.env.P))console.log(x,y,JSON.stringify(await p.evaluate(([x,y])=>{const r=hiking.contactPixelProbe(x,y,1280,800);return r&&{w:r.world.map(v=>+v.toFixed(0)),edge:+r.edgeDistance.toFixed(0)};},[x,y])));
+await b.close();

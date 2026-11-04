@@ -1,7 +1,7 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import {ribbon,densifyRoute,SURFACE_OVERLAP_METRES} from '../assets/realistic/load-landscape.js';
-import {rockTrailMaterial,trailMaterial,pavedMaterial} from '../assets/realistic/terrain-material.js';
+import {rockTrailMaterial,trailMaterial,pavedMaterial,terrainMaterial} from '../assets/realistic/terrain-material.js';
 
 const textures=()=>{const materials={},meta={};for(const key of ['granite','soil','grass','leaves','stone']){materials[key]={map:new THREE.Texture(),normalMap:new THREE.Texture(),roughnessMap:new THREE.Texture()};meta[key]={metres:2};}return {materials,meta};};
 const compile=material=>{const shader={uniforms:{},vertexShader:THREE.ShaderLib.standard.vertexShader,fragmentShader:THREE.ShaderLib.standard.fragmentShader};material.onBeforeCompile(shader);return shader;};
@@ -45,4 +45,15 @@ test('계단이 아닌 노면 전환은 뒤 노면을 1.6m 겹쳐 깔고 계단 
  const rock=stairs.children.at(-1),rockZ=Array.from({length:rock.geometry.getAttribute('position').count},(_,i)=>rock.geometry.getAttribute('position').getZ(i));
  assert.ok(Math.min(...rockZ)>=40-1e-6,'계단 뒤 노면은 계단 위로 겹치지 않는다');
  group.traverse(o=>o.geometry?.dispose());stairs.traverse(o=>o.geometry?.dispose());
+});
+
+test('정상·능선에서 내려다본 사면은 숲 지붕과 화강암 노두로 칠하고 형상·먼 연무는 바꾸지 않는다',()=>{
+ const {materials,meta}=textures(),shader=compile(terrainMaterial(materials,meta)),f=shader.fragmentShader;
+ assert.match(f,/float overlook=smoothstep\(\.03,\.12,\(cameraPosition\.y-landWorld\.y\)/,'지면을 내려다볼 때만');
+ assert.match(f,/smoothstep\(450\.0,520\.0,cameraPosition\.y\)/,'카메라가 능선·정상 높이일 때만(계곡·중턱 원경 색 유지)');
+ assert.match(f,/float outcrop=/);assert.match(f,/vec3 canopy=/);
+ assert.equal(f.includes('float blotch'),false,'사인 띠 얼룩은 먼 사면에서 흰 소용돌이로 보여 쓰지 않는다');
+ assert.match(f,/float farFade=1\.0-\.65\*smoothstep\(500\.0,2000\.0,slopeDist\)/,'먼 노두는 옅게 해 숲에 묻힌다');
+ assert.match(f,/canopyMatte\*\.55\*\(1\.0-smoothstep\(2500\.0,6000\.0,slopeDist\)\)/,'연무는 6km 안쪽 사면에서만 덜어 낸다(도심 연무 그대로)');
+ assert.equal(shader.vertexShader.includes('canopy'),false,'정점(형상)은 그대로라 서울 쪽 시야를 가리지 않는다');
 });
