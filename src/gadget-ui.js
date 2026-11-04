@@ -13,8 +13,12 @@ export function gadgetMode(detail={}){
 export function activeStop(zoom,stops=PHONE_STOPS){return stops.find(s=>Math.abs(zoom-s)/s<=.05)??null;}
 export const formatZoom=zoom=>`${Number.isInteger(Math.round(zoom*10)/10)?Math.round(zoom*10)/10:(Math.round(zoom*10)/10).toFixed(1)}x`;
 export const clockText=(date=new Date())=>`${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
+// 쌍안경 바깥 윤곽: 두 원(반지름 1, 가운데 ±0.6)의 합집합 테두리를 한 path로 그려 겹친 안쪽 호가 보이지 않는다. 단위는 렌즈 반지름 r.
+export const BINO_OVERLAP=.6;
+export function binoOutlinePath(d=BINO_OVERLAP){const h=Math.sqrt(1-d*d).toFixed(4);return `M0 -${h}A1 1 0 1 0 0 ${h}A1 1 0 1 0 0 -${h}Z`;}
+const BINO_RING=`<svg class="bino-ring" viewBox="-1.6 -1 3.2 2" aria-hidden="true"><path class="fr" d="${binoOutlinePath()}"/><path class="fb" d="${binoOutlinePath()}"/><path class="edge" d="${binoOutlinePath()}"/></svg>`;
 const html=`
-<div class="bino" aria-hidden="true"><div class="bino-mask"></div><div class="bino-lens l"></div><div class="bino-lens r"></div><div class="bino-zoom"><b data-bino-zoom>8x</b></div></div>
+<div class="bino" aria-hidden="true"><div class="bino-mask"></div>${BINO_RING}<div class="bino-zoom"><b data-bino-zoom>8x</b></div></div>
 <div class="phone" aria-label="휴대폰 카메라">
  <div class="phone-device">
   <div class="phone-screen">
@@ -49,7 +53,7 @@ export function installGadgetUI(doc=document,win=window){
   all('[data-zoom]').forEach(b=>b.setAttribute('aria-pressed',String(Number(b.dataset.zoom)===stop)));
   all('[data-act=selfie]').forEach(b=>b.setAttribute('aria-pressed',String(selfie)));
   $('[data-phone-zoom-readout]').textContent=formatZoom(zoom);$('[data-phone-zoom-readout]').dataset.exact=String(stop!==null);
-  root.dataset.selfie=String(selfie);
+  root.dataset.selfie=String(selfie);all('[data-zoom]').forEach(b=>{b.disabled=selfie;});
   $('[data-bino-zoom]').textContent=formatZoom(d.binoculars?.zoom??8);
   const chip=$('[data-chip-text]');
   if(m.mode==='binoculars-first'){chip.innerHTML='<kbd>B</kbd> 닫기 · 휠로 배율';}

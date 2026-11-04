@@ -22,3 +22,14 @@ test('HUD 크기 비율(--u)을 따르고 휴대폰 단추는 터치 크기를 �
  assert.ok(css.includes('var(--u)'));assert.ok(!/--ui\b/.test(css));
  assert.ok(/\.phone-shutter\{[^}]*min-width:64px/.test(css));assert.ok(/\.phone-zooms button\{[^}]*min-height:max\(40px/.test(css));
 });
+test('쌍안경 윤곽은 두 원의 합집합을 하나의 path로 그려 가운데 교집합 선이 없다',async()=>{
+ const {binoOutlinePath,BINO_OVERLAP}=await import('../src/gadget-ui.js');
+ const d=binoOutlinePath(BINO_OVERLAP);assert.equal((d.match(/M/g)||[]).length,1);assert.equal((d.match(/A/g)||[]).length,2,'바깥 호 두 개만');
+ const h=Math.sqrt(1-BINO_OVERLAP**2);assert.ok(d.startsWith(`M0 -${h.toFixed(4)}`));
+ const js=readFileSync(new URL('../src/gadget-ui.js',import.meta.url),'utf8'),css=readFileSync(new URL('../src/gadget-ui.css',import.meta.url),'utf8');
+ assert.ok(!js.includes('bino-lens')&&!css.includes('.bino-lens'),'겹치는 원 테두리 요소를 쓰지 않는다');
+});
+test('셀카에서는 줌 단추를 비활성하고 표시를 숨긴다',()=>{
+ const css=readFileSync(new URL('../src/gadget-ui.css',import.meta.url),'utf8'),js=readFileSync(new URL('../src/gadget-ui.js',import.meta.url),'utf8');
+ assert.ok(/data-selfie=true\] \.phone-zooms[^{]*\{[^}]*visibility:hidden/.test(css));assert.ok(js.includes("b.disabled=selfie"));
+});

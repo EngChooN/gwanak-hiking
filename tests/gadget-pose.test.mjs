@@ -128,3 +128,12 @@ test('셀카: 오른팔을 앞 위로 뻗어 한 손으로 쥐고 화면이 얼�
  // 셀카를 끄고 휴대폰을 넣으면 숨는다
  for(let i=0;i<60;i++)frame(h,{gadget:'none'});assert.equal(phone.visible,false);
 });
+test('셀카 브이: 검지·중지는 곧게 펴 V자로 벌리고 약지·새끼는 접고 엄지는 손바닥 쪽으로 접는다',async()=>{
+ const {V_FINGERS}=await import('../src/hiker-gadgets.js');
+ for(const f of ['Index','Middle'])for(const a of V_FINGERS[f].flex)assert.ok(a<=0&&a>-.1,`${f} 마디는 곧게(꺾이지 않게)`);
+ assert.ok(V_FINGERS.Index.splay*V_FINGERS.Middle.splay<0&&Math.abs(V_FINGERS.Index.splay)<.4,'두 손가락은 반대로 살짝 벌어진다');
+ for(const f of ['Ring','Pinky']){for(const a of V_FINGERS[f].flex)assert.ok(a<-1&&a>-1.8,`${f} 마디는 자연스러운 주먹 각도`);}
+ for(const a of V_FINGERS.Thumb.flex)assert.ok(a<-.5&&a>-1.5);
+ const src=(await import('node:fs')).readFileSync(new URL('../src/realistic-hiker.js',import.meta.url),'utf8');
+ assert.ok(src.includes('poseVFingers')&&src.includes('fingerBind'),'브이는 바인드 자세에서 계산해 애니메이션 값 영향을 받지 않는다');
+});

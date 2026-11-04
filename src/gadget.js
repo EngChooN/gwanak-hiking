@@ -6,36 +6,50 @@ export const PHONE_ZOOM=Object.freeze({min:.5,max:5,stops:[.5,1,2,5]});
 // 셀카: 머리 앞쪽으로 팔을 뻗은 거리(m)와 오른손 쪽 옆 거리, 눈보다 조금 위.
 export const SELFIE=Object.freeze({reach:.6,side:.12,up:.06});
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+// 셀카는 가장 넓은 광각(0.5x)에 고정한다. 후면으로 돌아오면 셀카 전 배율(phone.restoreZoom)을 되돌린다.
+export const SELFIE_ZOOM=PHONE_ZOOM.min;
 export function gadgetDefaults(){return {gadget:'none',phone:{zoom:1,selfie:false},binoculars:{zoom:BINOCULAR_ZOOM.initial}};}
 export function ensureGadget(state){const d=gadgetDefaults();if(!GADGETS.includes(state.gadget))state.gadget=d.gadget;state.phone={...d.phone,...(state.phone||{})};state.binoculars={...d.binoculars,...(state.binoculars||{})};return state;}
+// 셀카 켜고 끄기 한 곳에서 처리: 켜면 배율을 저장하고 광각 고정, 끄면 복원.
+function setSelfie(state,on){
+ const p=state.phone;if(on===!!p.selfie)return;
+ if(on){p.restoreZoom=p.zoom;p.zoom=SELFIE_ZOOM;}else{p.zoom=p.restoreZoom??p.zoom;delete p.restoreZoom;}
+ p.selfie=on;
+}
+// 기구를 켜면 3인칭이어도 1인칭으로 강제하고 원래 시점(state.gadgetPrevView)을 기억했다가 모두 끄면 되돌린다.
+export const viewLocked=state=>(state.gadget??'none')!=='none';
+function enterGadgetView(state){if(state.gadgetPrevView==null)state.gadgetPrevView=state.view;state.view='first';}
+function leaveGadgetView(state){if(state.gadgetPrevView!=null){state.view=state.gadgetPrevView;delete state.gadgetPrevView;}}
 // 켜면 걷기·자동 걷기·달리기를 멈추고 일시정지도 푼다(기구로 둘러보는 중에는 시간이 흐른다). 같은 기구를 다시 누르면 끈다.
 export function setGadget(state,kind){
  ensureGadget(state);if(!GADGETS.includes(kind))return false;
  const next=state.gadget===kind?'none':kind;state.gadget=next;
  if(next!=='none'){state.auto=false;state.running=false;state.paused=false;if(state.pose&&state.pose!=='stand'){state.pose='stand';state.teaRemaining=0;}}
- if(next!=='phone')state.phone.selfie=false;
+ if(next!=='phone')setSelfie(state,false);
+ if(next!=='none')enterGadgetView(state);else leaveGadgetView(state);
  return true;
 }
-export const closeGadget=state=>{ensureGadget(state);if(state.gadget==='none')return false;state.gadget='none';state.phone.selfie=false;return true;};
+export const closeGadget=state=>{ensureGadget(state);if(state.gadget==='none')return false;state.gadget='none';setSelfie(state,false);leaveGadgetView(state);return true;};
 // 기구를 든 동안에는 걷기 입력을 받지 않는다(제자리에서 조준).
 export const walkInput=(state,cmd)=>state.gadget&&state.gadget!=='none'?{...cmd,forward:0,side:0,run:false}:cmd;
+const selfieLocked=state=>state.gadget==='phone'&&!!state.phone?.selfie;
 // 휠·손가락 모으기: dz>0이면 축소. 배율은 곱셈으로 바꿔 넓은 범위에서 같은 손맛을 낸다.
 export function zoomBy(state,dz){
- ensureGadget(state);
+ ensureGadget(state);if(selfieLocked(state))return false;
  if(state.gadget==='binoculars'){state.binoculars.zoom=clamp(state.binoculars.zoom*Math.exp(-dz*.4),BINOCULAR_ZOOM.min,BINOCULAR_ZOOM.max);return true;}
  if(state.gadget==='phone'){state.phone.zoom=clamp(state.phone.zoom*Math.exp(-dz*.5),PHONE_ZOOM.min,PHONE_ZOOM.max);return true;}
  return false;
 }
 // +/− 키: 휴대폰은 0.5·1·2·5배 단계, 쌍안경은 1배씩.
 export function zoomStep(state,direction){
- ensureGadget(state);
+ ensureGadget(state);if(selfieLocked(state))return false;
  if(state.gadget==='binoculars'){state.binoculars.zoom=clamp(Math.round(state.binoculars.zoom)+Math.sign(direction),BINOCULAR_ZOOM.min,BINOCULAR_ZOOM.max);return true;}
  if(state.gadget!=='phone')return false;
  const z=state.phone.zoom,stops=PHONE_ZOOM.stops;
  state.phone.zoom=direction>0?(stops.find(s=>s>z*1.001)??PHONE_ZOOM.max):([...stops].reverse().find(s=>s<z/1.001)??PHONE_ZOOM.min);return true;
 }
-export function setPhoneZoom(state,zoom){ensureGadget(state);if(!Number.isFinite(zoom))return false;state.phone.zoom=clamp(zoom,PHONE_ZOOM.min,PHONE_ZOOM.max);return true;}
-export function toggleSelfie(state){ensureGadget(state);if(state.gadget!=='phone')return false;state.phone.selfie=!state.phone.selfie;return true;}
+export function setPhoneZoom(state,zoom){ensureGadget(state);if(selfieLocked(state)||!Number.isFinite(zoom))return false;state.phone.zoom=clamp(zoom,PHONE_ZOOM.min,PHONE_ZOOM.max);return true;}
+export function toggleSelfie(state){ensureGadget(state);if(state.gadget!=='phone')return false;setSelfie(state,!state.phone.selfie);return true;}
 // 화면 배율. 3인칭은 자세만 보이고 시점은 그대로(1배)다.
 export function viewZoom(state){
  if(state.view!=='first')return 1;

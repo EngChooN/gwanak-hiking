@@ -5,7 +5,7 @@ import {followHeading,headingDelta} from './hiker-facing.js';
 import {legTargets,pelvisDrop,poleRotation} from './hiker-ik.js';
 import {createHikingProps,createPoseController,poleStep,stanceWeight,standingFoot,standingPoleTip,SEAT,CUP_IN_HAND,handFromCup,handBasis,TEA_HEAD_TILT,TEA_TORSO_TILT,TEA_CUP_TILT} from './hiker-interactions.js';
 export {SEATED_EYE_HEIGHT,STANDING_EYE_HEIGHT,SIT_SECONDS,TEA_SECONDS,TEA_HEAD_TILT} from './hiker-interactions.js';
-import {createGadgetController,createGadgetProps,GRIPS,handFromProp,propFromHand,propInHand,blendGrip,lookQuaternion,phoneLensPose} from './hiker-gadgets.js';
+import {createGadgetController,createGadgetProps,GRIPS,V_FINGERS,handFromProp,propFromHand,propInHand,blendGrip,lookQuaternion,phoneLensPose} from './hiker-gadgets.js';
 export {GADGET_SECONDS,phoneLensPose} from './hiker-gadgets.js';
 // 등산객: MPFB(MakeHuman) 몸 + 직접 만든 등산복·모자·배낭을 Blender에서 Mixamo 호환 뼈대로 묶고
 // Quaternius UAL(CC0) 동작을 리타겟한 Hiker.glb. 동작(Idle·Look·Walk·Stairs·Rock)을 이동 거리에 맞춰 재생한다.
@@ -28,6 +28,8 @@ export function createRealisticHiker(gltf,{height=1.7}={}){
  root.add(model);model.rotation.y=Math.PI;model.updateMatrixWorld(true); // glTF는 +Z가 앞, 이 앱의 앞(heading 0)은 -Z
  const box=new Box3().setFromObject(model),k=height/HIKER_HEIGHT;model.scale.multiplyScalar(k);model.position.y=-box.min.y*k;model.updateMatrixWorld(true);
  const bone=n=>model.getObjectByName('mixamorig'+n);
+ // 손가락 바인드 자세(애니메이션이 덮기 전). 브이처럼 손가락 모양을 직접 정할 때 기준으로 쓴다.
+ const fingerBind=new Map();for(const side of ['Left','Right'])for(const f of ['Thumb','Index','Middle','Ring','Pinky'])for(const n of [1,2,3]){const b=bone(`${side}Hand${f}${n}`);if(b)fingerBind.set(b,b.quaternion.clone());}
  // 머리카락·눈썹·속눈썹은 알파 컷아웃(투명 정렬 문제 방지), 나머지는 그림자 수신·발신
  model.traverse(o=>{if(!o.isMesh)return;o.castShadow=o.receiveShadow=true;o.frustumCulled=!o.isSkinnedMesh;const m=o.material;
   if(m.transparent){m.transparent=false;m.alphaTest=.4;m.depthWrite=true;m.needsUpdate=true;}
@@ -130,6 +132,13 @@ export function createRealisticHiker(gltf,{height=1.7}={}){
  const viewDir=(yaw,pitch)=>dir(-Math.sin(yaw)*Math.cos(pitch),Math.sin(pitch),-Math.cos(yaw)*Math.cos(pitch));
  const offset=(x,y,z)=>new Vector3(x,y,z).applyQuaternion(rootQ()); // 루트 기준 거리(m) → 월드
  const blendPose=(a,b,t)=>({position:a.position.clone().lerp(b.position,t),quaternion:a.quaternion.clone().slerp(b.quaternion,t)});
+ // 브이 손가락 모양(V_FINGERS는 hiker-gadgets.js). 애니메이션이 덮은 값을 쓰지 않고 바인드 자세에서 직접 계산해 손가락이 꺾이거나 늘어나지 않게 한다.
+ const vAxisX=new Vector3(1,0,0),vAxisZ=new Vector3(0,0,1),vQa=new Quaternion(),vQb=new Quaternion();
+ const poseVFingers=(arm,w)=>{
+  for(const [name,cfg] of Object.entries(V_FINGERS))for(let n=0;n<3;n++){const b=bone(`${arm.side}Hand${name}${n+1}`),bind=fingerBind.get(b);if(!b||!bind)continue;
+   const sp=n===0?cfg.splay*(arm.side==='Left'?1:-1):0;
+   vQa.setFromAxisAngle(vAxisX,cfg.flex[n]);vQb.setFromAxisAngle(vAxisZ,sp);vQb.multiply(vQa).multiply(bind);b.quaternion.slerp(vQb,w);}
+ };
  const V_CURL=[-.05,-.05,-.05,-.05,-.05,-.05,-1.45,-1.45,-1.45,-1.45,-1.45,-1.45]; // 브이: 검지·중지는 펴고 약지·새끼는 접는다
  // 쌍안경·휴대폰 자세: 소품 월드 자세와 두 손 목표(위치·회전·팔꿈치 방향·가중치·손가락)를 정한다.
  const solveGadget=()=>{
@@ -283,6 +292,7 @@ export function createRealisticHiker(gltf,{height=1.7}={}){
    const holding=i===1&&v>0&&tea.held;
    for(const b of arm.fingers)b.rotation.x=MathUtils.lerp(-1.25,holding?-1.05:-.2,v);
    if(gh?.weight>0)arm.fingers.forEach((b,j)=>{b.rotation.x=MathUtils.lerp(b.rotation.x,Array.isArray(gh.curl)?gh.curl[j]:gh.curl,gh.weight);});
+   if(gh?.selfie>0&&gh.weight>0)poseVFingers(arm,gh.selfie*gh.weight);
    if(i===1){holdCup(hand,holding);holdGadget(hand,gp);}
    const palm=hand.localToWorld(new Vector3(0,.085,0));
    // 앉으면 두 스틱을 왼쪽 뒤에 세워 배낭 옆면에 기대 둔다. 그립~끝 1.10m를 그대로 지킨다.

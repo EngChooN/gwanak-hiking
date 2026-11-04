@@ -1,0 +1,156 @@
+[
+  {
+    "name": "bino",
+    "info": {
+      "gadget": "binoculars",
+      "phone": {
+        "zoom": 1,
+        "selfie": false
+      },
+      "binoculars": {
+        "zoom": 8
+      },
+      "view": "first",
+      "selfie": false,
+      "cameraZoom": 8,
+      "targetZoom": 8,
+      "fogFar": 84852.81374238571,
+      "avatarVisible": false,
+      "camera": [
+        157.5376589523533,
+        70.73417100928711,
+        549.2634143270304
+      ]
+    },
+    "errors": []
+  },
+  {
+    "name": "third",
+    "info": {
+      "gadget": "phone",
+      "phone": {
+        "zoom": 1,
+        "selfie": false
+      },
+      "binoculars": {
+        "zoom": 8
+      },
+      "view": "first",
+      "selfie": false,
+      "cameraZoom": 1,
+      "targetZoom": 1,
+      "fogFar": 30000,
+      "avatarVisible": false,
+      "camera": [
+        157.53820872406132,
+        70.73457513825836,
+        549.2609864166699
+      ]
+    },
+    "errors": []
+  },
+  {
+    "name": "selfie-lime-polo",
+    "info": {
+      "gadget": "phone",
+      "phone": {
+        "zoom": 0.5,
+        "selfie": true,
+        "restoreZoom": 1
+      },
+      "binoculars": {
+        "zoom": 8
+      },
+      "view": "first",
+      "selfie": true,
+      "cameraZoom": 0.5,
+      "targetZoom": 0.5,
+      "fogFar": 30000,
+      "avatarVisible": true,
+      "camera": [
+        157.31666706529703,
+        70.91764824880391,
+        549.8120167933995
+      ]
+    },
+    "errors": []
+  },
+  {
+    "name": "selfie-navy-zip",
+    "info": {
+      "gadget": "phone",
+      "phone": {
+        "zoom": 0.5,
+        "selfie": true,
+        "restoreZoom": 1
+      },
+      "binoculars": {
+        "zoom": 8
+      },
+      "view": "first",
+      "selfie": true,
+      "cameraZoom": 0.5,
+      "targetZoom": 0.5,
+      "fogFar": 30000,
+      "avatarVisible": true,
+      "camera": [
+        157.31608685889168,
+        70.91971496629088,
+        549.808775975383
+      ]
+    },
+    "errors": []
+  },
+  {
+    "name": "selfie-red-zip",
+    "info": {
+      "gadget": "phone",
+      "phone": {
+        "zoom": 0.5,
+        "selfie": true,
+        "restoreZoom": 1
+      },
+      "binoculars": {
+        "zoom": 8
+      },
+      "view": "first",
+      "selfie": true,
+      "cameraZoom": 0.5,
+      "targetZoom": 0.5,
+      "fogFar": 30000,
+      "avatarVisible": true,
+      "camera": [
+        157.3186958397016,
+        70.91332439261244,
+        549.8067285883891
+      ]
+    },
+    "errors": []
+  },
+  {
+    "name": "selfie-floral-shirt",
+    "info": {
+      "gadget": "phone",
+      "phone": {
+        "zoom": 0.5,
+        "selfie": true,
+        "restoreZoom": 1
+      },
+      "binoculars": {
+        "zoom": 8
+      },
+      "view": "first",
+      "selfie": true,
+      "cameraZoom": 0.5,
+      "targetZoom": 0.5,
+      "fogFar": 30000,
+      "avatarVisible": true,
+      "camera": [
+        157.31876764382537,
+        70.91377387643477,
+        549.8052333110024
+      ]
+    },
+    "errors": []
+  }
+]

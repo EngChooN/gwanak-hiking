@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {gadgetDefaults,ensureGadget,setGadget,closeGadget,walkInput,zoomBy,zoomStep,setPhoneZoom,toggleSelfie,viewZoom,selfieActive,lookScale,hazeScale,selfiePosition,photoFilename,BINOCULAR_ZOOM,PHONE_ZOOM,SELFIE} from '../src/gadget.js';
+import {viewLocked,gadgetDefaults,ensureGadget,setGadget,closeGadget,walkInput,zoomBy,zoomStep,setPhoneZoom,toggleSelfie,viewZoom,selfieActive,lookScale,hazeScale,selfiePosition,photoFilename,BINOCULAR_ZOOM,PHONE_ZOOM,SELFIE} from '../src/gadget.js';
 import {commandFor,KEY_COMMANDS} from '../src/input.js';
 import {initialState,restore,advance} from '../src/movement.js';
 const fresh=(o={})=>ensureGadget({...initialState(),...o});
@@ -58,4 +58,18 @@ test('연무 줄임·사진 파일명',()=>{
  assert.equal(hazeScale(1),1);assert.equal(hazeScale(.5),1);assert.ok(Math.abs(hazeScale(4)-.5)<1e-12);
  assert.equal(photoFilename(new Date(2026,10,4,9,5,7)),'관악산-20261104-090507.png');
  assert.deepEqual(gadgetDefaults().phone,{zoom:1,selfie:false});
+});
+test('기구를 켜면 3인칭도 1인칭으로 강제하고 V는 막고, 끄면 원래 시점으로 돌아간다',()=>{
+ const s=ensureGadget({view:'third',auto:false});
+ setGadget(s,'phone');assert.equal(s.view,'first');assert.equal(viewLocked(s),true);
+ setGadget(s,'binoculars');assert.equal(s.view,'first','기구를 바꿔도 원래 시점을 잃지 않는다');
+ setGadget(s,'binoculars');assert.equal(s.gadget,'none');assert.equal(s.view,'third');assert.equal(viewLocked(s),false);assert.equal(s.gadgetPrevView,undefined);
+ const f=ensureGadget({view:'first'});setGadget(f,'phone');closeGadget(f);assert.equal(f.view,'first');
+});
+test('셀카는 0.5x 광각에 고정되고 휠·단계·직접 지정이 먹지 않으며 후면 복귀 시 배율을 복원한다',()=>{
+ const s=ensureGadget({view:'first'});setGadget(s,'phone');setPhoneZoom(s,2);toggleSelfie(s);
+ assert.equal(s.phone.zoom,.5);assert.equal(viewZoom(s),.5);
+ assert.equal(zoomBy(s,-3),false);assert.equal(zoomStep(s,1),false);assert.equal(setPhoneZoom(s,5),false);assert.equal(s.phone.zoom,.5);
+ toggleSelfie(s);assert.equal(s.phone.zoom,2);assert.equal(s.phone.restoreZoom,undefined);setPhoneZoom(s,5);assert.equal(s.phone.zoom,5);
+ toggleSelfie(s);closeGadget(s);assert.equal(s.phone.zoom,5,'셀카 중 닫아도 이전 배율 복원');
 });
