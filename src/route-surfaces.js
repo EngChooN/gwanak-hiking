@@ -8,7 +8,8 @@ export const SURFACE_SECTIONS=[
  {id:4,metres:1066,shares:[['soil',15],['rock',25],['deck_stairs',60]]},
  {id:5,metres:157,shares:[['deck_stairs',60],['rock',25],['soil',15]]},
  {id:6,metres:340,shares:[['stairs',40],['rock',30],['ridge',30]]},
- {id:7,metres:153,shares:[['ridge',60],['stairs',40]]}
+ // 7구간(정상 직전): 대표 요청(2026-11-04)으로 정상석 앞 계단을 없애고 암릉·돌길 맨 지면으로 둔다.
+ {id:7,metres:153,shares:[['ridge',60],['rock',40]]}
 ];
 export const SURFACE_REFERENCE_METRES=SURFACE_SECTIONS.reduce((s,r)=>s+r.metres,0);
 export const SURFACE_BANDS=[];

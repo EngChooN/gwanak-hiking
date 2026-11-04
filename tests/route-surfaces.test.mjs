@@ -10,7 +10,7 @@ test('구간 1~7 추정 배정은 CSV 수평 누적 거리와 기획 비율을 �
  const csv=readFileSync(new URL('../data/구간표-서울대-연주대.csv',import.meta.url),'utf8').split(/\r?\n/).filter(l=>l.startsWith('A_')&&/^\d$/.test(l.split(',')[1]));
  assert.deepEqual(SURFACE_SECTIONS.map(r=>r.metres),csv.map(l=>Number(l.split(',')[3])));
  assert.equal(SURFACE_REFERENCE_METRES,4962);
- assert.deepEqual(SURFACE_SECTIONS.map(r=>r.shares),[[['paved',70],['soil',30]],[['soil',60],['rock',40]],[['soil',40],['rock',30],['stairs',30]],[['soil',15],['rock',25],['deck_stairs',60]],[['deck_stairs',60],['rock',25],['soil',15]],[['stairs',40],['rock',30],['ridge',30]],[['ridge',60],['stairs',40]]]);
+ assert.deepEqual(SURFACE_SECTIONS.map(r=>r.shares),[[['paved',70],['soil',30]],[['soil',60],['rock',40]],[['soil',40],['rock',30],['stairs',30]],[['soil',15],['rock',25],['deck_stairs',60]],[['deck_stairs',60],['rock',25],['soil',15]],[['stairs',40],['rock',30],['ridge',30]],[['ridge',60],['rock',40]]]);
  const assigned=assignSurfaceRoute(route.points);
  for(const band of SURFACE_BANDS){
   const actual=assigned.slice(0,-1).reduce((sum,p,i)=>sum+(p.section===band.section&&p.material===band.material?assigned[i+1].referenceMetres-p.referenceMetres:0),0);
