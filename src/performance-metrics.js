@@ -18,7 +18,7 @@ export function createFrameMetrics(limit=3600){
       }
       }
       return {frames:n,breakdown,categories,fps:1000/(avg('ms')||Infinity),p95Ms:times[Math.floor(n*.95)]??0,p99Ms:times[Math.floor(n*.99)]??0,maxMs:times.at(-1)??0,over50ms:times.filter(t=>t>50).length,
-        cpuMs:Object.fromEntries(['movement','ambient','hiker','contact','camera','terrain','render'].map(k=>[k,avg(k)])),drawCalls:avg('drawCalls'),triangles:avg('triangles'),maxTriangles:samples.reduce((max,s)=>Math.max(max,s.triangles??0),0),textures:avg('textures')};
+        cpuMs:Object.fromEntries(['movement','ambient','hiker','contact','camera','terrain','render','multi'].map(k=>[k,avg(k)])),drawCalls:avg('drawCalls'),triangles:avg('triangles'),maxTriangles:samples.reduce((max,s)=>Math.max(max,s.triangles??0),0),textures:avg('textures')};
     }
   };
 }

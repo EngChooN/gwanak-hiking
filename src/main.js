@@ -8,7 +8,7 @@ import {installHudToggle} from './hud-toggle.js';
 import {installGadgetUI} from './gadget-ui.js';
 import {route,sample,MATERIALS,checkpoints,DEMO_START,durationBetween,floorHeight as routeFloorHeight} from './route.js';
 import {initialState,restore,SAVE_KEY,advance,setPose,resumeOnInput,positionAt,isOffTrail,playerPosition,setPlayerPosition,courseDistance,COURSE_LENGTH,strideAt,lateralLimit} from './movement.js';
-import {summitWalkMap,ROUTE_END} from './summit.js';
+import {summitWalkMap,ROUTE_END,projectToRoute} from './summit.js';
 import {sectionJumpEnabled,jumpTargets,summitSpot,mountSectionJump} from './section-jump.js';
 import {createLoadingTracker,createStabilityCounter,LOADING_EVENT,START_EVENT} from './loading.js';
 import {insidePlaza,fromGate} from './plaza.js';
@@ -48,7 +48,8 @@ const $=id=>document.getElementById(id);let saved=null,storageOK=true;try{saved=
 const startParam=new URLSearchParams(location.search).get('start'),startOption={entrance:'plaza',plaza:'plaza',gate:'gate',demo:'demo',summit:'summit'}[startParam];
 const state=ensureGadget(startOption?initialState({start:startOption}):saved?restore(saved):initialState({start:'plaza'}));
 loading.set('terrain',0);
-function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(state.gadgetPrevView?{...state,view:state.gadgetPrevView}:state)); // 기구로 강제한 1인칭은 저장하지 않는다
+const multiMode=new URLSearchParams(location.search).has('multi');
+function save(){if(multiMode)return;try{localStorage.setItem(SAVE_KEY,JSON.stringify(state.gadgetPrevView?{...state,view:state.gadgetPrevView}:state)); // 기구로 강제한 1인칭은 저장하지 않는다
 storageOK=true;}catch{storageOK=false;$('resume-note').textContent='저장 공간을 사용할 수 없습니다. 이 세션의 진행만 유지됩니다.';}}
 let soundEnabled=true;try{soundEnabled=localStorage.getItem(SOUND_SAVE_KEY)!=='false';}catch{}
 const audioDebug=new URLSearchParams(location.search).has('audioDebug');
@@ -158,7 +159,7 @@ function frame(now){
  const frameSeconds=(now-last)/1000,dt=Math.min(frameSeconds,.1);last=now;
  const before=worldPosition(),beforeY=offTrailNow()||freeZone()?before[1]:sample(state.s).y;
  // 출발 전(로딩 중)에는 입력을 읽어 버리고 이동·시간·자동 걷기를 진행하지 않는다.
- const cmd=walkInput(state,started?input.read():{forward:0,side:0,run:false,turn:0});if(started)updateLook(look,dt,cmd.turn);
+ const cmd=walkInput(state,started?input.read():{forward:0,side:0,run:false,turn:0});if(multi?.frozen)Object.assign(cmd,{forward:0,side:0,run:false,turn:0}); // 같이 셀카 중에는 걷지 않는다if(started)updateLook(look,dt,cmd.turn);
  // 이어하기·탭 복귀로 멈춘 상태에서도 첫 걷기 입력부터 바로 움직인다.
  if(started&&resumeOnInput(state,cmd,{blocked:!!document.querySelector('dialog[open]')}))updateUI();
  // 광장에서 직접 걸으면 시선 방향을 이동 기준으로 삼는다(드래그한 쪽으로 걷기). 코스·광장 전환 때는 카메라 방향을 보존한다.
@@ -182,6 +183,7 @@ function frame(now){
  avatar.visible=state.view==='third'||selfieActive(state);const stepCycle=(state.steps+state.stepPhase)*Math.PI;
  frameMetrics.stage('hiker',()=>hiker.update({clip:!moving?'Idle':travelSlope>.15?'Climb':'Walk',distance:walkPhase,stride:1,stepLength:strideAt({plaza:state.zone==='plaza',seg:p,off:offTrailNow(),backward}),idleSeconds:inspectionMode?0:now/1000,slope:travelSlope,pose:state.pose,teaProgress:state.pose==='tea'?1-state.teaRemaining/3:0,running:state.running,speed,dt:state.paused?0:dt,surfaceHeight,gadget:state.gadget??'none',selfie:!!state.phone?.selfie,lookYaw:wrapAngle(heading-avatar.rotation.y),lookPitch:look.pitch}));
  const footContact=frameMetrics.stage('contact',()=>hiker.ground({s:state.s,lateral:state.lateral,moving,phase:walkPhase,floorHeight,sample,surfaceHeight,pose:state.pose}));
+ multi?.afterLocalGround(hiker,null,performance.now()/1000);
  frameMetrics.stage('camera',()=>{
   const smoothY=followHeight(cameraHeight,y,cameraReady?dt:0),eye=smoothY+hiker.eyeHeight+(moving&&!reduced?Math.sin(stepCycle*2)*.025:0);
   const cameraHeading=inspectionBearing!==null?-Number(inspectionBearing)*Math.PI/180:heading;
@@ -200,6 +202,7 @@ function frame(now){
  });
  frameMetrics.stage('terrain',()=>terrain.update(state.s,quality));
  night.update(dt,{camera,avatar,view:state.view,zone:state.zone==='summit'?'route':state.zone,s:state.s,hiker,hatKind:OUTFITS.find(o=>o.id===outfits?.current)?.head.hat?.kind??'none'});
+ if(multi)frameMetrics.stage('multi',()=>multi.update(dt,now/1000));
  frameMetrics.stage('render',()=>lighting.render(avatar.position));
  if(photoRequested){photoRequested=false;takePhoto();}
  frameMetrics.frame(frameSeconds*1000,{drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,textures:renderer.info.memory.textures,breakdown:lighting.status.breakdown});
@@ -243,6 +246,12 @@ loading.set('facilities',ready.facilities?1:.5);if(!ready.facilities)failLoading
 const sOfReference=m=>{const g=route.segments.find(seg=>seg.b.referenceMetres>=m)??route.segments.at(-1),a=g.a.referenceMetres,b=g.b.referenceMetres;return g.start+Math.max(0,Math.min(1,(m-a)/((b-a)||1)))*g.length;};
 const facilityPoints=FACILITY_LAMPS.map(f=>{const s=f.metres!==undefined?sOfReference(f.metres):route.length-f.fromEnd,[cx,,cz]=positionAt(s,0,walkingGround),[x,,z]=positionAt(s,f.side,walkingGround);return {x,z,tx:cx,tz:cz,height:f.height};});
 const night=createNightLighting({scene,renderer,place:(s,l)=>positionAt(s,l,walkingGround),groundHeight:(x,z)=>walkingGround.height(x,z,false),gatePoint:fromGate,facilityPoints,routeLength:route.length});
+let multi=null;
+// 함께 걷기 시제품(?multi). 켜지 않으면 코드를 불러오지도 않는다. 실제 서버 없이 이 컴퓨터의 창끼리만 연결한다.
+if(multiMode){const {mountMultiplayer}=await import('./multi-client.js');
+ multi=await mountMultiplayer({scene,camera,night,hikerUrl:`${import.meta.env.BASE_URL}assets/realistic/models/hiker/Hiker.glb`,groundHeight:(x,z)=>walkingGround.height(x,z,false),command,
+  local:{position:()=>playerPosition(state,walkingGround),setPosition:pos=>{state.auto=false;state.running=false;if(pos.zone==='route'){const r=projectToRoute(pos.x,pos.z);return setPlayerPosition(state,{zone:'route',s:r.s,lateral:r.lateral},walkingGround);}return setPlayerPosition(state,pos,walkingGround);},speed:()=>speed,sit:()=>state.pose!=='stand',run:()=>!!state.running,gadget:()=>state.gadget??'none',selfie:()=>selfieActive(state),place:(s,l)=>positionAt(s,l,walkingGround)}});
+ window.hiking.multi=()=>multi.info();window.hiking.multiApi=multi;}
 await lighting.prepare();last=performance.now();requestAnimationFrame(frame);
 let readyInfo=null;
 // 첫 프레임 안정: 셰이더 컴파일이 끝나고 프레임 간격 100ms 이하가 12번 이어지면 준비 완료. 15초가 지나면 느린 기기로 보고 진행한다.

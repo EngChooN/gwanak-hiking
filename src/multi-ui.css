@@ -1,0 +1,19 @@
+.multi-panel{position:fixed;right:12px;top:120px;z-index:30;width:236px;padding:10px 12px;border-radius:12px;background:rgba(18,26,22,.78);color:#eef3ec;font:13px/1.4 system-ui,sans-serif;backdrop-filter:blur(6px);pointer-events:auto}
+.multi-head{display:flex;gap:8px;align-items:baseline}.multi-count{opacity:.75;font-size:12px}
+.multi-near{margin:4px 0 8px;font-size:12px;opacity:.85}
+.multi-buttons{display:flex;flex-wrap:wrap;gap:6px}
+.multi-btn{min-height:36px;padding:0 10px;border:0;border-radius:8px;background:#e8efe4;color:#16301f;font:600 12px system-ui;cursor:pointer}
+.multi-btn:disabled{opacity:.4;cursor:default}.multi-btn kbd{margin-left:6px;padding:1px 5px;border-radius:4px;background:#16301f;color:#e8efe4;font:11px ui-monospace,monospace}
+.multi-roster{margin-top:8px;max-height:160px;overflow:auto;border-top:1px solid #ffffff22;padding-top:6px}
+.multi-row{display:flex;gap:4px;align-items:center;margin:2px 0}.multi-row span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.multi-mini{min-height:28px;padding:0 8px;border:0;border-radius:6px;background:#ffffff22;color:#fff;font:12px system-ui;cursor:pointer}.multi-mini.ok{background:#4caf6a}
+.multi-note{margin-top:8px;font-size:11px;opacity:.55}
+.multi-tags{position:fixed;inset:0;z-index:20;pointer-events:none;overflow:hidden}
+.multi-tag{position:absolute;left:0;top:0;white-space:nowrap;will-change:transform}
+.multi-tag[data-kind=name] .multi-tag-name{padding:2px 8px;border-radius:999px;background:rgba(18,26,22,.72);color:#fff;font:600 12px system-ui}
+.multi-tag[data-kind=dot]::before{content:'';display:block;width:7px;height:7px;border-radius:50%;background:#fff;box-shadow:0 0 0 2px rgba(18,26,22,.6)}
+.multi-tag[data-gesture=wave] .multi-tag-name::after{content:' 👋'}.multi-tag[data-gesture=hello] .multi-tag-name::after{content:' 🙇'}
+.multi-toast{position:fixed;left:50%;top:70px;transform:translate(-50%,-8px);z-index:40;padding:8px 14px;border-radius:999px;background:rgba(18,26,22,.85);color:#fff;font:13px system-ui;opacity:0;transition:.2s;pointer-events:none}.multi-toast.on{opacity:1;transform:translate(-50%,0)}
+.multi-request{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);z-index:40;display:flex;gap:8px;align-items:center;padding:10px 14px;border-radius:12px;background:rgba(18,26,22,.9);color:#fff;font:13px system-ui}
+.multi-request[hidden]{display:none}
+@media (max-width:700px){.multi-panel{width:auto;max-width:calc(100vw - 24px)}}
