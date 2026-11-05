@@ -79,9 +79,10 @@ try{renderer=new THREE.WebGLRenderer({canvas:$('world'),antialias:true,powerPref
 async function guard(promise){try{return await promise;}catch(e){failLoading(e);throw e;}}
 const mobile=matchMedia('(pointer: coarse)').matches||navigator.maxTouchPoints>0;
 const toon=style==='toon'?await guard((async()=>(await import('./toon/index.js')).createToonStyle({renderer,scene,camera,mobile}))()):null;
-const landscape=await guard(loadLandscape({base:`${import.meta.env.BASE_URL}assets/realistic/generated/`,chunkBase:`${import.meta.env.BASE_URL}assets/shared/chunks/`,maxContactMapSize:renderer.capabilities.maxTextureSize,style,materialFactory:toon?.materialFactory??null,toon:toon&&{toonify:toon.toonify,patchFoliage:toon.patchFoliage,styleCity:toon.styleCity}}));loading.set('terrain',.6);
+const landscape=await guard(loadLandscape({base:`${import.meta.env.BASE_URL}assets/realistic/generated/`,chunkBase:`${import.meta.env.BASE_URL}assets/shared/chunks/`,maxContactMapSize:renderer.capabilities.maxTextureSize,style,materialFactory:toon?.materialFactory??null,toon:toon&&{toonify:toon.toonify,patchFoliage:toon.patchFoliage,styleCity:toon.styleCity,natureParts:toon.natureParts}}));loading.set('terrain',.6);
 // 카툰: 시설·입구·계단·풀 등 이미 만든 메시 재질을 MeshToon으로 바꾼다(같은 원본 재질은 캐시). 도시·원경·물은 load-landscape가 따로 칠한다.
 const toonifyLandscape=()=>{if(toon)for(const child of landscape.group.children)if(!['SeoulCity2km','SeoulFar','HanRiverAndWater'].includes(child.name))toon.toonify(child,{kind:'prop'});};toonifyLandscape();
+toon?.attachLandscape?.(landscape);
 const walkingGround=createWalkingGround(landscape);
 // 광장(zone 'plaza')은 경로와 무관한 x,z. 높이는 landscape.surfaceHeight(길 안 노면 규칙)를 쓴다.
 const worldPosition=()=>state.zone==='plaza'?[state.plaza.x,walkingGround.height(state.plaza.x,state.plaza.z,false),state.plaza.z]:state.zone==='summit'?[state.summit.x,walkingGround.summit.height(state.summit.x,state.summit.z),state.summit.z]:positionAt(state.s,state.lateral,walkingGround);
@@ -264,6 +265,7 @@ loading.set('facilities',ready.facilities?1:.5);if(!ready.facilities)failLoading
 const sOfReference=m=>{const g=route.segments.find(seg=>seg.b.referenceMetres>=m)??route.segments.at(-1),a=g.a.referenceMetres,b=g.b.referenceMetres;return g.start+Math.max(0,Math.min(1,(m-a)/((b-a)||1)))*g.length;};
 const facilityPoints=FACILITY_LAMPS.map(f=>{const anchor=f.anchor&&landscape.status.summitFacilities?.sites?.find(site=>site.id===f.anchor);if(anchor)return {x:anchor.x+f.offset[0],z:anchor.z+f.offset[1],tx:anchor.x,tz:anchor.z,height:f.height};const s=f.metres!==undefined?sOfReference(f.metres):route.length-f.fromEnd,[cx,,cz]=positionAt(s,0,walkingGround),[x,,z]=positionAt(s,f.side,walkingGround);return {x,z,tx:cx,tz:cz,height:f.height};});
 const night=createNightLighting({scene,renderer,place:(s,l)=>positionAt(s,l,walkingGround),groundHeight:(x,z)=>walkingGround.height(x,z,false),gatePoint:fromGate,facilityPoints,routeLength:route.length});
+if(toon)toon.styleNightLighting(night.root);
 let multi=null;
 // 함께 걷기 시제품(?multi). 켜지 않으면 코드를 불러오지도 않는다. 실제 서버 없이 이 컴퓨터의 창끼리만 연결한다.
 if(multiMode){const {mountMultiplayer}=await import('./multi-client.js');

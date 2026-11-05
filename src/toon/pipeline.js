@@ -129,6 +129,8 @@ export function createToonPipeline({renderer,scene,camera,mobile=false}){
   u.highlight.value.setRGB(...g.highlight,THREE.SRGBColorSpace);u.highlightAmount.value=g.highlightAmount;
   u.shadow.value.setRGB(...g.shadow,THREE.SRGBColorSpace);u.shadowAmount.value=g.shadowAmount;
   outline.compositeMaterial.uniforms.outlineColor.value.setRGB(...o.color,THREE.SRGBColorSpace);
+  // 외곽선 세기 0(낮)이면 패스를 끈다(가장자리 버퍼를 그리지 않아 그만큼 가볍다).
+  outline.compositeMaterial.uniforms.outlineStrength.value=o.strength;outline.enabled=o.strength>.01;status.outline.enabled=outline.enabled;status.outline.strength=o.strength;
   Object.assign(status.bloom,b);status.outline.color=hex(outline.compositeMaterial.uniforms.outlineColor.value);
   status.grade=g;status.phase=w;
   return status;

@@ -159,10 +159,12 @@ export function setupRendering(renderer,scene,camera,mobile,environmentSky,{styl
     sun.color.setRGB(...e.light.color,THREE.SRGBColorSpace);sun.intensity=4*e.light.intensity;
     // 구워 둔 환경광(IBL)은 맑은 낮의 푸른 하늘색이라 색을 바꿀 수 없다. 흐림·비·안개에서는 그 몫을 줄이고 중성 반구광이 대신 채운다.
     scene.environmentIntensity=base.environmentIntensity*e.ambient*(1-ENV_GRAY_CUT*e.neutral);groundFill.intensity=base.hemisphereIntensity*e.ambient*(1+HEMI_GRAY_BOOST*e.neutral);groundFill.color.setRGB(...e.hemiColor,THREE.SRGBColorSpace);
-    const mood=toonMode?{exposure:1}:moodBlend(e.elevation,e.night,e.gray);
+    const mood=toonMode?{exposure:toon.exposureFor?.(e)??1}:moodBlend(e.elevation,e.night,e.gray);
     renderer.toneMappingExposure=base.exposure*e.exposureMul*mood.exposure;
     if(grade){const u=grade.uniforms;u.saturation.value=mood.saturation;u.shadowTint.value.fromArray(mood.shadowTint);u.shadowAmount.value=mood.shadowAmount;u.warm.value.fromArray(mood.warm);u.exposure.value=renderer.toneMappingExposure;bloom.strength=mood.bloom;}
     scene.fog.color.setRGB(...e.fogColor,THREE.SRGBColorSpace);scene.background.setRGB(...e.horizon,THREE.SRGBColorSpace);
+    // 카툰 밤: 노출은 1 근처로 두고(블룸 문턱이 하늘·도심 빛무리를 번지게 하지 않게) 빛·연무만 어둡게 해 숲·산을 실루엣으로.
+    if(toonMode&&toon.lightScale){const k=toon.lightScale(e);sun.intensity*=k;groundFill.intensity*=k;scene.environmentIntensity*=k;scene.fog.color.multiplyScalar(k);}
     // 맑은 날(15km) 기준 대비 얼마나 더 뿌연가. fog.near 칸에 감쇠 계수(1/m)를 실어 셰이더가 읽는다.
     scene.fog.near=Number.isFinite(e.fogDistance)?Math.max(0,3/e.fogDistance-3/15000):0;
     direction(e.elevation,e.azimuth,sunVector);direction(e.moon.elevation,e.moon.azimuth,moonVector);

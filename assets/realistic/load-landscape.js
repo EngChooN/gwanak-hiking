@@ -246,7 +246,8 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
   // 근경 전체를 유지한다. 보행 주변의 2m 격자는 이 바닥 위에 정밀하게 덧댄다.
   const clearStairs=stairTerrainClearance(pathPoints);
   const baseGeometries=[8,4,2].map(stride=>clearStairs(rectangularGrid(near,(x,z)=>floorHeight(x,z)-.09,stride)));
-  const baseMesh=new THREE.Mesh(baseGeometries[2],blended);baseMesh.receiveShadow=true;baseMesh.name='NearDEM8m';baseMesh.userData.metricKind='8m 상시 지형';group.add(baseMesh);
+  // 카툰: 상시 바닥은 정밀 청크 뒤로 깊이를 밀어 둔다(급경사에서 두 지형이 거의 겹치면 암반 명암이 점점이 깨진다).
+  const baseMesh=new THREE.Mesh(baseGeometries[2],toonMode&&materialFactory.terrainUnderlay?materialFactory.terrainUnderlay(blended):blended);baseMesh.receiveShadow=true;baseMesh.name='NearDEM8m';baseMesh.userData.metricKind='8m 상시 지형';group.add(baseMesh);
   // 배치 전에 동일한 64m/2m 삼각형과 계단 회랑 보정을 조회한다.
   // 청크가 아직 스트리밍되지 않아도 최종 근경 지형과 같은 높이를 얻는다.
   const rockTerrainIndices=new Map();
@@ -592,6 +593,8 @@ let graniteRockMaterial,graniteRockFaceMaterial;
 // 반환 geometry·재질은 여러 청크가 함께 쓰므로 userData.shared로 표시한다(청크 해제 때 남는다).
 function natureModel(url,rock=false,toon=null){
  const key=`${url}:${rock}`;
+ // 카툰 전용 자연물(src/toon/nature.js): 같은 id·LOD 파일명이면 GLB를 받지 않고 새로 만든 모양을 쓴다. 실사는 toon=null.
+ const toonParts=!natureCache.has(key)&&toon?.natureParts?.(url);if(toonParts)natureCache.set(key,Promise.resolve(toonParts));
  if(!natureCache.has(key))natureCache.set(key,new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).loadAsync(url).then(gltf=>{
   if(toon)toon.toonify(gltf.scene,{kind:'nature'});
   const foliage=material=>toon?toon.patchFoliage(material,{name:material.name,pine:/pine/.test(url)}):patchFoliage(twigCutout(material),{pine:/pine/.test(url)});
@@ -621,6 +624,8 @@ async function addInstances({levels,placements,height,rockGround,materials,kind,
       const stretch=(p.stretch??[p.scale??1,p.scale??1,p.scale??1]).map(v=>v*.18);
       return {...p,scale:1,stretch};
     });
+    // 카툰 전용: 정상부 절리 암봉(가로 1.1·높이 2.2~3.4배로 늘린 배치)은 키 큰 돌기둥으로 읽힌다. 높이를 줄이고 옆으로 퍼진 둥근 암괴로 바꾼다(참고 04_06·05_18).
+    if(toon)placements=placements.map(p=>{const s=p.stretch,w=s&&Math.max(s[0],s[2]);return !s||s[1]<w*1.4?p:{...p,stretch:[w*1.7,w*1.1+(s[1]-w)*.12,w*1.7]};});
     // 모든 LOD의 실제 메시 범위와 배치 회전·비균일 크기를 포함한 보수적 반경.
     let radius=0;
     for(const level of levels)for(const {geometry} of await natureModel(level.url,true,toon)){

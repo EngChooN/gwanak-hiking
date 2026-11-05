@@ -30,13 +30,14 @@ test('시간대 가중치: 합이 1, 낮·노을·밤 대표 시각에서 해당
  assert.ok(phaseWeights(DAY).day>.99);assert.ok(phaseWeights(SUNSET).sunset>.9);assert.ok(phaseWeights(NIGHT).night>.99);
 });
 
-test('블룸 수치: 낮 .85/.35, 노을 .7/.6, 밤 .55/.9이고 사이는 단조 보간', ()=>{
+test('블룸 수치: 낮 .85/.35, 노을 .8/.35, 밤 .55/.9이고 사이는 단조 보간', ()=>{
  const d=bloomFor(DAY),n=bloomFor(NIGHT);
  assert.ok(near(d.threshold,.85,.005)&&near(d.strength,.35,.005));
  assert.ok(near(n.threshold,.55,1e-9)&&near(n.strength,.9,1e-9));
  const pure=bloomFor({elevation:1,night:0});const w=phaseWeights({elevation:1,night:0});
- assert.ok(near(pure.threshold,.85*w.day+.7*w.sunset,1e-9));
- assert.deepEqual([TOON.bloom.sunset.threshold,TOON.bloom.sunset.strength],[.7,.6]);
+ assert.ok(near(pure.threshold,.85*w.day+.8*w.sunset,1e-9));
+ // 노을 블룸은 약하게(4단계: 지평선 크림색이 하늘 위쪽 청남색까지 번지지 않게).
+ assert.deepEqual([TOON.bloom.sunset.threshold,TOON.bloom.sunset.strength],[.8,.35]);
  // 해가 지는 동안 문턱은 내려가고 세기는 올라간다.
  let prev=bloomFor({elevation:40,night:0});
  for(let el=39;el>=-25;el--){
@@ -52,7 +53,7 @@ test('팔레트 보간: 하늘·색보정·외곽선이 시간대 색 사이에 
  assert.ok(ss.horizon[0]>ss.horizon[2],'노을 지평선은 앰버(붉은 쪽)');
  assert.ok(sn.stars>1,'밤 별은 HDR(>1)로 블룸을 받는다');assert.equal(sd.stars,0);
  const gd=gradeFor(DAY),gn=gradeFor(NIGHT),gs=gradeFor(SUNSET);
- assert.ok(near(gd.saturation,1.15,.01),'낮 채도 1.15');
+ assert.ok(near(gd.saturation,TOON.grade.day.saturation,.01),'낮 채도는 팔레트 값(「야생의 숨결」 옅고 맑은 색)');
  assert.ok(gd.highlight[2]>gd.highlight[0],'낮 하이라이트는 하늘색(청량)');
  assert.ok(gs.highlight[0]>gs.highlight[2],'노을 하이라이트는 앰버');
  assert.ok(gs.shadow[2]>gs.shadow[1],'노을 그늘은 보라 쪽');
@@ -212,13 +213,15 @@ test('보정: 광장 바닥(캔버스 텍스처 + 흰 틴트)은 평균색 바�
  const shader={uniforms:{},vertexShader:THREE.ShaderLib.toon.vertexShader,fragmentShader:THREE.ShaderLib.toon.fragmentShader};
  floor.onBeforeCompile(shader);assert.match(shader.fragmentShader,/tpDark/);assert.match(shader.fragmentShader,/tpFade/);
  const t=materialFactory.terrain(),ts={uniforms:{},vertexShader:THREE.ShaderLib.toon.vertexShader,fragmentShader:THREE.ShaderLib.toon.fragmentShader};
- t.onBeforeCompile(ts);assert.match(ts.fragmentShader,/altRock/);assert.match(ts.fragmentShader,/outcrop/);
- assert.match(t.customProgramCacheKey(),/toon-terrain-v2/);
+ t.onBeforeCompile(ts);assert.match(ts.fragmentShader,/altRock/);assert.match(ts.fragmentShader,/ttFbm/);
+ assert.doesNotMatch(ts.fragmentShader,/landPatch|ttBlob/,'사인 띠 얼룩(멀리서 줄·소용돌이)을 쓰지 않는다');
+ assert.match(t.customProgramCacheKey(),/toon-terrain-v4/);
 });
 
 test('보정: 근거리 광원 상한은 방향광 전에 들어가고, 노을 그늘 올림은 노을에만', ()=>{
  createToonMaterials({gradientMap:createGradientMap()});
  const f=THREE.ShaderLib.toon.fragmentShader,cap=f.indexOf('toon-local-light-cap'),dir=f.indexOf('NUM_DIR_LIGHTS > 0 ) && defined( RE_Direct )');
  assert.ok(cap>0&&dir>cap,'점·스폿 합만 자른다');assert.equal(f.split('toon-local-light-cap').length,2,'한 번만 설치');
- assert.ok(gradeFor(SUNSET).shadowGain>.5);assert.equal(gradeFor(DAY).shadowGain,0);assert.equal(gradeFor(NIGHT).shadowGain,0);
+ // 노을 그늘 올림은 남기되 약하게(4단계: 역광 숲·바위는 하늘보다 어두운 실루엣, 08_01).
+ assert.ok(gradeFor(SUNSET).shadowGain>.2&&gradeFor(SUNSET).shadowGain<.8);assert.equal(gradeFor(DAY).shadowGain,0);assert.equal(gradeFor(NIGHT).shadowGain,0);
 });

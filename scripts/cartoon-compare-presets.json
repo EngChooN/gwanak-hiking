@@ -1,0 +1,15 @@
+{
+ "_설명": "cartoon-compare.mjs 촬영 자리. s=코스 3D 거리(m), lateral=옆 이동(m, -는 오른쪽), yaw=진행 방향 기준(도, +왼쪽), pitch=내려보는 각(도, 음수=아래), bearing=절대 방위(도, 북=0, yaw 대신), start=demo|summit|plaza, refs=나란히 놓을 참고 사진, palette=아래 띠에 깔 기준색(docs/카툰-팔레트.json 키). 최종 판정 10장은 final:true.",
+ "tree":        {"label":"나무 클로즈업","s":1300,"lateral":2,"yaw":35,"pitch":4,"time":"11:00","refs":["01_08","01_09","01_02"],"palette":["day.leaf_light","day.leaf_shadow","day.trunk","day.pine"],"final":true},
+ "pine":        {"label":"소나무","s":3600,"lateral":0,"yaw":40,"pitch":2,"time":"11:00","refs":["02_02","02_06","02_10"],"palette":["day.pine","day.leaf_light","day.grass_light"]},
+ "grass":       {"label":"풀 클로즈업","s":700,"lateral":0,"yaw":-70,"pitch":-22,"time":"11:00","refs":["03_15","03_03","03_02"],"palette":["day.grass_light","day.grass_far","day.shadow_on_grass"],"final":true},
+ "rock":        {"label":"바위·절벽 클로즈업","s":4850,"lateral":0,"yaw":35,"pitch":0,"time":"11:00","refs":["04_19","04_14","04_16"],"palette":["day.rock_light","day.rock_shadow","day.grass_light"],"final":true},
+ "water":       {"label":"물 클로즈업","s":1096,"lateral":-3,"yaw":80,"pitch":-24,"time":"11:00","refs":["06_07","04_14","06_17"],"palette":["day.water","day.rock_light","day.rock_shadow"],"final":true},
+ "forest":      {"label":"입구 숲","s":300,"lateral":0,"yaw":0,"pitch":0,"time":"11:00","refs":["01_08","01_01","01_12"],"palette":["day.leaf_light","day.leaf_shadow","day.grass_light","day.sky_top"],"final":true},
+ "fall":        {"label":"낙수·물보라","s":2000,"lateral":-1,"yaw":80,"pitch":-20,"time":"11:00","refs":["06_13","06_07","04_14"],"palette":["day.water","day.rock_light","day.rock_shadow"]},
+ "valley":      {"label":"계곡","s":1500,"lateral":-3,"yaw":80,"pitch":-12,"time":"11:00","refs":["06_07","06_17","04_15"],"palette":["day.water","day.rock_light","day.leaf_light"],"final":true},
+ "ridge":       {"label":"능선 암릉","s":4950,"lateral":0,"yaw":0,"pitch":-4,"time":"11:00","refs":["04_16","04_06","05_18"],"palette":["day.rock_light","day.rock_shadow","day.haze_far","day.sky_horizon"],"final":true},
+ "summit-view": {"label":"정상 원경","start":"summit","bearing":345.6,"pitch":-3,"time":"11:00","refs":["05_14","05_09","02_02"],"palette":["day.haze_far","day.sky_top","day.sky_horizon","day.grass_far"],"final":true},
+ "dusk":        {"label":"노을","start":"summit","bearing":250,"pitch":4,"time":"17:10","refs":["08_01","08_03","08_10"],"palette":["sunset.sky_top","sunset.sky_mid","sunset.sky_pink","sunset.sky_horizon","sunset.cloud"],"final":true},
+ "night-city":  {"label":"밤 도심","start":"summit","bearing":345.6,"pitch":-3,"time":"20:30","refs":["09_03","10_04","10_06"],"palette":["night.sky_top","night.sky_horizon","night.city_light","night.city_body"],"final":true}
+}

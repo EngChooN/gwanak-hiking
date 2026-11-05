@@ -56,7 +56,7 @@ export function createNightLighting({scene,renderer=null,place,groundHeight,gate
   new THREE.BoxGeometry(.46,.09,.28).translate(.85,LAMP_HEIGHT-.04,0)
  ]);
  const poleMat=new THREE.MeshStandardMaterial({color:0x1c1e21,metalness:.55,roughness:.55});
- const poles=new THREE.InstancedMesh(poleGeo,poleMat,Math.max(1,N));
+ const poles=new THREE.InstancedMesh(poleGeo,poleMat,Math.max(1,N));poles.name='가로등 기둥';
  const bulbMat=new THREE.MeshStandardMaterial({color:0x8e8d86,roughness:.4,emissive:new THREE.Color(LAMP_COLOR),emissiveIntensity:0});
  const bulbs=new THREE.InstancedMesh(new THREE.BoxGeometry(.4,.03,.22).translate(.85,LAMP_HEIGHT-.1,0),bulbMat,Math.max(1,N));
  const lampDecalMat=decalMaterial(DECAL_COLOR),decals=new THREE.InstancedMesh(flatQuad(),lampDecalMat,Math.max(1,N));

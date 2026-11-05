@@ -2,7 +2,9 @@ import * as THREE from 'three';
 import {mergeGeometries,mergeVertices} from 'three/addons/utils/BufferGeometryUtils.js';
 import {patchFoliage as patchRealFoliage,foliageUniforms,foliageKind} from '../../assets/realistic/foliage-shader.js';
 import {TOON,TRAIL_KINDS,hexToRgb} from './palette.js';
+import {createGradientMap} from './gradient.js';
 import {installToonLightCap} from './light-cap.js';
+import {ROCK_CELL_GLSL,ROCK_BASE_DECL,rockShadeGLSL} from './rock-shade.js';
 
 const linear=hex=>new THREE.Color().setRGB(...hexToRgb(hex),THREE.SRGBColorSpace);
 // 카툰 재질이 함께 읽는 uniform(바람결 색 물결). 시간은 실사와 같은 foliageUniforms.foliageTime을 쓴다.
@@ -13,6 +15,8 @@ export const TOON_UNIFORMS={
  toonWaveSpeed:{value:1.2},
  toonWaveStrength:{value:1},
 };
+// 한강 물 하늘 반사색(시간대별, index.js update가 넣는다). 밤에 흰 반사가 블룸으로 번지지 않게 하늘색·세기를 따른다.
+export const TOON_WATER_SKY={value:new THREE.Color(.85,.95,1)};
 const share=m=>{m.userData.shared=true;return m;};
 const luma=c=>c.r*.2126+c.g*.7152+c.b*.0722;
 // 카툰 바위 GLB 단색들(#503d2a~#756644)의 선형 명도 평균. 이보다 밝은 바위는 조금 밝게, 어두운 바위는 조금 어둡게.
@@ -89,60 +93,170 @@ export function createToonMaterials({gradientMap}){
   return material;
  }
 
- // ── 지형: 경사·고도·정점색 기반. 완경사 풀밭/숲은 녹색 덩어리, 급경사·능선은 회색 바위. ──
- let terrainMaterial;
+ // ── 지형(3단계): 완만한 사면은 풀밭·숲 덩어리, 급한 사면·고지 암반은 회백색 암벽(가로 층·큰 얼룩), 바위 턱 위엔 풀. ──
+ // 경계는 값 잡음(fbm) 덩어리로 끊는다. 사인 띠 무늬는 멀리서 줄·소용돌이로 이어 보여 쓰지 않는다(정상 사면 수정 때 교훈).
+ // 먼 곳은 무늬를 평균 톤으로 접고, 풀밭은 멀수록 밝고 푸르게(기준값 §2-7). 먼 산을 푸르게 녹이는 건 index.js의 낮 연무.
+ let terrainMaterial,terrainGradient;
  function terrain({vertexColors=false}={}){
   if(terrainMaterial&&terrainMaterial.vertexColors===vertexColors)return terrainMaterial;
-  const t=TOON.terrain,m=share(toon({color:0xffffff,vertexColors,name:'toon-terrain'}));
-  const c=k=>linear(t[k]),u={tMeadow:{value:c('meadow')},tForest:{value:c('forest')},tHigh:{value:c('highForest')},tRock:{value:c('rock')},tSoil:{value:c('soil')}};
+  // 땅은 부드러운 3단(0.6/0.82/1.0): 해를 등진 사면이 짙은 띠로 끊기지 않게(「야생의 숨결」 풀밭 사면은 명암 차가 작다).
+  terrainGradient??=createGradientMap(TOON.terrainGradient);
+  const t=TOON.terrain,m=share(toon({color:0xffffff,vertexColors,name:'toon-terrain',gradientMap:terrainGradient}));
+  const c=k=>linear(t[k]),u={tMeadow:{value:c('meadow')},tMeadowFar:{value:c('meadowFar')},tForest:{value:c('forest')},tHigh:{value:c('highForest')},tRock:{value:c('rock')},tRockDark:{value:c('rockDark')},tSoil:{value:c('soil')}};
   m.userData.toonUniforms=u;
+  const f=v=>v.toFixed(4);
   m.onBeforeCompile=shader=>{
    Object.assign(shader.uniforms,u);bindWave(shader);
-   shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 vTtWorld;varying float vTtUp;')
-    .replace('#include <project_vertex>','#include <project_vertex>\n'+worldVarying('Tt'));
+   shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 vTtWorld;varying float vTtUp;varying vec3 vTtN;')
+    .replace('#include <project_vertex>','#include <project_vertex>\n'+worldVarying('Tt')+'\nvTtN=normalize(mat3(modelMatrix)*objectNormal);');
    shader.fragmentShader=shader.fragmentShader.replace('#include <common>',`#include <common>
-    varying vec3 vTtWorld;varying float vTtUp;uniform vec3 tMeadow,tForest,tHigh,tRock,tSoil;
+    varying vec3 vTtWorld;varying float vTtUp;varying vec3 vTtN;uniform vec3 tMeadow,tMeadowFar,tForest,tHigh,tRock,tRockDark,tSoil;
+    ${ROCK_CELL_GLSL}${ROCK_BASE_DECL}
     ${WAVE_UNIFORMS_GLSL}\n${WAVE_GLSL}
-    float ttBlob(vec2 p){return sin(p.x*.011+sin(p.y*.017)*1.7)*.55+sin(p.y*.009-p.x*.004+1.3)*.45;}`)
+    float ttHash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+    float ttNoise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(ttHash(i),ttHash(i+vec2(1,0)),f.x),mix(ttHash(i+vec2(0,1)),ttHash(i+vec2(1,1)),f.x),f.y);}
+    float ttFbm(vec2 p){return ttNoise(p)*.58+ttNoise(p*2.13+vec2(5.2,1.3))*.28+ttNoise(p*4.71+vec2(1.7,9.2))*.14;}
+    // 경계 폭을 화면 미분으로 잡아 계단·깜빡임 없이 두 톤으로 끊는다.
+    float ttCut(float x,float at){float w=max(fwidth(x),.004);return smoothstep(at-w,at+w,x);}
+    float ttRockMask=0.;vec3 ttBumpN=vec3(0.,1.,0.);`)
     .replace('#include <color_fragment>',`#include <color_fragment>
     {
-     float slope=1.-clamp(vTtUp,0.,1.),h=vTtWorld.y,blob=ttBlob(vTtWorld.xz);
-     // 숲 덩어리: 낮은 주파수 얼룩을 좁은 폭으로 끊어 붓 터치처럼 덩어리지게 한다.
-     float forest=smoothstep(-.12,-.04,blob)*(1.-smoothstep(${t.ridgeHeight.toFixed(1)},${(t.ridgeHeight+60).toFixed(1)},h));
-     vec3 green=mix(tMeadow,tForest,forest);
-     green=mix(green,tHigh,smoothstep(${t.forestHeight.toFixed(1)},${(t.forestHeight+40).toFixed(1)},h)*.6);
-     green=mix(green,toonWaveColor(vTtWorld)*.9,(1.-forest)*.18*toonWaveStrength);
-     // 바위 판정(실사 terrain-material.js의 경사·고도·노두 규칙을 카툰 경계로): 0.5를 넘으면 회색 화강암 단색 면.
-     //  경사: rockSlope(약 44°)에서 0.5. 암반 얼룩(outcrop, 약 30~80m)이 경계를 들쭉날쭉하게 민다.
-     //  고도: rockHeight 위는 얼룩이 짙은 곳부터 암반, summitHeight 위(연주대 정상부)는 거의 전부 암반.
-     float landPatch=.5+.25*sin(vTtWorld.x*.23+sin(vTtWorld.z*.19)*2.)+.25*sin(vTtWorld.z*.08+vTtWorld.x*.09);
-     float outcrop=smoothstep(.36,.76,landPatch);
-     float slopeRock=slope*${(.5/t.rockSlope).toFixed(4)}+(outcrop-.5)*.3;
-     float altitude=smoothstep(${t.rockHeight[0].toFixed(1)},${t.rockHeight[1].toFixed(1)},h);
-     float altRock=altitude*(.3+.6*outcrop)+smoothstep(${t.summitHeight[0].toFixed(1)},${t.summitHeight[1].toFixed(1)},h)*.3;
-     float rockT=max(slopeRock,altRock)+blob*.02,rockW=max(fwidth(rockT),.004);
-     float rock=smoothstep(.5-rockW,.5+rockW,rockT);
-     // 화강암 절벽의 가로 결(층리) — 두 톤으로 끊어 애니풍 바위 면을 만든다. 평평한 암반은 등고선 띠 대신 얼룩 두 톤.
-     float strataT=fract(h/3.2+blob*.35+sin(vTtWorld.x*.05)*.15),strataW=min(.5,fwidth(h/3.2)*1.5);
-     // 멀어져 결이 픽셀보다 촘촘해지면 평균 톤으로(모아레 방지).
-     float strata=mix(smoothstep(.55-strataW,.55+strataW,strataT),.45,smoothstep(.15,.45,strataW));
-     float slabT=sin(vTtWorld.x*.71+sin(vTtWorld.z*.53)*1.3)*.5+.5+(landPatch-.5)*.6,slabW=max(fwidth(slabT),.004);
-     float slab=mix(smoothstep(.55-slabW,.55+slabW,slabT),.45,smoothstep(.15,.45,slabW));
-     float steep=smoothstep(.2,.4,slope);
-     vec3 base=mix(green,tRock*mix(mix(.92,1.04,slab),mix(.9,1.05,strata),steep),rock);
-     float soilW=max(fwidth(slope),.004);
-     base=mix(base,tSoil,smoothstep(.3-soilW,.3+soilW,slope)*(1.-rock)*.35);
+     vec2 xz=vTtWorld.xz;float slope=1.-clamp(vTtUp,0.,1.),h=vTtWorld.y,dist=length(vViewPosition);
+     // 먼 곳(픽셀보다 잘아지는 무늬)은 평균으로 접는다.
+     float farFade=smoothstep(500.,1800.,dist);
+     // ① 풀밭: 가까이 연두 → 멀리 밝고 푸른 연두. 바람결 줄무늬는 가까운 풀밭에만 약하게.
+     vec3 meadow=mix(tMeadow,tMeadowFar,smoothstep(120.,1400.,dist));
+     meadow=mix(meadow,toonWaveColor(vTtWorld)*1.02,.14*toonWaveStrength*(1.-smoothstep(60.,400.,dist)));
+     // ② 숲 덩어리(약 ${t.forestScale}m): 능선 위로는 줄어든다. 숲 안은 덩어리 명암 두 톤.
+     float blob=ttFbm(xz/${f(t.forestScale)});
+     // 중경(정상에서 내려다보는 250m~ 사면)은 관악산 실제처럼 숲이 사면 대부분을 덮는다(참고 05_14: 짙은 녹색 나무 무리).
+     float midWood=smoothstep(250.,900.,dist)*(1.-smoothstep(${f(t.ridgeHeight)},${f(t.ridgeHeight+60)},h));
+     float forestT=mix(blob,.5,farFade*.5)+slope*.35-smoothstep(${f(t.ridgeHeight)},${f(t.ridgeHeight+80)},h)*.3+midWood*.3;
+     float forest=ttCut(forestT,.5);
+     // 수관 명암: 가까이는 나무 몇 그루 크기, 중경(정상에서 내려다보는 사면)은 숲 덩어리 크기(약 45m)로 둥글게 끊는다.
+     float canopy=mix(ttCut(ttFbm(xz/14.+3.1),.55),ttCut(ttFbm(xz/45.+1.7),.52),smoothstep(150.,700.,dist));
+     canopy=mix(canopy,.4,smoothstep(1800.,3200.,dist));
+     vec3 green=mix(meadow,tForest*mix(1.08,.8,canopy),forest);
+     // 중경 나무 무리: 둥근 수관 덩어리 하나하나가 해 쪽은 밝고 아래·틈은 짙다(참고 05_14). 가까이(~900m)는 약 24m,
+     // 더 멀리는 나무 무리 약 60m. 덩어리가 픽셀보다 작아지면 숲 평균 톤으로 접는다. 낮 연무를 지나도 짙은 녹색이 남게 바탕을 낮춘다.
+     float woodMask=0.;vec3 wood=vec3(0.);
+     if(midWood>0.)for(int layer=0;layer<2;layer++){
+      float sc=layer==0?24.:60.,lw=layer==0?1.-smoothstep(700.,1100.,dist):smoothstep(700.,1100.,dist);
+      vec2 cq=xz/sc+float(layer)*13.1,ci=floor(cq),cf=fract(cq),best=vec2(0.);float d1=8.;
+      for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++){vec2 g=vec2(float(x),float(y)),o=g+vec2(ttHash(ci+g),ttHash(ci+g+19.7))*.7+.15-cf;float d=dot(o,o);if(d<d1){d1=d;best=o;}}
+      float rr=sqrt(d1),crown=1.-smoothstep(.34,.6,rr),lit=smoothstep(-.15,.3,dot(-best,normalize(vec2(-.55,-.8)))+.1);
+      float fade=1.-smoothstep(.25,.6,max(fwidth(cq).x,fwidth(cq).y));
+      wood+=lw*tForest*vec3(.86,1.06,.62)*mix(.42,mix(.66,.96,lit),crown);woodMask+=lw*fade;
+     }
+     green=mix(green,wood,midWood*forest*woodMask);
+     green=mix(green,tForest*vec3(.86,1.06,.62)*.66,midWood*forest*(1.-woodMask));
+     // 아주 먼 사면만 숲·풀밭 대비를 줄인다(원경은 덩어리 하나의 녹색 톤 + 안개). 중경 숲은 짙게 남긴다.
+     green=mix(green,mix(meadow,tForest*.86,.78),smoothstep(1000.,2800.,dist)*.5*(1.-midWood*.8));
+     green=mix(green,tHigh,smoothstep(${f(t.forestHeight)},${f(t.forestHeight+50)},h)*.45*(1.-forest*.5));
+     // ③ 암반: 경사 rockSlope(약 44°)에서 0.5. 고지(rockHeight 위)는 덩어리 얼룩이 짙은 곳부터, 정상부는 거의 전부.
+     float rn=mix(ttFbm(xz/${f(t.rockScale)}+vec2(3.7,8.1)),.5,farFade);
+     float slopeRock=slope*${f(.5/t.rockSlope)}+(rn-.5)*.32;
+     float altRock=smoothstep(${f(t.rockHeight[0])},${f(t.rockHeight[1])},h)*(.22+.62*smoothstep(.35,.75,rn))+smoothstep(${f(t.summitHeight[0])},${f(t.summitHeight[1])},h)*.3;
+     float rock=ttCut(max(slopeRock,altRock),.5);
+     // 암벽 톤: 큰 얼룩 두 톤 + 급한 면의 가로 층(단 높이 약 3.2m, 짙은 띠). 멀어지면 평균 톤.
+     // 높이도 섞어 세로 절벽면에서도 얼룩이 생기게 한다(수평 좌표만 쓰면 절벽에 세로 줄만 남는다).
+     vec2 bp=xz+vec2(h*.83,h*.41);
+     float blot=mix(ttCut(ttFbm(bp/7.+vec2(1.3,4.4)),.6),.3,farFade);
+     float blot2=mix(ttCut(ttFbm(bp/2.6+vec2(9.1,2.2)),.66),.2,smoothstep(60.,300.,dist));
+     float steep=smoothstep(.3,.55,slope);
+     float layer=fract(h/3.2+ttNoise(xz/22.)*.6);
+     float lw=max(fwidth(h/3.2),.002),strata=smoothstep(.84-lw,.86+lw,layer)*(1.-smoothstep(.05,.2,lw));
+     vec3 stone=tRock*mix(1.06,.8,blot)*mix(1.,.9,blot2);
+     stone=mix(stone,tRockDark,strata*steep*.3);
+     // 둥근 암괴: 셀 법선 굴곡(그늘 면은 조명 단계에서) + 덩어리 사이 갈라짐. 셀은 세로로 조금 길다(세로 갈라짐).
+     // 셀 크기는 경사와 무관하게 고정한다(겹쳐 그려지는 지형 조각끼리 무늬가 달라지면 점무늬가 생긴다).
+     float crack=0.;
+     // 뒷면(접힌 급경사 면)은 법선을 뒤집는다. 안 그러면 굴곡 법선이 화면 법선과 정반대가 되어 섞을 때 0이 된다(점무늬).
+     vec3 wn=normalize(vTtN);if(!gl_FrontFacing)wn=-wn;
+     // 접힌 삼각형(정점 법선과 실제 면 방향이 크게 어긋남)에서는 굴곡·그늘 면을 끈다. 그런 면은 명암이 점점이 깨진다.
+     vec3 gN=normalize(cross(dFdx(vTtWorld),dFdy(vTtWorld)));float ttStable=smoothstep(.55,.8,abs(dot(gN,wn))),px=trcPixel(vTtWorld,gN);
+     if(rock>.001)ttBumpN=trcBump(vTtWorld,wn,vec3(5.5,6.5,5.5),mix(1.25,1.,steep),px,crack);
+     // 갈라짐은 가는 그늘색(#54665e) 선. 옅게(절벽에서 육각 그물·평평한 바닥에서 보도블록처럼 보이지 않게).
+     stone=mix(stone,tRockDark,crack*mix(.1,.2,steep)*ttStable);
+     // 바위 턱 위의 풀 띠: 완만한 암반 윗면에서, 등고선을 따라 길게(턱을 따라 띠로 덮인다).
+     float ledgeN=ttFbm(vec2(h/2.2,dot(xz,vec2(.71,.71))/28.)+vec2(7.,2.))*.6+ttFbm(xz/6.+vec2(3.,9.))*.4;
+     float ledge=(1.-smoothstep(.14,.3,slope))*ttCut(ledgeN,mix(.5,.58,smoothstep(${f(t.summitHeight[0])},${f(t.summitHeight[1])},h)));
+     stone=mix(stone,mix(tMeadow,tMeadowFar,.3)*.92,ledge*.9);
+     vec3 base=mix(green,stone,rock);ttRockMask=rock*(1.-ledge*.9)*ttStable;
+     // 흙: 숲 밖의 중간 경사만 옅게.
+     base=mix(base,tSoil,ttCut(slope,.3)*(1.-rock)*(1.-forest)*.25);
      diffuseColor.rgb*=base;
-    }`);
+    }`)
+    // 암벽 그늘은 녹청 회색(기준 #54665e): 그늘 면이 받는 간접광에만 녹청 기운을 준다.
+    .replace('#include <normal_fragment_maps>',`#include <normal_fragment_maps>
+     trcBaseN=normal;if(ttRockMask>0.)normal=normalize(mix(normal,(viewMatrix*vec4(ttBumpN,0.)).xyz,ttRockMask));`)
+    .replace('#include <lights_fragment_end>',`#include <lights_fragment_end>
+     reflectedLight.indirectDiffuse*=mix(vec3(1.),vec3(${TOON.nature.rockShadeTint.join(',')}),ttRockMask);
+     ${rockShadeGLSL('ttRockMask',TOON.nature.rockShadeDirect.toFixed(3))}`);
   };
-  m.customProgramCacheKey=()=>`toon-terrain-v2-${vertexColors}`;
+  m.customProgramCacheKey=()=>`toon-terrain-v4-rock3-${vertexColors}`;
   return terrainMaterial=m;
  }
+ // 상시 바닥(NearDEM8m)용: 같은 지형 셰이더에 깊이 밀기만 더한다. 정밀 청크와 거의 겹치는 급경사에서 청크가 이기게 한다.
+ const underlays=new WeakMap();
+ function terrainUnderlay(source=terrain()){
+  if(!underlays.has(source)){
+   const u=source.clone();u.onBeforeCompile=source.onBeforeCompile;u.customProgramCacheKey=source.customProgramCacheKey;
+   u.userData={...source.userData,shared:true,toonUnderlay:true};u.polygonOffset=true;u.polygonOffsetFactor=4;u.polygonOffsetUnits=8;
+   underlays.set(source,u);
+  }
+  return underlays.get(source);
+ }
 
+ // ── 바위 면(3단계 재작업): 암릉·바위 노면, 돌판, 계곡 암반. 단색 판 대신 둥근 암괴 명암·갈라짐·녹청 그늘 면. ──
+ function patchRockSurface(m,{cell=[3.2,2.6,3.2],amt=.8,crack:crackAmt=.7,edge=false}={}){
+  m.onBeforeCompile=shader=>{
+   // edge: 노면 띠(trailEdge −1~1)의 가장자리를 굽은 잡음 경계로 잘라 낸다. 직선 모서리 판(콘크리트 단)이 아니라
+   // 아래 지형 암반 속으로 녹아드는 둥근 암반 자리처럼 보이게(보행 접지는 지오메트리 그대로).
+   shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 vTsWorld;varying float vTsUp;varying vec3 vTsN;'+(edge?'attribute float trailEdge;varying float vTsSide;':''))
+    .replace('#include <project_vertex>','#include <project_vertex>\n'+worldVarying('Ts')+'\nvTsN=normalize(mat3(modelMatrix)*objectNormal);'+(edge?'vTsSide=trailEdge;':''));
+   shader.fragmentShader=shader.fragmentShader.replace('#include <common>',`#include <common>
+    varying vec3 vTsWorld;varying float vTsUp;varying vec3 vTsN;vec3 tsBumpN=vec3(0.,1.,0.);float tsFlat=0.;${ROCK_BASE_DECL}${edge?'varying float vTsSide;':''}
+    ${ROCK_CELL_GLSL}`)
+    .replace('#include <color_fragment>',`#include <color_fragment>
+     ${edge?`{
+      vec3 ew=trcWarp(vTsWorld*vec3(.55,.3,.55)+1.7)+trcWarp(vTsWorld*vec3(1.6,.8,1.6)+5.3)*.45;
+      float thr=max(.34,.62+ew.x*.55+ew.z*.25);if(abs(vTsSide)>thr)discard;
+      // 가장자리 띠에서는 굴곡·그늘 면을 접어 아래 지형 암반과 같은 밝기로 이어지게 한다(경계에 단이 보이지 않게).
+      tsFlat=smoothstep(thr-.45,thr-.02,abs(vTsSide));
+     }`:''}
+     {
+      float crack=0.;vec3 wn=normalize(vTsN);if(!gl_FrontFacing)wn=-wn;
+      tsBumpN=trcBump(vTsWorld,wn,vec3(${cell.map(v=>v.toFixed(2)).join(',')}),${amt.toFixed(2)}*(1.-tsFlat),trcPixel(vTsWorld,wn),crack);trcOcc=mix(trcOcc,1.,tsFlat);
+      diffuseColor.rgb*=mix(1.,.8,crack*${crackAmt.toFixed(2)});
+     }`)
+    .replace('#include <normal_fragment_maps>',`#include <normal_fragment_maps>
+     trcBaseN=normal;normal=normalize((viewMatrix*vec4(tsBumpN,0.)).xyz);`)
+    .replace('#include <lights_fragment_end>',`#include <lights_fragment_end>
+     reflectedLight.indirectDiffuse*=mix(vec3(${TOON.nature.rockShadeTint.join(',')}),vec3(1.),tsFlat);
+     ${rockShadeGLSL('(1.-tsFlat)',TOON.nature.rockShadeDirect.toFixed(3))}`);
+  };
+  m.customProgramCacheKey=()=>`toon-rock-surface-v2-${cell.join('_')}-${amt}-${crackAmt}-${edge}`;m.userData.toonRockSurface=true;
+  return m;
+ }
+ const rocks=new Map();
+ function rock(color=linear(TOON.nature.rock),params={},opts={}){
+  const key=`${new THREE.Color(color).getHexString()}|${JSON.stringify(params)}|${JSON.stringify(opts)}`;
+  if(!rocks.has(key))rocks.set(key,share(patchRockSurface(toon({name:'toon-rock-surface',color,...params}),opts)));
+  return rocks.get(key);
+ }
+ const ROCK_TRAILS=new Set(['rock','ridge']);
  const trails=new Map();
  function trail(kind='soil'){
   if(!TOON.trail[kind])kind='soil';
-  if(!trails.has(kind))trails.set(kind,share(toon({name:`toon-trail-${kind}`,color:linear(TOON.trail[kind]),side:kind==='stairs'||kind==='deck_stairs'?THREE.DoubleSide:THREE.FrontSide})));
+  if(!trails.has(kind)){
+   const m=share(toon({name:`toon-trail-${kind}`,color:linear(TOON.trail[kind]),side:kind==='stairs'||kind==='deck_stairs'?THREE.DoubleSide:THREE.FrontSide}));
+   // 암릉·바위 노면은 평평한 베이지 판으로 보이지 않게 암괴 명암을 넣는다(노면은 낮은 굴곡).
+   // 셀은 발밑 기준으로 잘게(한 덩어리가 화면을 덮는 큰 판으로 읽히지 않게), 가장자리는 굽은 잡음 경계.
+   // 노면은 지형과 거의 같은 높이라 지형 삼각형이 군데군데 뚫고 올라와 직선 교차선(판 모서리)이 생긴다 → 노면을 앞으로 당긴다.
+   if(ROCK_TRAILS.has(kind)){patchRockSurface(m,{cell:[1.7,1.4,1.7],amt:1.15,crack:.2,edge:true});m.polygonOffset=true;m.polygonOffsetFactor=-2;m.polygonOffsetUnits=-6;if(kind==='ridge')m.visible=false;}
+   trails.set(kind,m);
+  }
   return trails.get(kind);
  }
  const basics=new Map();
@@ -157,14 +271,14 @@ export function createToonMaterials({gradientMap}){
   waterMaterial=share(toon({name:'toon-water',color:linear(TOON.water),transparent:true,opacity:.86}));
   // 하늘을 비추는 띠: 시선이 낮을수록 밝게(애니풍 단순 반사).
   waterMaterial.onBeforeCompile=shader=>{
-   bindWave(shader);
-   shader.fragmentShader=shader.fragmentShader.replace('#include <common>',`#include <common>\n${WAVE_UNIFORMS_GLSL}`)
+   bindWave(shader);shader.uniforms.toonWaterSky=TOON_WATER_SKY;
+   shader.fragmentShader=shader.fragmentShader.replace('#include <common>',`#include <common>\n${WAVE_UNIFORMS_GLSL}\nuniform vec3 toonWaterSky;`)
     .replace('#include <opaque_fragment>',`float twFres=pow(1.-abs(dot(normalize(vViewPosition),normal)),3.);
      float twBand=step(.82,sin(vViewPosition.x*.9+foliageTime*1.4)*.5+.5)*.18;
-     outgoingLight+=vec3(.85,.95,1.)*(twFres*.35+twBand);
+     outgoingLight+=toonWaterSky*(twFres*.35+twBand);
      #include <opaque_fragment>`);
   };
-  waterMaterial.customProgramCacheKey=()=> 'toon-water-v1';
+  waterMaterial.customProgramCacheKey=()=> 'toon-water-v2';
   return waterMaterial;
  }
  // load-landscape.js의 materials 객체와 같은 키(manifest 재질 7종 + paved/stoneStairs/woodStairs).
@@ -174,7 +288,7 @@ export function createToonMaterials({gradientMap}){
   if(materialSet)return materialSet;
   const t=TOON.terrain,tr=TOON.trail;
   materialSet={
-   soil:basic(linear(tr.soil)),stone:basic(linear(tr.rock)),granite:basic(linear(t.rock)),leaves:basic(linear('#6f7f3e')),
+   soil:basic(linear(tr.soil)),stone:rock(linear(tr.rock)),granite:rock(linear(t.rock)),leaves:basic(linear('#6f7f3e')),
    grass:basic(linear(t.meadow)),wood:basic(linear(tr.deck_stairs)),bark:basic(linear('#6b4e36')),
    paved:trail('paved'),stoneStairs:trail('stairs'),woodStairs:trail('deck_stairs'),
   };
@@ -182,7 +296,7 @@ export function createToonMaterials({gradientMap}){
  }
  // ribbon()에 넘기는 노면 재질 묶음({soil,rock,paved,stairs,deck_stairs,ridge}).
  const pathMaterials=()=>Object.fromEntries(TRAIL_KINDS.map(k=>[k,trail(k)]));
- const materialFactory={terrain,trail,basic,water,materials,pathMaterials,gradientMap};
+ const materialFactory={terrain,terrainUnderlay,trail,basic,rock,water,materials,pathMaterials,gradientMap};
 
  // ── toonify: Standard/Physical/Basic(·Lambert·Phong) → MeshToonMaterial ──
  // 풀잎 재질은 customProgramCacheKey로 알아본다: near-detail.js 길가 풀·관목 'roadside-{grass|shrub}-wind-*',

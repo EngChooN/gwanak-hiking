@@ -12,6 +12,8 @@
 | `city.js` | `styleCity`: 파스텔 MeshBasic, 거리 안개, 밤 창문 격자 |
 | `pipeline.js` | RenderPass → 외곽선(깊이 5점) → UnrealBloom → 색보정 → Output |
 | `preview.html`·`preview.js` | vite dev에서 `/src/toon/preview.html`을 엽니다. `?el=-20`(태양 고도), `?quality=0` |
+| `nature.js` | 카툰 전용 나무·소나무·덤불·풀 다발·바위·절벽(3단계). `natureParts(url)`가 원래 GLB 파일명 대신 새 모양을 주고, `swapGroundCover(mesh)`가 하층 식생을 바꾼다 |
+| `grass-field.js` | 카메라 둘레 풀밭(16m 타일 고정 난수, 화질별 반경 14·22·30m) |
 | `capture-preview.mjs` | 미리보기의 낮·노을·밤 캡처 스크립트(개발 서버를 먼저 띄워야 함) |
 
 ## 산개발 연결 메모 (main.js·rendering.js·load-landscape.js)

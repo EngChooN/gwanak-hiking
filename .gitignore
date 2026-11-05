@@ -9,3 +9,9 @@ assets/realistic/raw/
 assets/realistic/tools/node_modules/
 # 재배포 조건 미확인 모델(Mixamo 유래) — 공개 저장소 제외
 assets/realistic/models/hiker/Soldier.glb
+
+# 카툰 모드 참고 사진(로컬 전용, 게임·영화 이미지라 커밋·배포 금지)
+design/ref-cartoon/
+
+# 참고 사진이 들어간 비교·목록 이미지(로컬 전용)
+artifacts/cartoon-compare/
