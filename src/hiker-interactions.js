@@ -10,26 +10,29 @@ export function stanceWeight(current,standing,dt){
  return MathUtils.clamp((Number.isFinite(current)?current:0)+(standing?1:-1)*dt/STAND_STANCE.seconds,0,1);
 }
 // 애니메이션 발 위치(루트 기준 x,z)를 서기 자세로 모은다. sign은 왼쪽 -1, 오른쪽 1.
-export function standingFoot(x,z,sign,weight,hipZ=0){
- const w=smooth(weight);
- return {x:MathUtils.lerp(x,sign*STAND_STANCE.footHalf,w),z:MathUtils.lerp(z,hipZ+(z-hipZ)*STAND_STANCE.stagger,w)};
+// stance: 몸마다 다른 발 간격·스틱 자리(STAND_STANCE 덮어쓰기, 카툰 동동이는 다리가 가깝고 짧다).
+export function standingFoot(x,z,sign,weight,hipZ=0,stance=STAND_STANCE){
+ const w=smooth(weight),S={...STAND_STANCE,...stance};
+ return {x:MathUtils.lerp(x,sign*S.footHalf,w),z:MathUtils.lerp(z,hipZ+(z-hipZ)*S.stagger,w)};
 }
 // 서 있을 때 스틱 끝(루트 기준 x,z).
-export function standingPoleTip(sign){return {x:sign*STAND_STANCE.poleX,z:-STAND_STANCE.poleForward};}
-// phase는 한 걸음마다 1 증가한다. 왼손은 오른발(홀수 걸음)과 접지한다.
-export function poleStep(phase,side,running=false){
- const cycle=MathUtils.euclideanModulo((phase-(side==='Left'?1:0))/2,1);
+export function standingPoleTip(sign,stance=STAND_STANCE){const S={...STAND_STANCE,...stance};return {x:sign*S.poleX,z:-S.poleForward};}
+// phase는 한 걸음마다 1 증가한다. 왼손은 오른발(홀수 걸음)과 접지한다. size: 스틱 앞뒤 흔들기(forward)·들기(lift) 크기(m).
+export const POLE_STEP=Object.freeze({forward:.28,lift:.18});
+export function poleStep(phase,side,running=false,size=POLE_STEP){
+ const cycle=MathUtils.euclideanModulo((phase-(side==='Left'?1:0))/2,1),F=size.forward??POLE_STEP.forward,L=size.lift??POLE_STEP.lift;
  const planted=cycle<.56, t=planted?cycle/.56:(cycle-.56)/.44;
- return {cycle,planted,forward:(planted? .28-.56*t:-.28+.56*smooth(t))*(running?1.35:1),lift:planted?0:Math.sin(Math.PI*t)*.18};
+ return {cycle,planted,forward:(planted? F-2*F*t:-F+2*F*smooth(t))*(running?1.35:1),lift:planted?0:Math.sin(Math.PI*t)*L};
 }
-export function createPoseController(){
+// eye: 서 있을 때·앉았을 때 눈높이(m). 몸마다 다르다(카툰 동동이는 약 0.7m).
+export function createPoseController(eye={stand:STANDING_EYE_HEIGHT,sit:SEATED_EYE_HEIGHT}){
  let target='stand',sit=0,teaTime=0;
  return {
   setPose(pose){if(!['stand','sit','tea'].includes(pose))return false;if(pose==='tea'&&(target==='stand'||sit<.999))return false;if(pose!==target&&pose==='tea')teaTime=0;target=pose;return true;},
   update(dt,{teaProgress}={}){dt=Number.isFinite(dt)?MathUtils.clamp(dt,0,.1):0;sit=MathUtils.clamp(sit+(target==='stand'?-1:1)*dt/SIT_SECONDS,0,1);
    if(target==='tea'){teaTime=Number.isFinite(teaProgress)?MathUtils.clamp(teaProgress,0,1)*TEA_SECONDS:Math.min(TEA_SECONDS,teaTime+dt);if(teaTime>=TEA_SECONDS)target='sit';}
    const t=teaTime/TEA_SECONDS,tea=teaPhase(target==='tea'?t:null);
-   return {pose:target,sit:smooth(sit),sitLinear:sit,drink:tea.drink,tea,teaProgress:t,eyeHeight:MathUtils.lerp(STANDING_EYE_HEIGHT,SEATED_EYE_HEIGHT,smooth(sit))};
+   return {pose:target,sit:smooth(sit),sitLinear:sit,drink:tea.drink,tea,teaProgress:t,eyeHeight:MathUtils.lerp(eye.stand,eye.sit,smooth(sit))};
   }
  };
 }

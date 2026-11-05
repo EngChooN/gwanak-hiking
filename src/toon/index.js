@@ -61,7 +61,7 @@ export async function createToonStyle({renderer,scene,camera,mobile=false}={}){
   // 노을·밤: 물결색을 그대로 칠하는 길가 풀·솔잎은 빛을 덜 받으므로 직접 어둡게(노을 역광 실루엣 #333026 쪽, 산리서치 판정).
   {const k=w0=>w0.day+w0.sunset*TOON.foliage.sunsetDim+w0.night*TOON.foliage.nightDim,f=k(phaseWeights(env));
    TOON_UNIFORMS.toonWaveA.value.copy(waveBase.a).multiplyScalar(f);TOON_UNIFORMS.toonWaveB.value.copy(waveBase.b).multiplyScalar(f);}
-  city.update(env);const w=status.phase=phaseWeights(env);
+  city.update(env,camera,pipeline?.status.quality??2);const w=status.phase=phaseWeights(env);
   {const now=globalThis.performance?.now?.()??0,dt=Math.min(.5,Math.max(0,(now-lastWater)/1000));lastWater=now;
    const h=renderer?.domElement?.height??800,fov=(camera?.fov??60)*Math.PI/180;water.update(env,{sunVector:sun,dt,pointScale:h/(2*Math.tan(fov/2)),exposure:renderer?.toneMappingExposure??1});}
   if(grassField&&camera)grassField.update(camera,pipeline?.status.quality??1);

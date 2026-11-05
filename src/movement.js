@@ -1,4 +1,4 @@
-import {route,sample,speedFor,strideFor,checkpoints,DEMO_START,ROUTE_ID,SUMMIT_REFERENCE_ELEVATION,ENTRANCE_MIN_S,entranceLateralBounds} from './route.js';
+import {route,sample,speedFor,strideFor,isStairs,checkpoints,DEMO_START,ROUTE_ID,SUMMIT_REFERENCE_ELEVATION,ENTRANCE_MIN_S,entranceLateralBounds} from './route.js';
 import {ENTRANCE_HYPOTHESIS} from './entrance-config.js';
 import {routeRevision} from './route-revision.js';
 import {SUMMIT_ENTER_S,insideSummit,projectToRoute,summitMove,reachedSummit} from './summit.js';
@@ -9,6 +9,13 @@ export const SAVE_KEY='gwanak-hiking:v1';
 export const OFF_TRAIL_METRES=8, RUN_MULTIPLIER=1.6, OFF_TRAIL_MULTIPLIER=.7, TEA_SECONDS=3, BACKWARD_MULTIPLIER=.6;
 // 길 밖·뒷걸음은 보폭도 줄여, 느려진 속도가 느린 동작(걸음 빈도 저하)으로만 보이지 않게 한다.
 export const OFF_TRAIL_STRIDE=.85, BACKWARD_STRIDE=.75;
+// 몸마다 다른 보폭 배율(카툰 캐릭터 {walk,run}, 실사는 없음 = 1). 속도는 바꾸지 않고 걸음 수만 바뀐다.
+// 몸마다 다른 뛰기 속도 배율(카툰 캐릭터 2.5, 없으면 RUN_MULTIPLIER).
+export const runMultiplierFor=m=>Number.isFinite(m)&&m>0?m:RUN_MULTIPLIER;
+// 계단에서는 scale.stairs가 있으면 그것을 쓴다(카툰 동동이: 1 = 한 칸에 한 걸음). stairs는 계단 노면 위(길 밖이 아님)일 때 true.
+export const strideScaleFor=(scale,running,stairs=false)=>scale?((stairs?scale.stairs:undefined)??(running?scale.run:scale.walk))??1:1;
+// 보폭 계산과 같은 조건으로 계단 위인지 정한다(광장·길 밖은 계단이 아니다).
+export const onStairs=({plaza=false,seg,off=false})=>!plaza&&!off&&!!seg&&isStairs(seg.material);
 export function strideAt({plaza=false,seg,direction=1,off=false,backward=false}){return (plaza?strideFor({slope:0,material:'paved'}):strideFor(seg,direction))*(off&&!plaza?OFF_TRAIL_STRIDE:1)*(backward?BACKWARD_STRIDE:1);}
 export const lateralLimit=s=>s<0?Math.max(...entranceLateralBounds(s).map(Math.abs)):sample(s).width/2+OFF_TRAIL_METRES;
 export const isOffTrail=(s,lateral)=>s>=0&&Math.abs(lateral)>sample(s).width/2;
@@ -105,9 +112,9 @@ export function advance(state,input,dt,onStep=()=>{},ground){
  if(!f&&!side){recover(state,8,dt);return 0;}
  // 직접 입력은 카메라 기준. 뒷걸음(S 포함)은 앞으로 걷는 속도의 0.6배다.
  const yaw=direct&&Number.isFinite(input.yaw)?input.yaw:0,backward=direct&&f<0,{along,right}=cameraRelative(f,side,yaw);
- if(state.zone==='summit')return advanceSummit(state,f,side,direct&&Number.isFinite(input.yaw)?input.yaw:0,!!input.run,dt,onStep,ground);
+ if(state.zone==='summit')return advanceSummit(state,f,side,direct&&Number.isFinite(input.yaw)?input.yaw:0,!!input.run,dt,onStep,ground,input.strideScale,input.runMultiplier);
  const plaza=state.zone==='plaza',p=sample(plaza?ROUTE_MIN_S:state.s),off=!plaza&&isOffTrail(state.s,state.lateral),running=!!input.run&&!state.runExhausted&&state.stamina>0;
- const speed=(plaza?speedFor(0,'paved',1):speedFor(p.slope,p.material,along<0?-1:1))*(running?RUN_MULTIPLIER:1)*(off?OFF_TRAIL_MULTIPLIER:1)*(backward?BACKWARD_MULTIPLIER:1),budget=speed*dt;
+ const speed=(plaza?speedFor(0,'paved',1):speedFor(p.slope,p.material,along<0?-1:1))*(running?runMultiplierFor(input.runMultiplier):1)*(off?OFF_TRAIL_MULTIPLIER:1)*(backward?BACKWARD_MULTIPLIER:1),budget=speed*dt;
  const motionPosition=(s,l)=>{const pos=positionAt(s,l,ground);if(!isOffTrail(s,l))pos[1]=sample(s).y;return pos;};
  const plazaPosition=(x,z)=>[x,ground?.height(x,z,false)??route.points[0].y,z];
  let a,b,distance,allowedBudget=budget,entersOff=false,next;
@@ -159,7 +166,7 @@ export function advance(state,input,dt,onStep=()=>{},ground){
  state.ascent+=Math.max(0,b[1]-a[1]);state.elapsed+=dt;state.distance+=distance;state.running=running;
  if(running){const horizontal=Math.hypot(b[0]-a[0],b[2]-a[2]);const uphill=Math.max(0,(b[1]-a[1])/Math.max(.001,horizontal));state.stamina=Math.max(0,state.stamina-10*(1+uphill)*dt);if(state.stamina<=0)state.runExhausted=true;}
  else recover(state,4,dt);
- const stride=strideAt({plaza:plaza||next.zone==='plaza',seg:p,direction:along<0?-1:1,off:off||entersOff,backward});state.stepPhase+=distance/stride;let crossed=0;
+ const where={plaza:plaza||next.zone==='plaza',seg:p,direction:along<0?-1:1,off:off||entersOff,backward},stride=strideAt(where)*strideScaleFor(input.strideScale,running,onStairs(where));state.stepPhase+=distance/stride;let crossed=0;
  while(state.stepPhase>=1){state.stepPhase--;state.steps++;const fraction=Math.min(1,((1-oldPhase)+crossed++)*stride/distance);
   // 광장·문 전환 프레임의 발소리는 포장면(paved)이고 위치는 선형 보간한다.
   if(oldS===null||next.zone==='plaza'){const position=oldWorld.map((v,j)=>v+(b[j]-v)*fraction);onStep({step:state.steps,material:'paved',slope:0,s:state.zone==='route'?state.s:null,zone:state.zone,position,distance:state.distance-distance+distance*fraction,elapsed:state.elapsed-dt+dt*fraction});continue;}
@@ -175,11 +182,11 @@ function enterSummit(state){
 }
 // 정상 구역 한 프레임. 카메라(시선) 기준 W/A/S/D, 막히면 월드 x·z 성분 하나만 남겨 미끄러진다.
 // 길(s<SUMMIT_ENTER_S)로 내려서면 코스 이동으로 이어진다. 길 둘레 lateralLimit 밖이면 그쪽은 막힌다.
-function advanceSummit(state,f,side,yaw,run,dt,onStep,ground){
+function advanceSummit(state,f,side,yaw,run,dt,onStep,ground,strideScale,runMultiplier){
  const G=ground.summit,P=state.summit,sites=G.sites(),backward=f<0,running=run&&!state.runExhausted&&state.stamina>0;
  const h=P.heading+yaw,n=Math.hypot(f,side),dx=(-Math.sin(h)*f+Math.cos(h)*side)/n,dz=(-Math.cos(h)*f-Math.sin(h)*side)/n;
  const a={x:P.x,z:P.z},ay=G.height(a.x,a.z),here=projectToRoute(a.x,a.z),seg0=sample(here.s),onRibbon0=Math.abs(here.lateral)<=seg0.width/2+.3;
- const material=onRibbon0?seg0.material:'rock',mult=(running?RUN_MULTIPLIER:1)*(onRibbon0?1:OFF_TRAIL_MULTIPLIER)*(backward?BACKWARD_MULTIPLIER:1);
+ const material=onRibbon0?seg0.material:'rock',mult=(running?runMultiplierFor(runMultiplier):1)*(onRibbon0?1:OFF_TRAIL_MULTIPLIER)*(backward?BACKWARD_MULTIPLIER:1);
  const tryMove=(vx,vz,length)=>{
   const q={x:a.x+vx*length,z:a.z+vz*length},ok=summitMove(G,sites,a,q,lateralLimit);if(!ok)return null;
   const {r,ribbon,seg,toRoute}=ok,qy=G.height(q.x,q.z),horizontal=Math.hypot(q.x-a.x,q.z-a.z);
@@ -201,7 +208,7 @@ function advanceSummit(state,f,side,yaw,run,dt,onStep,ground){
  state.ascent+=Math.max(0,hit.qy-ay);state.elapsed+=dt;state.distance+=distance;state.running=running;
  if(running){const horizontal=Math.hypot(q.x-a.x,q.z-a.z),uphill=Math.max(0,(hit.qy-ay)/Math.max(.001,horizontal));state.stamina=Math.max(0,state.stamina-10*(1+uphill)*dt);if(state.stamina<=0)state.runExhausted=true;}
  else recover(state,4,dt);
- const stepMaterial=hit.ribbon?seg.material:'rock',stride=strideAt({seg:{slope:hit.slope,material:stepMaterial},direction:hit.slope>=0?1:-1,off:!hit.ribbon,backward});
+ const stepMaterial=hit.ribbon?seg.material:'rock',where={seg:{slope:hit.slope,material:stepMaterial},direction:hit.slope>=0?1:-1,off:!hit.ribbon,backward},stride=strideAt(where)*strideScaleFor(strideScale,running,onStairs(where));
  state.stepPhase+=distance/stride;let crossed=0;
  while(state.stepPhase>=1){state.stepPhase--;state.steps++;const fraction=Math.min(1,((1-oldPhase)+crossed++)*stride/distance);
   onStep({step:state.steps,material:stepMaterial,slope:hit.slope,s:r.s,zone:state.zone,position:[from.x+(q.x-from.x)*fraction,from.y+(hit.qy-from.y)*fraction,from.z+(q.z-from.z)*fraction],distance:state.distance-distance+distance*fraction,elapsed:state.elapsed-dt+dt*fraction});}

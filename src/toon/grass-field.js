@@ -6,9 +6,10 @@ import {grassGround} from '../../assets/realistic/generated/nature/forest-layers
 // 카툰 풀밭(3단계, 산풍경): 「야생의 숨결」처럼 땅이 보이지 않게 덮는 풀 다발을 카메라 둘레에만 깐다.
 // - 16m 타일마다 고정 난수로 다발 자리를 한 번 정해 두고(카메라가 움직여도 풀이 미끄러지지 않는다), 반경 안 타일만 그린다.
 // - 길(흙길 포함)·포장·계단·데크·광장·물·구간 시설 자리, 급경사(암벽), 정상 암반은 비운다.
+//   길가 여유는 2cm: 흙길 가장자리를 셰이더가 들쭉날쭉 잘라 내므로 풀이 길 턱까지 덮어야 짙은 띠가 안 보인다(카툰 2차).
 // - 바깥 테두리는 셰이더가 다발을 줄여 사라지게 한다(뚝 끊기는 경계 없음). 그 너머는 지형의 평평한 연두 풀밭 면.
 // 실사 모드에서는 만들지 않는다.
-export const GRASS_FIELD={tile:16,step:.62,radius:[14,22,30],capacity:[1400,3800,7200],slopeMax:.24,heightMax:596,pathMargin:.35,reach:.32};
+export const GRASS_FIELD={tile:16,step:.62,radius:[14,22,30],capacity:[1400,3800,7200],slopeMax:.24,heightMax:596,pathMargin:.02,reach:.32};
 
 export function createGrassField({landscape,geometry,material,scene}){
  const route=landscape.route,nearest=indexRoute(route),water=waterClearance(route);

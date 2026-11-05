@@ -41,7 +41,9 @@ void main(){
  #else
  float across=vS.x*${STREAM_HALF_WIDTH.toFixed(2)};float along=vS.y;
  // 실사와 같은 물 폭(반폭 .62~.84m). 그 밖은 암반 홈이 보이도록 버린다.
- float halfW=.62+.22*twN(vec2(along*.28,3.1));float dW=halfW-abs(across);
+ // 물가 윤곽: 물줄기 방향의 느린 폭 변화만 쓰면 물가가 긴 직선·꺾인 모서리로 보인다(final4 계곡 왼쪽 위).
+ // 월드 좌표 잡음 두 겹을 더해 물가가 둥글게 들고 나게 한다(카툰 2차).
+ float halfW=.62+.22*twN(vec2(along*.28,3.1))+.2*(twN(vW.xz*.85)-.5)+.08*(twN(vW.xz*2.6+4.)-.5);float dW=halfW-abs(across);
  float q=along+twTime*.9;vec2 flow=vec2(across*2.4,q*1.1);
  // 물결 결 좌표(curl): 옆으로 완만하게 휘고(월드 잡음으로 굽이마다 다르게), cut으로 2~4m마다 끊는다.
  // 물줄기 기준 좌표를 그대로 쓰면 물길이 꺾이는 자리에서 결이 직각 지그재그로 이어진다(final3 계곡).
@@ -223,6 +225,27 @@ export function buildSprayGeometry(fallGeometry){
  return g;
 }
 
+// 물 띠·암반 홈 기하의 꺾인 모서리를 둥글게(카툰 2차, 산풍경). 표본(행)마다 옆 방향을 앞뒤 ±reach행 평균으로 바꾸고,
+// 각 정점을 행 가운데에서 같은 거리만큼 새 옆 방향으로 다시 놓는다. 가운데 정점·높이는 그대로라 물속 돌·고리 자리는 변하지 않는다.
+// cols: 행당 정점 수, center: 가운데 열 번호. aFrame(dir.xz, side.xz)이 있으면 함께 고친다.
+export function smoothRibbon(geometry,cols,center,reach=3){
+ const P=geometry?.attributes?.position,F=geometry?.attributes?.aFrame;if(!P)return false;
+ const rows=P.count/cols;if(rows<3||!Number.isInteger(rows))return false;
+ const C=[];for(let k=0;k<rows;k++){const j=k*cols+center;C.push([P.getX(j),P.getZ(j)]);}
+ const dirAt=k=>{const a=C[Math.max(0,k-1)],b=C[Math.min(rows-1,k+1)],dx=a[0]-b[0],dz=a[1]-b[1],n=Math.hypot(dx,dz)||1;return [dx/n,dz/n];};
+ const raw=C.map((_,k)=>dirAt(k)),smooth=raw.map((_,k)=>{let x=0,z=0;for(let i=-reach;i<=reach;i++){const d=raw[Math.min(rows-1,Math.max(0,k+i))],w=1-Math.abs(i)/(reach+1);x+=d[0]*w;z+=d[1]*w;}const n=Math.hypot(x,z)||1;return [x/n,z/n];});
+ for(let k=0;k<rows;k++){
+  const [ox,oz]=[raw[k][1],-raw[k][0]],[sx,sz]=[smooth[k][1],-smooth[k][0]];
+  for(let c=0;c<cols;c++){
+   const j=k*cols+c,dx=P.getX(j)-C[k][0],dz=P.getZ(j)-C[k][1],off=dx*ox+dz*oz;
+   P.setX(j,C[k][0]+sx*off);P.setZ(j,C[k][1]+sz*off);
+   if(F)F.setXYZW(j,smooth[k][0],smooth[k][1],sx,sz);
+  }
+ }
+ P.needsUpdate=true;if(F)F.needsUpdate=true;geometry.computeBoundingSphere();geometry.computeBoundingBox?.();
+ return true;
+}
+
 export function createToonWater({materials}={}){
  const status={streams:0,ponds:0,falls:0,sprays:0,beds:0};
  const stream=streamMaterial(),ponds=new Map(),fall=fallMaterial();
@@ -238,6 +261,8 @@ export function createToonWater({materials}={}){
    if(pond){const span=Number(k.split('-pond-')[1]?.split('-')[0])||5;if(!ponds.has(span))ponds.set(span,streamMaterial({pond:true,span}));o.material=ponds.get(span);status.ponds++;}
    else{
     o.material=stream;status.streams++;
+    // 물길이 꺾이는 자리의 각진 모서리(final4 계곡 왼쪽 위)를 둥글게. 고리 판을 만들기 전에 고친다.
+    if(!o.geometry.userData.toonSmoothed&&smoothRibbon(o.geometry,7,3)){o.geometry.userData.toonSmoothed=true;status.smoothed=(status.smoothed??0)+1;}
     const rg=!o.userData.toonRings&&buildRingGeometry(o.geometry);
     if(rg){const rm=new THREE.Mesh(rg,getRingMaterial());rm.name='계곡 바위 물결';rm.renderOrder=(o.renderOrder??0)+1;o.add(rm);o.userData.toonRings=rm;status.rings=(status.rings??0)+rg.index.count/6;}
    }
@@ -250,8 +275,11 @@ export function createToonWater({materials}={}){
   }
   if(/^bed-rock-/.test(k)&&materials){
    // 암반 홈: 정점색(어두운 회색 약 .1) × 바위색/.1 → 해 받는 면 기준 바위색(기준값 §1-1 #a9a892) 언저리. 판 경계 무늬는 버린다.
-   // 계곡 암반: 평평한 회갈색 판 대신 둥근 암괴 명암(산풍경, 3단계 바위 재작업). 육각 판처럼 보이지 않게 갈라짐 선은 긋지 않는다.
-   bed??=(materials.rock??materials.basic)(bedTint,{vertexColors:true},{cell:[2.4,1.8,2.4],amt:.9,crack:0});o.material=bed;status.beds++;return true;
+   // 계곡 암반: 평평한 판 대신 잘게 둥근 암괴 명암 + 회색 바탕·어두운 얼룩(재판정, 참고 04_20). 이끼는 물가라 조금만. 갈라짐 선은 긋지 않는다.
+   bed??=(materials.rock??materials.basic)(bedTint,{vertexColors:true},{cell:[1.8,1.4,1.8],amt:1.2,crack:0,moss:-.3});o.material=bed;status.beds++;
+   // 암반 홈(행당 9정점)도 물 띠와 같은 방식으로 꺾인 모서리를 둥글게.
+   if(!o.geometry.userData.toonSmoothed&&smoothRibbon(o.geometry,9,4))o.geometry.userData.toonSmoothed=true;
+   return true;
   }
   return false;
  }

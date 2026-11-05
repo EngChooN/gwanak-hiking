@@ -11,11 +11,16 @@ void main(){
  vec4 p=projectionMatrix*modelViewMatrix*vec4(position,1.);
  gl_Position=p.xyww;
 }`;
-const S=TOON.sky.stars;
+const S=TOON.sky.stars,B=TOON.sky.cityGlow.bino;
+// 쌍안경 하늘 확대: 배율 z에서 하늘 고도·방위를 z×(1+stretch)배로 넓혀 본다(4배 이상에서 stretch 전부, 1배는 그대로).
+// 배율만큼만 넓히면 앞산 능선 위로 지평선 빛·밤 도심 빛무리만 화면을 채운다(14_13·14_16은 위쪽이 남색 하늘, 지평선만 밝다).
+export const SKY_BINO={stretch:.6,full:4};
+export const skyZoomFor=z=>z>1.001?z*(1+SKY_BINO.stretch*Math.min(1,(z-1)/(SKY_BINO.full-1))):1;
 const FRAG=`
 uniform vec3 skyZenith,skyMid,skyPink,skyHorizon,skyCity,skyCityDir,skyCloud,skyCloudShade,skyCloudLit,skySun,skyMoon,skySunColor,skyMilkyN,skyMilkyColor,skyMilkyDust;
 uniform float skyStars,skyMilky,skyCityGlow,skyCover,skyTime,skySunVis,skyMoonVis,skyGain,skySunset,skyNight;
-uniform vec3 skyBands;
+uniform vec3 skyBands,skyCityBino;
+uniform float skyZoom,skyCamAz,skyDip;
 varying vec3 vSkyDir;
 float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
 float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
@@ -31,8 +36,18 @@ float starLayer(vec2 uv,float cells,float share,float px,float seed){
  // 또렷한 원(가장자리 1px만 풀림) + 아주 옅은 후광.
  return (1.-smoothstep(px-.6,px+.6,d))+.12*exp(-d*d/(px*px*6.));
 }
+// 쌍안경(skyZoom>1): 하늘 그라데이션·빛무리·구름은 시야 중심 방위와 지평선을 기준으로 배율만큼 넓혀 본다.
+// 확대하면 지평선 띠 한 가지 색만 화면을 채우던 것을, 1배에서 보이던 하늘 층(지평선 빛 → 남색 천정)·구름이 그대로 들어오게 한다. 1배는 d 그대로.
+// 높은 곳(정상 635m)에서는 보이는 지평선이 수평보다 skyDip(rad)만큼 아래라, 고도를 그만큼 올려 잰 뒤 넓힌다(능선 바로 위가 지평선 빛).
+vec3 skyView(vec3 d){
+ if(skyZoom<1.001)return d;
+ float az=atan(d.x,d.z),da=az-skyCamAz;da-=6.2831853*floor((da+3.1415927)/6.2831853);
+ float el=(asin(clamp(d.y,-1.,1.))+skyDip)*skyZoom;el=clamp(el,-1.55,1.55);
+ float a=skyCamAz+da*skyZoom;
+ return vec3(cos(el)*sin(a),sin(el),cos(el)*cos(a));
+}
 void main(){
- vec3 d=normalize(vSkyDir);float y=max(d.y,0.);
+ vec3 d0=normalize(vSkyDir),d=skyView(d0);float y=max(d.y,0.);
  // 4단 그라데이션: 지평선 → 분홍 → 보라 → 천정.
  vec3 col=skyHorizon;
  col=mix(col,skyPink,smoothstep(0.,skyBands.x,y));
@@ -43,25 +58,28 @@ void main(){
  float toSun=dot(hz,normalize(skySun.xz+1e-5))*.5+.5;
  col=mix(col,mix(col,skyMid,.35*(1.-smoothstep(0.,.3,y))),skySunset*(1.-toSun));
  // 밤: 도심 쪽 지평선 라벤더 빛무리.
- float city=pow(max(dot(hz,normalize(skyCityDir.xz+1e-5)),0.),2.5)*(1.-smoothstep(0.,${TOON.sky.cityGlow.height.toFixed(2)},y));
- col=mix(col,skyCity,clamp(city*skyCityGlow,0.,1.));
+ // 쌍안경 밤(bn): 지평선 빛을 덜고, 빛무리는 능선 바로 위 좁은 분홍 자주 띠로(도심 불빛보다 어둡게).
+ float bn=skyNight*smoothstep(1.,2.,skyZoom);
+ col*=1.-bn*${B.horizonDim.toFixed(2)}*(1.-smoothstep(0.,skyBands.y,y));
+ float city=pow(max(dot(hz,normalize(skyCityDir.xz+1e-5)),0.),2.5)*(1.-smoothstep(0.,mix(${TOON.sky.cityGlow.height.toFixed(2)},${B.height.toFixed(3)},bn),y));
+ col=mix(col,mix(skyCity,skyCityBino,bn),clamp(city*skyCityGlow,0.,1.));
  if(d.y<0.)col=mix(col,col*.82,smoothstep(0.,-.25,d.y));
  // 해 원반·후광(HDR). 노을에는 원반을 작게, 후광을 넓고 부드럽게.
- float sd=max(dot(d,skySun),0.);
+ float sd=max(dot(d0,skySun),0.);
  col+=skySunColor*(pow(sd,mix(8.,5.,skySunset))*mix(.35,.22,skySunset)+pow(sd,90.)*mix(.6,.3,skySunset))*skySunVis;
  col+=skySunColor*smoothstep(.9994,.9997,sd)*mix(6.,3.,skySunset)*skySunVis;
- float md=max(dot(d,skyMoon),0.);
+ float md=max(dot(d0,skyMoon),0.);
  col+=vec3(.9,.94,1.)*(smoothstep(.99965,.9998,md)*3.5+pow(md,200.)*.25)*skyMoonVis;
- vec3 a=abs(d);vec2 uv=a.x>a.y&&a.x>a.z?d.yz/a.x:a.y>a.z?d.xz/a.y:d.xy/a.z;
- float faceSeed=sign(d.x)*3.+sign(d.y)*7.+sign(d.z)*11.;
+ vec3 a=abs(d0);vec2 uv=a.x>a.y&&a.x>a.z?d0.yz/a.x:a.y>a.z?d0.xz/a.y:d0.xy/a.z;
+ float faceSeed=sign(d0.x)*3.+sign(d0.y)*7.+sign(d0.z)*11.;
  // 은하수: 기울어진 큰 원을 따라 옅은 빛 띠 + 어두운 먼지 줄 + 띠 안 별 더 촘촘히.
  float mw=0.;
  if(skyMilky>.001){
-  float off=dot(d,skyMilkyN);
+  float off=dot(d0,skyMilkyN);
   vec2 mp=uv*5.+faceSeed;
   float band=exp(-off*off/${(TOON.sky.milky.width**2).toFixed(4)})*(.55+.75*fbm(mp*1.7));
   float dust=exp(-pow(off-.025+.03*(fbm(mp*2.3)-.5),2.)/.0012)*smoothstep(.45,.7,fbm(mp*3.1+4.));
-  mw=band*smoothstep(0.,.12,d.y);
+  mw=band*smoothstep(0.,.12,d0.y);
   col=mix(col,skyMilkyColor,clamp(mw*skyMilky,0.,.6));
   col=mix(col,skyMilkyDust,clamp(dust*mw*skyMilky*1.2,0.,.5));
  }
@@ -104,13 +122,19 @@ export function createToonSky({radius=20000}={}){
   skyCityDir:{value:new THREE.Vector3(...bearingDir(TOON.sky.cityGlow.bearing))},
   skyMilkyN:{value:new THREE.Vector3().crossVectors(new THREE.Vector3(...bearingDir(...TOON.sky.milky.from)),new THREE.Vector3(...bearingDir(...TOON.sky.milky.to))).normalize()},
   skyBands:{value:new THREE.Vector3(...TOON.sky.bands)},
-  skyStars:{value:0},skyMilky:{value:0},skyCityGlow:{value:0},skyCover:{value:.4},skyTime:{value:0},skySunVis:{value:1},skyMoonVis:{value:0},skyGain:{value:1},skySunset:{value:0},skyNight:{value:0},
+  skyCityBino:{value:new THREE.Color().setRGB(...hexToRgb(B.color),THREE.SRGBColorSpace)},
+  skyZoom:{value:1},skyCamAz:{value:0},skyDip:{value:0},skyStars:{value:0},skyMilky:{value:0},skyCityGlow:{value:0},skyCover:{value:.4},skyTime:{value:0},skySunVis:{value:1},skyMoonVis:{value:0},skyGain:{value:1},skySunset:{value:0},skyNight:{value:0},
  };
  const material=new THREE.ShaderMaterial({name:'toon-sky',uniforms,vertexShader:VERT,fragmentShader:FRAG,side:THREE.BackSide,depthWrite:false,depthTest:false,fog:false});
  material.extensions={derivatives:true};
  const mesh=new THREE.Mesh(new THREE.SphereGeometry(radius,48,24),material);
  mesh.name='카툰 하늘';mesh.renderOrder=-1000;mesh.frustumCulled=false;mesh.userData.toonSky=true;
- mesh.onBeforeRender=(_r,_s,camera)=>{mesh.position.copy(camera.position);mesh.updateMatrixWorld();};
+ const fwd=new THREE.Vector3();
+ mesh.onBeforeRender=(_r,_s,camera)=>{mesh.position.copy(camera.position);mesh.updateMatrixWorld();
+  // 쌍안경 배율과 시야 중심 방위(하늘 확대 기준).
+  uniforms.skyZoom.value=skyZoomFor(camera.zoom||1);camera.getWorldDirection(fwd);uniforms.skyCamAz.value=Math.atan2(fwd.x,fwd.z);
+  // 지평선 내려감(지구 곡률 근사): √(2h/R), 최대 1.2°.
+  uniforms.skyDip.value=Math.min(.021,Math.sqrt(2*Math.max(0,camera.position.y)/6371000));};
  let last={};
  // exposure: renderer.toneMappingExposure. 하늘 색이 팔레트 값으로 보이도록 나눠 준다.
  function update(env={},sunVector,moonVector,dt=0,exposure=1){

@@ -2,11 +2,11 @@ import {Vector3,Quaternion,MathUtils} from 'three';
 
 // 굽힘 방향은 애니메이션의 무릎 위치 대신 몸의 전방으로 결정한다.
 // 월드 전방을 목표 축에 투영해 무릎이 뒤집히는 해를 배제한다.
-export function legTargets(hip,target,upper,lower,forward){
+// margin: 다 펴지 않고 남기는 길이(m). 기본은 다리 길이의 2.5%(최대 2cm).
+export function legTargets(hip,target,upper,lower,forward,margin=Math.min(.02,(upper+lower)*.025)){
  const axis=new Vector3().subVectors(target,hip);
  const length=axis.length();
  if(length<1e-8)axis.set(0,-1,0);else axis.divideScalar(length);
- const margin=Math.min(.02,(upper+lower)*.025);
  const distance=MathUtils.clamp(length,Math.abs(upper-lower)+margin,upper+lower-margin);
  const pole=forward.clone().addScaledVector(axis,-forward.dot(axis));
  if(pole.lengthSq()<1e-8){

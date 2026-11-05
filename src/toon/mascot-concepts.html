@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>귀여운 캐릭터 시안 — 관악산</title>
+<style>html,body{margin:0;height:100%;overflow:hidden;background:#a2c8d3}canvas{display:block}
+#panel{position:fixed;left:12px;top:12px;padding:8px 10px;border-radius:10px;background:rgba(20,26,48,.7);color:#f4efe6;font:13px system-ui,'Apple SD Gothic Neo',sans-serif}
+#panel button{margin:2px;border:0;border-radius:6px;padding:4px 8px;background:#f4efe6;color:#1d2a44;cursor:pointer}</style>
+</head>
+<body>
+<div id="panel">
+ <div><button data-c="-1">전체</button><button data-c="0">1 꼬마</button><button data-c="1">2 콩알</button><button data-c="2">3 해태</button><button data-c="3">4 다람쥐</button><button data-c="4">5 바우</button><button data-c="5">+ 돔돌이</button></div>
+ <div><button data-view="front">정면</button><button data-view="three">3/4</button><button data-view="side">측면</button><button data-view="back">후면</button><button data-walk="1">걷기</button><button data-walk="0">서기</button></div>
+</div>
+<script type="module" src="./mascot-concepts.js"></script>
+</body>
+</html>

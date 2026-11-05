@@ -3,12 +3,14 @@ import {mergeGeometries,mergeVertices} from 'three/addons/utils/BufferGeometryUt
 import {foliageUniforms} from '../../assets/realistic/foliage-shader.js';
 import {TOON,hexToRgb} from './palette.js';
 import {ROCK_CELL_GLSL,ROCK_BASE_DECL,rockShadeGLSL} from './rock-shade.js';
-// 카툰 전용 자연물(3단계, 산풍경). 실사 GLB를 칠하지 않고 형태를 새로 만든다. 어떤 fetch도 하지 않는다.
-//  - 활엽수: 잎 무리 윤곽(톱니)이 있는 부푼 덩어리 3~5개 + 굵고 단순한 줄기·굵은 가지 2~3개. 수관 전체가 바람에 흔들린다.
-//  - 소나무: 가장자리가 갈라진 납작 원뿔 층을 쌓은 수관 + 붉은 줄기(관악산 소나무처럼 줄기가 길고 수관이 위에 몰림).
-//  - 풀: 넓적하고 끝이 뾰족한 잎 다발 + 노랑·흰 점꽃(다발의 일부). 끝부분이 흔들리고 바람 물결 띠가 지나간다.
-//  - 바위: 위가 둥글고 기운 암괴 1~4개를 겹친 덩어리, 둥근 암괴 명암·세로 갈라짐·그늘 면, 윗면 이끼 덩어리.
-// 크기·형태 기준: docs/카툰-기준값.md §2. 색은 TOON.nature(팔레트 §1-1에서 화면 결과가 맞도록 고른 재질색).
+import {BRUSH_GLSL} from './brush.js';
+// 카툰 전용 자연물(카툰 2차 — 「야생의 숨결」 기준, 산풍경). 실사 GLB를 칠하지 않고 형태를 새로 만든다. 어떤 fetch도 하지 않는다.
+// 관악산 실제 수종·암석은 따르지 않는다(등고선·코스·서울 위치만 실제). 참고: design/ref-cartoon/01~06.
+//  - 활엽수: 둥근 잎 덩어리 여러 개가 겹친 둥근 수관(01_08·01_19·01_22) + 덩어리 표면의 잎 무늬(셰이더) + 윤곽을 깨는 잎 조각.
+//  - 침엽수: 아래가 넓고 위로 좁아지는 층진 원뿔(02_02·02_10·02_13). 층 끝이 처지고 솔잎 끝이 톱니진다.
+//  - 덤불·어린 나무: 둥근 잎 덩어리(각진 다각형 윤곽이 보이지 않게 세분 2단). 어린 나무 자리도 원뿔이 아닌 둥근 관목.
+//  - 풀: 가늘고 길게 휘는 잎 여러 장이 촘촘한 다발(03_15·03_20) + 점꽃. 끝부분이 흔들리고 바람 물결 띠가 지나간다.
+//  - 바위: 넓은 면이 둥글게 이어진 암괴(04_19·04_20) + 회색 바탕의 어두운 얼룩·이끼(셰이더 trcPaint).
 // 원래 GLB와 같은 id·LOD 파일명으로 부르면(natureParts) 같은 자리에 같은 크기로 들어간다.
 
 const linear=hex=>new THREE.Color().setRGB(...hexToRgb(hex),THREE.SRGBColorSpace);
@@ -55,21 +57,27 @@ function addLump(b,{center,radius,detail,seed,crown,leaf,shade,swayOf,jag=.17,be
   b.vertex(p,n,col,swayOf(p.y));
  }
  g.dispose();
- // 잎 끝 조각: 덩어리 표면에서 바깥으로 돋은 작은 삼각형(앞뒤 두 장). 윤곽이 매끈한 다각형이 아니라 잎 무리처럼 톱니지게 한다.
- const t1=new THREE.Vector3(),t2=new THREE.Vector3(),q=[new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3()];
+ // 잎 조각: 덩어리 표면에 비스듬히 꽂힌 마름모 잎(2삼각형, 바깥 면). 매끈한 덩어리 윤곽을 잎 무리처럼 잘게 깬다(가시처럼 길지 않게).
+ const t1=new THREE.Vector3(),t2=new THREE.Vector3(),q=[new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3()];
  for(let i=0;i<tufts;i++){
-  // 피보나치 구면 + 흔들림. 아래쪽(수관 밑면)은 덜 돋게 한다.
+  // 피보나치 구면 + 흔들림. 아래쪽(수관 밑면)은 덜 붙인다.
   const y=1-2*(i+.5)/tufts,rr=Math.sqrt(1-y*y),phi=i*2.39996+r()*.6;
-  dir.set(Math.cos(phi)*rr,y,Math.sin(phi)*rr).normalize();if(dir.y<-.55&&r()<.7)continue;
+  dir.set(Math.cos(phi)*rr,y,Math.sin(phi)*rr).normalize();if(dir.y<-.5&&r()<.75)continue;
   const bump=Math.sin(dir.dot(axes[0])*5.3+phase[0])*Math.sin(dir.dot(axes[1])*4.7+phase[1])*.5+Math.sin(dir.dot(axes[2])*8.1+phase[2])*.3+Math.sin(dir.dot(axes[3])*13.7+phase[3])*.2;
-  const k=(1+jag*bump)*.93,size=Math.min(radius.x,radius.y)*(.34+r()*.16);
+  const k=(1+jag*bump)*(.96+r()*.06),size=Math.min(radius.x,radius.y)*(.2+r()*.1);
   p.set(center.x+dir.x*radius.x*k,center.y+dir.y*radius.y*k,center.z+dir.z*radius.z*k);
   t1.set(-dir.z,0,dir.x);if(t1.lengthSq()<1e-4)t1.set(1,0,0);t1.normalize().applyAxisAngle(dir,r()*6.283);t2.crossVectors(dir,t1);
-  q[0].copy(p).addScaledVector(t1,size*.5);q[1].copy(p).addScaledVector(t1,-size*.5);q[2].copy(p).addScaledVector(dir,size*.8).addScaledVector(t2,size*.25).addScaledVector(t1,(r()-.5)*size*.4);
+  // 잎 축: 접선(t2)에서 바깥(dir)으로 35~60° 들린다. 잎 가운데가 표면에 붙고 끝이 밖으로 나간다.
+  const lift=.6+r()*.45,ax=t2.clone().multiplyScalar(Math.cos(lift)).addScaledVector(dir,Math.sin(lift));
+  q[0].copy(p).addScaledVector(ax,-size*.35);q[2].copy(p).addScaledVector(ax,size*.95);
+  q[1].copy(p).addScaledVector(ax,size*.25).addScaledVector(t1,size*.36);q[3].copy(p).addScaledVector(ax,size*.25).addScaledVector(t1,-size*.36);
   out.copy(q[2]).sub(crown).normalize();n.copy(dir).lerp(out,bend).normalize();
-  const ao=(.74+.26*smooth(-.75,.85,out.y))*tone*(.97+r()*.08);
+  const ao=(.78+.26*smooth(-.75,.85,out.y))*tone*(.96+r()*.12);
   col.copy(shade).lerp(leaf,smooth(-.55,.7,out.y)).multiplyScalar(ao);
-  for(const v of [q[0],q[1],q[2],q[1],q[0],q[2]])b.vertex(v,n,col,swayOf(v.y));
+  // 바깥(dir)을 향하는 면만 그린다(감기 순서: q0→q1→q2, q0→q2→q3를 dir 쪽에서 반시계).
+  const face=new THREE.Vector3().subVectors(q[1],q[0]).cross(new THREE.Vector3().subVectors(q[2],q[0])).dot(dir)>0;
+  const order=face?[0,1,2,0,2,3]:[0,2,1,0,3,2];
+  for(const j of order)b.vertex(q[j],n,col,swayOf(q[j].y));
  }
 }
 
@@ -129,105 +137,112 @@ function addTier(b,{y,height,radius,segments,seed,needle,shade,swayOf,droop=.25,
  }
 }
 
-// ── 수종별 모양(높이·너비는 원래 GLB 카드 크기에 맞춘다) ──
+// ── 수종별 모양(높이·너비는 원래 GLB 카드 크기에 맞춘다. id는 원래 파일명 — 관악산 수종은 따르지 않는다) ──
 const SPECIES={
- // 높이 9.4~10.4m, 수관 너비 ≈ 0.95~1.0H(우산형), 줄기·가지 노출 ≈ 0.5H.
+ // 둥근 수관 활엽수: 높이 9.4~10.4m, 수관 너비 ≈ 0.9~1.0H, 줄기 노출 ≈ 0.35H(01_19·01_22).
  tree_small_02:{kind:'broadleaf',height:9.4,width:9.0,seed:11,lean:.15},
  island_tree_01:{kind:'broadleaf',height:10.4,width:10.4,seed:23,lean:.25},
- pine_tree_01:{kind:'pine',height:12.4,width:7.4,seed:31},
- pine_sapling_medium:{kind:'sapling',height:5.0,width:4.2,seed:47},
+ // 층진 원뿔 침엽수(02_02·02_10): 너비 ≈ 0.5H, 아래 0.15H만 줄기가 보인다.
+ pine_tree_01:{kind:'pine',height:12.4,width:6.4,seed:31},
+ pine_sapling_medium:{kind:'sapling',height:5.0,width:3.4,seed:47},
 };
-// LOD별 덩어리 수·세분(가까이 3~5개, 중간 3개, 먼 나무 1~2개 — 기준값 §2-1).
+// LOD별 덩어리 수·세분. 잎 조각(tufts)은 덩어리마다.
 const BROADLEAF_LOD=[
- {lumps:5,detail:3,trunkSides:9,branches:3,rings:4,tufts:96},
- {lumps:4,detail:1,trunkSides:6,branches:3,rings:3,tufts:34},
+ {lumps:7,detail:2,trunkSides:9,branches:4,rings:4,tufts:40},
+ {lumps:5,detail:1,trunkSides:6,branches:3,rings:3,tufts:10},
  {lumps:2,detail:1,trunkSides:4,branches:0,rings:1,tufts:0},
 ];
-// 우산형(수관 너비 ≈ 높이): 줄기는 0.4H에서 굵은 가지 2~3갈래로 갈라지고, 덩어리는 가지 끝마다 하나씩 떨어져 얹힌다(사이 틈이 보이게).
+// 둥근 수관: 맨 위 덩어리 하나 + 둘레 덩어리(가운데 높이) + 아래 둘레 덩어리. 덩어리끼리 많이 겹쳐 하나의 둥근 수관으로 읽히고,
+// 윤곽만 덩어리 수만큼 울퉁불퉁하다(01_08). 줄기는 0.3H에서 가지로 갈라져 수관 밑으로 들어간다.
 function broadleaf(spec,lod,palette){
  const L=BROADLEAF_LOD[lod],b=new Builder(),r=rng(spec.seed),H=spec.height,W=spec.width;
  const swayOf=y=>.42*Math.pow(Math.max(0,y)/H,2);
- const forkY=H*.31,lean=new THREE.Vector3(spec.lean*W*.08,0,0),crownC=new THREE.Vector3(lean.x,H*.68,0);
+ const forkY=H*.3,lean=new THREE.Vector3(spec.lean*W*.08,0,0),crownC=new THREE.Vector3(lean.x,H*.66,0);
  const fork=new THREE.Vector3(lean.x,forkY,0);
- // 줄기: 굵기 ÷ 수관 너비 ≈ 0.12, 밑동 1.5배, 살짝 굽음.
- addLimb(b,{a:new THREE.Vector3(0,0,0),b:fork.clone().add(new THREE.Vector3(0,H*.04,0)),ra:W*.06,rb:W*.045,sides:L.trunkSides,rings:L.rings,color:palette.trunk,swayOf,flare:1.5,bow:new THREE.Vector3(W*.025,0,W*.015)});
- const lumps=[{c:new THREE.Vector3(crownC.x+W*.03,H*.86,-W*.02),r:W*.21}];
- const around=L.lumps-1;
- for(let i=0;i<around;i++){
-  const a=i/around*Math.PI*2+r()*.45+.4,d=W*(.3+r()*.05),y=H*(.67+r()*.07);
-  lumps.push({c:new THREE.Vector3(crownC.x+Math.cos(a)*d,y,crownC.z+Math.sin(a)*d),r:W*(.2+r()*.035)});
+ // 줄기: 굵기 ÷ 수관 너비 ≈ 0.12, 밑동 1.6배, 살짝 굽음.
+ addLimb(b,{a:new THREE.Vector3(0,0,0),b:fork.clone().add(new THREE.Vector3(0,H*.05,0)),ra:W*.06,rb:W*.045,sides:L.trunkSides,rings:L.rings,color:palette.trunk,swayOf,flare:1.6,bow:new THREE.Vector3(W*.025,0,W*.015)});
+ const lumps=[{c:new THREE.Vector3(crownC.x+W*.02,H*.84,-W*.02),r:W*.25}];
+ const ring1=Math.max(1,Math.ceil((L.lumps-1)*.6)),ring2=Math.max(0,L.lumps-1-ring1);
+ for(let i=0;i<ring1;i++){
+  const a=i/ring1*Math.PI*2+r()*.4+.3,d=W*(.24+r()*.04),y=H*(.7+r()*.05);
+  lumps.push({c:new THREE.Vector3(crownC.x+Math.cos(a)*d,y,crownC.z+Math.sin(a)*d),r:W*(.22+r()*.03)});
  }
- if(L.lumps===2){lumps[0].r=W*.34;lumps[0].c.set(crownC.x,H*.74,0);lumps[1].c.set(crownC.x+W*.16,H*.62,-W*.1);lumps[1].r=W*.28;}
+ for(let i=0;i<ring2;i++){
+  const a=i/ring2*Math.PI*2+r()*.5+1.1,d=W*(.27+r()*.03),y=H*(.55+r()*.04);
+  lumps.push({c:new THREE.Vector3(crownC.x+Math.cos(a)*d,y,crownC.z+Math.sin(a)*d),r:W*(.18+r()*.03)});
+ }
+ if(L.lumps===2){lumps.length=2;lumps[0].r=W*.36;lumps[0].c.set(crownC.x,H*.72,0);lumps[1].c.set(crownC.x+W*.15,H*.6,-W*.1);lumps[1].r=W*.3;}
  // 굵은 가지: 갈래점에서 둘레 덩어리 아래쪽으로 비스듬히. 덩어리보다 먼저 그려 틈 사이로 보인다.
  for(let i=0;i<L.branches&&i<lumps.length-1;i++){
-  const t=lumps[i+1].c.clone();t.y-=lumps[i+1].r*.4;
-  addLimb(b,{a:fork.clone(),b:t,ra:W*.034,rb:W*.017,sides:Math.max(4,L.trunkSides-3),rings:2,color:palette.trunk,swayOf,dark:.92,bow:new THREE.Vector3(0,H*.03,0)});
+  const t=lumps[i+1].c.clone();t.y-=lumps[i+1].r*.35;
+  addLimb(b,{a:fork.clone(),b:t,ra:W*.032,rb:W*.016,sides:Math.max(4,L.trunkSides-3),rings:2,color:palette.trunk,swayOf,dark:.92,bow:new THREE.Vector3(0,H*.03,0)});
  }
  if(L.branches)addLimb(b,{a:fork.clone(),b:lumps[0].c.clone().add(new THREE.Vector3(0,-lumps[0].r*.5,0)),ra:W*.03,rb:W*.015,sides:Math.max(4,L.trunkSides-3),rings:1,color:palette.trunk,swayOf,dark:.92});
- lumps.forEach((l,i)=>addLump(b,{center:l.c,radius:new THREE.Vector3(l.r,l.r*.8,l.r),detail:L.detail,seed:spec.seed*7+i,crown:crownC,leaf:palette.leaf,shade:palette.leafShade,swayOf,jag:lod===2?.12:.22,variation:.07,tufts:L.tufts}));
+ lumps.forEach((l,i)=>addLump(b,{center:l.c,radius:new THREE.Vector3(l.r,l.r*.84,l.r),detail:L.detail,seed:spec.seed*7+i,crown:crownC,leaf:palette.leaf,shade:palette.leafShade,swayOf,jag:lod===2?.06:.09,bend:.6,variation:.06,tufts:L.tufts}));
  return b;
 }
-const PINE_LOD=[{tiers:6,segments:14,trunkSides:7,rings:3,tufts:3},{tiers:5,segments:10,trunkSides:5,rings:2,tufts:2},{tiers:3,segments:7,trunkSides:3,rings:1,tufts:0}];
-// 관악산 소나무: 줄기가 길고(노출 ≈ 0.45H) 붉으며 살짝 기울고, 수관은 위쪽에 층층이 몰린다.
+const PINE_LOD=[{tiers:8,segments:14,trunkSides:7,rings:3,tufts:3},{tiers:6,segments:9,trunkSides:5,rings:2,tufts:2},{tiers:4,segments:7,trunkSides:3,rings:1,tufts:1}];
+// 층진 원뿔 침엽수(「야생의 숨결」 전나무형): 아래 0.15H만 줄기가 보이고, 그 위는 처진 층을 겹겹이 쌓아 꼭대기로 좁아진다.
 function pine(spec,lod,palette,{sapling=false}={}){
  const L=PINE_LOD[lod],b=new Builder(),r=rng(spec.seed),H=spec.height,W=spec.width;
- const swayOf=y=>(sapling?.12:.32)*Math.pow(Math.max(0,y)/H,2);
- const bottom=sapling?H*.3:H*.42,lean=new THREE.Vector3(sapling?0:W*.08,0,sapling?0:W*.03);
- const top=new THREE.Vector3(lean.x,H*(sapling?.8:.96),lean.z);
- addLimb(b,{a:new THREE.Vector3(0,0,0),b:top,ra:sapling?W*.05:W*.06,rb:W*.02,sides:L.trunkSides,rings:L.rings,color:sapling?palette.trunk:palette.pineTrunk,swayOf,flare:1.35,bow:sapling?null:new THREE.Vector3(-W*.05,0,0)});
- if(sapling){
-  // 어린 소나무: 원뿔 층(피라미드 3단)도, 납작한 뭉치를 띄엄띄엄 꽂은 모양(원반·버섯 층으로 읽힘)도 아니게,
-  // 두께 있는 둥근 솔잎 뭉치를 위아래로 40% 넘게 겹쳐 쌓아 줄기를 가린다. 위로 갈수록 작고, 좌우로 조금씩 엇갈려
-  // 윤곽이 울퉁불퉁한 구름형(관악산 어린 소나무)이 된다. 먼 단계도 정이십면체 1단 이상(0단은 육각 판처럼 보임).
-  const pads=lod===2?3:lod===1?4:5,crown=new THREE.Vector3(0,H*.58,0);
-  for(let i=0;i<pads;i++){
-   const t=i/(pads-1),y=H*THREE.MathUtils.lerp(.4,.76,t)+(r()-.5)*H*.03,a=i*2.4+r()*.8,d=W*(i===pads-1?.02:.06+r()*.05)*(1-t*.5);
-   const rr=W*THREE.MathUtils.lerp(.31,.17,t)*(.9+r()*.2);
-   addLump(b,{center:new THREE.Vector3(Math.cos(a)*d,y,Math.sin(a)*d),radius:new THREE.Vector3(rr,rr*(lod===2?.85:.78),rr),detail:lod===0?2:1,seed:spec.seed*13+i,crown,
-    leaf:palette.sapling,shade:palette.saplingShade,swayOf,jag:lod===2?.12:.2,bend:.62,variation:.05,tufts:lod===2?0:L.tufts*4,
-    // 먼 단계 맨 위는 작아서 0단으로도 충분(삼각형 상한 200).
-    ...(lod===2&&i===pads-1?{detail:0,jag:.08}:{})});
-  }
-  return b;
- }
- const tiers=L.tiers;
+ const swayOf=y=>(sapling?.12:.3)*Math.pow(Math.max(0,y)/H,2);
+ const top=new THREE.Vector3(0,H*.97,0);
+ addLimb(b,{a:new THREE.Vector3(0,0,0),b:top,ra:W*.06,rb:W*.015,sides:L.trunkSides,rings:L.rings,color:palette.pineTrunk,swayOf,flare:1.35});
+ const tiers=Math.max(3,L.tiers-(sapling?2:0)),bottom=H*(sapling?.2:.16);
  for(let i=0;i<tiers;i++){
-  const t=i/(tiers-1||1),y=THREE.MathUtils.lerp(sapling?bottom:H*.5,sapling?H*.62:H*.88,t);
-  // 아래층이 넓고 위로 갈수록 좁다. 관악산 소나무는 맨 아래층도 너무 넓지 않게(우산형).
-  const radius=W*.5*(sapling?THREE.MathUtils.lerp(1,.62,t)*(.9+r()*.2):THREE.MathUtils.lerp(.9,.5,t*t)*(.88+r()*.24));
-  const off=new THREE.Vector3(lean.x*(y/H)+(r()-.5)*W*(sapling?.22:.08),0,lean.z*(y/H)+(r()-.5)*W*(sapling?.22:.08));
-  addTier(b,{y,height:H*(sapling?.26:.11),radius,segments:L.segments,seed:spec.seed*13+i,needle:sapling?palette.sapling:palette.pine,shade:sapling?palette.saplingShade:palette.pineShade,swayOf,offset:off,droop:.3,tufts:L.tufts});
+  const t=i/(tiers-1);
+  const y=THREE.MathUtils.lerp(bottom,H*.86,Math.pow(t,.9));
+  // 원뿔: 아래층 반지름 0.5W → 꼭대기 0.1W. 층마다 ±8%.
+  const radius=W*THREE.MathUtils.lerp(.5,.1,t)*(.92+r()*.16);
+  const off=new THREE.Vector3((r()-.5)*W*.04,0,(r()-.5)*W*.04);
+  addTier(b,{y,height:H*THREE.MathUtils.lerp(sapling?.22:.15,sapling?.16:.12,t),radius,segments:L.segments,seed:spec.seed*13+i,needle:palette.pine,shade:palette.pineShade,swayOf,offset:off,droop:.5,tufts:L.tufts});
  }
  return b;
 }
 
-// 덤불(숲 덤불층 대체): 높이 약 1.1m, 반경 .7m의 잎 덩어리 3개.
-function shrub(palette){
- // 잎 덩어리 4개를 낮고 넓게 흩어 놓아 둥근 바위처럼 보이지 않게 한다(윤곽 굴곡을 크게).
- const b=new Builder(),crown=new THREE.Vector3(0,.4,0),swayOf=y=>.06*Math.pow(Math.max(0,y)/1.1,2);
- [[0,.62,0,.36],[.34,.42,.16,.3],[-.3,.38,-.18,.3],[.06,.36,-.36,.26]].forEach(([x,y,z,rr],i)=>addLump(b,{center:new THREE.Vector3(x,y,z),radius:new THREE.Vector3(rr*1.15,rr*.85,rr*1.15),detail:1,seed:500+i,crown,leaf:palette.bush,shade:palette.bushShade,swayOf,jag:.24,bend:.55,variation:.07,tufts:10}));
+// 어린 나무(pine_sapling 자리, 재판정): 층진 원뿔 대신 둥근 잎 덩어리를 쌓은 관목. 가까이서 짙은 초록 피라미드로 읽혔다
+// (계곡 장면, 참고 02_02·01_22 물가 덤불은 둥글다). 아래 둘레 덩어리 셋 + 가운데 위 덩어리 둘, 줄기는 밑동만 살짝.
+const SAPLING_LOD=[{detail:2,tufts:10,trunkSides:5},{detail:1,tufts:3,trunkSides:4},{detail:1,tufts:0,trunkSides:3}];
+function saplingBush(spec,lod,palette){
+ const L=SAPLING_LOD[lod],b=new Builder(),r=rng(spec.seed),H=spec.height,W=spec.width;
+ const swayOf=y=>.14*Math.pow(Math.max(0,y)/H,2),crown=new THREE.Vector3(0,H*.42,0);
+ addLimb(b,{a:new THREE.Vector3(0,0,0),b:new THREE.Vector3(0,H*.3,0),ra:W*.05,rb:W*.035,sides:L.trunkSides,rings:1,color:palette.trunk,swayOf,flare:1.4});
+ const lumps=[];
+ for(let i=0;i<3;i++){const a=i/3*Math.PI*2+r()*.5;lumps.push([Math.cos(a)*W*.2,H*(.3+r()*.04),Math.sin(a)*W*.2,W*(.3+r()*.04)]);}
+ lumps.push([W*.04,H*.52,-W*.03,W*.34],[-W*.05,H*.7,W*.02,W*.26]);
+ // 먼 단계는 크게 겹친 덩어리 둘(삼각형 상한).
+ if(lod===2)lumps.splice(0,lumps.length,[0,H*.36,0,W*.42],[W*.03,H*.66,-W*.02,W*.3]);
+ lumps.forEach(([x,y,z,rr],i)=>addLump(b,{center:new THREE.Vector3(x,y,z),radius:new THREE.Vector3(rr,rr*.9,rr),detail:L.detail,seed:spec.seed*5+i,crown,leaf:palette.bush,shade:palette.bushShade,swayOf,jag:.08,bend:.6,variation:.06,tufts:L.tufts}));
  return b;
 }
 
-// 풀 다발: 넓적하고 끝이 뾰족한 잎(3삼각형) 여러 장 + 점꽃(작은 별 2장, toonFlower=1).
-// 잎 끝으로 갈수록 밝게(바닥 그늘 → 끝 연두), 꽃은 노랑·흰색 둘 중 하나를 셰이더가 고른다.
+// 덤불(숲 덤불층 대체): 높이 약 1.1m의 둥근 잎 덩어리 셋. 세분 2단 + 작은 굴곡이라 가까이서도 각진 다각형 윤곽이 보이지 않는다.
+function shrub(palette){
+ const b=new Builder(),crown=new THREE.Vector3(0,.4,0),swayOf=y=>.06*Math.pow(Math.max(0,y)/1.1,2);
+ [[0,.6,0,.4],[.36,.42,.14,.32],[-.3,.4,-.22,.33]].forEach(([x,y,z,rr],i)=>addLump(b,{center:new THREE.Vector3(x,y,z),radius:new THREE.Vector3(rr*1.12,rr*.86,rr*1.12),detail:2,seed:500+i,crown,leaf:palette.bush,shade:palette.bushShade,swayOf,jag:.08,bend:.6,variation:.06,tufts:8}));
+ return b;
+}
+
+// 풀 다발: 가늘고 긴 잎(밑동 → 가운데 → 끝 3마디, 5삼각형)이 바깥으로 휘며 촘촘하다(03_15·03_20) + 점꽃(작은 별 2장, toonFlower=1).
+// 잎 밑동은 그늘색, 끝으로 갈수록 밝은 노란 연두. 꽃은 노랑·흰색 둘 중 하나를 셰이더가 고른다.
 function grassClump({blades=9,height=.42,spread=.2,flowers=1,seed=3}={},palette){
  const b=new Builder(),r=rng(seed),col=new THREE.Color(),up=new THREE.Vector3(0,1,0);
  for(let i=0;i<blades;i++){
-  const a=i*2.399+r()*.4,d=spread*(.25+r()*.75),bx=Math.cos(a)*d,bz=Math.sin(a)*d,h=height*(.6+r()*.5),w=.028+r()*.02;
-  const lean=.18+r()*.22,face=a+1.2+r()*.6,fx=Math.cos(face),fz=Math.sin(face);
-  const tip=new THREE.Vector3(bx+Math.cos(a)*h*lean,h,bz+Math.sin(a)*h*lean);
-  const mid=new THREE.Vector3(bx+Math.cos(a)*h*lean*.4,h*.5,bz+Math.sin(a)*h*lean*.4);
-  const l0=new THREE.Vector3(bx-fx*w,0,bz-fz*w),r0=new THREE.Vector3(bx+fx*w,0,bz+fz*w);
-  const l1=mid.clone().add(new THREE.Vector3(-fx*w*1.15,0,-fz*w*1.15)),r1=mid.clone().add(new THREE.Vector3(fx*w*1.15,0,fz*w*1.15));
+  const a=i*2.399+r()*.4,d=spread*(.15+r()*.85),bx=Math.cos(a)*d,bz=Math.sin(a)*d,h=height*(.6+r()*.55),w=.016+r()*.012;
+  // 휨: 바깥으로 기울고(lean) 끝이 더 꺾인다(bend). 잎 면은 휘는 방향에 수직.
+  const lean=.12+r()*.18,bend=.25+r()*.3,face=a+Math.PI/2+(r()-.5)*.6,fx=Math.cos(face),fz=Math.sin(face),dx=Math.cos(a),dz=Math.sin(a);
+  const at=(t)=>{const off=h*(lean*t+bend*t*t*t);return new THREE.Vector3(bx+dx*off,h*t*(1-bend*.35*t*t),bz+dz*off);};
+  const p1=at(.4),p2=at(.75),tip=at(1);
+  const side=(p,k)=>[p.clone().add(new THREE.Vector3(-fx*w*k,0,-fz*w*k)),p.clone().add(new THREE.Vector3(fx*w*k,0,fz*w*k))];
+  const [l0,r0]=side(new THREE.Vector3(bx,0,bz),1),[l1,r1]=side(p1,1.05),[l2,r2]=side(p2,.75);
   // 위로 향한 부드러운 법선(가는 잎 면마다 흰 줄이 생기지 않게).
-  const n=new THREE.Vector3(Math.cos(a)*.3,1,Math.sin(a)*.3).normalize();
-  const c=t=>col.copy(palette.grassBase).lerp(palette.grassTip,t);
-  const sw=y=>.14*Math.pow(y/height,2);
-  for(const [p,t] of [[l0,0],[r0,0],[r1,.55],[l0,0],[r1,.55],[l1,.55],[l1,.55],[r1,.55],[tip,1]])b.vertex(p,n,c(t).clone(),sw(p.y),0);
+  const n=new THREE.Vector3(dx*.3,1,dz*.3).normalize();
+  const c=t=>col.copy(palette.grassBase).lerp(palette.grassTip,t).clone();
+  const sw=y=>.16*Math.pow(Math.max(0,y)/height,2);
+  for(const [p,t] of [[l0,0],[r0,0],[r1,.4],[l0,0],[r1,.4],[l1,.4],[l1,.4],[r1,.4],[r2,.75],[l1,.4],[r2,.75],[l2,.75],[l2,.75],[r2,.75],[tip,1]])b.vertex(p,n,c(t),sw(p.y),0);
  }
  for(let f=0;f<flowers;f++){
-  const a=r()*6.283,d=spread*.5*r(),cx=Math.cos(a)*d,cz=Math.sin(a)*d,h=height*(.78+r()*.25),s=.065;
+  const a=r()*6.283,d=spread*.5*r(),cx=Math.cos(a)*d,cz=Math.sin(a)*d,h=height*(.62+r()*.25),s=.05;
   const c=new THREE.Vector3(cx,h,cz);
   // 줄기(가는 삼각형)
   const stemCol=palette.grassBase.clone().lerp(palette.grassTip,.5);
@@ -241,30 +256,34 @@ function grassClump({blades=9,height=.42,spread=.2,flowers=1,seed=3}={},palette)
  return b;
 }
 
-// ── 바위: 원래 GLB 범위(가로·높이·깊이, m)에 맞춘 둥근 암괴 덩어리 ──
-// 화강암 암괴(참고 04_06·04_14·05_18)처럼 위가 둥글고 옆으로 퍼진 덩어리 1~3개를 겹친다. 덩어리마다 정이십면체(1단 분할)를
-// 큰 굴곡으로 흔들고 부드러운 법선을 줘서, 큰 평면·직선 모서리 없이 둥글게 음영진다. 바닥은 지면 아래로 조금 묻는다.
+// ── 바위: 원래 GLB 범위(가로·높이·깊이, m)에 맞춘 둥근 암괴 덩어리(카툰 2차 재판정, 참고 04_19·04_20·04_07) ──
+// 「야생의 숨결」 바위는 넓은 면이 둥글게 이어진 덩어리다. 덩어리마다 정이십면체(1단 분할)를 무작위 평면 4~6장으로 눌러
+// 넓은 면을 만들되 모서리는 둥글리고, 이웃 면과 법선을 나눈 둥근 명암을 준다. 바닥은 지면 아래로 조금 묻는다.
 // lumps: [중심 x,y,z, 반지름 x,y,z(크기 비율), 기울기(라디안, z축), 기울기(x축)]
 const ROCKS={
  rock_09:{size:[.08,.034,.14],seed:91,lumps:[[0,.42,0,.5,.55,.5,.15,0]]},
  boulder_01:{size:[1.28,1.0,1.83],seed:17,lumps:[[0,.45,0,.5,.55,.5,.18,-.08]]},
  rock_face_01:{size:[4.96,3.56,3.82],seed:53,cliff:true,lumps:[[-.18,.36,0,.34,.4,.46,.12,0],[.2,.42,.04,.3,.46,.42,-.18,.06],[-.02,.72,-.04,.28,.27,.36,.28,0]]},
  rock_face_02:{size:[2.72,2.47,2.12],seed:67,cliff:true,lumps:[[-.12,.4,0,.38,.42,.48,.1,0],[.18,.6,.02,.3,.38,.4,-.25,.05]]},
- // 정상부 큰 바위: 넓은 밑 덩어리 위에 기운 덩어리 둘(돌기둥처럼 반듯하게 서지 않게, 위는 둥글게).
+ // 큰 바위: 넓은 밑 덩어리 위에 기운 덩어리 둘.
  mountainside:{size:[10.2,10.5,5.24],seed:79,cliff:true,lumps:[[0,.26,0,.5,.34,.5,.05,0],[-.1,.58,.02,.42,.3,.46,.35,.05],[.16,.78,-.02,.34,.24,.42,-.45,0]]},
 };
-// 둥근 암괴 하나: 중심·반지름(m)·회전, 바닥 자름 높이(floor, 그 아래 정점은 평평하게 모은다).
-export function rockLump({center,radius,rotation=new THREE.Euler(),seed=1,floor=-Infinity}){
+// 각진 암괴 하나: 중심·반지름(m)·회전, 바닥 자름 높이(floor, 그 아래 정점은 평평하게 모은다).
+export function rockLump({center,radius,rotation=new THREE.Euler(),seed=1,floor=-Infinity,cuts=5,flatTop=true}){
  const r=rng(seed),g=mergeVertices(new THREE.IcosahedronGeometry(1,1).deleteAttribute('uv').deleteAttribute('normal')),p=g.attributes.position;
- // 큰 굴곡 셋(방향·위상 무작위): 덩어리가 공처럼 매끈하지 않고 혹이 진 암괴가 된다.
- const waves=[0,1,2].map(()=>({d:new THREE.Vector3(r()-.5,r()-.5,r()-.5).normalize(),f:1.6+r()*1.4,ph:r()*6.283,a:.07+r()*.05}));
+ // 큰 굴곡 둘(덩어리가 공 모양으로 대칭이지 않게) + 깎는 평면(바깥 법선 d, 중심에서 거리 at). 윗면 평면은 하나 꼭 둔다.
+ const waves=[0,1].map(()=>({d:new THREE.Vector3(r()-.5,r()-.5,r()-.5).normalize(),f:1.2+r(),ph:r()*6.283,a:.06+r()*.04}));
+ const top={d:new THREE.Vector3((r()-.5)*.5,1,(r()-.5)*.5).normalize(),at:.72+r()*.1},planes=flatTop?[top]:[];
+ for(let i=1;i<cuts;i++){const a=i/(cuts-1)*Math.PI*2+r()*.9,y=(r()-.35)*.9;planes.push({d:new THREE.Vector3(Math.cos(a),y,Math.sin(a)).normalize(),at:.78+r()*.14});}
  const v=new THREE.Vector3();
  for(let i=0;i<p.count;i++){
-  v.fromBufferAttribute(p,i);let k=1;for(const w of waves)k+=w.a*Math.sin(v.dot(w.d)*w.f*3.1416+w.ph);
-  // 윗면은 조금 눌러 둥근 지붕(공보다 넓고 낮게), 아랫면은 넓게(땅에 앉은 모양).
-  v.set(v.x*k,v.y*k*(v.y>0?.92:1.1),v.z*k).multiply(radius).applyEuler(rotation).add(center);
+  v.fromBufferAttribute(p,i);let k=1;for(const w of waves)k+=w.a*Math.sin(v.dot(w.d)*w.f*3.1416+w.ph);v.multiplyScalar(k);
+  // 깎는 면은 모서리를 둥글린다(넘친 만큼의 70%만 눌러 면 가장자리가 부드럽게 휜다, 참고 04_20 둥근 암괴).
+  for(const pl of planes){const over=v.dot(pl.d)-pl.at;if(over>0)v.addScaledVector(pl.d,-over*.7);}
+  v.set(v.x,v.y*(v.y>0?.95:1.1),v.z).multiply(radius).applyEuler(rotation).add(center);
   v.y=Math.max(v.y,floor+i*1e-5);p.setXYZ(i,v.x,v.y,v.z);
  }
+ // 이웃 면과 법선을 나눠 둥근 명암(재판정: 참고 04_19·04_20의 바위는 넓은 면이 둥글게 이어진 덩어리).
  g.computeVertexNormals();return g;
 }
 export function rockGeometry(id){
@@ -313,6 +332,14 @@ const NATURE_SWAY=`
  transformed.xz+=toonWindDir*(gust*.75+.3)*toonSway*toonWaveStrength+vec2(-toonWindDir.y,toonWindDir.x)*flutter*toonSway*.14;
  transformed.y-=abs(gust)*toonSway*.08;
 }`;
+// 잎 무늬 값(0~1): 세포 잡음(가까운 점까지 거리)을 잎 모양으로 눌러 쓴다. 값이 크면 잎 뭉치 한가운데, 작으면 잎 사이 틈.
+const LEAF_GLSL=`
+float tnH3(vec3 p){p=fract(p*.1031);p+=dot(p,p.zyx+31.32);return fract((p.x+p.y)*p.z);}
+float tnN3(vec3 p){vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
+ return mix(mix(mix(tnH3(i),tnH3(i+vec3(1,0,0)),f.x),mix(tnH3(i+vec3(0,1,0)),tnH3(i+vec3(1,1,0)),f.x),f.y),
+            mix(mix(tnH3(i+vec3(0,0,1)),tnH3(i+vec3(1,0,1)),f.x),mix(tnH3(i+vec3(0,1,1)),tnH3(i+vec3(1,1,1)),f.x),f.y),f.z);}
+// 잎 무늬 값(0~1): 큰 잎 뭉치 + 작은 잎 두 겹의 값 잡음. 크면 밝은 잎 뭉치, 작으면 잎 사이 짙은 틈.
+float tnLeaf(vec3 p){return tnN3(p*vec3(1.,1.3,1.))*.6+tnN3(p*2.3+vec3(4.1,1.7,8.3))*.4;}`;
 // 해를 마주 본 역광에서 수관 가장자리를 금빛으로 밝힌다(기준값 §2-5, 약 0.3). 해를 등지면 0.
 const NATURE_RIM=`
 #if NUM_DIR_LIGHTS > 0
@@ -338,11 +365,22 @@ export function createToonNature({gradientMap,uniforms}){
  const foliage=new THREE.MeshToonMaterial({name:'toon-nature-foliage',gradientMap,vertexColors:true});
  foliage.onBeforeCompile=shader=>{
   bind(shader);
-  shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\n'+NATURE_VERTEX_COMMON)
-   .replace('#include <color_vertex>',NATURE_COLOR_VERTEX).replace('#include <begin_vertex>','#include <begin_vertex>\n'+NATURE_SWAY);
-  shader.fragmentShader=shader.fragmentShader.replace('#include <lights_fragment_end>','#include <lights_fragment_end>\n'+NATURE_RIM.replace('RIM',N.rim.toFixed(3)));
+  shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\n'+NATURE_VERTEX_COMMON+'varying vec3 vTnLeaf;')
+   .replace('#include <color_vertex>',NATURE_COLOR_VERTEX).replace('#include <begin_vertex>','#include <begin_vertex>\nvTnLeaf=position+tnAnchor()*.37;\n'+NATURE_SWAY);
+  shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nvarying vec3 vTnLeaf;\n'+LEAF_GLSL)
+   .replace('#include <color_fragment>',`#include <color_fragment>
+    {
+     // 잎 무늬(카툰 2차, 참고 01_08·01_19·01_22): 덩어리 표면에 밝은 잎 뭉치와 그 사이 짙은 틈. 한 덩어리가 단색 판으로 보이지 않게.
+     // 잎 뭉치(${N.leafCell}m)가 픽셀보다 잘아지면 접는다.
+     float px=length(vViewPosition)*.0014,fade=1.-smoothstep(.1,.4,px/${N.leafCell.toFixed(3)});
+     // 잎(초록) 정점만: 줄기·가지(갈색)는 무늬 없이. 접힌 곳은 잡음을 계산하지 않는다(GPU 절약).
+     fade*=smoothstep(.0,.06,vColor.g-vColor.r);
+     if(fade>.01){float lf=tnLeaf(vTnLeaf/${N.leafCell.toFixed(3)});
+     diffuseColor.rgb*=1.+fade*(${N.leafLight.toFixed(3)}*smoothstep(.58,.66,lf)-${N.leafGap.toFixed(3)}*(1.-smoothstep(.26,.34,lf)));}
+    }`)
+   .replace('#include <lights_fragment_end>','#include <lights_fragment_end>\n'+NATURE_RIM.replace('RIM',N.rim.toFixed(3)));
  };
- foliage.customProgramCacheKey=()=> 'toon-nature-foliage-v1';
+ foliage.customProgramCacheKey=()=> 'toon-nature-foliage-v2b-leaf';
  foliage.userData.shared=true;foliage.userData.toonNature='foliage';
 
  // 풀 다발: 꽃(toonFlower)은 다발마다 일부만 핀다. 잎은 바람 물결 띠가 지나갈 때 밝아진다.
@@ -375,7 +413,7 @@ export function createToonNature({gradientMap,uniforms}){
      // 바람 물결 띠: 바람 방향으로 흐르는 넓은 밝은 띠(색만 바뀌고 형태는 그대로).
      float along=dot(a.xz,toonWindDir);
      vTgBand=smoothstep(.55,.95,sin(along*.09-foliageTime*1.6)*.5+.5+sin(along*.023+a.x*.011-foliageTime*.7)*.25)*(1.-toonFlower);
-     vTgTip=clamp(position.y/.45,0.,1.);
+     vTgTip=clamp(position.y/.55,0.,1.);
     }`);
   shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nuniform vec3 tgBand;uniform float toonWaveStrength;varying float vTgBand;varying float vTgTip;')
    .replace('#include <color_fragment>',`#include <color_fragment>
@@ -386,7 +424,7 @@ export function createToonNature({gradientMap,uniforms}){
    // 외곽선 제외 표시(알파 .5).
    .replace('#include <opaque_fragment>','#include <opaque_fragment>\n gl_FragColor.a=min(gl_FragColor.a,.5);');
  };
- grass.customProgramCacheKey=()=>`toon-nature-grass-v1${field?'-field':''}`;
+ grass.customProgramCacheKey=()=>`toon-nature-grass-v2${field?'-field':''}`;
  grass.userData.shared=true;grass.userData.toonNature='grass';
  return grass;
  };
@@ -408,37 +446,24 @@ export function createToonNature({gradientMap,uniforms}){
      }`);
    shader.fragmentShader=shader.fragmentShader.replace('#include <lights_fragment_end>',`#include <lights_fragment_end>\n reflectedLight.indirectDiffuse*=vec3(${N.rockShadeTint.join(',')});\n${rockShadeGLSL('trRockMask',N.rockShadeDirect.toFixed(3))}`)
     .replace('#include <normal_fragment_maps>',`#include <normal_fragment_maps>
-     trcBaseN=normal;normal=normalize(mix(normal,(viewMatrix*vec4(trBumpN,0.)).xyz,trRockMask));`)
+     trcBaseN=normal;`)
     .replace('#include <common>',`#include <common>
     uniform vec3 trMoss,trMossDark,trDark;varying vec3 vTrWorld;varying vec3 vTrNormal;varying vec3 vTrLocal;
-    vec3 trBumpN=vec3(0.,1.,0.);float trRockMask=1.;${ROCK_BASE_DECL}
-    ${ROCK_CELL_GLSL}
+    float trRockMask=1.;${ROCK_BASE_DECL}
+    ${ROCK_CELL_GLSL}${BRUSH_GLSL}
     float trHash(vec3 p){return fract(sin(dot(p,vec3(12.9898,78.233,37.719)))*43758.5453);}
     float trNoise(vec3 p){vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
      return mix(mix(mix(trHash(i),trHash(i+vec3(1,0,0)),f.x),mix(trHash(i+vec3(0,1,0)),trHash(i+vec3(1,1,0)),f.x),f.y),
                 mix(mix(trHash(i+vec3(0,0,1)),trHash(i+vec3(1,0,1)),f.x),mix(trHash(i+vec3(0,1,1)),trHash(i+vec3(1,1,1)),f.x),f.y),f.z);}`)
     .replace('#include <color_fragment>',`#include <color_fragment>
      {
-      vec3 wp=vTrWorld,wn=normalize(vTrNormal);if(!gl_FrontFacing)wn=-wn;float up=wn.y,dist=length(vViewPosition);
-      // 큰 명암 얼룩: 두 톤으로 끊는다(잔무늬 없음).
-      float blot=trNoise(wp*.32)*.7+trNoise(wp*.9)*.3;
-      diffuseColor.rgb*=mix(1.04,${N.rockBlot.toFixed(3)},smoothstep(.56,.6,blot));
-      // 둥근 암괴 굴곡(그늘 면은 조명 단계) + 덩어리 사이 갈라짐. 절벽은 세로로 긴 셀(세로 갈라짐).
-      float crack=0.;
-      trBumpN=trcBump(wp,wn,${cliff?'vec3(2.4,3.6,2.4)':'vec3(1.6,1.3,1.6)'},${cliff?'1.':'.7'},trcPixel(wp,wn),crack);
-      diffuseColor.rgb=mix(diffuseColor.rgb,trDark,crack*${cliff?'.16':'.3'});// 절벽 면은 셀이 커서 갈라짐이 육각 그물로 읽힌다 → 더 옅게
-      ${cliff?`
-      // 가로 층: 단 높이 약 2.6m마다 옅은 띠(세로 갈라짐이 주, 가로 층은 보조).
-      float layer=fract(wp.y/2.6+trNoise(wp*.15)*.35);
-      diffuseColor.rgb=mix(diffuseColor.rgb,trDark,smoothstep(.86,.9,layer)*.25*(1.-smoothstep(.6,.8,up)));`:''}
-      // 윗면 이끼·풀: 위를 향한 면(굴곡 법선 기준)일수록, 덩어리째 덮는다(얇은 테가 아니라 큰 이끼 덩어리).
-      float mossN=trNoise(wp*.35+7.)*.65+trNoise(wp*1.1)*.35;
-      float moss=smoothstep(.5,.53,trBumpN.y*.9+(mossN-.5)*.7-${N.mossLevel.toFixed(3)}+.5);
-      diffuseColor.rgb=mix(diffuseColor.rgb,mix(trMossDark,trMoss,smoothstep(.35,.65,mossN)),moss);
+      // 야숨 바위 칠(재판정, 참고 04_19·04_20·04_09): 회색 바탕 + 어두운 녹회 얼룩 + 이끼. 지형 암반과 같은 함수(trcPaint).
+      vec3 wp=vTrWorld,wn=normalize(vTrNormal);if(!gl_FrontFacing)wn=-wn;float px=trcPixel(wp,wn),moss;
+      diffuseColor.rgb=trcPaint(wp,wn,diffuseColor.rgb,trDark,trMoss,trMossDark,px,${(N.mossLevel-.84).toFixed(3)},moss);
       trRockMask=1.-moss*.8;
      }`);
   };
-  m.customProgramCacheKey=()=>`toon-nature-rock-v3-${cliff?'cliff':'rock'}`;
+  m.customProgramCacheKey=()=>`toon-nature-rock-v5-paint-${cliff?'cliff':'rock'}`;
   m.userData.shared=true;m.userData.toonNature='rock';m.userData.toonRock=true;
   return m;
  };
@@ -453,7 +478,7 @@ export function createToonNature({gradientMap,uniforms}){
   let parts=null;
   if(ROCKS[id]){const g=rockGeometry(id);parts=[{geometry:g,material:g.userData.cliff?rock.cliff:rock.rock}];status.rocks++;}
   else if(SPECIES[id]){
-   const spec=SPECIES[id],b=spec.kind==='broadleaf'?broadleaf(spec,lod,palette):pine(spec,lod,palette,{sapling:spec.kind==='sapling'});
+   const spec=SPECIES[id],b=spec.kind==='broadleaf'?broadleaf(spec,lod,palette):spec.kind==='sapling'?saplingBush(spec,lod,palette):pine(spec,lod,palette);
    parts=[{geometry:b.geometry(`toon-${id}-lod${lod}`),material:foliage}];
   }
   if(parts){status.parts++;status.triangles[key]=parts.reduce((n,p)=>n+p.geometry.attributes.position.count/3,0);}
@@ -463,12 +488,12 @@ export function createToonNature({gradientMap,uniforms}){
  // 하층 식생 InstancedMesh(길가 풀·낙엽·관목, 숲 바닥 풀잎, 덤불층)를 카툰 풀 다발·덤불로 바꾼다. 바꿨으면 true.
  // 알아보는 법: 재질 customProgramCacheKey(roadside-*, forest-blades-*, shrub-layer-*) 또는 길가 낙엽(metricKind '하층 식생' + 바람 없음).
  const grassGeometries={
-  grass:grassClump({blades:11,height:.44,spread:.22,flowers:2,seed:5},palette).geometry('toon-grass-clump',{extra:'toonFlower'}),
-  short:grassClump({blades:9,height:.3,spread:.26,flowers:1,seed:9},palette).geometry('toon-grass-short',{extra:'toonFlower'}),
-  tall:grassClump({blades:13,height:.62,spread:.3,flowers:2,seed:13},palette).geometry('toon-grass-tall',{extra:'toonFlower'}),
-  forest:grassClump({blades:7,height:.38,spread:.18,flowers:1,seed:17},palette).geometry('toon-grass-forest',{extra:'toonFlower'}),
+  grass:grassClump({blades:12,height:.5,spread:.22,flowers:2,seed:5},palette).geometry('toon-grass-clump',{extra:'toonFlower'}),
+  short:grassClump({blades:8,height:.34,spread:.26,flowers:1,seed:9},palette).geometry('toon-grass-short',{extra:'toonFlower'}),
+  tall:grassClump({blades:14,height:.7,spread:.3,flowers:2,seed:13},palette).geometry('toon-grass-tall',{extra:'toonFlower'}),
+  forest:grassClump({blades:7,height:.44,spread:.18,flowers:1,seed:17},palette).geometry('toon-grass-forest',{extra:'toonFlower'}),
   // 카메라 둘레 풀밭(grass-field.js): 넓게 퍼진 큰 다발.
-  field:grassClump({blades:18,height:.52,spread:.42,flowers:2,seed:21},palette).geometry('toon-grass-field',{extra:'toonFlower'}),
+  field:grassClump({blades:17,height:.58,spread:.42,flowers:2,seed:21},palette).geometry('toon-grass-field',{extra:'toonFlower'}),
  };
  const shrubGeometry=shrub(palette).geometry('toon-shrub');
  // 계곡 물가 판돌(section-scenery.js slabGeometry: 모난 회갈색 판, 물가·물속): 둥근 회색 암괴로 바꾼다(참고 04_14·06_07).
@@ -483,16 +508,34 @@ export function createToonNature({gradientMap,uniforms}){
    box.makeEmpty();for(let i=s;i<s+36;i++)box.expandByPoint(v.fromBufferAttribute(p,i));
    box.getSize(size);const seed=Math.floor(Math.abs(box.min.x*7.31+box.min.z*3.17)*100)%100000+1;
    // 회전된 판의 범위는 실제보다 넓으므로 가로는 줄이고, 높이는 판 두께보다 키워 둥근 등을 만든다.
-   const rx=size.x*.4,rz=size.z*.4,ry=Math.max(size.y*.9,Math.min(rx,rz)*.42);
-   lumps.push(rockLump({center:new THREE.Vector3((box.min.x+box.max.x)/2,box.min.y+ry*.5,(box.min.z+box.max.z)/2),radius:new THREE.Vector3(rx,ry,rz),
-    rotation:new THREE.Euler(0,seed*.37,0),seed,floor:box.min.y}));
+   // 윗면을 평평하게 깎지 않은 둥근 등(재판정: 얇고 평평한 윗면이 낮은 눈높이에서 베이지 판지로 읽혔다). 높이를 키우고 절반쯤 묻는다.
+   const rx=size.x*.4,rz=size.z*.4,ry=Math.max(size.y*.9,Math.min(rx,rz)*.62);
+   lumps.push(rockLump({center:new THREE.Vector3((box.min.x+box.max.x)/2,box.min.y+ry*.3,(box.min.z+box.max.z)/2),radius:new THREE.Vector3(rx,ry,rz),
+    rotation:new THREE.Euler(0,seed*.37,0),seed,floor:box.min.y,flatTop:false}));
   }
   const g=mergeGeometries(lumps);lumps.forEach(l=>l.dispose());g.computeBoundingBox();g.computeBoundingSphere();g.name='toon-stream-rocks';
   mesh.geometry=g;mesh.material=rock.rock;mesh.castShadow=false;mesh.userData.toonStreamSlab=true;status.streamSlabs=(status.streamSlabs??0)+lumps.length;
   return true;
  }
+ // 입구 생울타리(entrance-plaza.js hedge: 정이십면체 1단 덩어리를 면 법선으로 이어 붙인 'leaf'·'leafDark' 메시):
+ // 면마다 꺾인 명암이라 가까이서 각진 다면체로 보인다. 카툰에서는 같은 자리 정점의 법선을 평균해 둥글게 칠하고,
+ // 덤불과 같은 잎 무늬 재질(덤불색)로 바꾼다. 실사 쪽 기하·재질은 건드리지 않는다(복제해서 바꾼다).
+ const HEDGE_COLORS=new Set(['4e6b3a','36502c']);let hedgeMaterial=null;
+ function swapHedge(mesh){
+  if(!mesh?.isMesh||mesh.isInstancedMesh||mesh.userData.toonHedge)return false;
+  const m=mesh.material;if(!m?.isMeshStandardMaterial||!m.vertexColors||!HEDGE_COLORS.has(m.color.getHexString()))return false;
+  const g=mesh.geometry.clone(),p=g.attributes.position,n=g.attributes.normal;if(!n)return false;
+  const acc=new Map(),key=i=>`${Math.round(p.getX(i)*500)},${Math.round(p.getY(i)*500)},${Math.round(p.getZ(i)*500)}`;
+  for(let i=0;i<p.count;i++){const k=key(i),a=acc.get(k)??[0,0,0];a[0]+=n.getX(i);a[1]+=n.getY(i);a[2]+=n.getZ(i);acc.set(k,a);}
+  for(let i=0;i<p.count;i++){const a=acc.get(key(i)),l=Math.hypot(...a)||1;n.setXYZ(i,a[0]/l,a[1]/l,a[2]/l);}
+  g.userData.shared=true;mesh.geometry=g;
+  if(!hedgeMaterial){hedgeMaterial=foliage.clone();hedgeMaterial.onBeforeCompile=foliage.onBeforeCompile;hedgeMaterial.customProgramCacheKey=foliage.customProgramCacheKey;hedgeMaterial.color.copy(palette.bush).multiplyScalar(.95);hedgeMaterial.userData={...foliage.userData,shared:true};}
+  mesh.material=hedgeMaterial;mesh.userData.toonHedge=true;status.hedges=(status.hedges??0)+1;
+  return true;
+ }
  function swapGroundCover(mesh){
   if(swapStreamSlab(mesh))return true;
+  if(swapHedge(mesh))return true;
   if(!mesh?.isInstancedMesh||mesh.userData.toonGroundCover)return false;
   const src=Array.isArray(mesh.material)?null:mesh.material;if(!src)return false;
   const key=src.customProgramCacheKey?.()??'';

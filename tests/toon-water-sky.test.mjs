@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import {TOON,skyFor,waterFor,exposureFor,lightScaleFor,bearingDir,hexToRgb} from '../src/toon/palette.js';
 import {createToonWater,buildRingGeometry,buildSprayGeometry,SPRAY_PER} from '../src/toon/water.js';
 import {buildStreamGeometry,buildFallGeometry,streamWaterMaterial,fallWaterMaterial,bedRockMaterial,streamRock,ledgeRaise,STREAM_ROCK_CELL} from '../src/stream-water.js';
-import {buildCityDots,createCityStyle} from '../src/toon/city.js';
+import {buildCityDots,sampleCityDots,createCityStyle,trafficGeometry,CITY_LOOK,CITY_UNIFORMS} from '../src/toon/city.js';
 import {createToonSky} from '../src/toon/sky.js';
 
 const DAY={elevation:35,night:0,gray:0},SUNSET={elevation:2,night:0,gray:0},NIGHT={elevation:-25,night:1,gray:0};
@@ -78,27 +78,65 @@ test('카툰 밤 노출: 노출은 1 근처, 빛만 어둡게',()=>{
  assert.equal(lightScaleFor(DAY),1);assert.ok(lightScaleFor(SUNSET)<1&&lightScaleFor(NIGHT)<1,'노을 역광·밤은 땅을 어둡게');
 });
 
-test('도심 불빛 점: 벽에만, 상한 안에서',()=>{
+test('도심 불빛 점: 벽에만, 상한 안에서, 고층 위쪽 표시. LOD와 무관한 도심 전체 한 묶음',()=>{
  const g=new THREE.BoxGeometry(40,60,40);const dots=buildCityDots(g,{density:.01,max:500});
  assert.ok(dots.attributes.position.count>50&&dots.attributes.position.count<=500);
- const P=dots.attributes.position;for(let i=0;i<P.count;i++)assert.ok(Math.abs(P.getY(i))<30-1e-3||Math.abs(Math.abs(P.getX(i))-20)<1e-3||Math.abs(Math.abs(P.getZ(i))-20)<1e-3);
  // 지붕(y=30) 면에는 점이 없다: 벽 위 점은 x 또는 z가 ±20.
- for(let i=0;i<P.count;i++)assert.ok(Math.abs(Math.abs(P.getX(i))-20)<1e-3||Math.abs(Math.abs(P.getZ(i))-20)<1e-3);
+ const P=dots.attributes.position;for(let i=0;i<P.count;i++)assert.ok(Math.abs(Math.abs(P.getX(i))-20)<1e-3||Math.abs(Math.abs(P.getZ(i))-20)<1e-3);
+ // seoulInfo(높이 100m)가 있으면 위쪽 40% 점만 고층 표시(분홍·자홍 후보).
+ const t=new THREE.BoxGeometry(30,100,30).translate(0,50,0),n=t.attributes.position.count,info=new Float32Array(n*3);for(let i=0;i<n;i++)info.set([.4,0,100],i*3);t.setAttribute('seoulInfo',new THREE.BufferAttribute(info,3));
+ const tall=new Map(),s=sampleCityDots(t,{density:.01,max:2000},tall);
+ for(let i=0;i<s.aTall.length;i++)assert.equal(s.aTall[i],s.position[i*3+1]>60?1:0);
+ assert.equal(tall.size,1,'90m 이상 고층은 빛무리 하나');
  const city=createCityStyle(),style=city.styleCity({}),root=new THREE.Group();root.add(new THREE.Mesh(new THREE.BoxGeometry(30,40,30)));style.apply(root);
- assert.ok(city.status.dots>0);assert.ok(root.children[0].children.some(o=>o.isPoints));
+ const later=new THREE.Mesh(t);root.add(later);
+ assert.ok(city.status.dots>0);assert.equal(later.material,style.material,'나중에 들어온 칸도 바뀐다');
+ city.update({...NIGHT,fogColor:[.2,.2,.3]});
+ const pts=root.getObjectByName('도심 불빛 점');assert.ok(pts?.isPoints&&pts.visible,'밤에는 전 도심 점 한 묶음이 보인다');
+ assert.equal(pts.geometry.attributes.position.count,city.status.dots);assert.ok(pts.parent.parent===root,'칸 메시가 아니라 도시 루트에 붙어 LOD로 숨지 않는다');
+ city.update(DAY);assert.equal(pts.visible,false,'낮에는 그리지 않는다');
 });
 
-test('밤 도심 불빛은 크림 흰색 위주(화면 실측 주황 약 35%), 나머지만 주황. 가로등도 같은 톤',()=>{
- const c=TOON.city;assert.equal(c.cream,'#ede7c9');assert.ok(c.creamShare>=.45&&c.creamShare<=.7);
- // 색보정 보상 크림은 기준 크림과 가깝고(차 .1 이내) 더 노랗다(파랑이 낮다). 블룸에 날아가지 않게 점 밝기는 1 근처.
- const ci=hexToRgb(c.creamInput),cr=hexToRgb(c.cream);assert.ok(ci.every((v,i)=>Math.abs(v-cr[i])<.1)&&ci[2]<cr[2]);assert.ok(c.dotGain<=1.15);
+test('밤 불빛 색은 크림 위주(크림 55·푸른 흰 25·청록 12·노랑 8%), 가로등도 크림 쪽',()=>{
+ const l=CITY_LOOK.light;assert.ok(Math.abs(l.share.reduce((a,b)=>a+b,0)-1)<1e-9);assert.ok(l.share[0]>=.5);
+ const cr=hexToRgb(l.cream);assert.ok(cr.every((v,i)=>Math.abs(v-hexToRgb('#ede7c9')[i])<.1),'기준 크림 #ede7c9 근처');
  const city=createCityStyle(),lamp=new THREE.Points(new THREE.BufferGeometry(),new THREE.PointsMaterial({color:0xffffff}));
  city.styleCity({nightLights:[lamp]});
- // 크림 위주: 초록·파랑이 주황 단색(#ffa64d)보다 훨씬 높다.
- const k=lamp.material.color,orange=new THREE.Color().setRGB(...hexToRgb(c.window),THREE.SRGBColorSpace);
+ const k=lamp.material.color,orange=new THREE.Color().setRGB(...hexToRgb('#ffa64d'),THREE.SRGBColorSpace);
  assert.ok(k.b/k.r>orange.b/orange.r*3,'가로등이 주황 단색이 아니다');
 });
-test('낮 원경 도심은 원경 안개색 쪽(흰 띠 아님)',()=>{
- const [r,g,b]=hexToRgb(TOON.city.dayHaze);assert.ok(b>r&&(r+g+b)/3<.75,'푸른 회색, 하늘 지평선(#c3dcd4)보다 어둡다');
- assert.ok(TOON.city.dayHazeAmount>=.8&&TOON.city.dayVar<=.05);
+
+test('도심 연무색은 시간대를 따른다: 노을·밤에 낮 하늘색을 칠하지 않는다(하늘색 얼룩 회귀 방지)',()=>{
+ const city=createCityStyle(),U=CITY_UNIFORMS,fog=[.6,.65,.75];
+ city.update({...DAY,fogColor:fog});const day=U.cityHaze.value.clone();assert.ok(U.cityDay.value>.9);
+ city.update({...SUNSET,elevation:-1,fogColor:fog});const dusk=U.cityHaze.value.clone();
+ assert.ok(U.citySunset.value>.8&&U.cityDay.value<.1,'해 진 직후는 노을 가중치');
+ assert.ok(dusk.r>dusk.g&&dusk.b>dusk.g,'노을 연무는 라벤더(빨강·파랑 > 초록)');
+ assert.ok(day.b>day.r,'낮 연무는 푸른빛');
+ assert.ok(U.cityLights.value>.2,'해 진 직후에도 창 불빛이 켜지기 시작한다');
+ city.update({...NIGHT,fogColor:fog});assert.ok(U.cityHaze.value.getHSL({}).l<dusk.getHSL({}).l,'밤 연무는 더 어둡다');
+ // 쌍안경 배율이 전달되면 픽셀 각도가 그만큼 작아진다(불빛 점 솎기·연무 감소).
+ const cam=new THREE.PerspectiveCamera(60,1,.1,1000);city.update({...NIGHT},cam);const a1=U.cityPxAngle.value;cam.zoom=8;city.update({...NIGHT},cam);
+ assert.equal(U.cityZoom.value,8);assert.ok(Math.abs(U.cityPxAngle.value*8-a1)<1e-9);
+});
+
+test('차량 불빛 줄기: 간선도로·다리만 양 차선, 반대 방향',()=>{
+ const roads=[{kind:'primary',width:16,points:[[0,0],[300,0]]},{kind:'tertiary',width:9,points:[[0,50],[300,50]]},{kind:'tertiary',width:9,bridge:true,points:[[0,100],[100,100]]}];
+ const g=trafficGeometry(roads,()=>10);
+ const P=g.attributes.position,D=g.attributes.aDir;
+ assert.ok(![...Array(P.count).keys()].some(i=>Math.abs(P.getZ(i)-50)<5),'작은 도로(tertiary)는 빼고');
+ assert.ok([...Array(P.count).keys()].some(i=>Math.abs(P.getZ(i)-100)<5),'다리는 넣는다');
+ assert.ok(new Set([...D.array]).size===2,'양 방향');
+ for(let i=0;i<P.count;i++)if(Math.abs(P.getZ(i))<10)assert.ok(Math.abs(P.getY(i)-12.5)<1e-6,'지면 2.5m 위');
+ const style=createCityStyle().styleCity({}),parent=new THREE.Group();const line=style.styleRoads(roads,()=>10,parent);
+ assert.ok(line.isLineSegments&&line.parent===parent);
+});
+
+test('한강 카툰 물: 월드 좌표 물결만(화면 좌표 줄무늬 없음), 랜드마크는 도심 재질',()=>{
+ const style=createCityStyle().styleCity({}),m=style.riverMaterial();
+ const shader={uniforms:{},vertexShader:THREE.ShaderLib.basic.vertexShader,fragmentShader:THREE.ShaderLib.basic.fragmentShader};
+ m.onBeforeCompile(shader);assert.doesNotMatch(shader.fragmentShader,/vViewPosition\.x/);assert.match(shader.fragmentShader,/cityRiverNight/);
+ assert.equal(style.riverMaterial(),m,'한 번만 만든다');
+ const g=new THREE.Group(),body=new THREE.Mesh(new THREE.BoxGeometry(),new THREE.MeshStandardMaterial()),label=new THREE.Sprite();label.userData.seoulLabel=true;g.add(body,label);
+ style.applyLandmark(g);assert.equal(body.material,style.material);assert.ok(label.material.isSpriteMaterial,'이름표는 그대로');
 });

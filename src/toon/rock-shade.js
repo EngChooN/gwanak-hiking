@@ -1,4 +1,6 @@
 // 카툰 바위 명암(3단계 재작업, 산풍경): 지형 암반(materials.js)과 바위 부품(nature.js)이 함께 쓴다.
+// 카툰 2차 재판정(야숨 참고 04_19·04_20)부터 바위 칠은 trcPaint(회색 바탕 + 어두운 얼룩 + 이끼)로 통일하고,
+// 지형 암벽·계곡 암반은 다시 둥근 암괴(trcBump, 갈라짐 선은 긋지 않음)를 쓴다. trcFacet은 남겨 둔다.
 //  - 둥근 암괴: 3D 셀(보로노이) 중심에서 바깥으로 기우는 법선을 더해, 한 면 단색 벽이 둥근 덩어리 여러 개로 갈라져 보이게 한다.
 //    셀은 세로로 길어 덩어리 사이 경계(갈라짐)가 주로 세로로 선다.
 //  - 그늘 면: 해를 등진 면은 직사광을 크게 줄여 밝은 면(#a9a892)과 녹청 그늘(#54665e)로 두 톤이 나뉘게 한다.
@@ -44,6 +46,42 @@ vec3 trcBump(vec3 wp,vec3 wn,vec3 cell,float amt,float px,out float crack){
  // 덩어리 사이 골은 넓고 부드럽게 어둡게(접촉 그늘): 평평한 바닥에서도 혹이 솟아 보이게 한다.
  trcOcc=mix(1.,mix(.74,1.,smoothstep(.0,.32,c.w)),near);
  return normalize(o+wn*sqrt(1.-o2));
+}
+// 각진 면(카툰 2차, 「야생의 숨결」 절벽): 셀마다 한 방향으로 기운 평평한 면. 셀 안에서는 법선이 일정해서
+// 경계가 갈라짐 선이 아니라 명암이 꺾이는 모서리로 읽힌다(육각 그물 선을 긋지 않는다). id: 셀 난수(붓 방향용).
+vec3 trcFacet(vec3 wp,vec3 wn,vec3 cell,float amt,float px,out vec3 id){
+ float k=px/cell.x,near=1.-smoothstep(.08,.3,k);id=vec3(.5);
+ if(near<=0.)return wn;
+ vec3 q=wp/cell;q+=trcWarp(q*.45+3.1)*.9;
+ vec3 i=floor(q),f=fract(q);float d1=8.;vec3 best=i;
+ for(int z=-1;z<=1;z++)for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++){
+  vec3 g=vec3(float(x),float(y),float(z)),r=g+trcHash3(i+g)*.8+.1-f;float d=dot(r,r);
+  if(d<d1){d1=d;best=i+g;}
+ }
+ id=trcHash3(best*1.37+11.);
+ vec3 t=id-.5;t.y*=.6;t-=wn*dot(t,wn);
+ return normalize(wn+t*amt*near*1.5);
+}
+// 야숨 바위 칠(카툰 2차 재판정, 참고 04_19·04_20·04_09): 회색 바탕에 크고 작은 어두운 녹회 얼룩(빗물 자국처럼 세로로 조금 길다),
+// 얼룩 사이 밝은 회백 결, 위를 향한 면과 얼룩 속 이끼. 선(갈라짐·띠)은 긋지 않는다. 얼룩이 픽셀보다 잘아지면 접는다.
+// mossAmt: 이끼 양(0 = 윗면 일부, 높을수록 넓게). moss: 이끼 덮임(0~1, 그늘 면 계산에서 뺀다).
+float trcFadeAt(float px,float size){return 1.-smoothstep(.2,.7,px/size);}
+vec3 trcPaint(vec3 wp,vec3 wn,vec3 base,vec3 dark,vec3 mossC,vec3 mossD,float px,float mossAmt,out float moss){
+ vec3 q=wp*vec3(1.,.5,1.);
+ float fm=trcFadeAt(px,1.),ff=trcFadeAt(px,.38);
+ float big=trcWarp(q*.28+1.3).x+trcWarp(q*.66+6.7).y*.5,mid=trcWarp(q*1.1+4.1).y,fine=trcWarp(q*2.6+8.2).z;
+ float n=big*.5+mid*.38*fm+fine*.2*ff;
+ // 얼룩 가장자리는 짧은 붓 끝처럼 또렷하게(흐린 연기처럼 번지지 않게), 안쪽은 두 단(짙은 얼룩·중간 얼룩).
+ float blot=smoothstep(.0,.03,n),deep=smoothstep(.16,.2,n+fine*.25*ff);
+ vec3 col=mix(base*1.06,mix(base,dark,.62),blot);col=mix(col,dark*.92,deep*.5);
+ col*=1.+smoothstep(-.1,-.16,n)*.08+(fine*.3+mid*.12)*ff;
+ // 이끼: 위를 향한 면은 넓게, 급한 면도 얼룩 따라 군데군데(참고 04_09·04_19 벽면의 녹색 이끼).
+ float mn=trcWarp(wp*.37+12.).x+trcWarp(wp*1.25+3.).y*.45;
+ // 위를 향한 면도 전부 덮지 않고 얼룩진다(평평한 암반 바닥이 통째로 초록이 되지 않게). mossAmt 0이면 윗면 약 45%, 옆면 약 15%.
+ moss=smoothstep(.0,.05,mn*.9+wn.y*.25-.3+mossAmt+blot*.12+fine*.15*ff);
+ // 옆면 이끼는 짙은 이끼색 쪽(밝은 연두 물감이 벽에 튄 것처럼 보이지 않게).
+ col=mix(col,mix(mossD,mossC,smoothstep(-.25,.3,mn+fine*.6*ff)*smoothstep(.2,.8,wn.y)),moss);
+ return col;
 }`;
 // 굴곡 법선을 넣기 전의 시점 공간 법선(덩어리가 해에서 얼마나 돌아섰는지 비교용).
 export const ROCK_BASE_DECL='vec3 trcBaseN=vec3(0.,0.,1.);';

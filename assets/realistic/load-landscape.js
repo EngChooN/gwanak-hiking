@@ -459,9 +459,12 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
         // 교량 측판·교각과 밤 거리 불빛(산풍경 city-water.js). 불빛은 도시 격자가 시각·화질에 맞춰 켜고 끈다.
         const bridges=new THREE.Mesh(seoulBridgeStructure(surface.roads,(x,z)=>gridHeight(grid,x,z)),roadMesh.material);bridges.name='서울 교량 측판·교각';holder.add(bridges);
         if(toon){toon.toonify(roadMesh,{kind:'prop'});toon.toonify(bridges,{kind:'prop'});}
-        const lamps=seoulRoadLights(surface.roads,(x,z)=>gridHeight(grid,x,z));cityStyle?.styleNightLight(lamps);holder.add(lamps);city.addNightLights(lamps);status.seoulLamps=lamps.userData.lampCount;status.seoulRoads=surface.roads.length;status.seoulBridges=surface.roads.filter(r=>r.bridge).length;
+        const lamps=seoulRoadLights(surface.roads,(x,z)=>gridHeight(grid,x,z));cityStyle?.styleNightLight(lamps);holder.add(lamps);
+        // 카툰: 간선도로 차량 불빛 줄기(src/toon/city.js). 실사는 cityStyle이 없다.
+        cityStyle?.styleRoads?.(surface.roads,(x,z)=>gridHeight(grid,x,z),holder);city.addNightLights(lamps);status.seoulLamps=lamps.userData.lampCount;status.seoulRoads=surface.roads.length;status.seoulBridges=surface.roads.filter(r=>r.bridge).length;
       }
-      for(const p of manifest.landmarks)holder.add(toon?toon.toonify(createSeoulLandmark(p,manifest.atmosphere),{kind:'prop'}):createSeoulLandmark(p,manifest.atmosphere));
+      // 카툰: 랜드마크도 도심과 같은 재질(창 격자·밤 불빛)로. 도심 스타일이 없을 때만 일반 툰 재질.
+      for(const p of manifest.landmarks)holder.add(toon?(cityStyle?.applyLandmark?cityStyle.applyLandmark(createSeoulLandmark(p,manifest.atmosphere)):toon.toonify(createSeoulLandmark(p,manifest.atmosphere),{kind:'prop'})):createSeoulLandmark(p,manifest.atmosphere));
       if(toon)toon.toonify(mesh,{kind:'prop'});
       if(disposed){disposeGeometry(holder);throw new Error('해제한 자산');}
       farGroup=holder;group.add(holder);freezeStatic(holder);return holder;
@@ -506,7 +509,7 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
     // DSM의 교량·둑·보간값이 수면을 덮지 않도록 실제 물 윤곽 안의 원경 바닥만 낮춘다.
     const ground=farGroup.children.find(o=>o.isMesh)?.geometry;
     if(ground){const pos=ground.attributes.position,p=new THREE.Vector2();for(let i=0;i<pos.count;i++){p.set(pos.getX(i),-pos.getZ(i));if(waterMasks.some(m=>m.box.containsPoint(p)&&insideRing(p,m.points)&&!m.holes.some(h=>insideRing(p,h))))pos.setY(i,Math.min(pos.getY(i),4));}pos.needsUpdate=true;ground.computeVertexNormals();}
-    if(waterGeometries.length){const merged=mergeGeometries(waterGeometries,false);waterGeometries.forEach(g=>g.dispose());/* 한강 물빛: 물결·하늘 반사·노을·밤 불빛 일렁임(산풍경 city-water.js) */holder.add(new THREE.Mesh(merged,toonMode?materialFactory.water():applyAtmosphere(seoulWaterMaterial(),manifest.atmosphere)));}
+    if(waterGeometries.length){const merged=mergeGeometries(waterGeometries,false);waterGeometries.forEach(g=>g.dispose());/* 한강 물빛: 물결·하늘 반사·노을·밤 불빛 일렁임(산풍경 city-water.js) */holder.add(new THREE.Mesh(merged,toonMode?(cityStyle?.riverMaterial?.()??materialFactory.water()):applyAtmosphere(seoulWaterMaterial(),manifest.atmosphere)));}
     if(disposed){disposeGeometry(holder);throw new Error('해제한 자산');}if(waterGroup){waterGroup.traverse(o=>{if(o.material&&!o.material.userData.shared)o.material.dispose();});disposeGeometry(waterGroup);}waterGroup=holder;group.add(holder);freezeStatic(holder);return holder;
   }
   function applyEnvironment(scene,renderer){

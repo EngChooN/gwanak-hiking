@@ -17,7 +17,7 @@ const COLORS=[0xd9534f,0x3b82c4,0x4caf6a,0xe0a030,0x9b59b6,0x16a5a5,0xd2691e,0x7
 const hash=s=>{let h=2166136261;for(const c of String(s)){h^=c.charCodeAt(0);h=Math.imul(h,16777619);}return h>>>0;};
 const el=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e;};
 
-export async function mountMultiplayer({scene,camera,hikerUrl,night,groundHeight,local,search=location.search,command,onSelfieShot}){
+export async function mountMultiplayer({scene,camera,hikerUrl,prepareGltf=null,night,groundHeight,local,search=location.search,command,onSelfieShot}){
  const q=new URLSearchParams(search),room=q.get('multi')||'gwanak-room-1',simN=Number(q.get('sim'))||0;
  const myId=Math.random().toString(36).slice(2,10),myName=sanitizeName(q.get('name'),anonymousName(myId));
  const fullCap=Number(q.get('fullcap'))||TIERS.fullCap,tiers={...TIERS,fullCap};
@@ -33,12 +33,15 @@ export async function mountMultiplayer({scene,camera,hikerUrl,night,groundHeight
  const social=createSocial({id:myId,send,position:peerPos,mine:()=>local.position(),blocked:id=>moderation.isBlocked(id)});
 
  // ── 모델 풀: GLB는 한 번만 읽고 SkeletonUtils로 복제한다. 가까운 fullCap명까지만 모델을 쓰고 나머지는 캡슐(night.setOthers)이다.
- const gltf=await new GLTFLoader().loadAsync(hikerUrl);
+ // 카툰 모드는 같은 GLB 뼈대·동작으로 카툰 캐릭터 몸을 만든다(prepareGltf).
+ const raw=await new GLTFLoader().loadAsync(hikerUrl),gltf=prepareGltf?prepareGltf(raw):raw;
+ // 이름표 높이: 머리 위 25cm(실사 1.7m → 1.95m, 카툰 동동이 1.0m → 1.25m)
+ const tagHeight=(gltf.scene.userData?.hikerProfile?.height??1.7)+.25;
  const pool=[];
  function makeAvatar(){
   const sc=cloneSkinned(gltf.scene),h=createRealisticHiker({scene:sc,animations:gltf.animations});
   sc.traverse(o=>{if(o.isMesh)o.castShadow=false;});
-  let outfits=null;try{outfits=createOutfitSystem(h.scene);}catch{}
+  let outfits=null;if(h.profile?.dressable!==false)try{outfits=createOutfitSystem(h.scene);}catch{}
   const entry={hiker:h,bones:boneSet(h.model),outfits,assigned:null,walkPhase:0,prevY:null,slope:0,heading:null};
   h.scene.visible=false;scene.add(h.scene);pool.push(entry);return entry;
  }
@@ -118,7 +121,7 @@ export async function mountMultiplayer({scene,camera,hikerUrl,night,groundHeight
  const tagEls=new Map(),v3=new THREE.Vector3();
  function placeTag(r,d,kind,y){
   let t=tagEls.get(r.id);if(!t){t={root:el('div','multi-tag'),label:el('span','multi-tag-name')};t.root.append(t.label);tagLayer.append(t.root);tagEls.set(r.id,t);}
-  v3.set(r.sample.x,y+1.95,r.sample.z).project(camera);
+  v3.set(r.sample.x,y+tagHeight,r.sample.z).project(camera);
   const on=tagsOn&&!local.selfie?.()&&v3.z>-1&&v3.z<1&&Math.abs(v3.x)<1.1&&Math.abs(v3.y)<1.1;
   t.root.style.display=on?'block':'none';if(!on)return t.seen=true;
   t.root.style.transform=`translate(${(v3.x*.5+.5)*innerWidth}px,${(-v3.y*.5+.5)*innerHeight}px) translate(-50%,-100%)`;

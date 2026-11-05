@@ -37,7 +37,10 @@ export const TOON={
   // 은하수: 북서 지평선(방위 300°, 5°)에서 북동 하늘(30°, 55°)로 오르는 띠(09_01·09_06 느낌). 폭은 라디안.
   milky:{from:[300,5],to:[30,55],width:.11,color:'#5d6d94',dust:'#141c2c',strength:.5},
   // 도심 빛무리 방향(정상에서 서울 도심 쪽 방위)과 세기. input: 화면에서 night.city가 나오도록 넣는 값(색보정 보상). 더 밝히면 블룸 문턱을 넘어 지평선에 빛 덩어리가 생긴다.
-  cityGlow:{bearing:345,strength:1,height:.16,input:'#cdc2c2'},
+  cityGlow:{bearing:345,strength:1,height:.16,input:'#cdc2c2',
+   // 쌍안경 밤(배율 2배 이상): 확대하면 지평선 빛·빛무리가 능선 위를 넓고 하얗게 채워 잔광처럼 보인다(14_15·14_16은 건물 뒤 좁은 분홍·자주, 도심보다 어둡다).
+   //  color: 빛무리 색(분홍 자주), height: 띠 높이(확대 뒤 시선 y), horizonDim: 지평선 빛을 덜어 내는 비율.
+   bino:{color:'#5a3f63',height:.05,horizonDim:.45}},
   // 노을·밤 구름 덮임(낮은 날씨 cloud를 따른다). 밤은 별·은하수가 보이도록 성기게.
   cover:{sunset:.72,night:.3},
  },
@@ -47,14 +50,9 @@ export const TOON={
  nightExposure:.42,nightLight:.5,sunsetLight:.3,
  // 노을 원경 안개(§1-2 #65545e 보라 회색): 먼 산이 초록으로 남지 않게 노을 가중치만큼 연무색을 바꾸고 짙게.
  sunsetHaze:{color:'#65545e',density:3e-4},
- // 도심(밤): 참고 사진(09_03·10_04·10_06)대로 크림 흰색(#ede7c9) 위주, 화면 실측 주황 약 35%. 창·불빛 점·도로 가로등 모두 creamShare만큼 크림, 나머지만 주황(window·dot[0]).
- //  주황은 크림보다 어둡게 보여 비율이 적게 잡히므로 creamShare를 .48로 두고 orangeGain으로 밝힌다.
- //  creamInput: 밤 색보정(남색 틴트)에 푸르게 눌리는 만큼 노랗게 넣은 크림. 화면에서 cream(#ede7c9) 근처가 나온다. dotGain을 1 근처로 둬 블룸에 흰색으로 날아가지 않게.
- // 건물 벽 #3d444c(§1-3). 점은 dotDensity(벽 m²당)·건물당 dotMax·전체 dotTotal 상한, 크기 dotPx(px).
- // 낮: 정상 원경의 도심은 원경 안개(§1-1 #7291aa)에 묻힌다. dayHaze 쪽으로 dayHazeAmount만큼 누르고(먼 쪽은 더), 건물마다 명도 차는 dayVar만 남긴다.
- city:{pastel:['#c9c3d6','#e6d8c8'],night:'#3d444c',window:'#ffa64d',cream:'#ede7c9',creamInput:'#f0e5bc',creamShare:.48,windowIntensity:.9,litMin:.35,litMax:.6,fogScale:7000,floor:3.2,column:3.6,
-  dot:['#ff9a3c'],dotGain:1.12,orangeGain:1.16,dotPx:2.2,dotDensity:.0025,dotMax:4000,dotTotal:200000,lampGain:1.2,roadLightGain:.45,
-  dayHaze:'#88a7bf',dayHazeAmount:.9,dayVar:.03},
+ // 도심: 모양·색 값은 src/toon/city.js CITY_LOOK(「너의 이름은」 도심 기준, 카툰 2차)에 있다. 여기에는 공용 값만 남긴다.
+ //  litMin~litMax: 건물마다 켜진 창 비율(windowLitShare). lampGain·roadLightGain: 가로등·거리 불빛 점 밝기.
+ city:{litMin:.35,litMax:.6,lampGain:1.2,roadLightGain:.45},
  // 공원 가로등 기둥(night-lighting.js, 실사 #1c1e21 금속). 카툰에서는 검은 막대로 뜨지 않게 숲 그늘 톤의 짙은 청록 회색.
  lampPole:'#8d9a93',
  // grass/needle은 원래 색 명도를 버리고 물결색(연두↔청록)을 그대로 칠한다(길가 풀·솔잎이 짙은 갈색으로 뜨던 문제).
@@ -62,17 +60,21 @@ export const TOON={
  // 바위: rockSlope(1-법선y, 약 44°)를 넘거나 rockHeight 위 암반 얼룩이면 회색 화강암. summitHeight 위는 거의 전부 암반.
  // 산 표면(3단계): 완만한 사면은 풀밭(가까이 #97c36a → 멀리 밝고 푸른 #a1c58f)과 숲 덩어리, 급한 사면은 회백색 암벽(가로 층),
  // 먼 산은 원경 안개색으로 녹인다(haze, 낮만). 숲·암반 경계는 값 잡음 덩어리(사인 띠 무늬를 쓰지 않는다).
- terrain:{meadow:'#a3d27a',meadowFar:'#a6c993',forest:'#4f8434',highForest:'#6a9a4a',rock:'#a5afae',rockDark:'#56685f',soil:'#b08a5e',ridgeHeight:520,forestHeight:430,rockSlope:.28,rockHeight:[500,600],summitHeight:[600,625],
-  forestScale:70,rockScale:45,haze:'#8eaec4',hazeDensity:2.2e-4},
+ terrain:{meadow:'#a3d27a',meadowFar:'#a6c993',forest:'#4f8434',highForest:'#6a9a4a',rock:'#8c9391',rockDark:'#4b5853',soil:'#b08a5e',ridgeHeight:520,forestHeight:430,rockSlope:.28,rockHeight:[500,600],summitHeight:[600,625],
+  forestScale:70,rockScale:45,haze:'#8eaec4',hazeDensity:2.2e-4,
+  // 붓질(카툰 2차, 야숨 기준): 풀밭 붓 자국 폭(가까이·중간, m)·세기, 수십 m 칠 얼룩 세기, 암벽 붓 자국 폭·세기.
+  brushNear:1.1,brushMid:4.5,brushAmount:.1,washAmount:.07,rockBrush:1.1,rockBrushAmount:.22},
  // 카툰 전용 자연물 재질색(src/toon/nature.js). 화면 결과가 기준값 §1-1(잎 #61973b·그늘 #3f7124·줄기 #6c7738·침엽수 #526554·풀 #97c36a·바위 #a9a892/#54665e)에 맞도록 고른 값.
- nature:{leaf:'#6fae44',leafShade:'#4f8a30',trunk:'#626d36',pine:'#5c7a62',pineShade:'#4a6455',pineTrunk:'#8a5b42',sapling:'#668760',saplingShade:'#4c6a52',
-  bush:'#76ab4e',bushShade:'#4c7c36',grassBase:'#6a9e58',grassTip:'#86bc68',grassBand:'#aed690',flowerA:'#f7e45c',flowerB:'#e6e2d2',flowerShare:.12,clumpDark:.68,bandAmount:.5,rim:.3,
-  rock:'#a0aaab',rockDark:'#56685f',rockBlot:.8,moss:'#93b85c',mossDark:'#5f8b3e',mossLevel:.9,rockShadeTint:[.8,1.0,1.02],rockShadeDirect:.22},
+ nature:{leaf:'#7cba48',leafShade:'#467f2c',trunk:'#8a8068',pine:'#4f7a58',pineShade:'#36584a',pineTrunk:'#5f4a3a',sapling:'#668760',saplingShade:'#4c6a52',
+  bush:'#76ab4e',bushShade:'#4c7c36',grassBase:'#5f9550',grassTip:'#a2cf6c',grassBand:'#aed690',flowerA:'#f7e45c',flowerB:'#e6e2d2',flowerShare:.12,clumpDark:.68,bandAmount:.5,rim:.3,
+  rock:'#8c9391',rockDark:'#4b5853',rockBlot:.84,moss:'#8fb25a',mossDark:'#5c853d',mossLevel:.84,rockShadeTint:[.8,1.0,1.02],rockShadeDirect:.22,
+  // 카툰 2차(야숨 기준): 잎 무늬 뭉치 크기(m)·밝은 잎 세기·잎 틈 세기, 바위 붓 자국 폭(m)·세기.
+  leafCell:.5,leafLight:.16,leafGap:.24,rockBrush:.45,rockBrushAmount:.26},
  // 바위 GLB(rock_*, boulder_*, mountainside): 갈색 단색 대신 화강암 회색. 원래 명도 차이는 ±15%까지만 남긴다.
  rock:{granite:'#a0a4a6',spread:.15},
  // 텍스처를 쓰던 바닥(광장 블록·아스팔트): 텍스처 평균색(틴트는 warmth만큼, 명도 gain배·min~max) + 3단으로 끊은 약한 무늬(가까이만).
  pattern:{amount:.85,dark:.8,light:1.15,darkTone:.8,lightTone:1.12,fadeNear:12,fadeFar:50,warmth:.35,gain:2.2,minLuma:.12,maxLuma:.36},
- trail:{soil:'#a48c70',rock:'#9c958a',paved:'#bdb6aa',stairs:'#a39a8c',deck_stairs:'#a0764a',ridge:'#a9aeab'},
+ trail:{soil:'#a48c70',rock:'#8c9391',paved:'#bdb6aa',stairs:'#a39a8c',deck_stairs:'#a0764a',ridge:'#a9aeab'},
  water:'#3e8878',                              // 한강 등 먼 물(MeshToon, 조명을 받는다). 기준값 §1-1 물
  // 계곡·연못 물(src/toon/water.js, 조명 없는 재질이라 시간대 색을 직접 쓴다). 기준값 §1-1~1-3 물 행.
  //  낮: 짙은 청록 #3e8878·얕은 물 #8bc6af(04_14). 노을: 하늘을 비추는 분홍 은빛 #dcc8c4(08_02). 밤: #394746(09_13).
@@ -80,7 +82,7 @@ export const TOON={
   day:{deep:'#3e8878',shallow:'#8bc6af',foam:'#e6f3ee',streak:'#6fae9e',sparkle:1},
   sunset:{deep:'#a4889c',shallow:'#dcc8c4',foam:'#fff0ea',streak:'#f3dcd6',sparkle:.8},
   night:{deep:'#26393a',shallow:'#394746',foam:'#7f9399',streak:'#4b5f62',sparkle:.15},
-  opacity:.9,bed:'#9fa08f',
+  opacity:.9,bed:'#8c9391',
  },
  // 숲 빛줄기(light-fx.js, 실사와 공용) 세기 배수. 단색 수관 위에서는 실사 세기가 반투명 띠로 두드러져 낮춘다.
  lightShafts:.4,

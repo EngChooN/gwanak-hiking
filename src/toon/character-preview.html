@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>카툰 캐릭터 미리보기 — 관악산</title>
+<style>html,body{margin:0;height:100%;overflow:hidden;background:#cfe3f0}canvas{display:block}
+#panel{position:fixed;left:12px;top:12px;padding:8px 10px;border-radius:10px;background:rgba(20,26,48,.7);color:#f4efe6;font:13px system-ui,'Apple SD Gothic Neo',sans-serif}
+#panel button{margin:2px;border:0;border-radius:6px;padding:4px 8px;background:#f4efe6;color:#1d2a44;cursor:pointer}</style>
+</head>
+<body>
+<div id="panel">
+ <div><button data-view="front">정면</button><button data-view="side">측면</button><button data-view="back">후면</button><button data-view="three">3/4</button><button data-view="threeL">3/4(왼)</button></div>
+ <div><button data-clip="Idle">서기</button><button data-clip="Walk">걷기</button><button data-clip="Run">뛰기</button><button data-pose="sit">앉기</button><button data-gadget="binoculars">쌍안경</button><button data-gadget="phone">휴대폰</button><button data-gadget="phone" data-selfie="1">셀카</button></div>
+</div>
+<script type="module" src="./character-preview.js"></script>
+</body>
+</html>

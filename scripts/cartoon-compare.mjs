@@ -9,6 +9,7 @@
 //   node scripts/cartoon-compare.mjs rock --image shot.png    # 이미 찍은 화면으로 비교 이미지만 만든다
 // 옵션: --base URL(기본 http://127.0.0.1:5310) --style toon|realistic(기본 toon) --tag 접미사(기본 날짜 없이 'now')
 //       --start demo|summit|plaza --s --lateral --yaw --pitch --bearing --time HH:MM --weather clear --third(3인칭) --refs a,b,c
+//       --bino 배율(쌍안경, 예 8) --out 하위폴더(예 city → artifacts/cartoon-compare/city/)
 // 결과: artifacts/cartoon-compare/<이름>-<tag>.png(비교), shots/<이름>-<style>-<tag>.png(우리 화면 원본), results.json(오류·위치)
 import {chromium} from '@playwright/test';
 import {readFileSync,writeFileSync,mkdirSync,existsSync} from 'node:fs';
@@ -20,11 +21,11 @@ for(let i=0;i<argv.length;i++){const a=argv[i];if(a.startsWith('--')){const k=a.
 const presets=JSON.parse(readFileSync('scripts/cartoon-compare-presets.json','utf8'));
 const palette=existsSync('docs/카툰-팔레트.json')?JSON.parse(readFileSync('docs/카툰-팔레트.json','utf8')):{};
 const num=k=>opt[k]===undefined?undefined:Number(opt[k]);
-const custom=Object.fromEntries(Object.entries({start:opt.start,s:num('s'),lateral:num('lateral'),yaw:num('yaw'),pitch:num('pitch'),bearing:num('bearing'),time:opt.time,weather:opt.weather,third:opt.third,refs:opt.refs?.split(','),label:opt.label}).filter(([,v])=>v!==undefined));
+const custom=Object.fromEntries(Object.entries({start:opt.start,s:num('s'),lateral:num('lateral'),yaw:num('yaw'),pitch:num('pitch'),bearing:num('bearing'),time:opt.time,weather:opt.weather,third:opt.third,bino:num('bino'),refs:opt.refs?.split(','),label:opt.label}).filter(([,v])=>v!==undefined));
 let jobs=names.flatMap(n=>n==='final'?Object.keys(presets).filter(k=>presets[k].final):[n]).map(n=>{if(!presets[n])throw new Error(`프리셋 없음: ${n} (있는 것: ${Object.keys(presets).filter(k=>!k.startsWith('_')).join(', ')})`);return {name:n,...presets[n],...custom};});
 if(!jobs.length){if(!opt.name)throw new Error('프리셋 이름이나 --name을 주세요');jobs=[{name:opt.name,label:opt.name,time:'11:00',...custom}];}
 const base=opt.base??'http://127.0.0.1:5310',style=opt.style??'toon',tag=opt.tag??'now';
-const outDir='artifacts/cartoon-compare';mkdirSync(`${outDir}/shots`,{recursive:true});
+const outDir=`artifacts/cartoon-compare${opt.out?`/${opt.out}`:''}`;mkdirSync(`${outDir}/shots`,{recursive:true});
 const viewport={width:1440,height:810};
 const resultsPath=`${outDir}/results.json`,results=existsSync(resultsPath)?JSON.parse(readFileSync(resultsPath,'utf8')):{};
 
@@ -50,6 +51,9 @@ async function capture(browser,job){
  const yaw=job.bearing!==undefined?0:(job.yaw??0),pitch=job.pitch??0,cx=viewport.width/2,cy=viewport.height/2;
  if(yaw||pitch)await page.evaluate(([cx,cy,dx,dy])=>{Element.prototype.setPointerCapture=()=>{};const el=document.getElementById('world'),ev=(type,x,y)=>el.dispatchEvent(new PointerEvent(type,{pointerId:7,pointerType:'mouse',clientX:x,clientY:y,button:0,buttons:1,bubbles:true}));
   ev('pointerdown',cx,cy);for(let i=1;i<=20;i++)ev('pointermove',cx+dx*i/20,cy+dy*i/20);},[cx,cy,-yaw*Math.PI/180/.004,(-.04-pitch*Math.PI/180)/.003]);
+ // 쌍안경: 켠 뒤 배율을 맞춘다(기본 8배). 확대는 zoom-in/out 한 단계씩.
+ if(job.bino){await page.evaluate(()=>window.dispatchEvent(new CustomEvent('hiking:command',{detail:{id:'binoculars'}})));await page.waitForTimeout(300);
+  for(let i=0;i<20;i++){const z=await page.evaluate(()=>window.hiking.gadgetView().binoculars.zoom);if(Math.abs(z-job.bino)<.5)break;await page.evaluate(id=>window.dispatchEvent(new CustomEvent('hiking:command',{detail:{id}})),z<job.bino?'zoom-in':'zoom-out');}}
  await page.evaluate(()=>window.dispatchEvent(new CustomEvent('hiking:hud-toggle')));
  await page.addStyleTag({content:'#section-jump{display:none!important}'});
  await page.waitForTimeout(5000);await closeDialogs();

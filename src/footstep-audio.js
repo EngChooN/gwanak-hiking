@@ -8,6 +8,14 @@ export const SOUND_BANKS={
 export const SOUND_SAVE_KEY='gwanak-hiking:sound:v1';
 export const FOOTSTEP_PEAK_DB={soil:-17,deck:-17,rock:-14,stairs:-8,deck_stairs:-8,ridge:-8};
 export const footstepMaterial=material=>material==='paved'?'rock':material;
+// 카툰 동동이: 다리가 짧아 걸음이 초당 6~8번이라 모두 내면 시끄럽다. 앞 소리에서 minGap초가 안 지난 걸음은 건너뛰고(걷기·뛰기 모두 두 걸음에 한 번,
+// 초당 3~4번. 계단은 한 칸 한 걸음이라 걸음마다 난다), 남은 소리는 rate배 높고 gainDb만큼 작고 maxDuration초로 짧게 끊어 가벼운 '톡톡'으로 낸다.
+export const TOON_FOOTSTEP=Object.freeze({minGap:.24,rate:1.35,gainDb:-6,maxDuration:.13});
+export function toonStepGate({minGap=TOON_FOOTSTEP.minGap}={}){
+  let last=-Infinity,count=0;
+  return detail=>{const t=Number.isFinite(detail?.elapsed)?detail.elapsed:null;if(t!==null&&t<last)last=-Infinity; // 이어하기·되돌리기로 시간이 줄면 다시 센다
+    if(t!==null&&t-last<minGap-1e-6)return null;last=t??last;return {pan:count++%2?-.08:.08};};
+}
 export class FootstepSelector{
   constructor(random=Math.random){this.random=random;this.bags=new Map();this.recent=[];}
   next(material,step){
@@ -26,9 +34,9 @@ export class FootstepSelector{
 }
 
 export class FootstepAudio{
-  constructor({base,enabled=true,onChange=()=>{},random=Math.random,contextFactory=()=>new (globalThis.AudioContext||globalThis.webkitAudioContext)()}={}){
+  constructor({base,enabled=true,onChange=()=>{},random=Math.random,style='realistic',contextFactory=()=>new (globalThis.AudioContext||globalThis.webkitAudioContext)()}={}){
     this.base=base;this.enabled=enabled;this.onChange=onChange;this.contextFactory=contextFactory;this.selector=new FootstepSelector(random);
-    this.context=null;this.volume=.7;this.peaks=new Map();this.buffers=new Map();this.active=new Set();this.logs=[];this.errors=[];this.received=0;this.dropped={muted:0,locked:0,loading:0,paused:0};
+    this.context=null;this.volume=.7;this.peaks=new Map();this.buffers=new Map();this.active=new Set();this.logs=[];this.errors=[];this.received=0;this.dropped={muted:0,locked:0,loading:0,paused:0,thinned:0};this.style=style;this.gate=style==='toon'?toonStepGate():null;
     // 바이트만 미리 받는다. AudioContext 생성·디코딩·재생은 사용자 입력 이후다.
     this.encoded=new Map(Object.values(SOUND_BANKS).flat().map(file=>[file,fetch(base+file).then(r=>{if(!r.ok)throw new Error(`${file}: HTTP ${r.status}`);return r.arrayBuffer();}).then(bytes=>({bytes}),error=>({error:error.message}))]));
   }
@@ -53,17 +61,19 @@ export class FootstepAudio{
   play(detail,{view='first',paused=false}={}){
     detail={...detail,material:footstepMaterial(detail.material)};
     this.received++;
+    const toon=this.gate?this.gate(detail):null;if(this.gate&&!toon){this.dropped.thinned++;return;}
     if(!this.enabled){this.dropped.muted++;return;}
     if(paused||globalThis.document?.hidden){this.dropped.paused++;return;}
     if(!this.context||this.context.state!=='running'){this.dropped.locked++;return;}
     const bank=SOUND_BANKS[detail.material];if(!bank){this.errors.push('알 수 없는 재질: '+detail.material);return;}
     if(!bank.every(file=>this.buffers.has(file))){this.dropped.loading++;return;}
     const variant=this.selector.next(detail.material,detail.step),c=this.context,source=c.createBufferSource(),gain=c.createGain(),pan=c.createStereoPanner(),low=c.createBiquadFilter();
+    if(toon){variant.rate*=TOON_FOOTSTEP.rate;variant.pan=toon.pan;}
     source.buffer=this.buffers.get(variant.file);source.playbackRate.value=variant.rate;pan.pan.value=variant.pan;
-    const steep=detail.slope>=.1,normalizedPeakDb=FOOTSTEP_PEAK_DB[detail.material]+variant.variationDb+(steep?1:0)+(view==='third'?-3:0),db=normalizedPeakDb-(this.peaks.get(variant.file)??0);
+    const steep=detail.slope>=.1,normalizedPeakDb=FOOTSTEP_PEAK_DB[detail.material]+variant.variationDb+(steep?1:0)+(view==='third'?-3:0)+(toon?TOON_FOOTSTEP.gainDb:0),db=normalizedPeakDb-(this.peaks.get(variant.file)??0);
     gain.gain.value=10**(db/20);low.type='lowshelf';low.frequency.value=220;low.gain.value=steep?1.5:0;
     const limit=detail.material==='ridge'?.5:detail.material==='soil'||detail.material==='deck'?.4:detail.material==='rock'?.35:.3;
-    const duration=Math.min(source.buffer.duration/variant.rate,limit),at=c.currentTime;
+    const duration=Math.min(source.buffer.duration/variant.rate,toon?Math.min(limit,TOON_FOOTSTEP.maxDuration):limit),at=c.currentTime;
     gain.gain.setValueAtTime(10**(db/20),at);gain.gain.setValueAtTime(10**(db/20),at+Math.max(0,duration-.025));gain.gain.linearRampToValueAtTime(0,at+duration);
     source.connect(low).connect(gain).connect(pan).connect(this.footstepAnalyser);
     const voice={source,gain};this.active.add(voice);source.onended=()=>{this.active.delete(voice);source.disconnect();low.disconnect();gain.disconnect();pan.disconnect();};

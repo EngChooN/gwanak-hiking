@@ -51,13 +51,13 @@ test('카툰 바위: 원래 범위 안의 둥근 암괴 덩어리(삼각형 적�
  assert.equal(rockGeometry('nope'),null);
 });
 
-test('카툰 재질 셰이더: 바람 흔들림·꽃·이끼·층리, 템플릿 잔여 없음', ()=>{
+test('카툰 재질 셰이더: 바람 흔들림·꽃·이끼, 템플릿 잔여 없음', ()=>{
  const n=nature();
  const f=compile(n.materials.foliage);assert.match(f.vertexShader,/toonSway/);assert.match(f.vertexShader,/gust/);assert.ok(f.uniforms.foliageTime&&f.uniforms.toonWindDir);
  const gr=compile(n.materials.grass);assert.match(gr.vertexShader,/toonFlower/);assert.match(gr.fragmentShader,/normal=normalize\(vNormal\)/,'양면 풀잎 뒷면도 위 법선');
  const field=compile(n.materials.grassField);assert.match(field.vertexShader,/tgFieldRadius/);assert.doesNotMatch(gr.vertexShader,/tgFieldRadius\*\.6/);
  const rock=compile(n.materials.rock),cliff=compile(n.materials.cliff);
- assert.match(rock.fragmentShader,/moss/);assert.doesNotMatch(rock.fragmentShader,/layer=fract/);assert.match(cliff.fragmentShader,/layer=fract/);
+ assert.match(rock.fragmentShader,/moss/);assert.match(cliff.fragmentShader,/moss/);assert.doesNotMatch(cliff.fragmentShader,/layer=fract/,'절벽 가로 층 띠 없음(재판정: 큰 평면 띠로 읽혔다)');
  for(const s of [f,gr,field,rock,cliff])for(const src of [s.vertexShader,s.fragmentShader])assert.doesNotMatch(src,/\$\{/);
  assert.notEqual(n.materials.grass.customProgramCacheKey(),n.materials.grassField.customProgramCacheKey());
 });

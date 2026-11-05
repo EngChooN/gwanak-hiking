@@ -6,8 +6,8 @@ import './section-jump.css';
 import {mountRestUI} from './rest-ui.js';
 import {installHudToggle} from './hud-toggle.js';
 import {installGadgetUI} from './gadget-ui.js';
-import {route,sample,MATERIALS,checkpoints,DEMO_START,durationBetween,geographicToLocal,floorHeight as routeFloorHeight} from './route.js';
-import {initialState,restore,SAVE_KEY,advance,setPose,positionAt,isOffTrail,playerPosition,setPlayerPosition,courseDistance,COURSE_LENGTH,strideAt,lateralLimit} from './movement.js';
+import {route,sample,MATERIALS,isStairs,checkpoints,DEMO_START,durationBetween,geographicToLocal,floorHeight as routeFloorHeight} from './route.js';
+import {initialState,restore,SAVE_KEY,advance,setPose,positionAt,isOffTrail,playerPosition,setPlayerPosition,courseDistance,COURSE_LENGTH,strideAt,strideScaleFor,onStairs,lateralLimit} from './movement.js';
 import {summitWalkMap,ROUTE_END,projectToRoute,SUMMIT_CENTER} from './summit.js';
 import {sectionJumpEnabled,jumpTargets,summitSpot,mountSectionJump} from './section-jump.js';
 import {createLoadingTracker,createStabilityCounter,LOADING_EVENT,START_EVENT} from './loading.js';
@@ -43,6 +43,8 @@ const loading=createLoadingTracker({emit:detail=>window.dispatchEvent(new Custom
 let resolveReady,rejectReady,started=false,startRequested=false,beginHike=()=>{};const readyPromise=new Promise((resolve,reject)=>{resolveReady=resolve;rejectReady=reject;});readyPromise.catch(()=>{});
 // 복장 선택 화면이 뜨면 카드를 고르는 순간이 '시작'이다. ?outfit=1~4나 자동화 브라우저는 건너뛴다.
 const outfitPlan=pickerPlan({search:location.search,webdriver:navigator.webdriver===true,saved:(()=>{try{return loadOutfit(localStorage);}catch{return null;}})()});
+// 카툰 모드는 전용 캐릭터(src/toon/link-hiker.js) 한 벌이라 복장 고르기 화면을 띄우지 않는다.
+if(document.documentElement.dataset.style==='toon')outfitPlan.show=false;
 const manualStart=outfitPlan.show||document.documentElement.dataset.startMode==='manual'||new URLSearchParams(location.search).get('startMode')==='manual';
 const failLoading=e=>{if(started)return;const detail=loading.fail(e);rejectReady(Object.assign(new Error(detail?.error??String(e)),{detail}));};
 window.addEventListener('error',e=>{if(!started&&loading.phase==='loading')failLoading(e.error??e.message);});
@@ -62,7 +64,7 @@ storageOK=true;}catch{storageOK=false;$('resume-note').textContent='저장 공�
 let soundEnabled=true;try{soundEnabled=localStorage.getItem(SOUND_SAVE_KEY)!=='false';}catch{}
 const audioDebug=new URLSearchParams(location.search).has('audioDebug');
 function updateAudioUI(){const a=audio.snapshot();$('sound-toggle').setAttribute('aria-pressed',String(a.enabled));$('sound-toggle').querySelector('span').textContent=a.enabled?'소리 켜짐':'소리 꺼짐';$('sound-toggle').title=a.errors.length?'일부 소리 재생 오류 · 조작 안내의 소리 출처 참고':a.context==='입력 대기'?'클릭하거나 키를 누르면 소리를 시작합니다':a.decoded<a.total?'발소리 준비 중':'발소리 켜기/끄기';if(audioDebug){$('sound-debug').hidden=false;$('sound-debug').textContent='발소리 확인 · '+a.context+' · '+a.decoded+'/'+a.total+'개\n'+a.logs.slice(-8).map(r=>`${r.step}걸음 ${r.material} #${String(r.variant).padStart(2,'0')} ${r.pan<0?'왼':'오른'}\n  ${r.eventElapsed.toFixed(3)}s · ${r.rate.toFixed(3)}배 · ${r.variationDb.toFixed(2)}dB`).join('\n');}}
-const audio=new FootstepAudio({base:`${import.meta.env.BASE_URL}sounds/`,enabled:soundEnabled,onChange:updateAudioUI});
+const audio=new FootstepAudio({base:`${import.meta.env.BASE_URL}sounds/`,enabled:soundEnabled,onChange:updateAudioUI,style}); // 카툰은 가벼운 '톡톡' 소리를 두 걸음에 한 번
 let userVolume=.7;try{const stored=localStorage.getItem(VOLUME_SAVE_KEY);if(stored!==null&&Number.isFinite(Number(stored)))userVolume=Math.max(0,Math.min(1,Number(stored)));}catch{}
 audio.setVolume(userVolume);
 const ambient=new AmbientAudio({base:`${import.meta.env.BASE_URL}sounds/ambient/`,enabled:soundEnabled,volume:userVolume});
@@ -103,9 +105,9 @@ const natureBase=`${import.meta.env.BASE_URL}assets/${style==='toon'?'toon/natur
 const initialNatureReady=loadOptionalModels(landscape,natureBase,f=>loading.set('nature',.95*f),{position:startingPosition,impostors:style!=='toon'}).then(r=>{toonifyLandscape();return r;}).catch(e=>landscape.status.errors.push(e.message));
 // 날씨·시각 환경은 지형과 함께 시작하고 여기서 완료를 기다린다.
 const environmentReady=guard(Promise.resolve(lighting.environmentReady)).then(()=>loading.set('environment',.3));
-let firstHeading=true;const hikerUrl=`${import.meta.env.BASE_URL}assets/${style==='toon'?'toon/models/hiker/Hiker.glb':'realistic/models/hiker/Hiker.glb'}`;const hiker=await guard(loadRealisticHiker(hikerUrl));loading.done('hikers');const avatar=hiker.scene;scene.add(avatar);
+let firstHeading=true;const hikerUrl=`${import.meta.env.BASE_URL}assets/${style==='toon'?'toon/models/hiker/Hiker.glb':'realistic/models/hiker/Hiker.glb'}`;const hiker=await guard(toon?import('./toon/link-hiker.js').then(m=>m.loadToonHiker(hikerUrl)):loadRealisticHiker(hikerUrl));loading.done('hikers');const avatar=hiker.scene;scene.add(avatar);
 let outfits=null;const setOutfit=id=>{if(!outfits)return null;const applied=outfits.apply(id);try{saveOutfit(localStorage,applied);}catch{}return applied;};
-try{outfits=createOutfitSystem(avatar);outfits.apply(outfitPlan.outfit);}catch(e){landscape.status.errors.push(`복장: ${e.message}`);}if(toon)toon.toonify(avatar,{kind:'character'});avatar.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
+if(hiker.profile?.dressable!==false)try{outfits=createOutfitSystem(avatar);outfits.apply(outfitPlan.outfit);}catch(e){landscape.status.errors.push(`복장: ${e.message}`);}if(toon)toon.toonify(avatar,{kind:'character'});avatar.traverse(o=>{if(o.isMesh){o.castShadow=!o.userData.outline;o.receiveShadow=!o.userData.noReceiveShadow;}});
 const look=createLook();let moving=false,speed=0,last=performance.now(),saveAt=last,uiAt=0,frameSum=0,frames=0,quality=qualityMode==='auto'?(mobile?1:2):Number(qualityMode),qualityWindow=performance.now(),goodWindows=0;const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;const touchQuery=matchMedia('(pointer: coarse)');const updateDevice=()=>document.body.classList.toggle('touch',touchQuery.matches||navigator.maxTouchPoints>0);touchQuery.addEventListener('change',updateDevice);updateDevice();
 const adaptiveQuality=new AdaptiveQuality(quality);
 // 비용 분리 검수에서만 같은 DPR·그림자 조건을 고정한다. 일반 실행에는 적용하지 않는다.
@@ -167,7 +169,7 @@ const inspectionBearing=new URLSearchParams(location.search).get('bearing');
 const entrancePhoto=new URLSearchParams(location.search).has('entrancePhoto'),entrancePhotoDistance=Number(new URLSearchParams(location.search).get('entrancePhoto'))||8.8;
 const forward=new THREE.Vector3(),shadowAhead=new THREE.Vector3();
 // 카메라 높이 추종(계단 들썩임 제거)과 뒷걸음 때 거꾸로 도는 보행 위상.
-const cameraHeight=createHeightFollow();let walkPhase=null,lastTravelled=null;
+const cameraHeight=createHeightFollow();let walkPhase=null,lastTravelled=null,stairLandings=0;
 const stability=createStabilityCounter({count:12,limitMs:100});let stabilizingSince=null;
 const wrapAngle=a=>Math.atan2(Math.sin(a),Math.cos(a));
 function frame(now){
@@ -182,7 +184,7 @@ function frame(now){
  // 광장에서 직접 걸으면 시선 방향을 이동 기준으로 삼는다(드래그한 쪽으로 걷기). 코스·광장 전환 때는 카메라 방향을 보존한다.
  if(freeZone()&&(cmd.forward||cmd.side)&&!look.reset){const free=state.zone==='plaza'?state.plaza:state.summit;free.heading=wrapAngle(free.heading+look.yaw);look.yaw=0;}
  const zoneBefore=state.zone,cameraHeadingBefore=baseHeading()+look.yaw;
- speed=started?frameMetrics.stage('movement',()=>advance(state,{...cmd,yaw:look.yaw},dt,detail=>window.dispatchEvent(new CustomEvent('hiking:step',{detail})),walkingGround)):0;moving=speed>0;
+ speed=started?frameMetrics.stage('movement',()=>advance(state,{...cmd,yaw:look.yaw,strideScale:hiker.strideScale,runMultiplier:hiker.profile?.runSpeed},dt,detail=>{if(!(hiker.profile?.stairHop&&isStairs(detail.material)))window.dispatchEvent(new CustomEvent('hiking:step',{detail}));},walkingGround)):0;moving=speed>0;
  if(state.zone!==zoneBefore){look.yaw=wrapAngle(cameraHeadingBefore-baseHeading());look.reset=null;}
  const p=sample(state.s),[x,y,z]=worldPosition(),heading=baseHeading()+look.yaw;
  const routeT=(state.s-p.start)/p.length,referenceMetres=state.zone==='plaza'?0:p.a.referenceMetres+(p.b.referenceMetres-p.a.referenceMetres)*routeT;
@@ -199,15 +201,19 @@ function frame(now){
  const travelSlope=horizontal>1e-7?((offTrailNow()||freeZone()?y:p.y)-beforeY)/horizontal:0;
  const offGround=offTrailNow()||freeZone(),surfaceHeight=(x,z)=>walkingGround.height(x,z,offTrailNow());
  avatar.visible=state.view==='third'||selfieActive(state);const stepCycle=(state.steps+state.stepPhase)*Math.PI;
- frameMetrics.stage('hiker',()=>hiker.update({clip:!moving?'Idle':travelSlope>.15?'Climb':'Walk',distance:walkPhase,stride:1,stepLength:strideAt({plaza:state.zone==='plaza',seg:p,off:offTrailNow(),backward}),idleSeconds:inspectionMode?0:now/1000,slope:travelSlope,pose:state.pose,teaProgress:state.pose==='tea'?1-state.teaRemaining/3:0,running:state.running,speed,dt,surfaceHeight,gadget:state.gadget??'none',selfie:!!state.phone?.selfie,lookYaw:wrapAngle(heading-avatar.rotation.y),lookPitch:look.pitch}));
+ const stepWhere={plaza:state.zone==='plaza',seg:p,off:offTrailNow(),backward};
+ frameMetrics.stage('hiker',()=>hiker.update({clip:!moving?'Idle':travelSlope>.15?'Climb':'Walk',distance:walkPhase,stride:1,stepLength:strideAt(stepWhere)*strideScaleFor(hiker.strideScale,state.running,onStairs(stepWhere)),stairs:onStairs(stepWhere),idleSeconds:inspectionMode?0:now/1000,slope:travelSlope,pose:state.pose,teaProgress:state.pose==='tea'?1-state.teaRemaining/3:0,running:state.running,speed,dt,surfaceHeight,gadget:state.gadget??'none',selfie:!!state.phone?.selfie,lookYaw:wrapAngle(heading-avatar.rotation.y),lookPitch:look.pitch}));
  const footContact=frameMetrics.stage('contact',()=>hiker.ground({s:state.s,lateral:state.lateral,moving,phase:walkPhase,floorHeight,sample,surfaceHeight,pose:state.pose}));
+ // 카툰 동동이는 계단에서 디딤판에 맞춰 한 칸에 한 발씩 통통 뛰므로, 계단 발소리는 이동 걸음 수 대신 실제로 발이 디딘 순간에 낸다.
+ if(hiker.profile?.stairHop&&moving&&onStairs(stepWhere))for(const c of footContact??[])if(c.landed){stairLandings++;window.dispatchEvent(new CustomEvent('hiking:step',{detail:{step:state.steps+stairLandings,material:p.material,slope:p.slope,s:state.s,zone:state.zone,position:[c.foot[0],c.bottom,c.foot[1]],distance:state.distance,elapsed:state.elapsed,landing:true}}));}
  multi?.afterLocalGround(hiker,null,performance.now()/1000);
  frameMetrics.stage('camera',()=>{
   const smoothY=followHeight(cameraHeight,y,cameraReady?dt:0),eye=smoothY+hiker.eyeHeight-(interaction?.drop??0)+(moving&&!reduced?Math.sin(stepCycle*2)*.025:0);
   const cameraHeading=inspectionBearing!==null?-Number(inspectionBearing)*Math.PI/180:heading;
   forward.set(-Math.sin(cameraHeading),0,-Math.cos(cameraHeading));
   if(state.view==='first'){camGoal.set(x,eye,z);lookGoal.copy(camGoal).addScaledVector(forward,10);lookGoal.y+=Math.tan(THREE.MathUtils.clamp(look.pitch+(hiker.viewPitch??0)+(interaction?.pitch??0),-1.3,1.3))*10;}
-  else{lookGoal.set(x,smoothY+(1.15-(1.6-hiker.eyeHeight)*2/3),z);camGoal.copy(lookGoal).addScaledVector(forward,-look.orbit*Math.cos(look.pitch));camGoal.y+=1-look.orbit*Math.sin(look.pitch);camGoal.copy(retractCamera(lookGoal,camGoal,landscape.cameraCollisionObjects(lookGoal,camGoal),camera));}
+  else{const cs=hiker.profile?.cameraScale??1; // 3인칭 카메라 거리·높이 배율(카툰 동동이는 키 1.0m라 가까이·낮게)
+   lookGoal.set(x,smoothY+(1.15-(1.6-hiker.eyeHeight)*2/3),z);camGoal.copy(lookGoal).addScaledVector(forward,-look.orbit*cs*Math.cos(look.pitch));camGoal.y+=cs*(1-look.orbit*Math.sin(look.pitch));camGoal.copy(retractCamera(lookGoal,camGoal,landscape.cameraCollisionObjects(lookGoal,camGoal),camera));}
   if(state.view==='third')camera.position.copy(camGoal);else camera.position.lerp(camGoal,cameraReady?1-Math.exp(-dt*10):1);
   // 휴대폰 셀카(1인칭): 머리 앞 팔 길이에서 얼굴을 본다. 드래그하면 몸과 카메라가 같이 돈다.
   if(selfieActive(state)){const lens=hiker.phoneCamera?.(true);if(lens?.visible){camera.position.copy(lens.position);lookGoal.copy(lens.position).add(lens.direction);}else{camera.position.fromArray(selfiePosition([x,eye,z],cameraHeading,look.pitch));lookGoal.set(x,eye-.04,z);}} // 셀카 카메라는 손에 든 휴대폰 전면 렌즈(산풍경 phoneCamera). 휴대폰을 꺼내는 중에는 기존 위치
@@ -269,7 +275,7 @@ if(toon)toon.styleNightLighting(night.root);
 let multi=null;
 // 함께 걷기 시제품(?multi). 켜지 않으면 코드를 불러오지도 않는다. 실제 서버 없이 이 컴퓨터의 창끼리만 연결한다.
 if(multiMode){const {mountMultiplayer}=await import('./multi-client.js');
- multi=await mountMultiplayer({scene,camera,night,hikerUrl,groundHeight:(x,z)=>walkingGround.height(x,z,false),command,
+ multi=await mountMultiplayer({scene,camera,night,hikerUrl,prepareGltf:toon?(await import('./toon/link-hiker.js')).prepareToonHikerGltf:null,groundHeight:(x,z)=>walkingGround.height(x,z,false),command,
   local:{position:()=>playerPosition(state,walkingGround),setPosition:pos=>{state.auto=false;state.running=false;if(pos.zone==='route'){const r=projectToRoute(pos.x,pos.z);return setPlayerPosition(state,{zone:'route',s:r.s,lateral:r.lateral},walkingGround);}return setPlayerPosition(state,pos,walkingGround);},speed:()=>speed,sit:()=>state.pose!=='stand',run:()=>!!state.running,gadget:()=>state.gadget??'none',selfie:()=>selfieActive(state),place:(s,l)=>positionAt(s,l,walkingGround)}});
  window.hiking.multi=()=>multi.info();window.hiking.multiApi=multi;}
 // 상호작용(안내판·스탬프·산길 행동·쌍안경 이름표). 소품 자리는 풍경이 정한 landscape.interactionProps.sites를 그대로 쓴다.
