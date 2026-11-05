@@ -1,4 +1,5 @@
 // 쌍안경·휴대폰 자세 캡처(3인칭 앞·옆). 개발 서버(기본 5175)에서 artifacts/gadget-pose-2026-11-04/view.html을 연다.
+import {waitChunks} from './lib/chunk-wait.mjs';
 import {chromium} from '@playwright/test';
 import {writeFileSync,mkdirSync} from 'node:fs';
 const port=process.env.PORT??5175,out='artifacts/gadget-pose-2026-11-04';
@@ -21,6 +22,6 @@ mkdirSync(out,{recursive:true});
 const b=await chromium.launch({channel:'chrome',headless:true,args:['--enable-webgl','--ignore-gpu-blocklist']});const rows=[];
 try{const p=await b.newPage({viewport:{width:900,height:900}});p.on('pageerror',e=>console.log('오류',e.message));
  await p.goto(`http://127.0.0.1:${port}/${out}/view.html`);await p.waitForFunction(()=>window.ready,null,{timeout:120000});
- for(const s of shots){const r=await p.evaluate(s=>{setView(s.view);label(s.label);pose({gadget:'none',frames:40});return pose(s.state);},s);await p.screenshot({path:`${out}/${s.id}.png`});rows.push({...s,...r});console.log(s.id,JSON.stringify(r));}
+ for(const s of shots){const r=await p.evaluate(s=>{setView(s.view);label(s.label);pose({gadget:'none',frames:40});return pose(s.state);},s);await (await waitChunks(p)).screenshot({path:`${out}/${s.id}.png`});rows.push({...s,...r});console.log(s.id,JSON.stringify(r));}
  writeFileSync(`${out}/shots.json`,JSON.stringify(rows,null,2));
 }finally{await b.close();}

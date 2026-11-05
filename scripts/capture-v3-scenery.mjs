@@ -1,6 +1,7 @@
 // 3차 풍경 개선 전후 캡처(headless Chrome, 맑음). 계곡 물 위 풀, 정상 쌍안경 밤 시야(북북동·롯데), 쌍안경 별 모양.
 // 사용: BASE_URL=http://127.0.0.1:5221 TAG=before node scripts/capture-v3-scenery.mjs  (ONLY=valley-1096,stars-bino8 처럼 일부만)
 // 결과: artifacts/v3/scenery/{tag}-{id}.png, artifacts/v3/scenery/results-{tag}.json(오류·셰이더 오류·fps·시선)
+import {waitChunks} from './lib/chunk-wait.mjs';
 import {chromium} from '@playwright/test';
 import {mkdirSync,writeFileSync} from 'node:fs';
 const dir='artifacts/v3/scenery';mkdirSync(dir,{recursive:true});
@@ -54,7 +55,7 @@ try{
     ev('pointerdown',cx);for(let i=1;i<=20;i++)ev('pointermove',cx+dx*i/20,cy+dy*i/20);},[cx,cy,-yaw*Math.PI/180/.004,(-.04-pitch*Math.PI/180)/.003]);
    await page.waitForTimeout(5000);
    const performance=await measure(page);
-   await page.screenshot({path:`${dir}/${tag}-${id}.png`});
+   await (await waitChunks(page)).screenshot({path:`${dir}/${tag}-${id}.png`});
    const info=await page.evaluate(()=>({position:hiking.position(),shaderErrors:hiking.rendering().shaderErrors}));
    save(id,{id,errors,performance,...info});await context.close();
   }
@@ -74,7 +75,7 @@ try{
   if(zoom&&await page.evaluate(()=>hiking.interaction?.().tagsOn)){await page.keyboard.press('n');await page.waitForTimeout(300);}
   await page.waitForTimeout(5000);await page.evaluate(()=>document.querySelectorAll('dialog[open]').forEach(d=>d.close()));
   const performance=await measure(page);
-  await page.screenshot({path:`${dir}/${tag}-${id}.png`});
+  await (await waitChunks(page)).screenshot({path:`${dir}/${tag}-${id}.png`});
   const info=await page.evaluate(()=>({bearing:((-hiking.orientation().cameraHeading*180/Math.PI)%360+360)%360,pitch:hiking.orientation().pitch*180/Math.PI,zoom:hiking.gadgetView().cameraZoom,camera:hiking.gadgetView().camera,night:hiking.rendering().environment?.night,stars:hiking.rendering().environment?.stars,shaderErrors:hiking.rendering().shaderErrors}));
   save(id,{id,clock,viewport,errors,performance,...info});await context.close();
  }

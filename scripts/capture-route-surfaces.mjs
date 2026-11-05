@@ -1,3 +1,4 @@
+import {waitChunks} from './lib/chunk-wait.mjs';
 import {chromium} from '@playwright/test';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {route,isStairs,durationBetween,SPEED_CALIBRATION,STAIR_SECONDS,NONSTAIR_BASE_SECONDS,speedFor} from '../src/route.js';
@@ -30,9 +31,9 @@ try{
   if(rocks.missing||rocks.max>.05)result.errors.push(`${view}: 바위 바닥과 렌더 지형 높이 차이 5cm 초과 또는 측정 누락`);
   const allStairs=contact.rockGrounding.allStairSections;
   if(!allStairs.count||allStairs.missing||allStairs.max>.05)result.errors.push(`${view}: 전체 계단 구간 바위 바닥의 최종 지형 높이 검증 미달`);
-  const path=`${folder}/${captureKey}.png`;const on=(await page.screenshot({path})).toString('base64');result.screens.push(path);
+  const path=`${folder}/${captureKey}.png`;const on=(await (await waitChunks(page)).screenshot({path})).toString('base64');result.screens.push(path);
   await page.evaluate(()=>hiking.contactOcclusion(false));await page.waitForTimeout(500);
-  const before=`${folder}/${captureKey}-contact-off.png`;const off=(await page.screenshot({path:before})).toString('base64');result.screens.push(before);
+  const before=`${folder}/${captureKey}-contact-off.png`;const off=(await (await waitChunks(page)).screenshot({path:before})).toString('base64');result.screens.push(before);
   contact.routeEdgeBand=await contactEdgeMetric(page,off,on);
   await context.close();
  }

@@ -1,3 +1,4 @@
+import {waitChunks} from './lib/chunk-wait.mjs';
 import {chromium} from '@playwright/test';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {initialState,SAVE_KEY} from '../src/movement.js';
@@ -93,7 +94,7 @@ try{
    const pass=framePass&&renderPass&&maxFramePass&&durationPass&&budgetPass&&cityPass&&aoPass&&compilePass&&!compileError&&shaderPass;
    results.runs.push({id,quality,cpu,view,action,before,...data,instrumentationSetupMs,instrumentationWarmupMs:1500,hot,pass,framePass,renderPass,maxFramePass,maxFrameBudgetMs,durationPass,budgetPass,cityPass,aoPass,compilePass,shaderPass,shaderErrors,cityTriangleBudget,compileError,triangleBudget,expectedFps:expected});
    await writeFile(`${folder}/${id}.trace.json`,trace);await writeFile(`${folder}/${id}.cpuprofile`,JSON.stringify(profile));
-   if(action==='w')await page.screenshot({path:`${folder}/${id}.png`});
+   if(action==='w')await (await waitChunks(page)).screenshot({path:`${folder}/${id}.png`});
    console.log(id,JSON.stringify({frame:data.frame,hot:hot.slice(0,8),pass}));
    await writeFile(`${folder}/results.json`,JSON.stringify(results,null,2));
   }

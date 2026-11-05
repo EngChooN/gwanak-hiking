@@ -1,3 +1,4 @@
+import {waitChunks} from './lib/chunk-wait.mjs';
 import {chromium} from '@playwright/test';
 import {mkdirSync,writeFileSync,readFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
@@ -37,7 +38,7 @@ try{
   await page.evaluate(()=>__hikingPerformance.reset());await page.waitForTimeout(5000);
   const metrics=await page.evaluate(()=>({performance:__hikingPerformance.report(),interaction:__hiker.interaction,eyeHeight:__hiker.eyeHeight,state:hiking.snapshot()}));
   await page.keyboard.up('w');await page.keyboard.up('Shift');
-  await page.screenshot({path:`${dir}/${spec.id}.png`});rows.push({...spec,...data,...metrics});console.log(spec.id,metrics.performance.fps,JSON.stringify(metrics.interaction));
+  await (await waitChunks(page)).screenshot({path:`${dir}/${spec.id}.png`});rows.push({...spec,...data,...metrics});console.log(spec.id,metrics.performance.fps,JSON.stringify(metrics.interaction));
  }
  writeFileSync(`${dir}/results.json`,JSON.stringify({rows,errors},null,2));
  for(const row of rows){assert.ok(Math.abs(row.state.s-row.s)<50,`${row.id}: 촬영 위치 불일치`);assert.ok(row.performance.fps>=40,`${row.id}: 40fps 미달`);for(const p of row.interaction.poles){assert.ok(p.error<.002,`${row.id}: 팁 지면 오차 ${p.error}`);assert.ok(p.gripError<.002);}if(row.pose!=='stand')assert.equal(row.eyeHeight,.85);}

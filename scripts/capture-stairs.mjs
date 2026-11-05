@@ -1,6 +1,7 @@
 // 계단 전후 캡처(headless Chrome 1440×900, 낮 11시 맑음, 화질 높음).
 // 사용: BASE_URL=http://127.0.0.1:5198 TAG=before node scripts/capture-stairs.mjs  (ONLY=summit,end-3271 로 일부만)
 // 자리마다 코스 위 s(경로 3D 거리)에서 시작해 3인칭으로 바꾸고, 진행 방향 기준 yaw(도)만큼 시점을 돌린다.
+import {waitChunks} from './lib/chunk-wait.mjs';
 import {chromium} from '@playwright/test';
 import {mkdirSync,writeFileSync} from 'node:fs';
 const dir='artifacts/v2/stairs';mkdirSync(dir,{recursive:true});
@@ -45,7 +46,7 @@ try{for(const [id,s,lateral,yaw,wheel] of specs){if(only&&!only.includes(id))con
  if(yaw){const h0=await heading();await dragBy(100);const k=wrap((await heading())-h0)/100;if(Math.abs(k)>1e-5)for(let i=0;i<2;i++)await dragBy(Math.max(-900,Math.min(900,wrap(want-(await heading()))/k)));}
  if(wheel)await page.mouse.wheel(0,wheel);
  await page.waitForTimeout(5000);await closeDialogs();await page.waitForTimeout(300);
- await page.screenshot({path:`${dir}/${tag}-${id}.png`});
+ await (await waitChunks(page)).screenshot({path:`${dir}/${tag}-${id}.png`});
  const row={id,s,errors,shaderErrors:await page.evaluate(()=>hiking.rendering().shaderErrors),position:await page.evaluate(()=>hiking.position()),loadedCheck:await page.evaluate(async()=>{const L=window.__landscape;if(!L.stairBaseCheck)return null;const {stairGapReport}=await import('/assets/realistic/stair-base.js');const W=window.__walkingGround,p=hiking.position();
   // 지금 올라온 2m 청크 안(카메라 60m 안)의 단만, 걷는 지형(walking-ground, 노면 밖) 높이로 잰다.
   const near=L.stairBaseLayout().map(b=>{const ids=b.steps.map((s,i)=>Math.hypot(s.a.x-p.x,s.a.z-p.z)<60?i:-1).filter(i=>i>=0);if(!ids.length)return null;const i0=ids[0],i1=ids.at(-1);

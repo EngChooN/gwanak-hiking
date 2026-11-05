@@ -1,5 +1,6 @@
 // 해질녘 색감 전후 캡처(headless Chrome 1440×900, 맑음, 화질 높음). 사용: BASE_URL=... TAG=before|after node scripts/capture-dusk-grade.mjs (ONLY=forest-dusk,... 일부만)
 // 숲은 코스 위 s=1300 지점, 정상은 start=summit. 쌍안경 도심은 63빌딩(방위 345.6°) 방향. 낮·밤은 변경 없음 확인용.
+import {waitChunks} from './lib/chunk-wait.mjs';
 import {chromium} from '@playwright/test';import {mkdirSync,writeFileSync} from 'node:fs';
 const dir='artifacts/v3';mkdirSync(dir,{recursive:true});
 const base=process.env.BASE_URL??'http://127.0.0.1:5195',tag=process.env.TAG??'after',only=process.env.ONLY?.split(',');
@@ -28,7 +29,7 @@ try{for(const [id,where,clock,bino] of specs){if(only&&!only.includes(id))contin
   if(await page.evaluate(()=>hiking.interaction?.().tagsOn)){await page.keyboard.press('n');await page.waitForTimeout(300);}
  }
  await page.waitForTimeout(6000);await closeDialogs();
- await page.screenshot({path:`${dir}/${tag}-${id}.png`});
+ await (await waitChunks(page)).screenshot({path:`${dir}/${tag}-${id}.png`});
  const info=await page.evaluate(()=>({shaderErrors:hiking.rendering().shaderErrors,elevation:hiking.rendering().environment?.light?.elevation,night:hiking.rendering().environment?.night}));
  rows.push({id,clock,errors,...info});console.log(id,JSON.stringify({errors:errors.length,shader:info.shaderErrors?.length,elev:info.elevation?.toFixed?.(1)}));
  writeFileSync(`${dir}/results-${tag}.json`,JSON.stringify(rows,null,2));await context.close();

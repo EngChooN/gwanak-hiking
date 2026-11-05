@@ -1,6 +1,7 @@
 // HUD 전 기능 노출·일시정지 제거·떠다니는 조이스틱 확인(실제 브라우저).
 // 사용: BASE_URL=http://127.0.0.1:5301 node scripts/test-hud.mjs   (ONLY=desktop,phone-portrait,phone-landscape)
 // 데스크톱 1440×900(마우스·키보드), 아이폰 13 세로·가로(터치 에뮬레이션, CDP 터치 이벤트로 조이스틱을 끌어 걷는다).
+import {waitChunks} from './lib/chunk-wait.mjs';
 import {chromium,devices} from '@playwright/test';
 import {mkdirSync,writeFileSync} from 'node:fs';
 const dir='artifacts/v2/hud';mkdirSync(dir,{recursive:true});
@@ -38,7 +39,7 @@ for(const [name,viewport,touch] of cases){
  check('안 보이는 버튼 0개',L.out.every(o=>!o.missing&&o.shown&&o.inside&&o.top),L.out.filter(o=>o.missing||!o.shown||!o.inside||!o.top));
  check('버튼끼리 겹침 0',L.overlaps.length===0,L.overlaps);
  check('버튼 크기 36px 이상',L.out.every(o=>o.w>=36&&o.h>=30),L.out.filter(o=>o.w<36||o.h<30).map(o=>[o.s,o.w,o.h]));
- await page.screenshot({path:`${dir}/after-${name}.png`});
+ await (await waitChunks(page)).screenshot({path:`${dir}/after-${name}.png`});
  // 3) 각 버튼 누르기
  let st;
  await tap('#auto');st=await snap();check('자동 걷기 켜짐',st.auto===true);await tap('#auto');st=await snap();check('자동 걷기 꺼짐',st.auto===false);
@@ -47,14 +48,14 @@ for(const [name,viewport,touch] of cases){
  check('앉으면 차 버튼이 보임',!tea.hidden&&tea.w>=36&&tea.x>=0&&tea.y>=0&&tea.x+tea.w<=viewport.width&&tea.y+tea.h<=viewport.height,tea);
  const teaOverlap=await page.evaluate(()=>{const t=document.getElementById('tea').getBoundingClientRect();return [...document.querySelectorAll('#app nav button,#section-jump .sj-toggle,header button')].filter(b=>b.id!=='tea'&&b.offsetParent!==null).filter(b=>{const c=b.getBoundingClientRect();return t.left<c.right-1&&t.right>c.left+1&&t.top<c.bottom-1&&t.bottom>c.top+1;}).map(b=>b.id||b.className);});
  check('차 버튼이 다른 버튼과 겹치지 않음',teaOverlap.length===0,teaOverlap);
- await page.screenshot({path:`${dir}/after-${name}-seated.png`});
+ await (await waitChunks(page)).screenshot({path:`${dir}/after-${name}-seated.png`});
  if(!tea.disabled){await tap('#tea');st=await snap();check('차 마시기',st.pose==='tea',st.pose);}
  await tap('#sit');st=await snap();check('일어나기',st.pose==='stand',st.pose);
  await page.waitForTimeout(600);
  // 쌍안경·휴대폰: 켜기 → 기구 화면의 닫기 → 꺼짐
  for(const g of ['binoculars','phone']){
   await tap('#'+g);st=await snap();check(`${g} 켜짐`,st.gadget===g,st.gadget);await page.waitForTimeout(500);
-  if(g==='phone')await page.screenshot({path:`${dir}/after-${name}-phone-gadget.png`});
+  if(g==='phone')await (await waitChunks(page)).screenshot({path:`${dir}/after-${name}-phone-gadget.png`});
   const railShown=await page.evaluate(g=>{const e=document.getElementById(g),b=e.getBoundingClientRect(),cs=getComputedStyle(e);return cs.visibility!=='hidden'&&b.width>0;},g);
   if(railShown){await tap('#'+g);}else{const closeBtn=await page.$('#gadget-ui [data-act=close]');if(closeBtn&&await closeBtn.isVisible()){const b=await closeBtn.boundingBox();if(touch)await page.touchscreen.tap(b.x+b.width/2,b.y+b.height/2);else await page.mouse.click(b.x+b.width/2,b.y+b.height/2);await page.waitForTimeout(350);}else await page.evaluate(()=>window.dispatchEvent(new CustomEvent('hiking:command',{detail:{id:'gadget-off'}})));r.checks.push({label:`${g}: HUD가 숨겨지는 화면에서 닫는 방법`,ok:true,detail:closeBtn?'기구 화면 닫기 버튼':'gadget-off 명령'});}
   st=await snap();check(`${g} 꺼짐`,st.gadget==='none'||!st.gadget,st.gadget);await page.waitForTimeout(300);
@@ -63,12 +64,12 @@ for(const [name,viewport,touch] of cases){
  await tap('#headlamp');const hl1=await page.evaluate(()=>document.getElementById('headlamp').getAttribute('aria-pressed'));await tap('#headlamp');const hl2=await page.evaluate(()=>document.getElementById('headlamp').getAttribute('aria-pressed'));check('헤드랜턴 켜고 끄기',hl1!==hl2,[hl1,hl2]);
  await tap('#face-forward');check('정면 보기 누름(오류 없음)',errors.length===0,errors);
  await tap('#stamps');const book1=await page.evaluate(()=>!document.querySelector('.ix-book').hidden);check('수첩 열림',book1);
- await page.screenshot({path:`${dir}/after-${name}-book.png`});
+ await (await waitChunks(page)).screenshot({path:`${dir}/after-${name}-book.png`});
  const closeBook=async()=>{if(await page.evaluate(()=>!document.querySelector('.ix-book').hidden)){await page.evaluate(()=>window.dispatchEvent(new CustomEvent('hiking:command',{detail:{id:'panel-close'}})));await page.waitForTimeout(300);}};
  if(touch){const cb=await page.$('.ix-book [data-a=close]');if(cb){const b=await cb.boundingBox();await page.touchscreen.tap(b.x+b.width/2,b.y+b.height/2);}}else await tap('#stamps');await page.waitForTimeout(300);let book2=await page.evaluate(()=>!document.querySelector('.ix-book').hidden);check('수첩 닫힘(데스크톱은 J 버튼, 터치는 수첩의 닫기 버튼)',!book2);await closeBook();
  await tap('#stretch');const stretch=await page.evaluate(()=>{const a=document.querySelector('.ix-action');return !!a&&!a.hidden;});check('스트레칭 시작',stretch);
  await page.waitForTimeout(300);
- await tap('#map-toggle');check('지도 열림',await page.evaluate(()=>document.getElementById('map').open));await page.screenshot({path:`${dir}/after-${name}-map.png`});
+ await tap('#map-toggle');check('지도 열림',await page.evaluate(()=>document.getElementById('map').open));await (await waitChunks(page)).screenshot({path:`${dir}/after-${name}-map.png`});
  if(touch){await page.touchscreen.tap(...await page.evaluate(()=>{const b=document.querySelector('#map [data-close]').getBoundingClientRect();return [b.x+b.width/2,b.y+b.height/2];}));}else await page.keyboard.press('Escape');
  await page.waitForTimeout(300);check('지도 닫힘',await page.evaluate(()=>!document.getElementById('map').open));
  await tap('#help-toggle');check('조작 안내 열림',await page.evaluate(()=>document.getElementById('help').open));
@@ -78,13 +79,13 @@ for(const [name,viewport,touch] of cases){
  const snd0=await page.evaluate(()=>document.getElementById('sound-toggle').getAttribute('aria-pressed'));await tap('#sound-toggle');const snd1=await page.evaluate(()=>document.getElementById('sound-toggle').getAttribute('aria-pressed'));check('소리 켜기/끄기',snd0!==snd1,[snd0,snd1]);
  const q0=await page.evaluate(()=>document.getElementById('quality').textContent);await tap('#quality');const q1=await page.evaluate(()=>document.getElementById('quality').textContent);check('화질 바꾸기',q0!==q1,[q0,q1]);
  await tap('#hud-hide');check('HUD 가려짐',await page.evaluate(()=>document.getElementById('app').classList.contains('hud-hidden')));
- await page.screenshot({path:`${dir}/after-${name}-hud-hidden.png`});
+ await (await waitChunks(page)).screenshot({path:`${dir}/after-${name}-hud-hidden.png`});
  if(touch){await tap('.hud-restore');}else await page.keyboard.press('h');
  await page.waitForTimeout(300);check('HUD 다시 보임',await page.evaluate(()=>!document.getElementById('app').classList.contains('hud-hidden')));
  // 구간 이동 목록: 열었을 때 다른 버튼과 겹치지 않음
  await tap('#section-jump .sj-toggle');
  const sj=await page.evaluate(()=>{const l=document.querySelector('#section-jump .sj-list').getBoundingClientRect();const hits=[...document.querySelectorAll('#app nav button,header button,#quality')].filter(b=>b.offsetParent!==null).filter(b=>{const c=b.getBoundingClientRect();return l.left<c.right&&l.right>c.left&&l.top<c.bottom&&l.bottom>c.top;}).map(b=>b.id);return {open:!document.querySelector('#section-jump .sj-list').hidden,hits,right:l.right,bottom:l.bottom};});
- check('구간 이동 목록 열림·다른 버튼과 안 겹침',sj.open&&sj.hits.length===0,sj);await page.screenshot({path:`${dir}/after-${name}-section-jump.png`});
+ check('구간 이동 목록 열림·다른 버튼과 안 겹침',sj.open&&sj.hits.length===0,sj);await (await waitChunks(page)).screenshot({path:`${dir}/after-${name}-section-jump.png`});
  await tap('#section-jump .sj-toggle');
  // 달리기(손가락)
  if(touch){await page.evaluate(()=>{window.__held=false;new MutationObserver(()=>{if(document.getElementById('run').classList.contains('held'))window.__held=true;}).observe(document.getElementById('run'),{attributes:true,attributeFilter:['class']});});await tap('#run');check('달리기 버튼이 눌림 반응',await page.evaluate(()=>window.__held));}
@@ -128,7 +129,7 @@ for(const [name,viewport,touch] of cases){
   // E. 기준점이 손가락을 따라옴(반지름 밖으로 끌어도)
   {const px=W*.2,py=H*.5;await tt('touchStart',px,py);await tt('touchMove',px+20,py-40);await tt('touchMove',px+40,py-220);await page.waitForTimeout(250);const j=await joy();const dist=Math.hypot(j.kx[0]-(px+40),j.kx[1]-(py-220));const base=Math.hypot(j.cx-(px+40),j.cy-(py-220));
    check('멀리 끌어도 조이스틱 기준점이 따라와 손가락이 고리 안에 있음',base<=58&&dist<=2,{base,knobToFinger:dist});
-   await page.screenshot({path:`${dir}/after-${name}-joystick.png`});await tt('touchEnd');await page.waitForTimeout(300);}
+   await (await waitChunks(page)).screenshot({path:`${dir}/after-${name}-joystick.png`});await tt('touchEnd');await page.waitForTimeout(300);}
   // F. 직진 걷기 30m
   {await page.evaluate(id=>hiking.jumpTo(id),target);await page.waitForTimeout(1200);await page.evaluate(()=>document.querySelectorAll('dialog[open]').forEach(d=>d.close()));
    const s0=await snap();const px=W*.2,py=H*.62;const t0=Date.now();await tt('touchStart',px,py);let k=0;const lat=[];let sN=s0,wob=[[16,-62],[-18,-60],[10,-64],[-12,-60]];

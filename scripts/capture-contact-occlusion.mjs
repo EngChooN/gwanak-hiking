@@ -1,3 +1,4 @@
+import {waitChunks} from './lib/chunk-wait.mjs';
 import {chromium} from '@playwright/test';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {route} from '../src/route.js';
@@ -24,7 +25,7 @@ try{
   const row={name,point,images:[],states:[]},buffers=[];
   for(const enabled of [false,true]){
    await page.evaluate(value=>hiking.contactOcclusion(value),enabled);await page.waitForTimeout(500);
-   const path=`${folder}/${name}-${enabled?'after':'before'}.png`;buffers.push((await page.screenshot({path})).toString('base64'));row.images.push(path);
+   const path=`${folder}/${name}-${enabled?'after':'before'}.png`;buffers.push((await (await waitChunks(page)).screenshot({path})).toString('base64'));row.images.push(path);
    const rendering=await page.evaluate(()=>hiking.rendering());row.states.push({enabled,rendering});
    if(rendering.shaderErrors.length)results.errors.push(`${name}/${enabled}: ${JSON.stringify(rendering.shaderErrors)}`);
   }

@@ -1,5 +1,6 @@
 // 상호작용 1차 화면 확인. 개발 서버 필요: PORT=5197 node scripts/verify-interaction.mjs  (PASS=desktop|mobile|multi 로 일부만)
 // 데스크톱은 키보드로, 아이폰 13 세로·가로는 터치(탭)로 각 상호작용을 실제로 누른다. 콘솔 오류가 하나라도 있으면 실패로 끝난다.
+import {waitChunks} from './lib/chunk-wait.mjs';
 import {chromium,devices} from '@playwright/test';import {mkdirSync,writeFileSync} from 'node:fs';
 const port=process.env.PORT??5197,dir='artifacts/interaction',pass=process.env.PASS??'desktop,mobile,multi';mkdirSync(dir,{recursive:true});
 const browser=await chromium.launch({channel:'chrome',headless:true,args:['--enable-webgl','--ignore-gpu-blocklist']});
@@ -107,11 +108,11 @@ if(pass.includes('multi')){
   await p.goto(`http://127.0.0.1:${port}/?multi=ix&name=${encodeURIComponent(name)}&start=entrance&time=13:00&weather=clear&quality=balanced&outfit=${name==='하늘'?2:4}`);await p.waitForFunction(()=>window.hiking?.started&&window.hiking?.multi,null,{timeout:180000});return p;};
  const A=await open2('하늘'),B=await open2('바다');await A.bringToFront();await A.waitForTimeout(1200);
  const pb=await B.evaluate(()=>hiking.position());await A.evaluate(({x,z,h})=>hiking.multiApi.teleport({zone:'plaza',x,z,heading:h}),{x:pb.x-Math.sin(pb.heading)*3,z:pb.z-Math.cos(pb.heading)*3,h:pb.heading+Math.PI});await A.waitForTimeout(2200);
- const v=await A.evaluate(()=>hiking.interaction().view);log('멀티 알약',{label:v?.rows?.[0]?.label});await A.screenshot({path:`${dir}/28-multi-greet-pill.jpg`,type:'jpeg',quality:80});
- await A.keyboard.down('x');await A.waitForTimeout(600);log('X 누르고 있기',{wheel:await A.locator('.ix-wheel').isVisible()});await A.screenshot({path:`${dir}/29-multi-emote-menu.jpg`,type:'jpeg',quality:80});
+ const v=await A.evaluate(()=>hiking.interaction().view);log('멀티 알약',{label:v?.rows?.[0]?.label});await (await waitChunks(A)).screenshot({path:`${dir}/28-multi-greet-pill.jpg`,type:'jpeg',quality:80});
+ await A.keyboard.down('x');await A.waitForTimeout(600);log('X 누르고 있기',{wheel:await A.locator('.ix-wheel').isVisible()});await (await waitChunks(A)).screenshot({path:`${dir}/29-multi-emote-menu.jpg`,type:'jpeg',quality:80});
  await A.keyboard.press('2');await A.keyboard.up('x');await B.waitForTimeout(900);log('메뉴에서 손 흔들기',{B가본:(await B.evaluate(()=>hiking.multi().roster[0])).gesture});
  await A.waitForTimeout(3300);await A.keyboard.press('x');await B.waitForTimeout(900);log('X 짧게=인사',{B가본:(await B.evaluate(()=>hiking.multi().roster[0])).gesture});
- await A.keyboard.press('n');await A.waitForTimeout(500);log('N 이름표 끄기',{tagsOn:await A.evaluate(()=>hiking.multiApi.tagsOn),interaction:await A.evaluate(()=>hiking.interaction().tagsOn)});await A.screenshot({path:`${dir}/30-multi-tags-off.jpg`,type:'jpeg',quality:80});await A.keyboard.press('n');
+ await A.keyboard.press('n');await A.waitForTimeout(500);log('N 이름표 끄기',{tagsOn:await A.evaluate(()=>hiking.multiApi.tagsOn),interaction:await A.evaluate(()=>hiking.interaction().tagsOn)});await (await waitChunks(A)).screenshot({path:`${dir}/30-multi-tags-off.jpg`,type:'jpeg',quality:80});await A.keyboard.press('n');
  await ctx.close();
 }
 await browser.close();

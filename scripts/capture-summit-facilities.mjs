@@ -1,4 +1,5 @@
 // 실행 허용 후: BASE_URL=http://127.0.0.1:5176 node scripts/capture-summit-facilities.mjs
+import {waitChunks} from './lib/chunk-wait.mjs';
 import {chromium} from '@playwright/test';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {route} from '../src/route.js';
@@ -21,7 +22,7 @@ try{
   await page.waitForTimeout(2000);
   results[name]=await page.evaluate(()=>({facilities:window.hiking.landscape().summitFacilities,forest:window.hiking.landscape().forestMix,camera:window.hiking.orientation(),coordinates:window.hiking.coordinates()}));
   results[name].bearing=bearing;results[name].s=s;
-  const path=`${folder}/${name}.png`;await page.screenshot({path});results.screens.push(path);await context.close();
+  const path=`${folder}/${name}.png`;await (await waitChunks(page)).screenshot({path});results.screens.push(path);await context.close();
  }
 }finally{await browser.close();await writeFile(`${folder}/results.json`,JSON.stringify(results,null,2));}
 if(results.errors.length)throw new Error(results.errors.join('\n'));

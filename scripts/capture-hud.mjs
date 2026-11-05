@@ -1,4 +1,5 @@
 // HUD 기준선·결과 캡처. 사용: BASE_URL=http://127.0.0.1:5301 TAG=before node scripts/capture-hud.mjs
+import {waitChunks} from './lib/chunk-wait.mjs';
 import {chromium} from '@playwright/test';
 import {mkdirSync} from 'node:fs';
 const dir='artifacts/v2/hud';mkdirSync(dir,{recursive:true});
@@ -12,6 +13,6 @@ for(const [name,viewport,touch] of cases){
  await page.goto(`${base}/?start=plaza&time=12:00&weather=clear&quality=low`);
  await page.waitForFunction(()=>window.hiking?.started,null,{timeout:300000});await page.waitForTimeout(2500);
  await page.evaluate(()=>document.querySelectorAll('dialog[open]').forEach(d=>d.close()));
- await page.screenshot({path:`${dir}/${tag}-${name}.png`});console.log(name,errors);await ctx.close();
+ await (await waitChunks(page)).screenshot({path:`${dir}/${tag}-${name}.png`});console.log(name,errors);await ctx.close();
 }
 await browser.close();

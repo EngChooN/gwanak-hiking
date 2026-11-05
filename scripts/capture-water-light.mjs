@@ -1,6 +1,7 @@
 // 계곡 물·빛 전후 캡처(headless Chrome 1440×900, 화질 높음). MOBILE=1 이면 아이폰 13 세로·화질 낮음.
 // 사용: BASE_URL=http://127.0.0.1:5195 TAG=before node scripts/capture-water-light.mjs  (ONLY=water-1096,light-day 로 일부만)
 // 자리마다 코스 위 s(경로 3D 거리)·옆 이동(lateral)·진행 방향 기준 yaw(도, +는 왼쪽)·시각·날씨를 정해 찍는다. 물은 water/, 빛은 light/ 에 저장한다.
+import {waitChunks} from './lib/chunk-wait.mjs';
 import {chromium} from '@playwright/test';
 import {mkdirSync,writeFileSync} from 'node:fs';
 const mobile=process.env.MOBILE==='1',viewport=mobile?{width:390,height:844}:{width:1440,height:900};
@@ -52,7 +53,7 @@ try{for(const [id,folder,s,lateral,yaw,clock,weather,wheel,pitch] of specs){if(o
  await page.waitForTimeout(5000);await closeDialogs();await page.waitForTimeout(300);
  let performance=null;
  if(process.env.NOPERF!=='1'){await page.evaluate(()=>window.__hikingPerformance?.reset());await page.waitForTimeout(6000);performance=await page.evaluate(()=>{const r=window.__hikingPerformance?.report();return r&&{fps:r.fps??r.averageFps,p95:r.frameMs?.p95??r.p95};});}
- await page.screenshot({path:`artifacts/v2/${folder}/${tag}-${mobile?'mobile-':''}${id}.png`});
+ await (await waitChunks(page)).screenshot({path:`artifacts/v2/${folder}/${tag}-${mobile?'mobile-':''}${id}.png`});
  const info=await page.evaluate(()=>{const m=hiking.metrics()??{};return {position:hiking.position(),shaderErrors:hiking.rendering().shaderErrors,triangles:m.triangles,drawCalls:m.drawCalls};});
  if(errors.length)console.log(errors.slice(0,3));const row={id,errors,performance,...info};rows.push(row);console.log(id,JSON.stringify({fps:performance?.fps,errors:errors.length,shader:info.shaderErrors?.length,tri:info.triangles,calls:info.drawCalls}));
  writeFileSync(`artifacts/v2/results-water-light-${tag}${mobile?'-mobile':''}.json`,JSON.stringify(rows,null,2));await context.close();

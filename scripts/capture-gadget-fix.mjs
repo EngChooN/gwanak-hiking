@@ -1,4 +1,5 @@
 // 쌍안경 윤곽·셀카 브이·3인칭 휴대폰 직후·셀카 광각 고정 전후 캡처. 사용: BASE_URL=... OUT=artifacts/gadget-fix/after node scripts/capture-gadget-fix.mjs
+import {waitChunks} from './lib/chunk-wait.mjs';
 import {chromium} from '@playwright/test';
 import {mkdirSync,writeFileSync} from 'node:fs';
 import {route} from '../src/route.js';
@@ -22,7 +23,7 @@ const run=async(name,view,outfit,cmds,wait,after)=>{
  if(only&&!only.includes(name.split('-')[0]))return;
  const {context,page,errors,cmd}=await open(view,outfit);
  for(const c of cmds)await cmd(...[].concat(c));
- await page.waitForTimeout(wait);await page.screenshot({path:`${out}/${name}.png`});
+ await page.waitForTimeout(wait);await (await waitChunks(page)).screenshot({path:`${out}/${name}.png`});
  const info=await page.evaluate(()=>({...hiking.gadgetView()}));rows.push({name,info,errors:[...errors]});console.log(name,info.view,info.gadget,info.phone?.zoom,errors.length);
  await context.close();
 };

@@ -1,5 +1,6 @@
 // 하위 경로 preview에서 휴대폰(세로·가로, 터치) 확인: 로딩, 조이스틱 걷기, 시점 돌리기, 구간 이동 전 지점, 콘솔 오류.
 // 사용: npm run preview:pages (다른 터미널) → BASE_URL=http://127.0.0.1:4173/gwanak-hiking/ node scripts/verify-mobile-pages.mjs
+import {waitChunks} from './lib/chunk-wait.mjs';
 import {chromium,devices} from '@playwright/test';
 import {mkdirSync,writeFileSync} from 'node:fs';
 const base=process.env.BASE_URL??'http://127.0.0.1:4173/gwanak-hiking/',out=process.env.OUT??'artifacts/mobile-pages';mkdirSync(out,{recursive:true});
@@ -13,7 +14,7 @@ for(const [name,viewport] of [['portrait',{width:390,height:844}],['landscape',{
  page.on('response',r=>{if(r.status()>=400)report.failed.push(`${name}: ${r.status()} ${r.url()}`);});
  await page.goto(base+'?quality=low&time=11:00&weather=clear');
  await page.waitForFunction(()=>window.hiking?.started||document.querySelector('#loading-screen .ls-action:not([hidden])'),null,{timeout:240000});
- if(!await page.evaluate(()=>window.hiking.started)){await page.screenshot({path:`${out}/${name}-loading-ready.png`});await page.tap('#loading-screen .ls-action');}
+ if(!await page.evaluate(()=>window.hiking.started)){await (await waitChunks(page)).screenshot({path:`${out}/${name}-loading-ready.png`});await page.tap('#loading-screen .ls-action');}
  await page.waitForFunction(()=>window.hiking?.started&&window.hiking?.landscape().ready&&!hiking.rendering().compiling,null,{timeout:240000});
  await page.addStyleTag({content:'#resume-note{display:none!important}'});await page.waitForTimeout(1000);
  const r={};const snap=()=>page.evaluate(()=>{const s=hiking.snapshot(),o=hiking.orientation();return {zone:s.zone,s:+s.s.toFixed(2),paused:s.paused,arrived:s.summitArrived,yaw:+o.cameraHeading.toFixed(3),pos:hiking.position()};});
@@ -39,7 +40,7 @@ for(const [name,viewport] of [['portrait',{width:390,height:844}],['landscape',{
   // 이동한 자리에서 걷기가 되는지(W 키 대신 터치 조이스틱)
   await touch('touchStart',cx,cy);await touch('touchMove',cx,cy-40);await page.waitForTimeout(900);await touch('touchEnd');const b2=await snap();
   r.jumps[id].walked=Math.hypot(b2.pos.x-a.pos.x,b2.pos.z-a.pos.z)>.2;r.jumps[id].zoneAfter=b2.zone;
-  if(id==='summit'||id==='yeonju-spring')await page.screenshot({path:`${out}/${name}-${id}.png`});
+  if(id==='summit'||id==='yeonju-spring')await (await waitChunks(page)).screenshot({path:`${out}/${name}-${id}.png`});
  }
  // 저장 상태: 정상 구역에서 새로고침 → 정상 구역 복원, 도착 화면 안 뜸
  await page.tap('#section-jump .sj-toggle');await page.tap('#section-jump [data-jump="summit"]');await page.waitForTimeout(1500);
@@ -47,9 +48,9 @@ for(const [name,viewport] of [['portrait',{width:390,height:844}],['landscape',{
  if(!await page.evaluate(()=>window.hiking.started))await page.tap('#loading-screen .ls-action');
  await page.waitForFunction(()=>window.hiking?.started,null,{timeout:240000});await page.waitForTimeout(1500);
  r.reload={...await snap(),dialog:await page.evaluate(()=>!!document.querySelector('dialog[open]'))};
- await page.screenshot({path:`${out}/${name}-after-reload.png`});
+ await (await waitChunks(page)).screenshot({path:`${out}/${name}-after-reload.png`});
  // 되돌려 광장
- await page.tap('#section-jump .sj-toggle');await page.screenshot({path:`${out}/${name}-menu.png`});
+ await page.tap('#section-jump .sj-toggle');await (await waitChunks(page)).screenshot({path:`${out}/${name}-menu.png`});
  report.views[name]=r;await context.close();
 }
 await browser.close();writeFileSync(`${out}/report.json`,JSON.stringify(report,null,1));

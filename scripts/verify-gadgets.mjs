@@ -1,4 +1,5 @@
 // 쌍안경·휴대폰 카메라 화면 확인(헤드리스 Chrome). 정상에서 북쪽(서울 도심)을 본다.
+import {waitChunks} from './lib/chunk-wait.mjs';
 import {chromium} from '@playwright/test';
 import {writeFileSync} from 'node:fs';
 import {route} from '../src/route.js';
@@ -13,7 +14,7 @@ await page.waitForFunction(()=>window.hiking?.started&&window.hiking?.landscape?
 await page.keyboard.press('Space');await page.waitForTimeout(6000);
 const gv=()=>page.evaluate(()=>window.hiking.gadgetView());
 const city=()=>page.evaluate(()=>{const c=window.hiking.landscape().cityGrid;return c&&{detailed:c.detailedCells,simple:c.simpleCells,proxy:c.proxyCells,silhouette:c.silhouetteCells,visible:c.visibleCells,tri:Math.round(c.baseTriangles),budget:c.baseTriangleBudget,zoom:c.zoom};});
-const shot=async name=>{await page.screenshot({path:`${out}/${name}.png`});};
+const shot=async name=>{await (await waitChunks(page)).screenshot({path:`${out}/${name}.png`});};
 const fps=async()=>{await page.evaluate(()=>window.__hikingPerformance.reset());await page.waitForTimeout(4000);const r=await page.evaluate(()=>window.__hikingPerformance.report());return r?.fps??r?.meanFps??r?.frameMs?.mean??r;};
 log.push(['맨눈 1배',await gv(),await city()]);await shot('1-summit-north-naked');
 await page.keyboard.press('b');await page.waitForTimeout(3500);log.push(['쌍안경 B',await gv(),await city()]);await shot('2-binoculars-8x-seoul');

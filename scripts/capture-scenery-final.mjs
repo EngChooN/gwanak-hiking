@@ -1,4 +1,5 @@
 // 경치 보강 최종 통합 7시점 캡처 + 시점별 fps. LABEL=after|sun-pm 등, ONLY=id, EXTRA=쿼리 추가
+import {waitChunks} from './lib/chunk-wait.mjs';
 import {chromium} from '@playwright/test';
 import {writeFileSync,readFileSync,existsSync} from 'node:fs';
 import {route} from '../src/route.js';
@@ -20,7 +21,7 @@ try{for(const [id,name,s,bearing,view] of views){
  if(view==='third'){await page.keyboard.press('Space');await page.keyboard.down('w');await page.waitForTimeout(2000);}
  await page.evaluate(()=>window.__hikingPerformance.reset());await page.waitForTimeout(10000);
  const m=await page.evaluate(()=>({performance:__hikingPerformance.report(),rendering:hiking.rendering()}));
- await page.screenshot({path:`artifacts/scenery-final-${label}-${id}.png`});
+ await (await waitChunks(page)).screenshot({path:`artifacts/scenery-final-${label}-${id}.png`});
  const row={id,name,s,bearing,view,errors,fps:m.performance.fps,performance:m.performance,rendering:m.rendering},at=rows.findIndex(x=>x.id===id);if(at>=0)rows[at]=row;else rows.push(row);
  console.log(label,id,m.performance.fps,errors,m.rendering.shaderErrors);writeFileSync(file,JSON.stringify(rows,null,2));await context.close();
 }}finally{await browser.close();}

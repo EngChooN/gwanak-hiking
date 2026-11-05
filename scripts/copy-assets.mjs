@@ -11,3 +11,4 @@ mkdirSync("dist/assets/realistic/generated",{recursive:true});
 cpSync("assets/realistic/generated","dist/assets/realistic/generated",{recursive:true});
 writeFileSync("dist/assets/realistic/generated/inventory.json",JSON.stringify(inventory()));
 if(existsSync("assets/realistic/models"))cpSync("assets/realistic/models","dist/assets/realistic/models",{recursive:true});
+for(const dir of ["assets/shared","assets/toon"])if(existsSync(dir))cpSync(dir,`dist/${dir}`,{recursive:true});

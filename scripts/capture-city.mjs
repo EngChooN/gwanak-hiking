@@ -1,6 +1,7 @@
 // 서울 도심 원경 쌍안경 전후 캡처(headless Chrome 1440×900, 맑음, 화질 높음, 정상 연주대).
 // 사용: BASE_URL=http://127.0.0.1:5201 TAG=before node scripts/capture-city.mjs  (ONLY=63-day,lotte-night 처럼 일부만, NOPERF=1 은 fps 측정 생략)
 // 자리마다 bearing(도)으로 시선 방위를 고정하고, 쌍안경 8배를 켠 뒤 세로 시선(pitch, 도)을 마우스로 맞춘다.
+import {waitChunks} from './lib/chunk-wait.mjs';
 import {chromium} from '@playwright/test';
 import {mkdirSync,writeFileSync} from 'node:fs';
 const dir='artifacts/v2/city';mkdirSync(dir,{recursive:true});
@@ -40,7 +41,7 @@ try{for(const [vid,bearing,pitch,bino] of views)for(const [tid,clock] of times){
  await page.waitForTimeout(6000);await closeDialogs();
  let performance=null;
  if(perf){await page.evaluate(()=>window.__hikingPerformance?.reset());await page.waitForTimeout(8000);performance=await page.evaluate(()=>{const r=window.__hikingPerformance?.report();return r&&{fps:r.fps,p95:r.p95??r.frameP95??null};});}
- await page.screenshot({path:`${dir}/${tag}-${id}.png`});
+ await (await waitChunks(page)).screenshot({path:`${dir}/${tag}-${id}.png`});
  const info=await page.evaluate(()=>{const m=hiking.metrics()??{};return {bearingActual:((-hiking.orientation().cameraHeading*180/Math.PI)%360+360)%360,pitch:hiking.orientation().pitch*180/Math.PI,zoom:hiking.gadgetView().cameraZoom,cityGrid:hiking.landscape().cityGrid,city:hiking.landscape().cityDetail??null,night:hiking.rendering().environment?.night,time:hiking.rendering().environment?.time,shaderErrors:hiking.rendering().shaderErrors,drawCalls:m.drawCalls,triangles:m.triangles};});
  const row={id,bearing,clock,bino,errors,performance,...info};rows.push(row);
  console.log(id,JSON.stringify({fps:performance?.fps?.toFixed?.(1),errors:errors.length,shader:info.shaderErrors?.length,tri:info.triangles,calls:info.drawCalls,zoom:info.zoom,pitch:info.pitch?.toFixed(2)}));

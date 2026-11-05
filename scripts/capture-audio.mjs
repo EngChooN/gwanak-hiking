@@ -1,3 +1,4 @@
+import {waitChunks} from './lib/chunk-wait.mjs';
 import {chromium} from '@playwright/test';
 import assert from 'node:assert/strict';
 import {readFileSync,writeFileSync} from 'node:fs';
@@ -17,7 +18,7 @@ try{
  assert.equal(result.walk.logs.length,walkState.steps);assert.equal(result.walk.dropped.loading,0);assert.ok(result.walk.logs.every(r=>r.material==='stairs'));assert.equal(new Set(result.walk.logs.map(r=>r.variant)).size,6);
  const intervals=result.walk.logs.slice(1).map((r,i)=>r.eventElapsed-result.walk.logs[i].eventElapsed),actualIntervals=result.walk.logs.slice(1).map((r,i)=>r.contextTime-result.walk.logs[i].contextTime);
  assert.ok(intervals.every(v=>Math.abs(v-1/1.2)<.001));assert.ok(Math.abs(actualIntervals.reduce((a,b)=>a+b)/actualIntervals.length-1/1.2)<.05);result.intervals={event:intervals,audioContext:actualIntervals};
- await page.screenshot({path:'artifacts/audio-stairs.png'});result.checks.push('실제 계단 자동 걷기: 12걸음=12회·6개 변형 사용·약 0.833초 간격');
+ await (await waitChunks(page)).screenshot({path:'artifacts/audio-stairs.png'});result.checks.push('실제 계단 자동 걷기: 12걸음=12회·6개 변형 사용·약 0.833초 간격');
  await page.keyboard.press('Space');await page.waitForTimeout(150);a=await snapshot();assert.equal(a.active,0);await page.waitForTimeout(900);assert.equal((await snapshot()).logs.length,a.logs.length);result.checks.push('일시정지 시 현재 소리 중단·추가 발소리 없음');
  await page.keyboard.press('Space');await page.keyboard.press('v');await page.keyboard.press('r');await page.waitForFunction(n=>window.hiking.audio().logs.length>n,a.logs.length);const third=(await snapshot()).logs.at(-1);assert.equal(third.view,'third');assert.ok(Math.abs(third.mixDb-third.variationDb-(-2))<.001);await page.keyboard.press('r');result.third=third;result.checks.push('3인칭 걸음 재생·-3dB 거리감 (급경사 +1dB와 별도 합산)');
  await page.locator('#sound-toggle').click();a=await snapshot();assert.equal(a.enabled,false);await page.keyboard.press('r');const steps=await page.evaluate(()=>window.hiking.snapshot().steps);await page.waitForFunction(n=>window.hiking.snapshot().steps>=n+2,steps);assert.equal((await snapshot()).logs.length,a.logs.length);await page.keyboard.press('r');result.checks.push('소리 끄기: 이동이 계속돼도 재생 없음');

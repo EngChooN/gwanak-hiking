@@ -1,4 +1,5 @@
 // UI 캡처: 낮 맑음 + 앉기 + 차 마시기 버튼, 스테미너 고갈(빨강), 모바일 달리기 버튼.
+import {waitChunks} from './lib/chunk-wait.mjs';
 import {chromium} from '@playwright/test';
 import {route} from '../src/route.js';
 import {initialState,SAVE_KEY} from '../src/movement.js';
@@ -11,28 +12,28 @@ async function open(query,{mobile=false,state={}}={}){
  await page.waitForFunction(()=>window.hiking?.started&&window.hiking?.landscape().ready&&hiking.landscape().natureReady&&!hiking.rendering().compiling,null,{timeout:240000});await page.waitForTimeout(5000);return {context,page};
 }
 let {context,page}=await open('time=15:00&weather=clear');
-await page.screenshot({path:`${dir}/ui-standing.png`});
+await (await waitChunks(page)).screenshot({path:`${dir}/ui-standing.png`});
 console.log('standing',await page.evaluate(()=>({tea:document.getElementById('tea').hidden,sit:document.querySelector('#sit span').textContent,stamina:document.getElementById('stamina').dataset.level})));
 await page.keyboard.press('KeyC');await page.waitForTimeout(1800);
 console.log('seated',await page.evaluate(()=>({tea:document.getElementById('tea').hidden,sit:document.querySelector('#sit span').textContent,pose:hiking.snapshot().pose})));
-await page.screenshot({path:`${dir}/ui-seated-tea-button.png`});
-await page.locator('#tea').click();await page.waitForTimeout(1500);await page.screenshot({path:`${dir}/ui-tea.png`});
+await (await waitChunks(page)).screenshot({path:`${dir}/ui-seated-tea-button.png`});
+await page.locator('#tea').click();await page.waitForTimeout(1500);await (await waitChunks(page)).screenshot({path:`${dir}/ui-tea.png`});
 console.log('tea',await page.evaluate(()=>({pose:hiking.snapshot().pose,disabled:document.getElementById('tea').disabled})));
 await page.waitForTimeout(3500);await page.keyboard.press('KeyC');await page.waitForTimeout(1200);
 console.log('stood',await page.evaluate(()=>({tea:document.getElementById('tea').hidden,pose:hiking.snapshot().pose})));
 await context.close();
 ({context,page}=await open('time=15:00&weather=clear',{state:{stamina:12,runExhausted:true}}));
-await page.screenshot({path:`${dir}/ui-stamina-empty.png`});
+await (await waitChunks(page)).screenshot({path:`${dir}/ui-stamina-empty.png`});
 console.log('empty',await page.evaluate(()=>({level:document.getElementById('stamina').dataset.level,run:document.getElementById('run').disabled})));
 await context.close();
 ({context,page}=await open('time=15:00&weather=clear',{state:{stamina:100}}));
 if(await page.evaluate(()=>hiking.snapshot().paused))await page.locator('#pause').click();await page.keyboard.down('KeyW');await page.keyboard.down('ShiftLeft');await page.waitForTimeout(3500);
-await page.screenshot({path:`${dir}/ui-running-stamina.png`});
+await (await waitChunks(page)).screenshot({path:`${dir}/ui-running-stamina.png`});
 console.log('run',await page.evaluate(()=>({level:document.getElementById('stamina').dataset.level,stamina:hiking.snapshot().stamina,running:hiking.snapshot().running})));
 await context.close();
 ({context,page}=await open('time=15:00&weather=rain',{mobile:true}));
 await page.evaluate(()=>document.body.classList.add('touch'));await page.waitForTimeout(500);
-await page.screenshot({path:`${dir}/ui-mobile.png`});
+await (await waitChunks(page)).screenshot({path:`${dir}/ui-mobile.png`});
 const box=await page.locator('#run').boundingBox();console.log('mobile run button',box);
 if(await page.evaluate(()=>hiking.snapshot().paused))await page.locator('#pause').click();
 await page.mouse.move(box.x+box.width/2,box.y+box.height/2);await page.mouse.down();await page.keyboard.down('KeyW');await page.waitForTimeout(1500);

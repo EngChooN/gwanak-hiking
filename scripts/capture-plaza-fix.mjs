@@ -1,5 +1,6 @@
 // 입구 광장 화면 결함 수정 전후 비교(headless Chrome 1440×900, 16:14 흐림, 3인칭).
 // 사용: BASE_URL=http://127.0.0.1:5176 TAG=before node scripts/capture-plaza-fix.mjs  (ONLY=plaza-third,gate-third 로 일부만, FPS=1 이면 fps도 잼)
+import {waitChunks} from './lib/chunk-wait.mjs';
 import {chromium} from '@playwright/test';
 import {mkdirSync,writeFileSync} from 'node:fs';
 const tag=process.env.TAG??'after',dir=`artifacts/plaza-fix/${tag}`;mkdirSync(dir,{recursive:true});
@@ -23,11 +24,11 @@ try{for(const [id,query,third,action] of specs){if(only&&!only.includes(id))cont
  await page.waitForFunction(()=>window.hiking?.started&&!hiking.rendering().compiling,null,{timeout:240000});clearInterval(progress);
  const loadMs=Date.now()-t0,readiness=await page.evaluate(()=>hiking.readiness());
  // 로딩이 걷힌 직후 첫 화면(덜 그려진 곳 확인용).
- await page.screenshot({path:`${dir}/${id}-0s.png`});
+ await (await waitChunks(page)).screenshot({path:`${dir}/${id}-0s.png`});
  if(third){await page.keyboard.press('v');}
  if(action==='close')await page.mouse.wheel(0,-1200);
  await page.waitForTimeout(3500);
- await page.screenshot({path:`${dir}/${id}.png`});
+ await (await waitChunks(page)).screenshot({path:`${dir}/${id}.png`});
  const row={id,query,loadMs,readiness,errors,landscape:await page.evaluate(()=>{const l=hiking.landscape();return {entrance:l.entrance,plazaReady:l.plazaReady??null};})};
  if(measure){await page.evaluate(()=>__hikingPerformance.reset());await page.waitForTimeout(6000);row.standFps=(await page.evaluate(()=>__hikingPerformance.report())).fps;
   await page.keyboard.down('w');await page.waitForTimeout(1500);await page.evaluate(()=>__hikingPerformance.reset());await page.waitForTimeout(5000);row.walkFps=(await page.evaluate(()=>__hikingPerformance.report())).fps;await page.keyboard.up('w');}

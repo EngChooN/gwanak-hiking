@@ -1,4 +1,5 @@
 // 정상 자유 이동 검증: 지점별 캡처, 절벽·시설에서 막힘, 하산 방향 코스 복귀, 저장 복원, 기구. 사용: BASE_URL=http://127.0.0.1:5190 node scripts/capture-summit-free.mjs (개발 서버 필요)
+import {waitChunks} from './lib/chunk-wait.mjs';
 import {chromium} from '@playwright/test';
 import {mkdirSync,writeFileSync} from 'node:fs';
 import {initialState,SAVE_KEY} from '../src/movement.js';
@@ -51,16 +52,16 @@ for(const [k,v] of Object.entries(spots))console.log(k,v.walk,v.note);
 for(const key of ['marker','end','eungjinjeon','radar','far']){
  if(!spots[key].walk){report.steps[key]={...spots[key],skipped:true};continue;}
  const sp=spots[key],{context,page}=await open(saved(sp.x,sp.z,sp.heading));
- const info=await pos(page);await page.screenshot({path:`${out}/walk-${key}.png`});report.steps[key]={...sp,state:info};console.log(key,JSON.stringify(info));await context.close();
+ const info=await pos(page);await (await waitChunks(page)).screenshot({path:`${out}/walk-${key}.png`});report.steps[key]={...sp,state:info};console.log(key,JSON.stringify(info));await context.close();
 }
 // 3인칭 한 장(길 끝)
-{const sp=spots.end,{context,page}=await open(saved(sp.x,sp.z,sp.heading,{view:'third'}));await page.screenshot({path:`${out}/walk-end-third.png`});await context.close();}
+{const sp=spots.end,{context,page}=await open(saved(sp.x,sp.z,sp.heading,{view:'third'}));await (await waitChunks(page)).screenshot({path:`${out}/walk-end-third.png`});await context.close();}
 // 3) 급경사에서 막힘: W를 누른 채 앞뒤 두 시점의 위치 비교
 for(const key of ['cliff','wall']){
  const sp=spots[key],{context,page}=await open(saved(sp.x,sp.z,sp.heading));
  await hold(page,['w','Shift'],key==='wall'?16000:9000);const a=await pos(page);
  await page.keyboard.down('w');await page.keyboard.down('Shift');await page.waitForTimeout(4000);const b=await pos(page);
- await page.screenshot({path:`${out}/blocked-${key}.png`});await page.keyboard.up('w');await page.keyboard.up('Shift');
+ await (await waitChunks(page)).screenshot({path:`${out}/blocked-${key}.png`});await page.keyboard.up('w');await page.keyboard.up('Shift');
  const moved=Math.hypot(b.x-a.x,b.z-a.z),fromStart=Math.hypot(b.x-sp.x,b.z-sp.z);
  report.steps[`blocked-${key}`]={start:{x:sp.x,z:sp.z},afterHold:a,afterMore:b,movedLast4s:+moved.toFixed(3),walkedFromStart:+fromStart.toFixed(2),edge:sp.edge,site:sp.site,siteDistance:sp.site?+Math.hypot(b.x-sp.site.x,b.z-sp.site.z).toFixed(2):null,blockRadius:sp.site?sp.site.r+.4+.25:null,drop:sp.drop};console.log(`blocked-${key}`,JSON.stringify({a,b,moved,fromStart}));await context.close();
 }
@@ -69,7 +70,7 @@ for(const key of ['cliff','wall']){
  const sp=route.length-30,{sample}=await import('../src/route.js'),p=sample(sp),q=sample(sp+1),heading=Math.atan2(-(q.x-p.x),-(q.z-p.z))+Math.PI,{context,page}=await open(saved(p.x,p.z,heading,{s:sp}));
  const log=[await pos(page)];
  for(let i=0;i<8;i++){await hold(page,['w','Shift'],5000);const r=await pos(page);log.push(r);if(r.zone==='route'&&i>=2)break;}
- const down=await pos(page);await page.screenshot({path:`${out}/descend-route.png`});
+ const down=await pos(page);await (await waitChunks(page)).screenshot({path:`${out}/descend-route.png`});
  // 같은 방향으로 2초 더 걸어 코스 이동(s 감소)이 이어지는지
  await hold(page,['w','Shift'],6000);const more=await pos(page);
  await hold(page,['s'],12000);const back=await pos(page);
@@ -89,7 +90,7 @@ for(const key of ['cliff','wall']){
 {
  const sp=spots.marker,{context,page}=await open(saved(sp.x,sp.z,sp.heading)),cmd=id=>page.evaluate(id=>window.dispatchEvent(new CustomEvent('hiking:command',{detail:{id}})),id);
  const snap=()=>page.evaluate(()=>{const s=hiking.snapshot();return {zone:s.zone,gadget:s.gadget,pose:s.pose,view:s.view};});const rows={};
- await cmd('binoculars');await page.waitForTimeout(700);rows.binoculars=await snap();await page.screenshot({path:`${out}/gadget-binoculars.png`});await cmd('gadget-off');
+ await cmd('binoculars');await page.waitForTimeout(700);rows.binoculars=await snap();await (await waitChunks(page)).screenshot({path:`${out}/gadget-binoculars.png`});await cmd('gadget-off');
  await cmd('phone');await page.waitForTimeout(700);rows.phone=await snap();await cmd('gadget-off');
  await cmd('sit');await page.waitForTimeout(1200);rows.sit=await snap();await cmd('sit');await page.waitForTimeout(600);
  await cmd('view');await page.waitForTimeout(600);rows.third=await snap();await hold(page,['w'],3000);rows.thirdWalk=await pos(page);

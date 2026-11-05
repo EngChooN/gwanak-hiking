@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
 import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
-import {SSAOPass} from 'three/addons/postprocessing/SSAOPass.js';
 import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
 import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
 import {ShaderPass} from 'three/addons/postprocessing/ShaderPass.js';
@@ -33,7 +32,10 @@ export function capBloomInput(bloom,{cap=BLOOM.cap,knee=BLOOM.knee}={}){
  m.fragmentShader=m.fragmentShader.replace(anchor,`${anchor}\n\t\t\tif(any(isnan(texel))||any(isinf(texel)))texel=vec4(0.);\n\t\t\ttexel.rgb*=min(1.,BLOOM_CAP/max(luminance(texel.rgb),1e-4));`);
  bloom.highPassUniforms.smoothWidth.value=knee;m.needsUpdate=true;return true;
 }
-export function setupRendering(renderer,scene,camera,mobile,environmentSky){
+// options.style==='toon'이면 options.toon(src/toon/index.js의 createToonStyle 결과)의 하늘·후처리(외곽선·블룸·색보정)를 쓴다.
+// 카툰은 Preetham 하늘·환경광 굽기·SSAO·실사 블룸/색 보정을 만들지 않는다. 시각·날씨·태양·그림자·강수·소리는 두 모드가 같다.
+export function setupRendering(renderer,scene,camera,mobile,environmentSky,{style='realistic',toon=null}={}){
+  const toonMode=style==='toon'&&!!toon?.pipeline;
   const parameters=new URLSearchParams(location.search),requestedMode=parameters.get('aoMode');
   const diagnosticMode=['off','normal','full'].includes(requestedMode)?requestedMode:null;
   const profiler=createAOProfiler(renderer,parameters.get('aoProfile')==='1');
@@ -58,7 +60,7 @@ export function setupRendering(renderer,scene,camera,mobile,environmentSky){
   const sun=new THREE.DirectionalLight(LOOK_PROFILE.sunColor,4);
   const groundFill=new THREE.HemisphereLight(INDIRECT_PROFILE.skyColor,INDIRECT_PROFILE.groundColor,INDIRECT_PROFILE.hemisphereIntensity);scene.add(groundFill);
   const solarOffset=new THREE.Vector3().fromArray(sunDir).multiplyScalar(80);
-  const sky=createSkyDome(LOOK_PROFILE,sunDir);scene.add(sky);
+  const sky=toonMode?toon.createSky():createSkyDome(LOOK_PROFILE,sunDir);if(!toonMode)scene.add(sky);
   // 나뭇잎 사이로 새는 빛줄기(볼륨 빛 카드). 바닥 그림자 얼룩·계곡 물 uniform은 light-fx.js가 함께 갱신한다.
   const shafts=createLightShafts({mobile});scene.add(shafts.mesh);globalThis.__lightFx={shafts,LIGHT_FX}; // 화면 조정·검증용
   sun.castShadow=true;sun.shadow.bias=-.001;sun.shadow.normalBias=.12;sun.shadow.radius=2;
@@ -72,19 +74,30 @@ export function setupRendering(renderer,scene,camera,mobile,environmentSky){
     status.shaderErrors.push([`${name} / ${hook}`,gl.getProgramInfoLog(program),gl.getShaderInfoLog(vs),gl.getShaderInfoLog(fs)].filter(Boolean).join('\n'));
   };
   // 환경광은 같은 Sky 셰이더를 PMREM으로 구워 쓴다. 푸른 천공광·따뜻한 지면 반사광이 하늘색과 일치하고 외부 HDRI 의존이 없다.
-  const environmentReady=Promise.resolve().then(()=>{
+  const environmentReady=toonMode?Promise.resolve().then(()=>{scene.environment=null;status.hdri='카툰: 환경광 굽기 없음(툰 음영)';status.toon=toon.status;}):Promise.resolve().then(()=>{
     const envTexture=bakeSkyEnvironment(renderer,LOOK_PROFILE,sunDir,INDIRECT_PROFILE.groundColor);
     scene.environment=envTexture;
     try{status.calibration=calibrateLook(renderer,envTexture,groundFill,sunDir);scene.environmentIntensity=status.calibration.environmentIntensity;groundFill.intensity=status.calibration.hemisphereIntensity;renderer.toneMappingExposure=status.calibration.exposure;Object.assign(base,{environmentIntensity:status.calibration.environmentIntensity,hemisphereIntensity:status.calibration.hemisphereIntensity,exposure:status.calibration.exposure});}catch(error){status.calibration={calibrated:false,error:error.message};scene.environmentIntensity=.3;}
     status.hdri='Preetham 물리 기반 Sky 셰이더(three.js, MIT) · 외부 HDRI 없음';
   }).catch(error=>{status.hdri='실패: '+error.message;console.warn('하늘 환경광 생성 실패',error);});
   let composer=null,ao=null,bloom=null,grade=null,bloomScale=.5,current=-1,lastResize=null;
+  // SSAO는 실사 전용이라 카툰 번들에 넣지 않는다. 받기 전에 resize가 불리면 합성기 생성을 미루고, 받은 뒤 마지막 크기로 다시 맞춘다.
+  let SSAOPass=null;
+  const ssaoReady=toonMode?Promise.resolve():import('three/addons/postprocessing/SSAOPass.js').then(m=>{SSAOPass=m.SSAOPass;if(lastResize)resize(...lastResize);});
   function resize(quality,width,height,dpr,adaptive={}){
     lastResize=[quality,width,height,dpr,{...adaptive}];
+    if(toonMode){
+      toon.pipeline.resize(quality,width,height,dpr);status.mood=true;status.ao=false;status.normalPass=false;status.shadows=true;
+      renderer.shadowMap.enabled=true;sun.castShadow=true;
+      const distance=adaptive.shadowDistance??[30,45,60][quality];status.shadowDistance=distance;const half=distance/2;
+      Object.assign(sun.shadow.camera,{left:-half,right:half,top:half,bottom:-half});sun.shadow.camera.updateProjectionMatrix();
+      if(current!==quality){sun.shadow.map?.dispose();sun.shadow.map=null;const size=quality===2&&!mobile?2048:1024;sun.shadow.mapSize.set(size,size);current=quality;}
+      return;
+    }
     const enableAO=!mobile&&(diagnosticMode==='full'||diagnosticMode==='normal'||(!diagnosticMode&&quality===2&&adaptive.ao!==false));
     // 블룸·색 보정은 균형 이상에서만(낮음·휴대폰은 끈다).
     const enableMood=parameters.get('mood')!=='off'&&!mobile&&!diagnosticMode&&quality>=BLOOM.minQuality&&adaptive.bloom!==false;
-    if((enableAO||enableMood)&&!composer){
+    if((enableAO||enableMood)&&!composer&&SSAOPass){
       composer=new EffectComposer(renderer);const basePass=new RenderPass(scene,camera);composer.addPass(basePass);
       const baseRender=basePass.render.bind(basePass);basePass.render=(...args)=>profiler.measure('기본 장면',()=>baseRender(...args));
       ao=new SSAOPass(scene,camera,width,height,12);ao.kernelRadius=6;ao.minDistance=.0001;ao.maxDistance=.008;
@@ -146,14 +159,15 @@ export function setupRendering(renderer,scene,camera,mobile,environmentSky){
     sun.color.setRGB(...e.light.color,THREE.SRGBColorSpace);sun.intensity=4*e.light.intensity;
     // 구워 둔 환경광(IBL)은 맑은 낮의 푸른 하늘색이라 색을 바꿀 수 없다. 흐림·비·안개에서는 그 몫을 줄이고 중성 반구광이 대신 채운다.
     scene.environmentIntensity=base.environmentIntensity*e.ambient*(1-ENV_GRAY_CUT*e.neutral);groundFill.intensity=base.hemisphereIntensity*e.ambient*(1+HEMI_GRAY_BOOST*e.neutral);groundFill.color.setRGB(...e.hemiColor,THREE.SRGBColorSpace);
-    const mood=moodBlend(e.elevation,e.night,e.gray);
+    const mood=toonMode?{exposure:1}:moodBlend(e.elevation,e.night,e.gray);
     renderer.toneMappingExposure=base.exposure*e.exposureMul*mood.exposure;
     if(grade){const u=grade.uniforms;u.saturation.value=mood.saturation;u.shadowTint.value.fromArray(mood.shadowTint);u.shadowAmount.value=mood.shadowAmount;u.warm.value.fromArray(mood.warm);u.exposure.value=renderer.toneMappingExposure;bloom.strength=mood.bloom;}
     scene.fog.color.setRGB(...e.fogColor,THREE.SRGBColorSpace);scene.background.setRGB(...e.horizon,THREE.SRGBColorSpace);
     // 맑은 날(15km) 기준 대비 얼마나 더 뿌연가. fog.near 칸에 감쇠 계수(1/m)를 실어 셰이더가 읽는다.
     scene.fog.near=Number.isFinite(e.fogDistance)?Math.max(0,3/e.fogDistance-3/15000):0;
     direction(e.elevation,e.azimuth,sunVector);direction(e.moon.elevation,e.moon.azimuth,moonVector);
-    updateSky(sky,e,sunVector,moonVector);applyBasic(e);
+    // 카툰: 하늘·색보정·블룸은 툰 모듈이 시간대에 맞춰 바꾼다. 도시·나무의 밤 밝기도 툰 재질이 직접 맡는다(MeshBasic 일괄 감광 없음).
+    if(toonMode){toon.updateSky(e,sunVector,moonVector);status.toonPhase=toon.pipeline.update(e)?.phase??null;}else{updateSky(sky,e,sunVector,moonVector);applyBasic(e);}
     {const fx=updateLightFx({time:clock.elapsed,sunVector,environment:e,quality:Math.max(0,current),mobile});shafts.update({camera,sunColor:e.light.color,quality:Math.max(0,current),canopy:canopyAt(camera.position.y),lowSun:fx.direct?Math.max(0,Math.min(1,(38-e.elevation)/32)):0});status.lightFx={direct:fx.direct,shafts:shafts.mesh.visible,count:shafts.mesh.geometry.instanceCount};}
     precipitation.update({time:clock.elapsed,camera,rain:e.rain,snow:e.snow,wind:e.windSpeed,viewHeight:renderer.domElement.height||900,fov:camera.fov});
     setWeatherSound({wind:e.windSound,rain:e.rain});
@@ -166,11 +180,12 @@ export function setupRendering(renderer,scene,camera,mobile,environmentSky){
     renderer.info.reset();
     breakdown.reset();
     // 카메라 주변 30~60m 폭. 갱신 간격은 화질 비교 전까지 매 프레임 유지한다.
-    sky.material.uniforms.skyGain.value=1/Math.max(.05,renderer.toneMappingExposure);const focus=shadowFocus??camera.position;sun.target.position.copy(focus);sun.position.copy(focus).add(solarOffset);sky.position.copy(camera.position);
+    if(!toonMode)sky.material.uniforms.skyGain.value=1/Math.max(.05,renderer.toneMappingExposure);const focus=shadowFocus??camera.position;sun.target.position.copy(focus);sun.position.copy(focus).add(solarOffset);sky.position.copy(camera.position);
     const solarDirection=new THREE.Vector3().subVectors(sun.position,sun.target.position).normalize();
     status.sunElevation=THREE.MathUtils.radToDeg(Math.asin(solarDirection.y));status.sunAzimuth=(THREE.MathUtils.radToDeg(Math.atan2(solarDirection.x,-solarDirection.z))+360)%360;
     profiler.poll();
-    if(ao&&diagnosticMode==='normal'){
+    if(toonMode){const now=performance.now();profiler.measure('기본 장면',()=>toon.pipeline.render(Math.min(.1,(now-(clock.renderAt??now))/1000)));clock.renderAt=now;}
+    else if(ao&&diagnosticMode==='normal'){
       profiler.measure('기본 장면',()=>renderer.render(scene,camera));
       const target=renderer.getRenderTarget();
       try{ao._overrideVisibility();ao._renderOverride(renderer,ao.normalMaterial,ao.normalRenderTarget,0x7777ff,1);}
@@ -198,7 +213,7 @@ export function setupRendering(renderer,scene,camera,mobile,environmentSky){
     }catch(error){status.compileError=error.message;throw error;}
     finally{status.compiling=false;}
   }
-  return {resize,render,prepare,status,environmentReady,setShadowFocus};
+  return {resize,render,prepare,status,environmentReady:Promise.all([environmentReady,ssaoReady]).then(()=>{}),setShadowFocus,style:toonMode?'toon':'realistic'};
 }
 
 // 카메라 근평면 네 모서리와 중앙에서 충돌을 검사해 지형·계단 앞쪽으로 당긴다.

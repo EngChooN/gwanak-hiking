@@ -1,5 +1,6 @@
 // 밤 조명 캡처·성능 측정. dev 서버 필요: PORT=5190 node scripts/capture-night-lighting.mjs [시나리오 id ...]
 // 균형 화질(quality=balanced). 시나리오마다 새 브라우저 문맥으로 fps·드로우콜·광원 수를 기록한다.
+import {waitChunks} from './lib/chunk-wait.mjs';
 import {chromium} from '@playwright/test';import {mkdirSync,writeFileSync,existsSync,readFileSync} from 'node:fs';
 import {route} from '../src/route.js';import {initialState,SAVE_KEY} from '../src/movement.js';
 const port=process.env.PORT??5190,dir='artifacts/night-lighting';mkdirSync(dir,{recursive:true});
@@ -35,7 +36,7 @@ try{for(const sc of list){
  await page.waitForTimeout(sc.measure?5000:3500);
  const fps=[];if(sc.measure){for(let i=0;i<3;i++){await page.waitForTimeout(4200);fps.push(await page.evaluate(()=>hiking.metrics().fps));}}
  const info=await page.evaluate(()=>({night:hiking.night(),m:{drawCalls:hiking.metrics().drawCalls,triangles:hiking.metrics().triangles,quality:hiking.metrics().quality,adaptive:hiking.metrics().adaptiveQuality,compileCount:hiking.metrics().rendering?.compileCount,shaderErrors:hiking.metrics().rendering?.shaderErrors?.length??0,ao:hiking.metrics().rendering?.ao}}));
- if(!sc.measure||sc.shot)await page.screenshot({path:`${dir}/${sc.id}.png`});
+ if(!sc.measure||sc.shot)await (await waitChunks(page)).screenshot({path:`${dir}/${sc.id}.png`});
  out[sc.id]={label:sc.label,fps,...info,errors};console.log(sc.id,JSON.stringify({fps,dc:info.m.drawCalls,lights:info.night.realLights,lamp:info.night.lampAmount.toFixed(2),head:info.night.headlamp.on,drawn:info.night.othersDrawn,errors:errors.length,shader:info.m.shaderErrors,adaptive:info.m.adaptive}));
  await ctx.close();
 }}finally{writeFileSync(file,JSON.stringify(out,null,2));await browser.close();}

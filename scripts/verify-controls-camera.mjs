@@ -1,3 +1,4 @@
+import {waitChunks} from './lib/chunk-wait.mjs';
 import {chromium} from '@playwright/test';
 import {initialState} from '../src/movement.js';
 const out=process.argv[2];
@@ -16,17 +17,17 @@ await page.reload();await page.waitForFunction(()=>window.hiking?.started,null,{
 await go(B+'&start=entrance');a=await snap();await hold('d',600);b=await snap();console.log('광장 출발 D',a.paused,'→ 이동',Math.hypot(b.px-a.px,b.pz-a.pz).toFixed(3));
 // 광장 뒷걸음: 3인칭, 카메라 방향 유지·몸이 카메라 방향
 await page.keyboard.press('v');await page.waitForTimeout(300);a=await snap();await page.keyboard.down('s');await page.waitForTimeout(400);
-await page.screenshot({path:`${out}/plaza-backward-third.png`});
+await (await waitChunks(page)).screenshot({path:`${out}/plaza-backward-third.png`});
 await page.waitForTimeout(600);await page.keyboard.up('s');await page.waitForTimeout(300);b=await snap();
 console.log('광장 S 3인칭: cam',a.cam,'→',b.cam,'avatar',b.avatar,'이동',Math.hypot(b.px-a.px,b.pz-a.pz).toFixed(3));
 // 4) 이어하기(코스 2500m, 저장 paused)
 await go(B,JSON.stringify({...initialState(),s:2500,view:'third'}));a=await snap();await page.keyboard.down('s');await page.waitForTimeout(400);
-await page.screenshot({path:`${out}/route-backward-third.png`});await page.waitForTimeout(600);await page.keyboard.up('s');await page.waitForTimeout(300);b=await snap();
+await (await waitChunks(page)).screenshot({path:`${out}/route-backward-third.png`});await page.waitForTimeout(600);await page.keyboard.up('s');await page.waitForTimeout(300);b=await snap();
 console.log('이어하기(코스) S: paused',a.paused,'→',b.paused,'s',a.s,'→',b.s,'cam',a.cam,'→',b.cam,'avatar',b.avatar);
 a=await snap();await hold('w',800);b=await snap();console.log('코스 W: s',a.s,'→',b.s,'avatar',b.avatar,'cam',b.cam);
 // 5) ESC 일시정지·계속하기, 표시
 await page.keyboard.press('Escape');await page.waitForTimeout(250);a=await snap();const shown=await page.locator('#pause-overlay').isVisible();
-await page.screenshot({path:`${out}/pause-overlay.png`});
+await (await waitChunks(page)).screenshot({path:`${out}/pause-overlay.png`});
 await page.keyboard.press('Escape');await page.waitForTimeout(250);b=await snap();console.log('ESC: paused',a.paused,'표시',shown,'→ ESC 다시',b.paused,'표시',await page.locator('#pause-overlay').isVisible());
 await page.keyboard.press('Space');await page.waitForTimeout(200);a=await snap();await page.click('#pause-resume');await page.waitForTimeout(200);b=await snap();console.log('Space 멈춤',a.paused,'→ 표시 버튼 클릭',b.paused);
 // HUD 숨김(#app 숨김 흉내)에도 표시가 보이는가

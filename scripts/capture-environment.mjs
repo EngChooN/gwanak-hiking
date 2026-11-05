@@ -1,4 +1,5 @@
 // 시각·날씨 장면 캡처와 fps 측정. ONLY=이름,이름  FPS=1 이면 fps(10초)도 잰다. VIEW=first|third POS=누적m
+import {waitChunks} from './lib/chunk-wait.mjs';
 import {chromium} from '@playwright/test';
 import {mkdirSync,writeFileSync} from 'node:fs';
 import {route} from '../src/route.js';
@@ -22,7 +23,7 @@ try{for(const name of only)for(const p of pos){
  await page.waitForTimeout(9000);
  const row={name,pos:p,view,environment:await page.evaluate(()=>{const r=hiking.rendering();return r.environment;}),errors};
  if(process.env.UI!=='1')await page.addStyleTag({content:'#app,.source-line{visibility:hidden}'});
- await page.screenshot({path:`${dir}/${name}-${p}-${view}${tag}.png`});
+ await (await waitChunks(page)).screenshot({path:`${dir}/${name}-${p}-${view}${tag}.png`});
  if(process.env.FPS==='1'){
   await page.evaluate(()=>{window.__f=[];const f=t=>{__f.push(t);requestAnimationFrame(f);};requestAnimationFrame(f);});await page.waitForTimeout(10000);
   row.fps=await page.evaluate(()=>{const a=__f,s=(a.at(-1)-a[0])/1000;return +(a.length/s).toFixed(2);});

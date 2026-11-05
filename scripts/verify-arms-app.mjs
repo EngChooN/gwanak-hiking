@@ -1,3 +1,4 @@
+import {waitChunks} from './lib/chunk-wait.mjs';
 import {chromium} from '@playwright/test';
 import {writeFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
@@ -14,7 +15,7 @@ try{
  for(const [id,keys]of [['walk',['w']],['left',['a']],['right',['d']],['back',['s']]]){
   for(const k of keys)await p.keyboard.down(k);await p.waitForTimeout(500);
   for(let i=0;i<12;i++){rows.push({id,...await read()});await p.waitForTimeout(80);}
-  if(id==='left')await p.screenshot({path:'artifacts/arms/app-left.png'});
+  if(id==='left')await (await waitChunks(p)).screenshot({path:'artifacts/arms/app-left.png'});
   for(const k of keys)await p.keyboard.up(k);await p.waitForTimeout(200);
  }
  for(const r of rows)for(const a of r.arms){const sign=a.side==='Left'?-1:1;assert.ok(a.elbow[0]*sign>0&&a.wrist[0]*sign>0,`${r.id}: 몸통을 가로지르는 팔`);assert.ok(a.elbow[1]<a.shoulder[1]-.08,`${r.id}: 어깨 높이 팔꿈치`);for(const pole of r.poles){assert.ok(pole.error<.002);assert.ok(pole.gripError<.002);}}

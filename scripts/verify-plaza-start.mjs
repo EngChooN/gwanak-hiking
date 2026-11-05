@@ -1,6 +1,7 @@
 // 광장 출발 검증(headless Chrome 1440×900): 로딩 단계 신호·로딩 중 입력 차단·광장 출발 1·3인칭·자유이동 경계·
 // 일주문 통과·뒤로 돌아오기·새로고침 복원·?start=gate·콘솔 오류, 그리고 4시점·3인칭 보행 fps.
 // 사용: BASE_URL=http://127.0.0.1:5190 node scripts/verify-plaza-start.mjs  (ONLY=flow,fps 로 일부만)
+import {waitChunks} from './lib/chunk-wait.mjs';
 import {chromium} from '@playwright/test';
 import {mkdirSync,writeFileSync} from 'node:fs';
 import {route} from '../src/route.js';
@@ -40,14 +41,14 @@ try{
   const readyInfo=await page.evaluate(()=>hiking.loading());
   await page.keyboard.down('w');await page.keyboard.press('r');await page.waitForTimeout(2000);await page.keyboard.up('w');
   const beforeStart=await position(page);
-  await page.screenshot({path:`${dir}/ready-before-start.png`});
+  await (await waitChunks(page)).screenshot({path:`${dir}/ready-before-start.png`});
   const events=await page.evaluate(()=>__loadingEvents);
   out.flow.loading={wallMs:Date.now()-t0,loadMs:readyInfo.loadMs,readiness:(await page.evaluate(()=>hiking.readiness())),stagesSeen:[...new Set(events.map(e=>e.stage))],eventCount:events.length,monotonic:events.every((e,i)=>!i||e.progress>=events[i-1].progress),firstEvents:events.slice(0,3),lastEvents:events.slice(-3)};
   out.flow.inputBlocked={position:beforeStart,ok:beforeStart.elapsed===0&&beforeStart.steps===0&&!beforeStart.auto&&beforeStart.pose==='stand'&&beforeStart.zone==='plaza'&&Math.hypot(beforeStart.x-PLAZA_START.x,beforeStart.z-PLAZA_START.z)<1e-6,started:await page.evaluate(()=>hiking.started)};
   await page.evaluate(()=>hiking.start());await page.waitForFunction(()=>hiking.started);
   const first=await position(page);out.flow.plazaStart={...first,ok:first.zone==='plaza'&&first.course===0&&first.label.includes('출발 전 · 광장')&&Math.abs(first.heading-PLAZA_START.heading)<1e-9};
-  await page.waitForTimeout(1500);await page.screenshot({path:`${dir}/plaza-first.png`});
-  await page.keyboard.press('v');await page.waitForTimeout(1500);await page.screenshot({path:`${dir}/plaza-third.png`});await page.keyboard.press('v');
+  await page.waitForTimeout(1500);await (await waitChunks(page)).screenshot({path:`${dir}/plaza-first.png`});
+  await page.keyboard.press('v');await page.waitForTimeout(1500);await (await waitChunks(page)).screenshot({path:`${dir}/plaza-third.png`});await page.keyboard.press('v');
   save();
   // 2) 자유이동: 오른쪽(D) 3초, 왼쪽 경계까지 A 14초(광장 폭 12m), 뒤로(S) 경계까지 25초.
   const free={};
@@ -70,7 +71,7 @@ try{
   await startTrace(page);await page.keyboard.press('r');
   await page.waitForFunction(g=>window.hiking?.position?.().zone==='route'&&window.hiking.position().s>g+6,GATE_S,{timeout:120000}).catch(async e=>{out.flow.gateDebug={error:e.message,keys:await page.evaluate(()=>Object.keys(window.hiking??{})),url:page.url()};throw e;});
   const through=await stopTrace(page);const afterGate=await position(page);
-  await page.screenshot({path:`${dir}/after-gate-first.png`});
+  await (await waitChunks(page)).screenshot({path:`${dir}/after-gate-first.png`});
   out.flow.gatePassage={...through,after:afterGate,ok:through.switches.length===1&&through.switches[0].to==='route'&&through.switches[0].step<.1&&through.switches[0].turnDeg<1&&afterGate.course>5&&afterGate.auto};
   save();
   // 5) 뒤로(S) 걸어 일주문을 지나 광장으로

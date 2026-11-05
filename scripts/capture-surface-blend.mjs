@@ -1,5 +1,6 @@
 // 노면 재질 경계(노면↔지형 가장자리, 노면↔노면 전환) 블렌딩 확인 캡처. headless Chrome 1440×900, 1인칭, 맑음.
 // 사용: BASE_URL=http://127.0.0.1:5176 [TAG=after] [ONLY=ridge-4973-1500,...] node scripts/capture-surface-blend.mjs
+import {waitChunks} from './lib/chunk-wait.mjs';
 import {chromium} from '@playwright/test';import {mkdirSync,writeFileSync} from 'node:fs';
 import {route} from '../src/route.js';import {initialState,SAVE_KEY} from '../src/movement.js';
 const base=process.env.BASE_URL??'http://127.0.0.1:5176',tag=process.env.TAG??'after',dir=`artifacts/surface-blend/${tag}`,only=process.env.ONLY?.split(',');mkdirSync(dir,{recursive:true});
@@ -23,7 +24,7 @@ try{for(const [id,s,time,label] of sites){if(only&&!only.includes(id))continue;
  // 노면 중심·좌우 0.5m에서 보이는 가장 위 면(노면/지형)과 보행 높이 차. 지형이 노면을 뚫으면 커진다.
  const ground=await page.evaluate(()=>hiking.groundCheck().map(p=>+p.error.toFixed(4)));if(!ground.every(e=>e<.03))errors.push(`보이는 면과 보행 높이 차 3cm 초과: ${ground}`);
  if(rendering.shaderErrors?.length)errors.push(JSON.stringify(rendering.shaderErrors));
- await page.screenshot({path:`${dir}/${id}.png`});
+ await (await waitChunks(page)).screenshot({path:`${dir}/${id}.png`});
  rows.push({id,s,time,label,loadMs:Date.now()-t0,ground,errors});console.log(id,Math.round((Date.now()-t0)/1000)+'s',ground,errors.length?errors:'ok');await ctx.close();}
 }finally{await browser.close();writeFileSync(`${dir}/results.json`,JSON.stringify(rows,null,2));}
 if(rows.some(r=>r.errors.length))process.exitCode=1;

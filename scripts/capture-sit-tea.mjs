@@ -1,4 +1,5 @@
 // 앉기·차 마시기 단계별 캡처(앞·옆). 개발 서버(기본 5175)에서 artifacts/sit-tea-2026-11-04/view.html을 연다.
+import {waitChunks} from './lib/chunk-wait.mjs';
 import {chromium} from '@playwright/test';
 import {writeFileSync} from 'node:fs';
 const port=process.env.PORT??5175,out='artifacts/sit-tea-2026-11-04';
@@ -15,8 +16,8 @@ const shots=[
 const b=await chromium.launch({channel:'chrome',headless:true,args:['--enable-webgl','--ignore-gpu-blocklist']});const rows=[];
 try{const p=await b.newPage({viewport:{width:900,height:900}});p.on('pageerror',e=>console.log('오류',e.message));
  await p.goto(`http://127.0.0.1:${port}/${out}/view.html`);await p.waitForFunction(()=>window.ready,null,{timeout:120000});
- for(const s of shots){const r=await p.evaluate(s=>{setView(s.view);label(s.label);return pose({tea:s.tea??null,ground:s.ground??'flat'});},s);await p.screenshot({path:`${out}/${s.id}.png`});rows.push({...s,...r});console.log(s.id,JSON.stringify(r));}
+ for(const s of shots){const r=await p.evaluate(s=>{setView(s.view);label(s.label);return pose({tea:s.tea??null,ground:s.ground??'flat'});},s);await (await waitChunks(p)).screenshot({path:`${out}/${s.id}.png`});rows.push({...s,...r});console.log(s.id,JSON.stringify(r));}
  // 짧은 영상용 프레임(FRAMES=1): 3초를 30fps로 비스듬히·옆 두 각도. GIF는 scripts/frames-to-gif.py로 묶는다.
- if(process.env.FRAMES){for(const view of ['front34','side']){for(let f=0;f<=90;f++){await p.evaluate(([v,t,settle])=>{setView(v);label(`차 마시기 ${(t*3).toFixed(1)}초`);return pose({tea:t,settle});},[view,f/90,f?0:12]);await p.screenshot({path:`${out}/frames-${view}/${String(f).padStart(3,'0')}.png`});}}}
+ if(process.env.FRAMES){for(const view of ['front34','side']){for(let f=0;f<=90;f++){await p.evaluate(([v,t,settle])=>{setView(v);label(`차 마시기 ${(t*3).toFixed(1)}초`);return pose({tea:t,settle});},[view,f/90,f?0:12]);await (await waitChunks(p)).screenshot({path:`${out}/frames-${view}/${String(f).padStart(3,'0')}.png`});}}}
  writeFileSync(`${out}/shots.json`,JSON.stringify(rows,null,2));
 }finally{await b.close();}

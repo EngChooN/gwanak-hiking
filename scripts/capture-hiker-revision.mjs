@@ -1,5 +1,6 @@
 // 별도 검토 GLB를 정면·측면 / 3인칭 보행 두 이미지로 촬영. 아직 실행하지 않았다.
 // 준비: 기존 로컬 dev 서버, node scripts/prepare-hiker-revision.mjs의 검토본.
+import {waitChunks} from './lib/chunk-wait.mjs';
 import {chromium} from '@playwright/test';
 import {writeFileSync,existsSync} from 'node:fs';
 import assert from 'node:assert/strict';
@@ -40,10 +41,10 @@ try{
   };
   return {hatParent:hat.parent.name,requiredNodes:required};
  });
- await page.screenshot({path:files[0]});
+ await (await waitChunks(page)).screenshot({path:files[0]});
  await page.evaluate(()=>window.__hikerRevisionReview.startWalk());await page.waitForTimeout(2000);
  const walk=await page.evaluate(()=>window.__hikerRevisionReview.stop());
- await page.screenshot({path:files[1]});assert.equal(errors.length,0);
+ await (await waitChunks(page)).screenshot({path:files[1]});assert.equal(errors.length,0);
  assert(walk.frames>1);for(const side of ['Left','Right']){
   const start=walk.stats[0][side];assert(walk.stats.some(f=>f[side].some((v,i)=>Math.abs(v-start[i])>.005)),`${side} 손·스틱이 움직이지 않음`);
  }

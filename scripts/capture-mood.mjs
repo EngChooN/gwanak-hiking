@@ -1,4 +1,5 @@
 // 낮·노을·밤·흐림 같은 지점 캡처. 사용: node scripts/capture-mood.mjs <before|after> [quality]
+import {waitChunks} from './lib/chunk-wait.mjs';
 import {chromium} from '@playwright/test';
 import {writeFile} from 'node:fs/promises';
 import {route} from '../src/route.js';
@@ -17,7 +18,7 @@ try{
   await page.addStyleTag({content:'#pause-overlay{display:none!important}'});
   await page.waitForTimeout(6000);
   const info=await page.evaluate(()=>{const r=hiking.rendering();return {exposure:r.environment?.exposure,night:r.environment?.night,sun:r.sunElevation};});
-  await page.screenshot({path:`${folder}/${tag}-${look.id}.png`});rows.push({look:look.id,...info,errors});console.log(look.id,JSON.stringify(info),errors.slice(0,2));
+  await (await waitChunks(page)).screenshot({path:`${folder}/${tag}-${look.id}.png`});rows.push({look:look.id,...info,errors});console.log(look.id,JSON.stringify(info),errors.slice(0,2));
   await context.close();
  }
 }finally{await browser.close();}

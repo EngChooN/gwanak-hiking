@@ -1,4 +1,5 @@
 // 입구 통합 검증: 입구 출발(1·3인칭) 캡처·시작 방향, 산 안 4시점 1인칭과 3인칭 보행 fps.
+import {waitChunks} from './lib/chunk-wait.mjs';
 import {chromium} from '@playwright/test';
 import {mkdirSync,writeFileSync} from 'node:fs';
 import {route} from '../src/route.js';
@@ -26,7 +27,7 @@ try{for(const spec of specs){if(process.env.ONLY&&!process.env.ONLY.split(',').i
  await page.waitForTimeout(Number(process.env.WARM??4000));await page.evaluate(()=>__hikingPerformance.reset());await page.waitForTimeout(6000);
  const idle=await page.evaluate(()=>__hikingPerformance.report());
  const camera=await page.evaluate(()=>{const s=hiking.snapshot();return {s:s.s,lateral:s.lateral,view:s.view};});
- await page.addStyleTag({content:'#app{visibility:hidden}'});await page.screenshot({path:`${dir}/${spec.id}${process.env.SUFFIX??""}.png`});
+ await page.addStyleTag({content:'#app{visibility:hidden}'});await (await waitChunks(page)).screenshot({path:`${dir}/${spec.id}${process.env.SUFFIX??""}.png`});
  let walk=null;
  if(spec.walk){await page.evaluate(()=>hiking.snapshot().paused)&&await page.keyboard.press('Space');await page.keyboard.down('w');await page.waitForTimeout(1500);await page.evaluate(()=>__hikingPerformance.reset());await page.waitForTimeout(8000);walk=await page.evaluate(()=>__hikingPerformance.report());await page.keyboard.up('w');}
  const row={id:spec.id,quality,camera,idleFps:idle.fps,walkFps:walk?.fps??null,errors};rows.push(row);console.log(JSON.stringify(row));

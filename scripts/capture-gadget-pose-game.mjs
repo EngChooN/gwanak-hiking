@@ -1,4 +1,5 @@
 // 실제 게임 화면에서 쌍안경·휴대폰 자세 확인. 3인칭 쌍안경·휴대폰 일반 촬영, 1인칭 셀카(산개발 셀카 카메라)를 찍는다.
+import {waitChunks} from './lib/chunk-wait.mjs';
 import {chromium} from '@playwright/test';
 import {writeFile} from 'node:fs/promises';
 import {route} from '../src/route.js';
@@ -18,7 +19,7 @@ try{
   for(const id of c.cmds){await page.evaluate(id=>window.dispatchEvent(new CustomEvent('hiking:command',{detail:{id}})),id);await page.waitForTimeout(300);}
   await page.waitForTimeout(2500);
   const r=await page.evaluate(()=>({gadget:window.__hiker.interaction.gadget,view:hiking.gadgetView?.(),lens:(({position,direction,lens})=>({position:position.toArray(),direction:direction.toArray(),lens}))(window.__hiker.phoneCamera())}));
-  await page.screenshot({path:`${folder}/${c.id}.png`});rows.push({...c,...r,errors});console.log(c.id,JSON.stringify(r.gadget),r.view?.avatarVisible,errors.slice(0,2));
+  await (await waitChunks(page)).screenshot({path:`${folder}/${c.id}.png`});rows.push({...c,...r,errors});console.log(c.id,JSON.stringify(r.gadget),r.view?.avatarVisible,errors.slice(0,2));
   await context.close();
  }
 }finally{await browser.close();}

@@ -48,6 +48,8 @@ const failLoading=e=>{if(started)return;const detail=loading.fail(e);rejectReady
 window.addEventListener('error',e=>{if(!started&&loading.phase==='loading')failLoading(e.error??e.message);});
 window.addEventListener('unhandledrejection',e=>{if(!started&&loading.phase==='loading')failLoading(e.reason);});
 window.hiking={started:false,ready:()=>readyPromise,start:()=>{startRequested=true;beginHike();return started;},loading:()=>loading.snapshot()};
+// 그래픽 모드(boot.js가 정해 <html data-style>에 둔다). 실사는 기존 경로 그대로, 카툰은 재질·하늘·후처리만 바꾼다.
+const style=document.documentElement.dataset.style==='toon'?'toon':'realistic';window.hiking.style=style;
 window.addEventListener(START_EVENT,()=>window.hiking.start());
 const $=id=>document.getElementById(id);let saved=null,storageOK=true;try{saved=localStorage.getItem(SAVE_KEY);}catch{storageOK=false;}
 // ?start=entrance|gate|demo|summit. 저장이 없는 첫 실행은 광장 출발이다.
@@ -76,7 +78,10 @@ try{renderer=new THREE.WebGLRenderer({canvas:$('world'),antialias:true,powerPref
 // 실패를 로딩 오류 신호로 바꾸고 그대로 다시 던진다.
 async function guard(promise){try{return await promise;}catch(e){failLoading(e);throw e;}}
 const mobile=matchMedia('(pointer: coarse)').matches||navigator.maxTouchPoints>0;
-const landscape=await guard(loadLandscape({base:`${import.meta.env.BASE_URL}assets/realistic/generated/`,maxContactMapSize:renderer.capabilities.maxTextureSize}));loading.set('terrain',.6);
+const toon=style==='toon'?await guard((async()=>(await import('./toon/index.js')).createToonStyle({renderer,scene,camera,mobile}))()):null;
+const landscape=await guard(loadLandscape({base:`${import.meta.env.BASE_URL}assets/realistic/generated/`,chunkBase:`${import.meta.env.BASE_URL}assets/shared/chunks/`,maxContactMapSize:renderer.capabilities.maxTextureSize,style,materialFactory:toon?.materialFactory??null,toon:toon&&{toonify:toon.toonify,patchFoliage:toon.patchFoliage,styleCity:toon.styleCity}}));loading.set('terrain',.6);
+// 카툰: 시설·입구·계단·풀 등 이미 만든 메시 재질을 MeshToon으로 바꾼다(같은 원본 재질은 캐시). 도시·원경·물은 load-landscape가 따로 칠한다.
+const toonifyLandscape=()=>{if(toon)for(const child of landscape.group.children)if(!['SeoulCity2km','SeoulFar','HanRiverAndWater'].includes(child.name))toon.toonify(child,{kind:'prop'});};toonifyLandscape();
 const walkingGround=createWalkingGround(landscape);
 // 광장(zone 'plaza')은 경로와 무관한 x,z. 높이는 landscape.surfaceHeight(길 안 노면 규칙)를 쓴다.
 const worldPosition=()=>state.zone==='plaza'?[state.plaza.x,walkingGround.height(state.plaza.x,state.plaza.z,false),state.plaza.z]:state.zone==='summit'?[state.summit.x,walkingGround.summit.height(state.summit.x,state.summit.z),state.summit.z]:positionAt(state.s,state.lateral,walkingGround);
@@ -85,20 +90,21 @@ const freeZone=()=>state.zone==='plaza'||state.zone==='summit';
 const offTrailNow=()=>state.zone==='route'&&isOffTrail(state.s,state.lateral);
 const baseHeading=()=>state.zone==='plaza'?state.plaza.heading:state.zone==='summit'?state.summit.heading:sample(state.s).heading;
 const floorHeight=s=>s===state.s?worldPosition()[1]:positionAt(s,state.lateral,walkingGround)[1];
-const lighting=setupRendering(renderer,scene,camera,mobile,landscape.sky);
+const lighting=setupRendering(renderer,scene,camera,mobile,landscape.sky,{style,toon});
 const {TerrainStream}=await import('./terrain.js');const terrain=new TerrainStream(scene,landscape,camera);
-const startingPosition=worldPosition();camera.position.set(startingPosition[0],startingPosition[1]+1.6,startingPosition[2]);await guard(Promise.resolve(terrain.update()));loading.set('terrain',.8);
+const startingPosition=worldPosition();camera.position.set(startingPosition[0],startingPosition[1]+1.6,startingPosition[2]);await guard(Promise.resolve(terrain.update()));await guard(landscape.terrainReady(startingPosition));loading.set('terrain',.8);
 await guard(landscape.streamFar());loading.set('terrain',.9);await guard(landscape.streamWater());loading.done('terrain');
 let cityBusy=false;
 async function streamAvailableCities(onProgress=()=>{}){if(cityBusy)return;cityBusy=true;try{const chunks=landscape.manifest.cityChunks;for(const [i,chunk] of chunks.entries()){await landscape.streamCity(chunk.id);onProgress((i+1)/(chunks.length+1));await new Promise(resolve=>setTimeout(resolve,0));}await landscape.finalizeCities();landscape.status.ready=true;}catch(e){landscape.status.errors.push(e.message);}finally{cityBusy=false;}}
 const initialCitiesReady=streamAvailableCities(f=>loading.set('environment',.3+.6*f));
 setInterval(async()=>{try{if(await landscape.refreshManifest()){await landscape.streamWater();void streamAvailableCities();}}catch(e){landscape.status.errors.push(e.message);}},30000);
-const initialNatureReady=loadOptionalModels(landscape,`${import.meta.env.BASE_URL}assets/realistic/generated/nature/`,f=>loading.set('nature',.95*f)).catch(e=>landscape.status.errors.push(e.message));
+const natureBase=`${import.meta.env.BASE_URL}assets/${style==='toon'?'toon/nature/':'realistic/generated/nature/'}`;
+const initialNatureReady=loadOptionalModels(landscape,natureBase,f=>loading.set('nature',.95*f),{position:startingPosition,impostors:style!=='toon'}).then(r=>{toonifyLandscape();return r;}).catch(e=>landscape.status.errors.push(e.message));
 // 날씨·시각 환경은 지형과 함께 시작하고 여기서 완료를 기다린다.
 const environmentReady=guard(Promise.resolve(lighting.environmentReady)).then(()=>loading.set('environment',.3));
-let firstHeading=true;const hiker=await guard(loadRealisticHiker(`${import.meta.env.BASE_URL}assets/realistic/models/hiker/Hiker.glb`));loading.done('hikers');const avatar=hiker.scene;scene.add(avatar);
+let firstHeading=true;const hikerUrl=`${import.meta.env.BASE_URL}assets/${style==='toon'?'toon/models/hiker/Hiker.glb':'realistic/models/hiker/Hiker.glb'}`;const hiker=await guard(loadRealisticHiker(hikerUrl));loading.done('hikers');const avatar=hiker.scene;scene.add(avatar);
 let outfits=null;const setOutfit=id=>{if(!outfits)return null;const applied=outfits.apply(id);try{saveOutfit(localStorage,applied);}catch{}return applied;};
-try{outfits=createOutfitSystem(avatar);outfits.apply(outfitPlan.outfit);}catch(e){landscape.status.errors.push(`복장: ${e.message}`);}avatar.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
+try{outfits=createOutfitSystem(avatar);outfits.apply(outfitPlan.outfit);}catch(e){landscape.status.errors.push(`복장: ${e.message}`);}if(toon)toon.toonify(avatar,{kind:'character'});avatar.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
 const look=createLook();let moving=false,speed=0,last=performance.now(),saveAt=last,uiAt=0,frameSum=0,frames=0,quality=qualityMode==='auto'?(mobile?1:2):Number(qualityMode),qualityWindow=performance.now(),goodWindows=0;const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;const touchQuery=matchMedia('(pointer: coarse)');const updateDevice=()=>document.body.classList.toggle('touch',touchQuery.matches||navigator.maxTouchPoints>0);touchQuery.addEventListener('change',updateDevice);updateDevice();
 const adaptiveQuality=new AdaptiveQuality(quality);
 // 비용 분리 검수에서만 같은 DPR·그림자 조건을 고정한다. 일반 실행에는 적용하지 않는다.
@@ -261,7 +267,7 @@ const night=createNightLighting({scene,renderer,place:(s,l)=>positionAt(s,l,walk
 let multi=null;
 // 함께 걷기 시제품(?multi). 켜지 않으면 코드를 불러오지도 않는다. 실제 서버 없이 이 컴퓨터의 창끼리만 연결한다.
 if(multiMode){const {mountMultiplayer}=await import('./multi-client.js');
- multi=await mountMultiplayer({scene,camera,night,hikerUrl:`${import.meta.env.BASE_URL}assets/realistic/models/hiker/Hiker.glb`,groundHeight:(x,z)=>walkingGround.height(x,z,false),command,
+ multi=await mountMultiplayer({scene,camera,night,hikerUrl,groundHeight:(x,z)=>walkingGround.height(x,z,false),command,
   local:{position:()=>playerPosition(state,walkingGround),setPosition:pos=>{state.auto=false;state.running=false;if(pos.zone==='route'){const r=projectToRoute(pos.x,pos.z);return setPlayerPosition(state,{zone:'route',s:r.s,lateral:r.lateral},walkingGround);}return setPlayerPosition(state,pos,walkingGround);},speed:()=>speed,sit:()=>state.pose!=='stand',run:()=>!!state.running,gadget:()=>state.gadget??'none',selfie:()=>selfieActive(state),place:(s,l)=>positionAt(s,l,walkingGround)}});
  window.hiking.multi=()=>multi.info();window.hiking.multiApi=multi;}
 // 상호작용(안내판·스탬프·산길 행동·쌍안경 이름표). 소품 자리는 풍경이 정한 landscape.interactionProps.sites를 그대로 쓴다.
@@ -339,6 +345,8 @@ if(sectionJumpEnabled(location.search)){
 window.__hiker=hiker;window.hiking.summitMap=()=>summitWalkMap(walkingGround.summit,lateralLimit);window.__surface=landscape.surfaceHeight;window.__walkingGround=walkingGround;window.__landscape=landscape;Object.assign(window.hiking,{outfit:()=>outfits&&{current:outfits.current,plan:outfitPlan,attachments:outfits.attachments(),info:outfits.info},setOutfit:id=>{const applied=setOutfit(id);outfitMenu?.update(applied);return applied;},outfitPreviews:(options={})=>{if(!outfits)return {};const keep=outfits.current,result=renderOutfitPreviews({renderer,avatar,apply:id=>outfits.apply(id),...options});outfits.apply(keep);return result;},readiness:()=>readyInfo??readiness(),position:()=>playerPosition(state,walkingGround),snapshot:()=>({...state}),audio:()=>audio.snapshot(),metrics:()=>window.__hikingMetrics,rendering:()=>JSON.parse(JSON.stringify({...lighting.status,fov:camera.fov,exposure:renderer.toneMappingExposure})),orientation:()=>({...look,camera:camera.position.toArray(),avatarHeading:avatar.rotation.y,routeHeading:sample(state.s).heading,zone:state.zone,baseHeading:baseHeading(),cameraHeading:baseHeading()+look.yaw}),groundCheck:()=>{const p=sample(state.s);return [-.5,0,.5].map(l=>landscape.groundCheck(p.x+p.nx*l,p.z+p.nz*l));},landscape:()=>({...landscape.status}),coordinates:()=>{const p=sample(state.s);const [x,y,z]=worldPosition();return {x,y,z};}});
 window.hiking.night=()=>night.info();window.hiking.headlamp=on=>{if(typeof on==='boolean')night.toggleHeadlamp(),night.info().headlamp.on!==on&&night.toggleHeadlamp();else night.toggleHeadlamp();night.syncButton();return night.info().headlamp;};window.hiking.setOthers=list=>night.setOthers(list);
 window.hiking.gadgetView=()=>({gadget:state.gadget,phone:{...state.phone},binoculars:{...state.binoculars},view:state.view,selfie:selfieActive(state),cameraZoom:camera.zoom,targetZoom:viewZoom(state),fogFar:scene.fog.far,avatarVisible:avatar.visible,camera:camera.position.toArray()});
+// 청크 스트리밍(기획서 §2.5): ready(pos)는 그 위치의 지형·식생 청크가 붙을 때까지 기다린다. pos 생략 시 현재 위치.
+window.hiking.chunks={ready:(pos)=>{const p=pos??worldPosition();return Promise.all([landscape.terrainReady(p),landscape.vegetationReady(p)]).then(()=>landscape.chunkStatus());},status:()=>({...landscape.chunkStatus(),memory:{...renderer.info.memory}})};
 window.hiking.adaptive=()=>({...adaptiveQuality.snapshot(),dpr:renderer.getPixelRatio()});
 window.hiking.contactOcclusion=value=>landscape.setContactOcclusion(value);
 window.hiking.contactProbes=()=>landscape.contactCandidates(camera.position.x,camera.position.z,35,Infinity).map(point=>{

@@ -1,4 +1,5 @@
 // 실경 비교용 구간 7곳 1인칭 캡처. LABEL=1|2(촬영 차수), ONLY=id,id
+import {waitChunks} from './lib/chunk-wait.mjs';
 import {chromium} from '@playwright/test';
 import {mkdirSync,writeFileSync} from 'node:fs';
 import {route} from '../src/route.js';
@@ -16,7 +17,7 @@ try{for(const [id,name,m,query] of specs){if(process.env.ONLY&&!process.env.ONLY
  await page.goto(`http://127.0.0.1:5176/?quality=high&time=${process.env.TIME??'10:00'}&weather=clear${query}`);
  await page.waitForFunction(()=>window.hiking?.started&&window.hiking?.landscape().ready&&hiking.landscape().natureReady&&!hiking.rendering().compiling,null,{timeout:240000});
  await page.waitForTimeout(9000);await page.addStyleTag({content:'#app{visibility:hidden}'});
- await page.screenshot({path:`${dir}/${label}-${id}.png`});
+ await (await waitChunks(page)).screenshot({path:`${dir}/${label}-${id}.png`});
  rows.push({id,name,m,s,errors});console.log(id,name,m,errors);await context.close();
 }}finally{await browser.close();}
 writeFileSync(`${dir}/${label}${process.env.ONLY?'-'+process.env.ONLY:''}.json`,JSON.stringify(rows,null,2));

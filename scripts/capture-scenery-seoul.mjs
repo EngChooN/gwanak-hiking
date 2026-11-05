@@ -1,3 +1,4 @@
+import {waitChunks} from './lib/chunk-wait.mjs';
 import assert from 'node:assert/strict';
 import {chromium} from '@playwright/test';
 import {writeFileSync} from 'node:fs';
@@ -15,7 +16,7 @@ await page.goto(`http://127.0.0.1:5176/?quality=high&bearing=${bearing}&fov=55`)
 await page.waitForFunction(()=>window.hiking?.started&&window.hiking?.landscape().ready&&hiking.landscape().natureReady&&!hiking.rendering().compiling,null,{timeout:240000});
 await page.waitForTimeout(8000);await page.evaluate(()=>window.__hikingPerformance.reset());await page.waitForTimeout(10000);
 const metrics=await page.evaluate(()=>({performance:__hikingPerformance.report(),landscape:hiking.landscape(),rendering:hiking.rendering()}));
-await page.screenshot({path:`artifacts/scenery-seoul-${label}${suffix}-${id}.png`});
+await (await waitChunks(page)).screenshot({path:`artifacts/scenery-seoul-${label}${suffix}-${id}.png`});
 if(label==='after'&&id==='north'){await page.keyboard.press('l');await page.waitForTimeout(500);metrics.labels=await page.evaluate(()=>hiking.landscape().cityLabels);await page.keyboard.press('l');}
 if(label==='after'){assert.ok(metrics.performance.fps>=45,`${id}: ${metrics.performance.fps}fps`);assert.equal(metrics.landscape.cityLabels,false);if(id==='north')assert.equal(metrics.labels,true);assert.deepEqual(metrics.rendering.shaderErrors,[]);}
 rows.push({id,s,bearing,inspect,errors,...metrics});writeFileSync(`artifacts/scenery-seoul-${label}${suffix}.json`,JSON.stringify(rows,null,2));console.log(label,id,metrics.performance.fps,errors);await context.close();

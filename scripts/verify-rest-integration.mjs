@@ -1,3 +1,4 @@
+import {waitChunks} from './lib/chunk-wait.mjs';
 import {chromium} from '@playwright/test';
 import assert from 'node:assert/strict';
 import {mkdirSync,writeFileSync} from 'node:fs';
@@ -23,10 +24,10 @@ try{
  await page.keyboard.press('Space');const paused=await snapshot();await page.waitForTimeout(500);assert.equal((await snapshot()).state.teaRemaining,paused.state.teaRemaining);assert.equal((await snapshot()).interaction.teaProgress,paused.interaction.teaProgress);checks.push('차 버튼 1회 시작·일시정지 동기화');
  await page.reload();await ready();const restored=await snapshot();assert.equal(restored.state.pose,'tea');assert.equal(restored.eye,.85);assert.ok(Math.abs(restored.state.teaRemaining-paused.state.teaRemaining)<.01);assert.ok(restored.interaction.drink>0);checks.push('차 중 저장 복원·앉은 높이·컵 진행 유지');
  await page.keyboard.press('Space');await page.waitForTimeout(2400);assert.equal((await snapshot()).state.pose,'sit');assert.ok((await snapshot()).state.stamina>85);checks.push('차 완료 후 앉기·회복');
- await page.screenshot({path:`${dir}/first-seated.png`});
+ await (await waitChunks(page)).screenshot({path:`${dir}/first-seated.png`});
  await page.locator('[data-rest="sit"]').click();await page.waitForTimeout(1000);assert.equal((await snapshot()).eye,1.6);
  await page.keyboard.press('v');await page.keyboard.press('c');await page.waitForTimeout(1000);await page.keyboard.press('t');await page.waitForTimeout(1250);
- await page.screenshot({path:`${dir}/third-tea.png`});const third=await snapshot();assert.equal(third.state.pose,'tea');assert.ok(third.interaction.drink>.9);checks.push('버튼으로 일어나기·3인칭 실제 T 컵 동작');
+ await (await waitChunks(page)).screenshot({path:`${dir}/third-tea.png`});const third=await snapshot();assert.equal(third.state.pose,'tea');assert.ok(third.interaction.drink>.9);checks.push('버튼으로 일어나기·3인칭 실제 T 컵 동작');
  await page.keyboard.down('w');await page.waitForTimeout(1000);await page.keyboard.up('w');assert.equal((await snapshot()).state.pose,'stand');assert.equal((await snapshot()).state.teaRemaining,0);assert.equal((await snapshot()).eye,1.6);checks.push('이동으로 차 취소·일어나기');
  await page.evaluate(()=>__hikingPerformance.reset());await page.waitForTimeout(5000);const performance=await page.evaluate(()=>__hikingPerformance.report());assert.ok(performance.fps>=40);
  await page.setViewportSize({width:390,height:844});await page.waitForTimeout(500);const bounds=await page.locator('#rest-controls').boundingBox();assert.ok(bounds.x>=0&&bounds.x+bounds.width<=390&&bounds.y>=0&&bounds.y+bounds.height<=844);checks.push('모바일 휴식 패널 화면 내 배치');

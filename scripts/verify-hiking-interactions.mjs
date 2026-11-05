@@ -1,3 +1,4 @@
+import {waitChunks} from './lib/chunk-wait.mjs';
 import {chromium} from '@playwright/test';
 import assert from 'node:assert/strict';
 import {writeFileSync,readFileSync} from 'node:fs';
@@ -19,12 +20,12 @@ try{for(const [id,s,view,bearing] of [['entrance',10,'first',0],['valley',route.
  if(id==='ridge'){
   await page.keyboard.press('Space');await page.keyboard.press('c');assert.equal((await snapshot()).pose,'sit');await page.waitForTimeout(350);const sittingY=await page.evaluate(()=>hiking.orientation().camera[1]);
   await page.keyboard.press('t');assert.equal((await snapshot()).pose,'tea');await page.waitForTimeout(3300);assert.equal((await snapshot()).pose,'sit');assert.ok((await snapshot()).stamina>=99);checks.push('C 앉기·T 3초 차 완료·스테미너 회복');
-  await page.screenshot({path:'artifacts/interaction-first-rest.png'});
+  await (await waitChunks(page)).screenshot({path:'artifacts/interaction-first-rest.png'});
   const before=await snapshot();await page.keyboard.down('Shift');await page.keyboard.down('w');await page.waitForTimeout(2000);await page.keyboard.up('w');await page.keyboard.up('Shift');const after=await snapshot();assert.equal(after.pose,'stand');assert.ok(after.distance>before.distance);assert.ok(after.stamina<before.stamina);assert.ok((await page.evaluate(()=>hiking.orientation().camera[1]))>sittingY+.3);checks.push('이동 시 일어나기·Shift 달리기·소모·시점 상승');
   await page.keyboard.press('Space');await page.reload();await page.waitForFunction(()=>window.hiking?.started,null,{timeout:240000});assert.equal((await snapshot()).paused,true);assert.ok(Math.abs((await snapshot()).stamina-after.stamina)<1);checks.push('새로고침 저장 복원');
  }
  if(id==='third'){
-  await page.keyboard.press('Space');await page.keyboard.down('Shift');await page.keyboard.down('w');await page.waitForTimeout(1500);await page.screenshot({path:'artifacts/interaction-third-run.png'});await page.keyboard.up('w');await page.keyboard.up('Shift');checks.push('3인칭 달리기 화면');
+  await page.keyboard.press('Space');await page.keyboard.down('Shift');await page.keyboard.down('w');await page.waitForTimeout(1500);await (await waitChunks(page)).screenshot({path:'artifacts/interaction-third-run.png'});await page.keyboard.up('w');await page.keyboard.up('Shift');checks.push('3인칭 달리기 화면');
  }
  rows.push({id,s,view,errors,checks,...metrics});writeFileSync('artifacts/interaction-browser.json',JSON.stringify(rows,null,2));console.log(id,metrics.performance.fps,checks,errors);
  assert.deepEqual(errors,[]);assert.deepEqual(metrics.rendering.shaderErrors,[]);await context.close();

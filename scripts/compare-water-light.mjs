@@ -1,5 +1,6 @@
 // 계곡 물·빛 전후 캡처를 나란히 붙인 비교 사진(artifacts/v2/{water,light}/compare-*.png).
 // 사용: node scripts/compare-water-light.mjs [id ...]  (capture-water-light.mjs 의 before/after 결과가 있어야 함)
+import {waitChunks} from './lib/chunk-wait.mjs';
 import {chromium} from '@playwright/test';
 import {readFileSync,existsSync} from 'node:fs';
 const all=[['water','water-1096'],['water','water-1096-dusk'],['water','water-1500'],['water','water-1500-low'],['water','water-1500-rain'],['water','water-2000'],
@@ -12,5 +13,5 @@ try{const page=await browser.newPage({viewport:{width:1600,height:520},deviceSca
   const url=f=>`data:image/png;base64,${readFileSync(f).toString('base64')}`;
   const panel=(f,label)=>`<figure><img src="${url(f)}" style="height:455px;display:block"><figcaption>${label}</figcaption></figure>`;
   await page.setContent(`<style>body{margin:0;background:#111;color:#eee;font:600 18px sans-serif;display:flex;gap:16px;padding:14px;justify-content:center}figure{margin:0}figcaption{padding-top:8px}</style>${panel(b,`전 · ${id}`)}${panel(a,`후 · ${id}`)}`);
-  await page.waitForTimeout(150);await page.screenshot({path:`${d}/compare-${prefix}${id}.png`});console.log('compare',id);}
+  await page.waitForTimeout(150);await (await waitChunks(page)).screenshot({path:`${d}/compare-${prefix}${id}.png`});console.log('compare',id);}
 }finally{await browser.close();}

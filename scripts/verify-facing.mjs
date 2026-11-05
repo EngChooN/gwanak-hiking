@@ -1,3 +1,4 @@
+import {waitChunks} from './lib/chunk-wait.mjs';
 import {chromium} from '@playwright/test';
 import {mkdirSync,writeFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
@@ -30,7 +31,7 @@ try{
    const feet=moving.legs.map(l=>{const [x,z]=l.direction;return (-Math.sin(moving.heading)*x-Math.cos(moving.heading)*z)/Math.hypot(x,z);});const footAxes=moving.legs.map(l=>{const [x,z]=l.direction;return {forward:(-Math.sin(moving.heading)*x-Math.cos(moving.heading)*z)/l.length,lateral:(Math.cos(moving.heading)*x-Math.sin(moving.heading)*z)/l.length};});
    rows.push({area,id,footAxes,feet,moving});
    assert.ok(footAxes.every(a=>Math.abs(a.lateral)<.4&&a.forward>-.3),`${area}/${id}: 발 축 ${JSON.stringify(footAxes)}`);
-   if(area==='flat'&&['left','right'].includes(id))await page.screenshot({path:`${dir}/${id}.png`});
+   if(area==='flat'&&['left','right'].includes(id))await (await waitChunks(page)).screenshot({path:`${dir}/${id}.png`});
    for(const k of keys)await page.keyboard.up(k);const released=await read();await page.waitForTimeout(300);const stopped=await read();assert.ok(Math.abs(headingDelta(released.heading,stopped.heading))<.03,`${area}/${id}: 정지 방향 변함`);
    const cameraYaw=Math.atan2(moving.orientation.camera[0]-moving.position[0],moving.orientation.camera[2]-moving.position[2]);
    const beforeYaw=Math.atan2(before.orientation.camera[0]-before.position[0],before.orientation.camera[2]-before.position[2]);assert.ok(Math.abs(headingDelta(cameraYaw,beforeYaw))<.03,`${area}/${id}: 카메라 방향 변함`);

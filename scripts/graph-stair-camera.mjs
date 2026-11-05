@@ -1,3 +1,4 @@
+import {waitChunks} from './lib/chunk-wait.mjs';
 import {chromium} from '@playwright/test';
 import {readFileSync,writeFileSync} from 'node:fs';
 const dir=process.argv[2];
@@ -17,4 +18,4 @@ const html=`<html><body style="margin:0;font-family:-apple-system,'Apple SD Goth
 <tr><td>${panel('수정 전 · 3인칭 내리막',before['down-third'])}</td><td>${panel('수정 후 · 3인칭 내리막',after['down-third'])}</td></tr>
 <tr><td>${panel('수정 전 · 1인칭 오르막',before['up-first'])}</td><td>${panel('수정 후 · 1인칭 오르막',after['up-first'])}</td></tr></table></body></html>`;
 writeFileSync(`${dir}/stair-camera-graph.html`,html);
-const b=await chromium.launch({channel:'chrome',headless:true});const p=await b.newPage({viewport:{width:1300,height:860}});await p.setContent(html);await p.screenshot({path:`${dir}/stair-camera-graph.png`,fullPage:true});await b.close();
+const b=await chromium.launch({channel:'chrome',headless:true});const p=await b.newPage({viewport:{width:1300,height:860}});await p.setContent(html);await (await waitChunks(p)).screenshot({path:`${dir}/stair-camera-graph.png`,fullPage:true});await b.close();

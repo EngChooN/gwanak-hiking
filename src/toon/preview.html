@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>카툰 모드 미리보기 — 관악산</title>
+<style>
+ html,body{margin:0;height:100%;overflow:hidden;background:#16224a;font-family:system-ui,-apple-system,'Apple SD Gothic Neo',sans-serif}
+ canvas{display:block}
+ #panel{position:fixed;left:16px;bottom:16px;padding:12px 14px;border-radius:12px;background:rgba(20,26,48,.72);color:#f4efe6;font-size:13px;line-height:1.5;min-width:280px;backdrop-filter:blur(6px)}
+ #panel label{display:flex;gap:10px;align-items:center}
+ #panel input[type=range]{flex:1}
+ #panel .row{display:flex;gap:6px;margin-top:8px}
+ #panel button{flex:1;border:0;border-radius:8px;padding:6px 0;background:#f4efe6;color:#1d2a44;font:inherit;cursor:pointer}
+ #info{opacity:.8;font-size:12px;margin-top:6px;white-space:pre-line}
+</style>
+</head>
+<body>
+<div id="panel">
+ <label>태양 고도 <input id="elevation" type="range" min="-25" max="60" step="0.5" value="35"><output id="elevationText">35°</output></label>
+ <div class="row"><button data-el="35">낮</button><button data-el="2">노을</button><button data-el="-20">밤</button></div>
+ <div id="info"></div>
+</div>
+<script type="module" src="./preview.js"></script>
+</body>
+</html>

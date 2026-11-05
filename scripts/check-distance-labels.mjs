@@ -1,4 +1,5 @@
 // 거리 두 표시(진행/남은) 합 검증: 광장·일주문·산 안(demo). 사용: BASE_URL=... node scripts/check-distance-labels.mjs
+import {waitChunks} from './lib/chunk-wait.mjs';
 import {chromium} from '@playwright/test';import {mkdirSync} from 'node:fs';
 const base=process.env.BASE_URL??'http://127.0.0.1:5195',dir='artifacts/distance-labels';mkdirSync(dir,{recursive:true});
 const browser=await chromium.launch({channel:'chrome',headless:true,args:['--enable-webgl','--ignore-gpu-blocklist']});
@@ -12,5 +13,5 @@ try{for(const start of ['entrance','gate','demo']){
  const n=t.map(x=>Number(x.replace(/[^0-9,\/]/g,'').split('/').pop().replace(/,/g,'')));
  const done=Number(t[0].split('·').pop().split('/')[0].replace(/[^0-9]/g,''));
  console.log(start,JSON.stringify(t),'합=',done+n[1]);
- if(start==='entrance')await page.screenshot({path:`${dir}/plaza.png`});
+ if(start==='entrance')await (await waitChunks(page)).screenshot({path:`${dir}/plaza.png`});
  await ctx.close();}}finally{await browser.close();}

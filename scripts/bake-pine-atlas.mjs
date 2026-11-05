@@ -1,4 +1,5 @@
 // 로컬 파일만 사용하는 8방향 소나무 베이크·실제 자산 감사. 기존 GLB/PNG는 변경하지 않는다.
+import {waitChunks} from './lib/chunk-wait.mjs';
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import {resolve,dirname,extname,sep} from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -77,6 +78,6 @@ try{
  const heading=document.createElement('p');heading.textContent='소나무 실모델 8방향 · 위 0° / 45° / 90° / 135° · 아래 180° / 225° / 270° / 315°';heading.style.margin='20px';document.body.append(heading);
  const img=new Image();img.src=url;img.style.cssText='display:block;width:1024px;height:512px;margin:20px;background:repeating-conic-gradient(#dbe0db 0% 25%,#f4f6f3 0% 50%) 0/24px 24px';document.body.append(img);},result.url);
  await page.waitForFunction(()=>document.images.length===1&&document.images[0].complete);
- await mkdir(resolve(root,'artifacts'),{recursive:true});await page.screenshot({path:resolve(root,'artifacts/pine-impostor-atlas-v1-preview.png')});
+ await mkdir(resolve(root,'artifacts'),{recursive:true});await (await waitChunks(page)).screenshot({path:resolve(root,'artifacts/pine-impostor-atlas-v1-preview.png')});
  console.log(JSON.stringify({pngBytes:png.length,audit:meta.audit.map(({id,lod,triangles,materials})=>({id,lod,triangles,materials})),atlas:meta.atlas,errors},null,2));
 }finally{if(browser)await browser.close();}

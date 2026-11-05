@@ -1,3 +1,4 @@
+import {waitChunks} from './lib/chunk-wait.mjs';
 import {chromium} from '@playwright/test';
 import {writeFileSync,readFileSync} from 'node:fs';
 import {route} from '../src/route.js';
@@ -17,7 +18,7 @@ for(const [id,s,view,quality] of [['entrance',1,'first','high'],['valley',route.
  if(view==='third'){await page.keyboard.press('Space');await page.keyboard.down('w');await page.waitForTimeout(2000);}
  await page.evaluate(()=>window.__hikingPerformance.reset());await page.waitForTimeout(10000);
  const result=await page.evaluate(()=>({performance:window.__hikingPerformance.report(),rendering:hiking.rendering(),metrics:hiking.metrics(),ground:hiking.groundCheck(),scenery:hiking.metrics().landscape.scenery}));
- await page.screenshot({path:`artifacts/scenery-forest-${label}-${id}.png`});
+ await (await waitChunks(page)).screenshot({path:`artifacts/scenery-forest-${label}-${id}.png`});
  const row={id,s,view,quality,errors,...result},at=rows.findIndex(x=>x.id===id);if(at>=0)rows[at]=row;else rows.push(row);console.log(label,id,result.performance.fps,result.performance.maxTriangles,errors);
  writeFileSync(`artifacts/scenery-forest-${label}.json`,JSON.stringify(rows,null,2));await context.close();
 }

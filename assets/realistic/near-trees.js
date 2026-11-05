@@ -70,10 +70,19 @@ export function createNearTrees({loadParts}){
   for(const mesh of meshes)mesh.userData.restoreMatrices??=mesh.instanceMatrix.array.slice();
   matrices.forEach((matrix,i)=>{
    const r=records.length,x=matrix.elements[12],z=matrix.elements[14],k=`${Math.floor(x/cell)},${Math.floor(z/cell)}`;
-   records.push({id,x,z,matrix,tint:tints[i],meshes,index:i,dense:!!dense[i]});
+   records.push({id,x,z,matrix,tint:tints[i],meshes,index:i,dense:!!dense[i],lod});
    if(!grid.has(k))grid.set(k,[]);grid.get(k).push(r);
   });
   status.records=records.length;last=null;
+ }
+ // 청크 해제(load-landscape 식생 스트리밍): 그 LOD의 나무를 후보에서 뺀다. 번호는 유지하고 격자에서만 지운다.
+ function unregister(lod){
+  let removed=0;
+  for(const [k,list] of grid){const kept=list.filter(r=>records[r].lod!==lod);if(kept.length!==list.length){removed+=list.length-kept.length;if(kept.length)grid.set(k,kept);else grid.delete(k);}}
+  if(!removed)return 0;
+  for(const [r] of selected)if(records[r].lod===lod)selected.delete(r);
+  for(let r=0;r<records.length;r++)if(records[r].lod===lod)records[r]={id:records[r].id,removed:true};
+  status.records-=removed;last=null;return removed;
  }
  function setCard(record,hidden){
   for(const mesh of record.meshes){
@@ -118,5 +127,5 @@ export function createNearTrees({loadParts}){
   status.full=full;status.mid=mid;
   status.triangles=[...next].reduce((n,[r,t])=>n+(pools.get(records[r].id)?.triangles[t]??0),0);
  }
- return {group,register,update,status,get selected(){return selected;}};
+ return {group,register,unregister,update,status,get selected(){return selected;}};
 }

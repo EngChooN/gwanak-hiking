@@ -1,6 +1,7 @@
 // 상호작용 소품 캡처와 성능 비교(headless Chrome 1440×900, 낮 11시 맑음, 화질 높음).
 // 사용: BASE_URL=http://127.0.0.1:5197 node scripts/capture-interaction-props.mjs  (ONLY=summit,spring 로 일부만)
 // 자리마다 코스 위 s(경로 3D 거리)를 찾아 저장 상태로 그 앞 back m 지점에서 시작한다. 소품 묶음을 켜고 끈 draw call·삼각형도 잰다.
+import {waitChunks} from './lib/chunk-wait.mjs';
 import {chromium} from '@playwright/test';
 import {mkdirSync,writeFileSync} from 'node:fs';
 const dir='artifacts/interaction-props';mkdirSync(dir,{recursive:true});
@@ -60,7 +61,7 @@ try{for(const [id,target,back,lateral,view,drag,wheel,query] of specs){if(only&&
  if(drag)await dragBy(drag);
  if(wheel)await page.mouse.wheel(0,wheel);
  await page.waitForTimeout(5000);await closeDialogs();await page.waitForTimeout(300);
- await page.screenshot({path:`${dir}/${id}.png`});
+ await (await waitChunks(page)).screenshot({path:`${dir}/${id}.png`});
  // 소품 켬/끔 비교: 같은 시점에서 2초씩 평균.
  const measure=async()=>{await page.evaluate(()=>window.__hikingPerformance.reset());await page.waitForTimeout(2000);return page.evaluate(()=>{const r=window.__hikingPerformance.report();return {drawCalls:r.drawCalls,triangles:r.triangles,renderMs:r.cpuMs?.render,props:r.categories?.['상호작용 소품']??null};});};
  const on=await measure();await page.evaluate(()=>{window.__landscape.interactionProps.group.visible=false;});const off=await measure();await page.evaluate(()=>{window.__landscape.interactionProps.group.visible=true;});

@@ -1,5 +1,6 @@
 // 다인원 성능 측정(가짜 등산객). dev 서버 필요: PORT=5197 node scripts/measure-multi.mjs [시나리오 id ...]
 // 가짜 등산객은 실제 멀티 경로(JSON 인코딩 → 지연 60ms·지터 20ms 가짜 방 → 디코딩 → 보간 → 모델/캡슐/이름표)를 그대로 탄다.
+import {waitChunks} from './lib/chunk-wait.mjs';
 import {chromium} from '@playwright/test';import {mkdirSync,writeFileSync,existsSync,readFileSync} from 'node:fs';
 const port=process.env.PORT??5197,dir='artifacts/multi';mkdirSync(dir,{recursive:true});
 const SCENES=[
@@ -32,7 +33,7 @@ try{for(const sc of list){
  const multi=await page.evaluate(()=>window.hiking.multi?.()??null);
  const heap=await page.evaluate(()=>performance.memory?.usedJSHeapSize??null);
  const night=await page.evaluate(()=>hiking.night().realLights);
- if(sc.shot)await page.screenshot({path:`${dir}/perf-${sc.id}.png`});
+ if(sc.shot)await (await waitChunks(page)).screenshot({path:`${dir}/perf-${sc.id}.png`});
  const avg=k=>rows.reduce((a,r)=>a+(r[k]??0),0)/rows.length;
  const cpu=Object.fromEntries(['hiker','contact','render','multi','camera','terrain'].map(k=>[k,+(rows.reduce((a,r)=>a+(r.cpu?.[k]??0),0)/rows.length).toFixed(2)]));
  out[sc.id]={label:sc.label,fps:+avg('fps').toFixed(1),avgFrameMs:+avg('avgMs').toFixed(2),p95:+avg('p95').toFixed(1),p99:+avg('p99').toFixed(1),max:+Math.max(...rows.map(r=>r.max??0)).toFixed(1),over50:rows.reduce((a,r)=>a+(r.over50??0),0),drawCalls:Math.round(avg('drawCalls')),triangles:Math.round(avg('triangles')),cpu,realLights:night,heapMB:heap?Math.round(heap/1048576):null,

@@ -1,5 +1,6 @@
 // 입구 광장·일주문 포장 위 풀 제거 전후 비교(headless Chrome 1440×900, 낮 11시 맑음, 높음, 3인칭).
 // 사용: TAG=before BASE_URL=http://127.0.0.1:5176 node scripts/capture-plaza-grass.mjs  (ONLY=plaza-third,gate-under 로 일부만)
+import {waitChunks} from './lib/chunk-wait.mjs';
 import {chromium} from '@playwright/test';
 import {mkdirSync,writeFileSync} from 'node:fs';
 const tag=process.env.TAG??'after',dir=`artifacts/plaza-grass/${tag}`;mkdirSync(dir,{recursive:true});
@@ -24,7 +25,7 @@ try{for(const [id,start,drag,wheel] of specs){if(only&&!only.includes(id))contin
  if(drag){await page.mouse.move(720,450);await page.mouse.down();await page.mouse.move(720+drag,450,{steps:16});await page.mouse.up();}
  if(wheel)await page.mouse.wheel(0,wheel);
  await page.waitForTimeout(6000);
- await page.screenshot({path:`${dir}/${id}.png`});
+ await (await waitChunks(page)).screenshot({path:`${dir}/${id}.png`});
  const row={id,start,drag,errors,shaderErrors:await page.evaluate(()=>hiking.rendering().shaderErrors),scenery:await page.evaluate(()=>{const s=hiking.metrics().landscape?.scenery;return s&&{visibleGrass:s.visibleGrass,visibleShrubs:s.visibleShrubs,pavedGrassCleared:s.pavedGrassCleared};})};
  rows.push(row);console.log(id,JSON.stringify(row));
  writeFileSync(`${dir}/results${only?'-'+only.join('-'):''}.json`,JSON.stringify(rows,null,2));await context.close();
