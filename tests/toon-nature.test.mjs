@@ -25,7 +25,9 @@ test('카툰 자연물: 원래 GLB id·LOD 파일명마다 새 모양을 돌려�
 
 test('카툰 나무: 밑동이 지면(y=0), 크기는 원래 카드 크기, 단계별 삼각형 상한(성능)', ()=>{
  const n=nature();
- const budget=[3200,800,200];
+ // 먼 단계(2)는 겨울 잔가지(덩어리 2개 × 3가닥·한 갈래 + 가지 2개, 약 90삼각형)를 더해 260.
+ // LOD가 나무 묶음 단위라 휴대폰에서는 가까운 나무도 먼 단계로 보여, 잔가지가 적으면 겨울 나무가 막대처럼 보였다.
+ const budget=[3200,800,260];
  for(const id of TOON_NATURE_IDS.species)for(const lod of [0,1,2]){
   const g=n.natureParts(`${id}-lod${lod}.glb`)[0].geometry;g.computeBoundingBox();
   assert.ok(Math.abs(g.boundingBox.min.y)<.08,`${id} lod${lod} 밑동 ${g.boundingBox.min.y}`);

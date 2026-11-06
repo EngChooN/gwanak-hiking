@@ -4,6 +4,7 @@ import {foliageUniforms} from '../../assets/realistic/foliage-shader.js';
 import {TOON,hexToRgb} from './palette.js';
 import {ROCK_CELL_GLSL,ROCK_BASE_DECL,rockShadeGLSL} from './rock-shade.js';
 import {BRUSH_GLSL} from './brush.js';
+import {SEASON_GLSL,SEASON_GRASS,bindSeason,seasonLinear} from './season.js';
 // 카툰 전용 자연물(카툰 2차 — 「야생의 숨결」 기준, 산풍경). 실사 GLB를 칠하지 않고 형태를 새로 만든다. 어떤 fetch도 하지 않는다.
 // 관악산 실제 수종·암석은 따르지 않는다(등고선·코스·서울 위치만 실제). 참고: design/ref-cartoon/01~06.
 //  - 활엽수: 둥근 잎 덩어리 여러 개가 겹친 둥근 수관(01_08·01_19·01_22) + 덩어리 표면의 잎 무늬(셰이더) + 윤곽을 깨는 잎 조각.
@@ -18,9 +19,11 @@ function rng(seed){let s=seed>>>0;return ()=>((s=(Math.imul(s,1664525)+101390422
 const smooth=(a,b,x)=>{const t=Math.max(0,Math.min(1,(x-a)/(b-a)));return t*t*(3-2*t);};
 
 // ── 메시 조립: position·normal·color·toonSway(바람 흔들림 폭, m) ──
+// toonPart(계절 셰이더가 읽는 부위): 0 줄기·굵은 가지, 1 활엽수 잎, 2 겨울에만 보이는 잔가지, 3 솔잎, 4 덤불 잎, 6 먼 활엽수 수관(겨울엔 회갈색 잔가지 안개).
+export const TOON_PART={trunk:0,leaf:1,twig:2,needle:3,bush:4,farCrown:6};
 class Builder{
- constructor(){this.p=[];this.n=[];this.c=[];this.s=[];this.extra=[];}
- vertex(p,n,c,sway=0,extra=0){this.p.push(p.x,p.y,p.z);this.n.push(n.x,n.y,n.z);this.c.push(c.r,c.g,c.b);this.s.push(sway);this.extra.push(extra);}
+ constructor(){this.p=[];this.n=[];this.c=[];this.s=[];this.extra=[];this.parts=[];this.part=0;}
+ vertex(p,n,c,sway=0,extra=0){this.p.push(p.x,p.y,p.z);this.n.push(n.x,n.y,n.z);this.c.push(c.r,c.g,c.b);this.s.push(sway);this.extra.push(extra);this.parts.push(this.part);}
  geometry(name,{extra=null}={}){
   const g=new THREE.BufferGeometry();
   g.setAttribute('position',new THREE.Float32BufferAttribute(this.p,3));
@@ -28,6 +31,7 @@ class Builder{
   g.setAttribute('color',new THREE.Float32BufferAttribute(this.c,3));
   g.setAttribute('toonSway',new THREE.Float32BufferAttribute(this.s,1));
   if(extra)g.setAttribute(extra,new THREE.Float32BufferAttribute(this.extra,1));
+  g.setAttribute('toonPart',new THREE.Float32BufferAttribute(this.parts,1));
   g.computeBoundingBox();g.computeBoundingSphere();g.name=name;g.userData.shared=true;g.userData.toonNature=true;
   return g;
  }
@@ -147,10 +151,13 @@ const SPECIES={
  pine_sapling_medium:{kind:'sapling',height:5.0,width:3.4,seed:47},
 };
 // LOD별 덩어리 수·세분. 잎 조각(tufts)은 덩어리마다.
+// twigs·forks·twigSides: 겨울 잔가지(덩어리마다 잔가지 수·잔가지마다 갈래 수·단면 각 수).
+// LOD는 나무 묶음(청크) 단위로 바뀌어 먼 단계(2) 나무도 카메라 가까이 올 수 있다. 그래서 먼 단계에도 잔가지를 두고,
+// 겨울 수관(부위 6)은 실제로 먼 나무(약 100m~)에서만 회갈색 안개로 남긴다(셰이더).
 const BROADLEAF_LOD=[
- {lumps:7,detail:2,trunkSides:9,branches:4,rings:4,tufts:40},
- {lumps:5,detail:1,trunkSides:6,branches:3,rings:3,tufts:10},
- {lumps:2,detail:1,trunkSides:4,branches:0,rings:1,tufts:0},
+ {lumps:7,detail:2,trunkSides:9,branches:4,rings:4,tufts:40,twigs:5,forks:2,twigSides:4},
+ {lumps:5,detail:1,trunkSides:6,branches:3,rings:3,tufts:10,twigs:3,forks:1,twigSides:3},
+ {lumps:2,detail:1,trunkSides:4,branches:0,rings:1,tufts:0,twigs:3,forks:1,twigSides:3},
 ];
 // 둥근 수관: 맨 위 덩어리 하나 + 둘레 덩어리(가운데 높이) + 아래 둘레 덩어리. 덩어리끼리 많이 겹쳐 하나의 둥근 수관으로 읽히고,
 // 윤곽만 덩어리 수만큼 울퉁불퉁하다(01_08). 줄기는 0.3H에서 가지로 갈라져 수관 밑으로 들어간다.
@@ -178,8 +185,35 @@ function broadleaf(spec,lod,palette){
   addLimb(b,{a:fork.clone(),b:t,ra:W*.032,rb:W*.016,sides:Math.max(4,L.trunkSides-3),rings:2,color:palette.trunk,swayOf,dark:.92,bow:new THREE.Vector3(0,H*.03,0)});
  }
  if(L.branches)addLimb(b,{a:fork.clone(),b:lumps[0].c.clone().add(new THREE.Vector3(0,-lumps[0].r*.5,0)),ra:W*.03,rb:W*.015,sides:Math.max(4,L.trunkSides-3),rings:1,color:palette.trunk,swayOf,dark:.92});
+ // 겨울 잔가지(toonPart 2): 잎 덩어리 안에 숨어 있다가 겨울에 잎이 지면 보인다. 굵은 가지가 없는 덩어리에도 갈래점에서 가지를 낸다.
+ if(L.twigs)addWinterTwigs(b,{lumps,fork,W,H,L,palette,swayOf,seed:spec.seed*31});
+ b.part=lod===2?TOON_PART.farCrown:TOON_PART.leaf;
  lumps.forEach((l,i)=>addLump(b,{center:l.c,radius:new THREE.Vector3(l.r,l.r*.84,l.r),detail:L.detail,seed:spec.seed*7+i,crown:crownC,leaf:palette.leaf,shade:palette.leafShade,swayOf,jag:lod===2?.06:.09,bend:.6,variation:.06,tufts:L.tufts}));
+ b.part=TOON_PART.trunk;
  return b;
+}
+// 겨울 가지(「앙상한 가지」): 덩어리마다 가운데 아래(굵은 가지 끝)에서 위·바깥으로 잔가지가 뻗고, 가까운 단계는 잔가지에서 다시 두 갈래.
+// 가지 윗면에는 셰이더가 눈을 얹는다(옆을 향한 줄기에는 얹지 않는다).
+function addWinterTwigs(b,{lumps,fork,W,H,L,palette,swayOf,seed}){
+ const r=rng(seed),dir=new THREE.Vector3(),prev=b.part;b.part=TOON_PART.twig;
+ const limb=(a,end,ra,rb,sides)=>addLimb(b,{a,b:end,ra,rb,sides,rings:1,color:palette.trunk,swayOf,dark:.95});
+ lumps.forEach((l,i)=>{
+  const base=l.c.clone();base.y-=l.r*(i===0?.5:.35);
+  // 굵은 가지가 없는 덩어리(LOD 단계마다 가지 수가 다르다)는 갈래점에서 이어 준다.
+  if(i>L.branches||!L.branches)limb(fork.clone(),base,W*.026,W*.013,4);
+  for(let k=0;k<L.twigs;k++){
+   const a=k/L.twigs*Math.PI*2+r()*.8,up=.35+r()*.55;
+   dir.set(Math.cos(a)*(1-up*.6),up,Math.sin(a)*(1-up*.6)).normalize();
+   const len=l.r*(.95+r()*.3),end=base.clone().addScaledVector(dir,len);
+   limb(base,end,W*.012,W*.004,L.twigSides);
+   for(let j=0;j<L.forks;j++){
+    const from=base.clone().addScaledVector(dir,len*(.45+j*.2)),side=new THREE.Vector3(-dir.z,0,dir.x).normalize().multiplyScalar(j%2?-1:1);
+    const d2=dir.clone().multiplyScalar(.7).addScaledVector(side,.6+r()*.3);d2.y+=.25;d2.normalize();
+    limb(from,from.clone().addScaledVector(d2,len*(.38+r()*.15)),W*.006,W*.0025,3);
+   }
+  }
+ });
+ b.part=prev;
 }
 const PINE_LOD=[{tiers:8,segments:14,trunkSides:7,rings:3,tufts:3},{tiers:6,segments:9,trunkSides:5,rings:2,tufts:2},{tiers:4,segments:7,trunkSides:3,rings:1,tufts:1}];
 // 층진 원뿔 침엽수(「야생의 숨결」 전나무형): 아래 0.15H만 줄기가 보이고, 그 위는 처진 층을 겹겹이 쌓아 꼭대기로 좁아진다.
@@ -195,14 +229,15 @@ function pine(spec,lod,palette,{sapling=false}={}){
   // 원뿔: 아래층 반지름 0.5W → 꼭대기 0.1W. 층마다 ±8%.
   const radius=W*THREE.MathUtils.lerp(.5,.1,t)*(.92+r()*.16);
   const off=new THREE.Vector3((r()-.5)*W*.04,0,(r()-.5)*W*.04);
-  addTier(b,{y,height:H*THREE.MathUtils.lerp(sapling?.22:.15,sapling?.16:.12,t),radius,segments:L.segments,seed:spec.seed*13+i,needle:palette.pine,shade:palette.pineShade,swayOf,offset:off,droop:.5,tufts:L.tufts});
+  b.part=TOON_PART.needle;addTier(b,{y,height:H*THREE.MathUtils.lerp(sapling?.22:.15,sapling?.16:.12,t),radius,segments:L.segments,seed:spec.seed*13+i,needle:palette.pine,shade:palette.pineShade,swayOf,offset:off,droop:.5,tufts:L.tufts});b.part=TOON_PART.trunk;
  }
  return b;
 }
 
 // 어린 나무(pine_sapling 자리, 재판정): 층진 원뿔 대신 둥근 잎 덩어리를 쌓은 관목. 가까이서 짙은 초록 피라미드로 읽혔다
 // (계곡 장면, 참고 02_02·01_22 물가 덤불은 둥글다). 아래 둘레 덩어리 셋 + 가운데 위 덩어리 둘, 줄기는 밑동만 살짝.
-const SAPLING_LOD=[{detail:2,tufts:10,trunkSides:5},{detail:1,tufts:3,trunkSides:4},{detail:1,tufts:0,trunkSides:3}];
+// 겨울에는 어린 나무도 잎이 지고 잔가지만 남는다(눈 덮인 5m 둥근 덩어리로 남으면 큰 풍선처럼 보였다).
+const SAPLING_LOD=[{detail:2,tufts:10,trunkSides:5,branches:0,twigs:4,forks:1,twigSides:3},{detail:1,tufts:3,trunkSides:4,branches:0,twigs:3,forks:0,twigSides:3},{detail:1,tufts:0,trunkSides:3,branches:0,twigs:3,forks:1,twigSides:3}];
 function saplingBush(spec,lod,palette){
  const L=SAPLING_LOD[lod],b=new Builder(),r=rng(spec.seed),H=spec.height,W=spec.width;
  const swayOf=y=>.14*Math.pow(Math.max(0,y)/H,2),crown=new THREE.Vector3(0,H*.42,0);
@@ -212,13 +247,16 @@ function saplingBush(spec,lod,palette){
  lumps.push([W*.04,H*.52,-W*.03,W*.34],[-W*.05,H*.7,W*.02,W*.26]);
  // 먼 단계는 크게 겹친 덩어리 둘(삼각형 상한).
  if(lod===2)lumps.splice(0,lumps.length,[0,H*.36,0,W*.42],[W*.03,H*.66,-W*.02,W*.3]);
+ addWinterTwigs(b,{lumps:lumps.map(([x,y,z,rr])=>({c:new THREE.Vector3(x,y,z),r:rr*.8})),fork:new THREE.Vector3(0,H*.28,0),W,H,L,palette,swayOf,seed:spec.seed*29});
+ b.part=lod===2?TOON_PART.farCrown:TOON_PART.leaf;
  lumps.forEach(([x,y,z,rr],i)=>addLump(b,{center:new THREE.Vector3(x,y,z),radius:new THREE.Vector3(rr,rr*.9,rr),detail:L.detail,seed:spec.seed*5+i,crown,leaf:palette.bush,shade:palette.bushShade,swayOf,jag:.08,bend:.6,variation:.06,tufts:L.tufts}));
+ b.part=TOON_PART.trunk;
  return b;
 }
 
 // 덤불(숲 덤불층 대체): 높이 약 1.1m의 둥근 잎 덩어리 셋. 세분 2단 + 작은 굴곡이라 가까이서도 각진 다각형 윤곽이 보이지 않는다.
 function shrub(palette){
- const b=new Builder(),crown=new THREE.Vector3(0,.4,0),swayOf=y=>.06*Math.pow(Math.max(0,y)/1.1,2);
+ const b=new Builder();b.part=TOON_PART.bush;const crown=new THREE.Vector3(0,.4,0),swayOf=y=>.06*Math.pow(Math.max(0,y)/1.1,2);
  [[0,.6,0,.4],[.36,.42,.14,.32],[-.3,.4,-.22,.33]].forEach(([x,y,z,rr],i)=>addLump(b,{center:new THREE.Vector3(x,y,z),radius:new THREE.Vector3(rr*1.12,rr*.86,rr*1.12),detail:2,seed:500+i,crown,leaf:palette.bush,shade:palette.bushShade,swayOf,jag:.08,bend:.6,variation:.06,tufts:8}));
  return b;
 }
@@ -321,6 +359,37 @@ vColor*=color.rgb;
 #if defined(USE_COLOR)||defined(USE_INSTANCING_COLOR)
 {vec2 a=tnAnchor().xz;float h=tnHash(a),g=tnHash(a+17.3);vColor*=mix(vec3(.88,.93,.84),vec3(1.08,1.06,.96),h)*mix(vec3(1.06,1.02,.9),vec3(.94,1.,1.06),g);}
 #endif`;
+// 계절(나무·덤불): 부위(toonPart)별로 여름 정점색을 계절 색으로 옮긴다. 밝은 면 위치 t는 여름 잎·그늘 명도 사이에서 잰다.
+// 겨울에는 잎(1)을 접어 숨기고 잔가지(2)를 편다. 먼 수관(6)은 회갈색 잔가지 안개색. 가중치 0.5에서 바뀐다.
+const seasonFoliageVertex=lum=>`
+{
+ vec3 a=tnAnchor();float th=tnHash(a.xz+41.7);int part=int(toonPart+.5);vec3 c=vColor;
+ if(part==1||part==6){float t=clamp((tsLuma(c)-${lum.leafShade})/${lum.leafSpan},0.,1.3);c=tsLeafColor(c,t,th,a.y);
+  if(part==6)c=mix(c,tsPair(t,TS_TWIG,TS_TWIG_SHADE)*.8,tsW.w);}
+ else if(part==4){float t=clamp((tsLuma(c)-${lum.bushShade})/${lum.bushSpan},0.,1.3);c=tsBushColor(c,t,th);c=mix(c,tsPair(t,TS_TWIG*.85,TS_TWIG_SHADE*.75),tsW.w);}
+ else if(part==3){float t=clamp((tsLuma(c)-${lum.pineShade})/${lum.pineSpan},0.,1.3);c=mix(c,tsPair(t,TS_PINE,TS_PINE_SHADE),tsW.z*.6+tsW.w);}
+ else c=mix(c,TS_BARK*clamp(tsLuma(c)/${lum.trunk},.6,1.2),tsW.w*.85);
+ vColor=c;vTsPart=float(part);
+}`;
+const SEASON_FOLIAGE_SHAPE=`
+{
+ int part=int(toonPart+.5);float winter=step(.5,tsW.w);
+ // 먼 단계 수관(6)은 겨울에 가까우면 접고(잔가지만), 멀면(160~200m~) 조금 작은 회갈색 잔가지 안개로 남긴다.
+ vec3 tsA=tnAnchor();float far=step(160.+40.*tnHash(tsA.xz+5.3),distance(cameraPosition.xz,tsA.xz));
+ if(part==6&&winter>.5)transformed=mix(vec3(0.,transformed.y*.92,0.),transformed,.82);
+ if((part==1||part==6&&far<.5)&&winter>.5||part==2&&winter<.5)transformed=vec3(0.,-60.,0.);
+ vec3 tsN=objectNormal;
+ #ifdef USE_INSTANCING
+ tsN=mat3(instanceMatrix)*tsN;
+ #endif
+ vTsUp=normalize(mat3(modelMatrix)*tsN).y;
+}`;
+// 겨울 눈: 가지 윗면에 가는 흰 선, 솔잎 층 위에 소복이, 덤불은 위쪽이 눈 덮인 둔덕, 먼 수관은 위쪽에 점점이.
+const SEASON_FOLIAGE_SNOW=`
+if(tsW.w>.01){
+ float p=vTsPart,snow=p<2.5?tsSnowCover(vTnLeaf*3.,vTsUp,.3,.55):p<3.5?tsSnowCover(vTnLeaf*1.7,vTsUp,.5,.78):p<4.5?tsSnowCover(vTnLeaf*1.3,vTsUp,-.45,.05):.3*tsSnowCover(vTnLeaf*.8,vTsUp,.45,.85);
+ diffuseColor.rgb=mix(diffuseColor.rgb,TS_SNOW,snow);
+}`;
 const NATURE_SWAY=`
 {
  // 수관 전체가 한 몸으로 기울었다 돌아오고(돌풍), 잎 덩어리는 조금 빠르게 떤다. 밑동(toonSway=0)은 고정.
@@ -359,38 +428,45 @@ export function createToonNature({gradientMap,uniforms}){
   grassBase:linear(N.grassBase),grassTip:linear(N.grassTip),
  };
  const status={parts:0,triangles:{},grassSwaps:0,shrubSwaps:0,rocks:0};
+ // 계절 색 옮기기에 쓰는 여름 명도(선형): 잎·덤불·솔잎의 그늘 명도와 밝은 면까지의 폭, 줄기.
+ const Y=c=>c.r*.2126+c.g*.7152+c.b*.0722,f4=v=>v.toFixed(4);
+ const lum={leafShade:f4(Y(palette.leafShade)),leafSpan:f4(Y(palette.leaf)-Y(palette.leafShade)),bushShade:f4(Y(palette.bushShade)),bushSpan:f4(Y(palette.bush)-Y(palette.bushShade)),
+  pineShade:f4(Y(palette.pineShade)),pineSpan:f4(Y(palette.pine)-Y(palette.pineShade)),trunk:f4(Y(palette.trunk))};
  const bind=shader=>{shader.uniforms.foliageTime=foliageUniforms.foliageTime;shader.uniforms.toonWaveStrength=uniforms.toonWaveStrength;shader.uniforms.toonWindDir=uniforms.toonWindDir;};
 
  // 나무·덤불 공용(정점색 = 재질색). 그림자는 받기만 한다.
  const foliage=new THREE.MeshToonMaterial({name:'toon-nature-foliage',gradientMap,vertexColors:true});
  foliage.onBeforeCompile=shader=>{
-  bind(shader);
-  shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\n'+NATURE_VERTEX_COMMON+'varying vec3 vTnLeaf;')
-   .replace('#include <color_vertex>',NATURE_COLOR_VERTEX).replace('#include <begin_vertex>','#include <begin_vertex>\nvTnLeaf=position+tnAnchor()*.37;\n'+NATURE_SWAY);
-  shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nvarying vec3 vTnLeaf;\n'+LEAF_GLSL)
+  bind(shader);bindSeason(shader);
+  shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\n'+NATURE_VERTEX_COMMON+SEASON_GLSL+'attribute float toonPart;varying vec3 vTnLeaf;varying float vTsPart;varying float vTsUp;')
+   .replace('#include <color_vertex>',NATURE_COLOR_VERTEX+seasonFoliageVertex(lum)).replace('#include <begin_vertex>','#include <begin_vertex>\nvTnLeaf=position+tnAnchor()*.37;\n'+NATURE_SWAY+SEASON_FOLIAGE_SHAPE);
+  shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nvarying vec3 vTnLeaf;varying float vTsPart;varying float vTsUp;\n'+SEASON_GLSL+LEAF_GLSL)
    .replace('#include <color_fragment>',`#include <color_fragment>
     {
      // 잎 무늬(카툰 2차, 참고 01_08·01_19·01_22): 덩어리 표면에 밝은 잎 뭉치와 그 사이 짙은 틈. 한 덩어리가 단색 판으로 보이지 않게.
      // 잎 뭉치(${N.leafCell}m)가 픽셀보다 잘아지면 접는다.
      float px=length(vViewPosition)*.0014,fade=1.-smoothstep(.1,.4,px/${N.leafCell.toFixed(3)});
-     // 잎(초록) 정점만: 줄기·가지(갈색)는 무늬 없이. 접힌 곳은 잡음을 계산하지 않는다(GPU 절약).
-     fade*=smoothstep(.0,.06,vColor.g-vColor.r);
+     // 잎 정점만(부위 1·3·4·6): 줄기·가지는 무늬 없이. 접힌 곳은 잡음을 계산하지 않는다(GPU 절약). 단풍색도 잎으로 본다.
+     fade*=step(.5,abs(vTsPart-2.))*step(.5,vTsPart);
      if(fade>.01){float lf=tnLeaf(vTnLeaf/${N.leafCell.toFixed(3)});
      diffuseColor.rgb*=1.+fade*(${N.leafLight.toFixed(3)}*smoothstep(.58,.66,lf)-${N.leafGap.toFixed(3)}*(1.-smoothstep(.26,.34,lf)));}
-    }`)
+    }
+    ${SEASON_FOLIAGE_SNOW}`)
    .replace('#include <lights_fragment_end>','#include <lights_fragment_end>\n'+NATURE_RIM.replace('RIM',N.rim.toFixed(3)));
  };
- foliage.customProgramCacheKey=()=> 'toon-nature-foliage-v2b-leaf';
+ foliage.customProgramCacheKey=()=> 'toon-nature-foliage-v3-season';
  foliage.userData.shared=true;foliage.userData.toonNature='foliage';
 
  // 풀 다발: 꽃(toonFlower)은 다발마다 일부만 핀다. 잎은 바람 물결 띠가 지나갈 때 밝아진다.
+ const v3=c=>`vec3(${c.r.toFixed(4)},${c.g.toFixed(4)},${c.b.toFixed(4)})`;
+ const grassGlsl=Object.fromEntries(['spring','summer','autumn','winter'].map(k=>[k,SEASON_GRASS[k]?SEASON_GRASS[k].map(h=>v3(seasonLinear(h))):[v3(palette.grassBase),v3(palette.grassTip)]]));
  const makeGrass=(field=false)=>{
  const grass=new THREE.MeshToonMaterial({name:field?'toon-nature-grass-field':'toon-nature-grass',gradientMap,vertexColors:true,side:THREE.DoubleSide});
  const fieldUniforms={tgFieldRadius:{value:30}};if(field)grass.userData.fieldUniforms=fieldUniforms;
  grass.onBeforeCompile=shader=>{
-  bind(shader);if(field)Object.assign(shader.uniforms,fieldUniforms);
+  bind(shader);bindSeason(shader);if(field)Object.assign(shader.uniforms,fieldUniforms);
   Object.assign(shader.uniforms,{tgFlowerA:{value:linear(N.flowerA)},tgFlowerB:{value:linear(N.flowerB)},tgBand:{value:linear(N.grassBand)}});
-  shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\n'+NATURE_VERTEX_COMMON+'attribute float toonFlower;uniform vec3 tgFlowerA,tgFlowerB;uniform float tgFieldRadius;varying float vTgBand;varying float vTgTip;')
+  shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\n'+NATURE_VERTEX_COMMON+SEASON_GLSL+'attribute float toonFlower;uniform vec3 tgFlowerA,tgFlowerB;uniform float tgFieldRadius;varying float vTgBand;varying float vTgTip;')
    .replace('#include <color_vertex>',NATURE_COLOR_VERTEX+`
     {
      vec3 a=tnAnchor();float h=tnHash(a.xz*1.37+3.1);
@@ -399,6 +475,14 @@ export function createToonNature({gradientMap,uniforms}){
      // 짙은 다발은 덩어리째(약 8~15m 얼룩) 모인다. 그늘색 #53794a 쪽.
      vColor*=mix(1.,${N.clumpDark.toFixed(3)},clamp(step(.8,h)*.5+smoothstep(.15,.55,clump),0.,1.))*(1.-toonFlower);
      vColor+=toonFlower*mix(tgFlowerA,tgFlowerB,step(.5,fract(h*7.3)));
+    }
+    {
+     // 계절 풀색: 밑동→끝 색을 계절 짝으로 바꾸고, 짙은 다발 얼룩(여름 대비 명도 비)은 그대로 둔다. 봄 꽃은 분홍·흰색.
+     float gt=clamp(position.y/.55,0.,1.);vec3 ref=mix(${grassGlsl.summer[0]},${grassGlsl.summer[1]},gt);
+     float ratio=clamp(tsLuma(vColor)/max(tsLuma(ref),1e-3),.4,1.3);
+     vec3 g=vColor*tsW.y+(mix(${grassGlsl.spring[0]},${grassGlsl.spring[1]},gt)*tsW.x+mix(${grassGlsl.autumn[0]},${grassGlsl.autumn[1]},gt)*tsW.z+mix(${grassGlsl.winter[0]},${grassGlsl.winter[1]},gt)*tsW.w)*ratio;
+     float pink=step(.45,fract(tnHash(tnAnchor().xz*1.37+3.1)*5.1));
+     vColor=mix(g,mix(vColor,mix(vec3(1.,.62,.78),vec3(1.,.93,.95),pink),tsW.x),toonFlower);
     }`)
    .replace('#include <begin_vertex>',`#include <begin_vertex>
     ${field?`{
@@ -409,22 +493,24 @@ export function createToonNature({gradientMap,uniforms}){
     {
      // 꽃은 다발의 일부에만 핀다(나머지는 꽃 정점을 밑동으로 접는다).
      vec3 a=tnAnchor();
-     if(toonFlower>.5&&tnHash(a.xz*2.11+.7)>${N.flowerShare.toFixed(3)})transformed=vec3(0.,-.05,0.);
+     // 봄에는 더 많이(30%), 가을·겨울에는 피지 않는다. 겨울 풀은 눈에 묻혀 키가 38%.
+     if(toonFlower>.5&&tnHash(a.xz*2.11+.7)>${N.flowerShare.toFixed(3)}*tsW.y+.3*tsW.x)transformed=vec3(0.,-.05,0.);
+     transformed.y*=1.-.62*tsW.w;
      // 바람 물결 띠: 바람 방향으로 흐르는 넓은 밝은 띠(색만 바뀌고 형태는 그대로).
      float along=dot(a.xz,toonWindDir);
      vTgBand=smoothstep(.55,.95,sin(along*.09-foliageTime*1.6)*.5+.5+sin(along*.023+a.x*.011-foliageTime*.7)*.25)*(1.-toonFlower);
      vTgTip=clamp(position.y/.55,0.,1.);
     }`);
-  shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nuniform vec3 tgBand;uniform float toonWaveStrength;varying float vTgBand;varying float vTgTip;')
+  shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nuniform vec3 tgBand;uniform float toonWaveStrength;uniform vec4 tsW;varying float vTgBand;varying float vTgTip;')
    .replace('#include <color_fragment>',`#include <color_fragment>
-    diffuseColor.rgb=mix(diffuseColor.rgb,tgBand*mix(.8,1.,vTgTip),vTgBand*${N.bandAmount.toFixed(3)}*toonWaveStrength*vTgTip);`)
+    diffuseColor.rgb=mix(diffuseColor.rgb,tgBand*mix(.8,1.,vTgTip),vTgBand*${N.bandAmount.toFixed(3)}*toonWaveStrength*vTgTip*(1.-tsW.w-tsW.z*.6));`)
    // 양면 풀잎의 뒷면도 위를 향한 법선으로 칠한다(뒷면이 아래를 향해 짙게 뜨면 풀밭이 얼룩진다).
    .replace('#include <normal_fragment_begin>','#include <normal_fragment_begin>\n normal=normalize(vNormal);')
    .replace('#include <lights_fragment_end>','#include <lights_fragment_end>\n'+NATURE_RIM.replace('RIM',(N.rim*.6).toFixed(3)))
    // 외곽선 제외 표시(알파 .5).
    .replace('#include <opaque_fragment>','#include <opaque_fragment>\n gl_FragColor.a=min(gl_FragColor.a,.5);');
  };
- grass.customProgramCacheKey=()=>`toon-nature-grass-v2${field?'-field':''}`;
+ grass.customProgramCacheKey=()=>`toon-nature-grass-v3-season${field?'-field':''}`;
  grass.userData.shared=true;grass.userData.toonNature='grass';
  return grass;
  };
@@ -434,7 +520,7 @@ export function createToonNature({gradientMap,uniforms}){
  const rockMaterial=cliff=>{
   const m=new THREE.MeshToonMaterial({name:cliff?'toon-nature-cliff':'toon-nature-rock',gradientMap,color:linear(N.rock)});
   m.onBeforeCompile=shader=>{
-   Object.assign(shader.uniforms,{trMoss:{value:linear(N.moss)},trMossDark:{value:linear(N.mossDark)},trDark:{value:linear(N.rockDark)}});
+   Object.assign(shader.uniforms,{trMoss:{value:linear(N.moss)},trMossDark:{value:linear(N.mossDark)},trDark:{value:linear(N.rockDark)}});bindSeason(shader);
    shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 vTrWorld;varying vec3 vTrNormal;varying vec3 vTrLocal;')
     .replace('#include <project_vertex>',`#include <project_vertex>
      {
@@ -449,7 +535,7 @@ export function createToonNature({gradientMap,uniforms}){
      trcBaseN=normal;`)
     .replace('#include <common>',`#include <common>
     uniform vec3 trMoss,trMossDark,trDark;varying vec3 vTrWorld;varying vec3 vTrNormal;varying vec3 vTrLocal;
-    float trRockMask=1.;${ROCK_BASE_DECL}
+    float trRockMask=1.;${ROCK_BASE_DECL}${SEASON_GLSL}
     ${ROCK_CELL_GLSL}${BRUSH_GLSL}
     float trHash(vec3 p){return fract(sin(dot(p,vec3(12.9898,78.233,37.719)))*43758.5453);}
     float trNoise(vec3 p){vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
@@ -459,11 +545,13 @@ export function createToonNature({gradientMap,uniforms}){
      {
       // 야숨 바위 칠(재판정, 참고 04_19·04_20·04_09): 회색 바탕 + 어두운 녹회 얼룩 + 이끼. 지형 암반과 같은 함수(trcPaint).
       vec3 wp=vTrWorld,wn=normalize(vTrNormal);if(!gl_FrontFacing)wn=-wn;float px=trcPixel(wp,wn),moss;
-      diffuseColor.rgb=trcPaint(wp,wn,diffuseColor.rgb,trDark,trMoss,trMossDark,px,${(N.mossLevel-.84).toFixed(3)},moss);
+      diffuseColor.rgb=trcPaint(wp,wn,diffuseColor.rgb,trDark,tsMossTint(trMoss),tsMossTint(trMossDark),px,${(N.mossLevel-.84).toFixed(3)},moss);
       trRockMask=1.-moss*.8;
+      // 겨울: 평평한 윗면·턱에만 눈. 가파른 면(약 45° 이상)은 맨 바위로 남긴다(회색 바위와 흰 눈의 줄무늬).
+      float snow=tsSnowCover(wp,wn.y,.6,.82);diffuseColor.rgb=mix(diffuseColor.rgb,TS_SNOW,snow);trRockMask*=1.-snow;
      }`);
   };
-  m.customProgramCacheKey=()=>`toon-nature-rock-v5-paint-${cliff?'cliff':'rock'}`;
+  m.customProgramCacheKey=()=>`toon-nature-rock-v6-season-${cliff?'cliff':'rock'}`;
   m.userData.shared=true;m.userData.toonNature='rock';m.userData.toonRock=true;
   return m;
  };
@@ -530,6 +618,7 @@ export function createToonNature({gradientMap,uniforms}){
   const acc=new Map(),key=i=>`${Math.round(p.getX(i)*500)},${Math.round(p.getY(i)*500)},${Math.round(p.getZ(i)*500)}`;
   for(let i=0;i<p.count;i++){const k=key(i),a=acc.get(k)??[0,0,0];a[0]+=n.getX(i);a[1]+=n.getY(i);a[2]+=n.getZ(i);acc.set(k,a);}
   for(let i=0;i<p.count;i++){const a=acc.get(key(i)),l=Math.hypot(...a)||1;n.setXYZ(i,a[0]/l,a[1]/l,a[2]/l);}
+  g.setAttribute('toonPart',new THREE.Float32BufferAttribute(new Float32Array(p.count).fill(TOON_PART.bush),1));
   g.userData.shared=true;mesh.geometry=g;
   if(!hedgeMaterial){hedgeMaterial=foliage.clone();hedgeMaterial.onBeforeCompile=foliage.onBeforeCompile;hedgeMaterial.customProgramCacheKey=foliage.customProgramCacheKey;hedgeMaterial.color.copy(palette.bush).multiplyScalar(.95);hedgeMaterial.userData={...foliage.userData,shared:true};}
   mesh.material=hedgeMaterial;mesh.userData.toonHedge=true;status.hedges=(status.hedges??0)+1;

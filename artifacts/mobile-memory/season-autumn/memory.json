@@ -1,0 +1,418 @@
+{
+ "base": "http://127.0.0.1:4173/",
+ "label": "season-autumn",
+ "seconds": 30,
+ "engines": {
+  "webkit": {
+   "startMs": 9927,
+   "loads": 1,
+   "downloadedMB": 0,
+   "errors": [],
+   "peakTotalMB": 246.6,
+   "peakGeometryMB": 128.2,
+   "peakHeapMB": 0,
+   "rows": [
+    {
+     "geometryMB": 37.6,
+     "instancedMB": 52.9,
+     "textureMB": 51.5,
+     "renderTargetsMB": 13.9,
+     "totalMB": 156,
+     "meshes": 12939,
+     "drawingBuffer": [
+      390,
+      664
+     ],
+     "dpr": 1,
+     "info": {
+      "geometries": 199,
+      "textures": 27
+     },
+     "jsHeapMB": null,
+     "lost": 0,
+     "s": -26.117207311606073,
+     "cities": 0,
+     "fps": 333.3333333333333,
+     "quality": 0,
+     "tris": 633216,
+     "t": 0
+    },
+    {
+     "geometryMB": 71.5,
+     "instancedMB": 52.9,
+     "textureMB": 51.5,
+     "renderTargetsMB": 13.9,
+     "totalMB": 189.8,
+     "meshes": 12943,
+     "drawingBuffer": [
+      390,
+      664
+     ],
+     "dpr": 1,
+     "info": {
+      "geometries": 201,
+      "textures": 27
+     },
+     "jsHeapMB": null,
+     "lost": 0,
+     "s": -26.117207311606073,
+     "cities": 5,
+     "fps": 333.3333333333333,
+     "quality": 0,
+     "tris": 633216,
+     "t": 2
+    },
+    {
+     "geometryMB": 71.5,
+     "instancedMB": 52.9,
+     "textureMB": 51.5,
+     "renderTargetsMB": 13.9,
+     "totalMB": 189.8,
+     "meshes": 12943,
+     "drawingBuffer": [
+      390,
+      664
+     ],
+     "dpr": 1,
+     "info": {
+      "geometries": 207,
+      "textures": 28
+     },
+     "jsHeapMB": null,
+     "lost": 0,
+     "s": -26.117207311606073,
+     "cities": 11,
+     "fps": 52.19780219780231,
+     "quality": 0,
+     "tris": 875690,
+     "t": 4
+    },
+    {
+     "geometryMB": 71.5,
+     "instancedMB": 52.9,
+     "textureMB": 51.5,
+     "renderTargetsMB": 13.9,
+     "totalMB": 189.8,
+     "meshes": 12943,
+     "drawingBuffer": [
+      390,
+      664
+     ],
+     "dpr": 1,
+     "info": {
+      "geometries": 207,
+      "textures": 28
+     },
+     "jsHeapMB": null,
+     "lost": 0,
+     "s": -26.117207311606073,
+     "cities": 18,
+     "fps": 52.19780219780231,
+     "quality": 0,
+     "tris": 875690,
+     "t": 6
+    },
+    {
+     "geometryMB": 71.5,
+     "instancedMB": 52.9,
+     "textureMB": 51.5,
+     "renderTargetsMB": 13.9,
+     "totalMB": 189.8,
+     "meshes": 12943,
+     "drawingBuffer": [
+      390,
+      664
+     ],
+     "dpr": 1,
+     "info": {
+      "geometries": 207,
+      "textures": 28
+     },
+     "jsHeapMB": null,
+     "lost": 0,
+     "s": -26.117207311606073,
+     "cities": 24,
+     "fps": 59.26294820717143,
+     "quality": 0,
+     "tris": 874020,
+     "t": 8
+    },
+    {
+     "geometryMB": 71.5,
+     "instancedMB": 52.9,
+     "textureMB": 51.5,
+     "renderTargetsMB": 13.9,
+     "totalMB": 189.8,
+     "meshes": 12943,
+     "drawingBuffer": [
+      390,
+      664
+     ],
+     "dpr": 1,
+     "info": {
+      "geometries": 208,
+      "textures": 28
+     },
+     "jsHeapMB": null,
+     "lost": 0,
+     "s": -26.117207311606073,
+     "cities": 31,
+     "fps": 59.26294820717143,
+     "quality": 0,
+     "tris": 874020,
+     "t": 10
+    },
+    {
+     "geometryMB": 128.2,
+     "instancedMB": 52.9,
+     "textureMB": 51.5,
+     "renderTargetsMB": 13.9,
+     "totalMB": 246.6,
+     "meshes": 13091,
+     "drawingBuffer": [
+      390,
+      664
+     ],
+     "dpr": 1,
+     "info": {
+      "geometries": 209,
+      "textures": 28
+     },
+     "jsHeapMB": null,
+     "lost": 0,
+     "s": -26.117207311606073,
+     "cities": 32,
+     "fps": 58.501369180980916,
+     "quality": 0,
+     "tris": 879182,
+     "t": 12
+    },
+    {
+     "geometryMB": 128.2,
+     "instancedMB": 52.9,
+     "textureMB": 51.5,
+     "renderTargetsMB": 13.9,
+     "totalMB": 246.6,
+     "meshes": 13091,
+     "drawingBuffer": [
+      390,
+      664
+     ],
+     "dpr": 1,
+     "info": {
+      "geometries": 209,
+      "textures": 28
+     },
+     "jsHeapMB": null,
+     "lost": 0,
+     "s": -26.117207311606073,
+     "cities": 32,
+     "fps": 58.501369180980916,
+     "quality": 0,
+     "tris": 879182,
+     "t": 14
+    },
+    {
+     "geometryMB": 128.2,
+     "instancedMB": 52.9,
+     "textureMB": 51.5,
+     "renderTargetsMB": 13.9,
+     "totalMB": 246.6,
+     "meshes": 13091,
+     "drawingBuffer": [
+      390,
+      664
+     ],
+     "dpr": 1,
+     "info": {
+      "geometries": 209,
+      "textures": 28
+     },
+     "jsHeapMB": null,
+     "lost": 0,
+     "s": -26.117207311606073,
+     "cities": 32,
+     "fps": 59.99502116006983,
+     "quality": 0,
+     "tris": 874114,
+     "t": 16
+    },
+    {
+     "geometryMB": 128.2,
+     "instancedMB": 52.9,
+     "textureMB": 51.5,
+     "renderTargetsMB": 13.9,
+     "totalMB": 246.6,
+     "meshes": 13091,
+     "drawingBuffer": [
+      390,
+      664
+     ],
+     "dpr": 1,
+     "info": {
+      "geometries": 209,
+      "textures": 28
+     },
+     "jsHeapMB": null,
+     "lost": 0,
+     "s": -26.117207311606073,
+     "cities": 32,
+     "fps": 59.99502116006983,
+     "quality": 0,
+     "tris": 874114,
+     "t": 18
+    },
+    {
+     "geometryMB": 128.2,
+     "instancedMB": 52.9,
+     "textureMB": 51.5,
+     "renderTargetsMB": 13.9,
+     "totalMB": 246.6,
+     "meshes": 13091,
+     "drawingBuffer": [
+      390,
+      664
+     ],
+     "dpr": 1,
+     "info": {
+      "geometries": 209,
+      "textures": 28
+     },
+     "jsHeapMB": null,
+     "lost": 0,
+     "s": -26.117207311606073,
+     "cities": 32,
+     "fps": 59.99502116006983,
+     "quality": 0,
+     "tris": 926570,
+     "t": 20
+    },
+    {
+     "geometryMB": 128.2,
+     "instancedMB": 52.9,
+     "textureMB": 51.5,
+     "renderTargetsMB": 13.9,
+     "totalMB": 246.6,
+     "meshes": 13091,
+     "drawingBuffer": [
+      390,
+      664
+     ],
+     "dpr": 1,
+     "info": {
+      "geometries": 212,
+      "textures": 28
+     },
+     "jsHeapMB": null,
+     "lost": 0,
+     "s": -26.117207311606073,
+     "cities": 32,
+     "fps": 59.99502116006983,
+     "quality": 0,
+     "tris": 926570,
+     "t": 22
+    },
+    {
+     "geometryMB": 128.2,
+     "instancedMB": 52.9,
+     "textureMB": 51.5,
+     "renderTargetsMB": 13.9,
+     "totalMB": 246.6,
+     "meshes": 13091,
+     "drawingBuffer": [
+      390,
+      664
+     ],
+     "dpr": 1,
+     "info": {
+      "geometries": 219,
+      "textures": 29
+     },
+     "jsHeapMB": null,
+     "lost": 0,
+     "s": -25.015665284047053,
+     "cities": 32,
+     "fps": 59.760956175298936,
+     "quality": 0,
+     "tris": 943443,
+     "t": 24
+    },
+    {
+     "geometryMB": 128.2,
+     "instancedMB": 52.9,
+     "textureMB": 51.5,
+     "renderTargetsMB": 13.9,
+     "totalMB": 246.6,
+     "meshes": 13091,
+     "drawingBuffer": [
+      390,
+      664
+     ],
+     "dpr": 1,
+     "info": {
+      "geometries": 221,
+      "textures": 29
+     },
+     "jsHeapMB": null,
+     "lost": 0,
+     "s": -22.400104004047087,
+     "cities": 32,
+     "fps": 59.760956175298936,
+     "quality": 0,
+     "tris": 943443,
+     "t": 26
+    },
+    {
+     "geometryMB": 128.2,
+     "instancedMB": 52.9,
+     "textureMB": 51.5,
+     "renderTargetsMB": 13.9,
+     "totalMB": 246.6,
+     "meshes": 13091,
+     "drawingBuffer": [
+      390,
+      664
+     ],
+     "dpr": 1,
+     "info": {
+      "geometries": 221,
+      "textures": 29
+     },
+     "jsHeapMB": null,
+     "lost": 0,
+     "s": -19.78582864404711,
+     "cities": 32,
+     "fps": 59.5119521912352,
+     "quality": 0,
+     "tris": 919058,
+     "t": 28
+    },
+    {
+     "geometryMB": 128.2,
+     "instancedMB": 52.9,
+     "textureMB": 51.5,
+     "renderTargetsMB": 13.9,
+     "totalMB": 246.6,
+     "meshes": 13091,
+     "drawingBuffer": [
+      390,
+      664
+     ],
+     "dpr": 1,
+     "info": {
+      "geometries": 221,
+      "textures": 29
+     },
+     "jsHeapMB": null,
+     "lost": 0,
+     "s": -17.170267364047152,
+     "cities": 32,
+     "fps": 59.5119521912352,
+     "quality": 0,
+     "tris": 919058,
+     "t": 30
+    }
+   ]
+  }
+ }
+}

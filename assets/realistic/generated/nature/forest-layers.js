@@ -30,7 +30,7 @@ export function forestLayers(landscape){
  const latticeHeights=new Map(),latticeHeight=(x,z)=>{const key=(x+65536)*131072+(z+65536);let h=latticeHeights.get(key);if(h===undefined){h=landscape.floorHeight(x,z);latticeHeights.set(key,h);}return h;};
  const cell=p=>`${Math.floor(p.gridX/12)},${Math.floor(p.gridZ/12)}`;
  // 포장·계단·데크와 입구 광장, 계곡 물줄기 띠·호수 수면 위에는 풀·덤불을 두지 않는다(ground-cover-mask.js·water-clearance.js). 포기 반경만큼 더 비운다.
- const sectionSites=[...(landscape.status.sectionScenery?.sites??[]),...(landscape.status.interactionProps?.clearSites??[])],water=waterClearance(points),mask=groundCoverMask(points,{nearest,sites:sectionSites,water}),GRASS_REACH=.35,shrubReach=scale=>.8*scale;
+ const sectionSites=[...(landscape.status.sectionScenery?.sites??[]),...(landscape.status.interactionProps?.clearSites??[]),...(landscape.status.trailProps?.clearSites??[])],water=waterClearance(points),mask=groundCoverMask(points,{nearest,sites:sectionSites,water}),GRASS_REACH=.35,shrubReach=scale=>.8*scale;
  const entranceGrid=[];let shrubWaterCleared=0;
  const summitView=summitViewCap(landscape,points),summitShrubView=summitView.stats;
  // 30m 등산로 띠. 굽은 길의 반대편까지 최근접 거리로 검사한다.

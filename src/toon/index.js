@@ -8,6 +8,8 @@ import {createToonNature} from './nature.js';
 import {createGrassField} from './grass-field.js';
 import {createToonWater} from './water.js';
 import {TOON,phaseWeights,foliageWave,hexToRgb,exposureFor,lightScaleFor} from './palette.js';
+import {createSeasonBlend,mixSeasonColor,SEASON_TERRAIN,SEASON_WAVE,SEASON_UNIFORMS,seasonLinear} from './season.js';
+import {createSeasonParticles} from './season-particles.js';
 export {TOON} from './palette.js';
 // 카툰 모드 진입점(기획서 §2.6). main.js가 style==='toon'일 때만 동적 import 한다. 어떤 fetch도 하지 않는다.
 //  materialFactory → loadLandscape({materialFactory})가 PBR 대신 쓴다.
@@ -24,7 +26,20 @@ export async function createToonStyle({renderer,scene,camera,mobile=false}={}){
  const toonify=(root,options)=>{root?.traverse?.(o=>{nature.swapGroundCover(o);water.swap(o);});return materials.toonify(root,options);};
  const city=createCityStyle();
  const pipeline=renderer?createToonPipeline({renderer,scene,camera,mobile}):null;
- const hazeColor=new THREE.Color(),waveBase={a:TOON_UNIFORMS.toonWaveA.value.clone(),b:TOON_UNIFORMS.toonWaveB.value.clone()};
+ const hazeColor=new THREE.Color(),waveSummer={a:TOON_UNIFORMS.toonWaveA.value.clone(),b:TOON_UNIFORMS.toonWaveB.value.clone()},waveBase={a:waveSummer.a.clone(),b:waveSummer.b.clone()};
+ // 계절(src/toon/season.js): 셰이더 uniform 가중치 + 재질 uniform 색. 값만 바뀌어 다시 컴파일·로딩하지 않는다.
+ const season=createSeasonBlend(),particles=createSeasonParticles({mobile});scene?.add(particles.points);
+ const terrainSummer={};let lastSeasonKey='';
+ // 계단 디딤판(단색 툰 재질)은 겨울에 밟힌 눈 색 쪽으로 조금 옮긴다.
+ const stairs=['stairs','deck_stairs'].map(k=>{const m=materials.materialFactory.trail(k);return {m,base:m.color.clone()};}),stairSnow=seasonLinear('#d9dde2');
+ function applySeasonColors(){
+  const w=SEASON_UNIFORMS.tsW.value.toArray(),key=w.map(v=>v.toFixed(3)).join();if(key===lastSeasonKey)return;lastSeasonKey=key;
+  const u=materials.materialFactory.terrain().userData.toonUniforms,map={meadow:'tMeadow',meadowFar:'tMeadowFar',forest:'tForest',highForest:'tHigh'};
+  for(const [k,name] of Object.entries(map)){terrainSummer[k]??=u[name].value.clone();mixSeasonColor(u[name].value,terrainSummer[k],Object.fromEntries(['spring','autumn','winter'].map(s=>[s,SEASON_TERRAIN[s][k]])),w);}
+  mixSeasonColor(waveBase.a,waveSummer.a,{spring:SEASON_WAVE.spring[0],autumn:SEASON_WAVE.autumn[0],winter:SEASON_WAVE.winter[0]},w);
+  mixSeasonColor(waveBase.b,waveSummer.b,{spring:SEASON_WAVE.spring[1],autumn:SEASON_WAVE.autumn[1],winter:SEASON_WAVE.winter[1]},w);
+  for(const s of stairs)s.m.color.copy(s.base).lerp(stairSnow,.45*w[3]);
+ }
  let grassField=null,shafts=null;
  // 지형이 준비되면 카메라 둘레 풀밭을 깐다(main.js가 loadLandscape 뒤에 부른다).
  function attachLandscape(landscape){
@@ -55,7 +70,12 @@ export async function createToonStyle({renderer,scene,camera,mobile=false}={}){
   if(scene?.background?.isColor)scene.background.setRGB(...p.horizon,THREE.SRGBColorSpace);
   return p;
  }
+ let lastSeasonTime=globalThis.performance?.now?.()??0;
  const update=env=>{
+  {const now=globalThis.performance?.now?.()??0,dt=Math.min(.5,Math.max(0,(now-lastSeasonTime)/1000));lastSeasonTime=now;
+   season.update(dt);applySeasonColors();status.season={name:season.name,weights:season.weights,particles:particles.status.visible};
+   const pw=phaseWeights(env),h=renderer?.domElement?.height??800;particles.resize(h,camera?.fov??60);
+   particles.update(dt,camera,{light:pw.day+pw.sunset*.6+pw.night*.22});}
   // 바람: 풀밭 색 물결 속도·세기. 바람 방향은 해 방위와 무관하게 서풍 기본(환경에 풍향이 없다).
   const wave=foliageWave(env);TOON_UNIFORMS.toonWaveSpeed.value=wave.speed;TOON_UNIFORMS.toonWaveStrength.value=wave.strength;
   // 노을·밤: 물결색을 그대로 칠하는 길가 풀·솔잎은 빛을 덜 받으므로 직접 어둡게(노을 역광 실루엣 #333026 쪽, 산리서치 판정).
@@ -85,10 +105,13 @@ export async function createToonStyle({renderer,scene,camera,mobile=false}={}){
   // rendering.js가 카툰 노출 배수로 쓴다(밤 숲·산을 실루엣으로).
   exposureFor,lightScale:lightScaleFor,
   styleCity:city.styleCity,
+  // 계절 바꾸기('spring'|'summer'|'autumn'|'winter'). instant=true면 섞지 않고 바로(첫 로딩·촬영).
+  setSeason(name,{instant=false}={}){const ok=season.set(name);if(ok&&instant)season.snap();return ok;},
+  get season(){return season.name;},
   // 공원 가로등 기둥: 실사 어두운 금속은 카툰 조명에서 검은 막대가 된다(final3 입구 숲). 단색 툰 재질로 바꾼다.
   styleNightLighting(root){const p=root?.getObjectByName?.('가로등 기둥');if(p)p.material=materials.materialFactory.basic(new THREE.Color(TOON.lampPole));return !!p;},
   pipeline:pipeline&&{resize:pipeline.resize,update,render:pipeline.render,dispose:pipeline.dispose,composer:pipeline.composer,passes:pipeline.passes,status:pipeline.status},
   status,
-  dispose(){grassField?.dispose();pipeline?.dispose();sky?.dispose();gradientMap.dispose();},
+  dispose(){particles.dispose();grassField?.dispose();pipeline?.dispose();sky?.dispose();gradientMap.dispose();},
  };
 }

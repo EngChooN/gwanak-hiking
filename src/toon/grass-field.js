@@ -15,7 +15,7 @@ export const GRASS_FIELD={tile:16,step:.62,radius:[14,22,30],capacity:[1400,3800
 
 export function createGrassField({landscape,geometry,farGeometry=geometry,material,scene}){
  const route=landscape.route,nearest=indexRoute(route),water=waterClearance(route);
- const sites=()=>[...(landscape.status.sectionScenery?.sites??[]),...(landscape.status.interactionProps?.clearSites??[]),...(landscape.status.summitFacilities?.sites??[]).map(s=>({x:s.x,z:s.z,supportRadius:s.supportRadius??3}))];
+ const sites=()=>[...(landscape.status.sectionScenery?.sites??[]),...(landscape.status.interactionProps?.clearSites??[]),...(landscape.status.trailProps?.clearSites??[]),...(landscape.status.summitFacilities?.sites??[]).map(s=>({x:s.x,z:s.z,supportRadius:s.supportRadius??3}))];
  let mask=null;
  const capacity=GRASS_FIELD.capacity[2];
  // 두 메시 합으로 상한(capacity)을 지키므로 각자 전체 상한만큼 자리를 둔다(먼 쪽만 차는 자리도 있다).

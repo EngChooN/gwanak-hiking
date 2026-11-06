@@ -1,7 +1,7 @@
 // 카툰 자연물 성능(카툰 2차, 산풍경): 낮 숲길·계곡·능선·정상에서 fps·프레임 시간·그리기 호출·삼각형을 잰다.
 // 기기: PC 높음(1440×810) / 모바일 화질 0(390×844, DPR 3, 터치).
 // 사용: 개발 서버를 띄운 뒤 node scripts/measure-toon-nature.mjs --base http://127.0.0.1:5320 --tag after
-// --only pc-forest,mobile-valley: 일부 조합만. --uncapped 1: 60Hz 상한을 풀어 GPU 여유까지 fps로 비교한다.
+// --only pc-forest,mobile-valley: 일부 조합만. --season winter: 계절 지정(기본은 오늘 날짜). --uncapped 1: 60Hz 상한을 풀어 GPU 여유까지 fps로 비교한다.
 // 결과: artifacts/cartoon-compare/nature/perf-<tag>.json
 import {chromium} from '@playwright/test';
 import {writeFileSync,mkdirSync} from 'node:fs';
@@ -37,7 +37,7 @@ try{
   const page=await context.newPage(),errors=[];
   page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error'||/THREE\.WebGLProgram/.test(m.text()))errors.push(m.text().slice(0,200));});
   const q=new URLSearchParams({style:'toon',outfit:'1',time:'11:00',weather:'clear',quality});
-  if(scene.start)q.set('start',scene.start);
+  if(scene.start)q.set('start',scene.start);if(opt.season)q.set('season',opt.season);
   await page.goto(`${base}/?${q}`);
   for(let i=0;;i++){try{await page.waitForFunction(()=>window.hiking?.started&&window.hiking.landscape().natureReady&&!window.hiking.rendering().compiling,null,{timeout:300000});break;}catch(e){if(i>=3||!/destroyed|navigation/.test(e.message))throw e;await page.waitForLoadState('load');}}
   await page.evaluate(()=>document.querySelectorAll('dialog[open]').forEach(x=>x.close()));

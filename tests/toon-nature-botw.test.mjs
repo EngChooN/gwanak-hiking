@@ -21,7 +21,7 @@ test('지형·바위 셰이더: 풀밭 붓 자국, 바위는 회색 얼룩·이�
  assert.match(compile(f.rock()).fragmentShader,/=trcPaint\(vTsWorld/,'계곡 암반도 같은 칠');
  const soil=compile(f.trail('soil')).fragmentShader;assert.match(soil,/discard/,'흙길 가장자리 들쭉날쭉');assert.match(soil,/bsStroke/);
  assert.match(soil,/normal=normalize\(mix\(normal,\(viewMatrix\*vec4\(0\.,1\.,0\.,0\.\)\)\.xyz,\.85\)\)/,'길 마디가 어두운 단(가로 띠)으로 떨어지지 않게 법선을 세운다');
- const fol=compile(n.materials.foliage).fragmentShader;assert.match(fol,/tnLeaf/,'잎 무늬');assert.match(fol,/vColor\.g-vColor\.r/,'줄기 제외');
+ const fol=compile(n.materials.foliage).fragmentShader;assert.match(fol,/tnLeaf/,'잎 무늬');assert.match(fol,/step\(\.5,abs\(vTsPart-2\.\)\)\*step\(\.5,vTsPart\)/,'줄기·잔가지 제외(부위 표시, 단풍색 잎도 무늬)');
 });
 
 test('바위 부품은 이웃 면과 법선을 나눈 둥근 명암(각진 판지가 아님), 어린 나무는 둥근 관목', ()=>{

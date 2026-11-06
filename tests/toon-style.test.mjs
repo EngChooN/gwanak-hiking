@@ -215,7 +215,7 @@ test('보정: 광장 바닥(캔버스 텍스처 + 흰 틴트)은 평균색 바�
  const t=materialFactory.terrain(),ts={uniforms:{},vertexShader:THREE.ShaderLib.toon.vertexShader,fragmentShader:THREE.ShaderLib.toon.fragmentShader};
  t.onBeforeCompile(ts);assert.match(ts.fragmentShader,/altRock/);assert.match(ts.fragmentShader,/ttFbm/);
  assert.doesNotMatch(ts.fragmentShader,/landPatch|ttBlob/,'사인 띠 얼룩(멀리서 줄·소용돌이)을 쓰지 않는다');
- assert.match(t.customProgramCacheKey(),/toon-terrain-v6/);
+ assert.match(t.customProgramCacheKey(),/toon-terrain-v7-season/);
 });
 
 test('보정: 근거리 광원 상한은 방향광 전에 들어가고, 노을 그늘 올림은 노을에만', ()=>{

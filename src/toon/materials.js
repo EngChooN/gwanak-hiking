@@ -6,6 +6,7 @@ import {createGradientMap} from './gradient.js';
 import {installToonLightCap} from './light-cap.js';
 import {ROCK_CELL_GLSL,ROCK_BASE_DECL,rockShadeGLSL} from './rock-shade.js';
 import {BRUSH_GLSL} from './brush.js';
+import {SEASON_GLSL,bindSeason} from './season.js';
 
 const linear=hex=>new THREE.Color().setRGB(...hexToRgb(hex),THREE.SRGBColorSpace);
 // 셰이더 상수로 넣는 선형 색: vec3(r,g,b).
@@ -109,7 +110,7 @@ export function createToonMaterials({gradientMap}){
   m.userData.toonUniforms=u;
   const f=v=>v.toFixed(4);
   m.onBeforeCompile=shader=>{
-   Object.assign(shader.uniforms,u);bindWave(shader);
+   Object.assign(shader.uniforms,u);bindWave(shader);bindSeason(shader);
    shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 vTtWorld;varying float vTtUp;varying vec3 vTtN;')
     .replace('#include <project_vertex>','#include <project_vertex>\n'+worldVarying('Tt')+'\nvTtN=normalize(mat3(modelMatrix)*objectNormal);');
    shader.fragmentShader=shader.fragmentShader.replace('#include <common>',`#include <common>
@@ -121,7 +122,8 @@ export function createToonMaterials({gradientMap}){
     float ttFbm(vec2 p){return ttNoise(p)*.58+ttNoise(p*2.13+vec2(5.2,1.3))*.28+ttNoise(p*4.71+vec2(1.7,9.2))*.14;}
     // 경계 폭을 화면 미분으로 잡아 계단·깜빡임 없이 두 톤으로 끊는다.
     float ttCut(float x,float at){float w=max(fwidth(x),.004);return smoothstep(at-w,at+w,x);}
-    float ttRockMask=0.;vec3 ttBumpN=vec3(0.,1.,0.);`)
+    float ttRockMask=0.,ttSnow=0.;vec3 ttBumpN=vec3(0.,1.,0.);
+    ${SEASON_GLSL}`)
     .replace('#include <color_fragment>',`#include <color_fragment>
     {
      vec2 xz=vTtWorld.xz;float slope=1.-clamp(vTtUp,0.,1.),h=vTtWorld.y,dist=length(vViewPosition);
@@ -147,11 +149,12 @@ export function createToonMaterials({gradientMap}){
      float woodMask=0.;vec3 wood=vec3(0.);
      if(midWood>0.)for(int layer=0;layer<2;layer++){
       float sc=layer==0?24.:60.,lw=layer==0?1.-smoothstep(700.,1100.,dist):smoothstep(700.,1100.,dist);
-      vec2 cq=xz/sc+float(layer)*13.1,ci=floor(cq),cf=fract(cq),best=vec2(0.);float d1=8.;
-      for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++){vec2 g=vec2(float(x),float(y)),o=g+vec2(ttHash(ci+g),ttHash(ci+g+19.7))*.7+.15-cf;float d=dot(o,o);if(d<d1){d1=d;best=o;}}
+      vec2 cq=xz/sc+float(layer)*13.1,ci=floor(cq),cf=fract(cq),best=vec2(0.),bid=ci;float d1=8.;
+      for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++){vec2 g=vec2(float(x),float(y)),o=g+vec2(ttHash(ci+g),ttHash(ci+g+19.7))*.7+.15-cf;float d=dot(o,o);if(d<d1){d1=d;best=o;bid=ci+g;}}
       float rr=sqrt(d1),crown=1.-smoothstep(.34,.6,rr),lit=smoothstep(-.15,.3,dot(-best,normalize(vec2(-.55,-.8)))+.1);
       float fade=1.-smoothstep(.25,.6,max(fwidth(cq).x,fwidth(cq).y));
-      wood+=lw*tForest*vec3(.86,1.06,.62)*mix(.42,mix(.66,.96,lit),crown);woodMask+=lw*fade;
+      // 계절: 수관 덩어리마다 난수로 벚꽃·단풍 색을 고르고, 겨울엔 회갈색 잔가지 안개(src/toon/season.js tsCrown).
+      wood+=lw*tsCrown(tForest*vec3(.86,1.06,.62),ttHash(bid+3.3),h)*mix(.42,mix(.66,.96,lit),crown);woodMask+=lw*fade;
      }
      green=mix(green,wood,midWood*forest*woodMask);
      green=mix(green,tForest*vec3(.86,1.06,.62)*.66,midWood*forest*(1.-woodMask));
@@ -187,7 +190,7 @@ export function createToonMaterials({gradientMap}){
      vec3 stone=tRock;float ttMoss=0.;
      if(rock>.001){
       float crk;ttBumpN=trcBump(vTtWorld,wn,vec3(5.,6.,5.),mix(.25,.8,steep),px,crk);trcOcc=1.;
-      stone=trcPaint(vTtWorld,wn,tRock,tRockDark,tMoss,tMossDark,px,mix(-.12,-.1,steep),ttMoss);
+      stone=trcPaint(vTtWorld,wn,tRock,tRockDark,tsMossTint(tMoss),tsMossTint(tMossDark),px,mix(-.12,-.1,steep),ttMoss);
       stone=mix(stone,tRock*.92,farFade);ttMoss*=1.-farFade;
      }
      // 바위 턱 위의 풀 띠: 완만한 암반 윗면에서, 등고선을 따라 길게(턱을 따라 띠로 덮인다).
@@ -200,6 +203,17 @@ export function createToonMaterials({gradientMap}){
      vec3 base=mix(green,stone,rock);ttRockMask=rock*(1.-ledge*.95)*(1.-ttMoss*.8)*ttStable;
      // 흙: 숲 밖의 중간 경사만 옅게.
      base=mix(base,tSoil,ttCut(slope,.3)*(1.-rock)*(1.-forest)*.25);
+     // 계절 바닥(src/toon/season.js): 봄 꽃잎·가을 낙엽(가까이), 겨울 쌓인 눈. 눈은 완만한 땅·암반 윗면에만 쌓이고
+     // 가파른 바위(약 45° 이상)는 맨 바위로 남는다. 남쪽 비탈(+z)은 군데군데 녹고, 중경 숲은 회갈색 수관 사이로 눈이 보인다.
+     {vec4 lt=tsLitter(xz,dist,h);base=mix(base,lt.rgb,lt.a*(1.-rock*(1.-ledge)));}
+     if(tsW.w>.001){
+      float south=smoothstep(.05,.45,vTtN.z),melt=ttFbm(xz/11.+vec2(9.,4.));
+      float cover=1.-smoothstep(.3,.5,slope)-south*.4*smoothstep(.45,.7,melt)*(1.-.6*rock)+(mix(tsN2(xz/3.+vec2(2.,6.)),.5,farFade)-.5)*.3;
+      // 암반은 눈이 군데군데만 남는다(바람에 쓸린 둥근 바위 등이 드러난다). 풀 덮인 턱은 그대로 눈.
+      cover-=rock*(1.-ledge)*(.15+.65*smoothstep(.45,.62,mix(tsN2(xz/5.+vec2(1.,8.))*.65+tsN2(xz/1.9+vec2(4.,2.))*.35,.5,farFade)));
+      ttSnow=tsW.w*ttCut(cover,.45)*(1.-.5*midWood*forest);
+      base=mix(base,TS_SNOW,ttSnow);ttRockMask*=1.-ttSnow;
+     }
      diffuseColor.rgb*=base;
     }`)
     // 암벽 그늘은 녹청 회색(기준 #54665e): 그늘 면이 받는 간접광에만 녹청 기운을 준다.
@@ -207,9 +221,11 @@ export function createToonMaterials({gradientMap}){
      trcBaseN=normal;if(ttRockMask>0.)normal=normalize(mix(normal,(viewMatrix*vec4(ttBumpN,0.)).xyz,ttRockMask));`)
     .replace('#include <lights_fragment_end>',`#include <lights_fragment_end>
      reflectedLight.indirectDiffuse*=mix(vec3(1.),vec3(${TOON.nature.rockShadeTint.join(',')}),ttRockMask);
+     // 눈 그늘은 푸르게(자료 §6 눈 그늘 #b8c6da).
+     reflectedLight.indirectDiffuse*=mix(vec3(1.),vec3(.86,.95,1.12),ttSnow);
      ${rockShadeGLSL('ttRockMask',TOON.nature.rockShadeDirect.toFixed(3))}`);
   };
-  m.customProgramCacheKey=()=>`toon-terrain-v6-paint-${vertexColors}`;
+  m.customProgramCacheKey=()=>`toon-terrain-v7-season-${vertexColors}`;
   return terrainMaterial=m;
  }
  // 상시 바닥(NearDEM8m)용: 같은 지형 셰이더에 깊이 밀기만 더한다. 정밀 청크와 거의 겹치는 급경사에서 청크가 이기게 한다.
@@ -226,13 +242,14 @@ export function createToonMaterials({gradientMap}){
  // ── 바위 면(3단계 재작업): 암릉·바위 노면, 돌판, 계곡 암반. 단색 판 대신 둥근 암괴 명암·갈라짐·녹청 그늘 면. ──
  function patchRockSurface(m,{cell=[3.2,2.6,3.2],amt=.8,crack:crackAmt=.7,edge=false,moss=-.32}={}){
   m.onBeforeCompile=shader=>{
+   bindSeason(shader);
    // edge: 노면 띠(trailEdge −1~1)의 가장자리를 굽은 잡음 경계로 잘라 낸다. 직선 모서리 판(콘크리트 단)이 아니라
    // 아래 지형 암반 속으로 녹아드는 둥근 암반 자리처럼 보이게(보행 접지는 지오메트리 그대로).
    shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 vTsWorld;varying float vTsUp;varying vec3 vTsN;'+(edge?'attribute float trailEdge;varying float vTsSide;':''))
     .replace('#include <project_vertex>','#include <project_vertex>\n'+worldVarying('Ts')+'\nvTsN=normalize(mat3(modelMatrix)*objectNormal);'+(edge?'vTsSide=trailEdge;':''));
    shader.fragmentShader=shader.fragmentShader.replace('#include <common>',`#include <common>
-    varying vec3 vTsWorld;varying float vTsUp;varying vec3 vTsN;vec3 tsBumpN=vec3(0.,1.,0.);float tsFlat=0.,tsMoss=0.;${ROCK_BASE_DECL}${edge?'varying float vTsSide;':''}
-    ${ROCK_CELL_GLSL}${BRUSH_GLSL}`)
+    varying vec3 vTsWorld;varying float vTsUp;varying vec3 vTsN;vec3 tsBumpN=vec3(0.,1.,0.);float tsFlat=0.,tsMoss=0.,tsSnowAmt=0.;${ROCK_BASE_DECL}${edge?'varying float vTsSide;':''}
+    ${ROCK_CELL_GLSL}${BRUSH_GLSL}${SEASON_GLSL}`)
     .replace('#include <color_fragment>',`#include <color_fragment>
      ${edge?`{
       vec3 ew=trcWarp(vTsWorld*vec3(.55,.3,.55)+1.7)+trcWarp(vTsWorld*vec3(1.6,.8,1.6)+5.3)*.45;
@@ -245,18 +262,21 @@ export function createToonMaterials({gradientMap}){
       vec3 wn=normalize(vTsN);if(!gl_FrontFacing)wn=-wn;float px=trcPixel(vTsWorld,wn),crk;
       tsBumpN=trcBump(vTsWorld,wn,vec3(${cell.map(v=>v.toFixed(2)).join(',')}),${amt.toFixed(2)}*.8*(1.-tsFlat),px,crk);trcOcc=1.;
       vec3 tsBase=diffuseColor.rgb;
-      diffuseColor.rgb=trcPaint(vTsWorld,wn,diffuseColor.rgb,${vec3(TOON.nature.rockDark)},${vec3(TOON.nature.moss)},${vec3(TOON.nature.mossDark)},px,${moss.toFixed(2)},tsMoss);
+      diffuseColor.rgb=trcPaint(vTsWorld,wn,diffuseColor.rgb,${vec3(TOON.nature.rockDark)},tsMossTint(${vec3(TOON.nature.moss)}),tsMossTint(${vec3(TOON.nature.mossDark)}),px,${moss.toFixed(2)},tsMoss);
       ${edge?'// 노면은 얼룩을 절반으로(짙은 얼룩이 발밑에서 구멍·웅덩이처럼 읽히지 않게).\n      diffuseColor.rgb=mix(diffuseColor.rgb,tsBase,.5*(1.-tsMoss));':''}
+      // 겨울: 평평한 윗면·턱에만 눈(가파른 면은 맨 바위). 바위 노면은 밟힌 눈(회갈색)과 눈이 섞인다.
+      tsSnowAmt=tsSnowCover(vTsWorld,wn.y,.6,.82)${edge?'*(.2+.6*smoothstep(.42,.62,tsN2(vTsWorld.xz*.45+3.)))':''};
+      diffuseColor.rgb=mix(diffuseColor.rgb,${edge?'mix(TS_TRAMPLED,TS_SNOW,smoothstep(.3,.7,tsN2(vTsWorld.xz*1.7)))':'TS_SNOW'},tsSnowAmt);
      }`)
     .replace('#include <normal_fragment_maps>',`#include <normal_fragment_maps>
      ${edge?`// 노면 리본은 마디마다 기울어 툰 명암·그늘 면이 마디째 어두운 띠로 떨어진다(정상 길이 계단처럼 보였다). 바탕 법선을 위로 세운다.
      {vec3 up=(viewMatrix*vec4(0.,1.,0.,0.)).xyz;normal=normalize(mix(normal,up,.85));tsBumpN=normalize(mix(tsBumpN,vec3(0.,1.,0.),.6));}`:''}
      trcBaseN=normal;normal=normalize((viewMatrix*vec4(tsBumpN,0.)).xyz);`)
     .replace('#include <lights_fragment_end>',`#include <lights_fragment_end>
-     reflectedLight.indirectDiffuse*=mix(vec3(${TOON.nature.rockShadeTint.join(',')}),vec3(1.),max(tsFlat,tsMoss*.8));
-     ${rockShadeGLSL('(1.-tsFlat)*(1.-tsMoss*.8)',TOON.nature.rockShadeDirect.toFixed(3))}`);
+     reflectedLight.indirectDiffuse*=mix(vec3(${TOON.nature.rockShadeTint.join(',')}),vec3(1.),max(max(tsFlat,tsMoss*.8),tsSnowAmt));
+     ${rockShadeGLSL('(1.-tsFlat)*(1.-tsMoss*.8)*(1.-tsSnowAmt)',TOON.nature.rockShadeDirect.toFixed(3))}`);
   };
-  m.customProgramCacheKey=()=>`toon-rock-surface-v4-paint-${cell.join('_')}-${amt}-${crackAmt}-${edge}-${moss}`;m.userData.toonRockSurface=true;
+  m.customProgramCacheKey=()=>`toon-rock-surface-v5-season-${cell.join('_')}-${amt}-${crackAmt}-${edge}-${moss}`;m.userData.toonRockSurface=true;
   return m;
  }
  const rocks=new Map();
@@ -284,9 +304,10 @@ export function createToonMaterials({gradientMap}){
  // ragged: 가장자리를 굽은 잡음 경계로 잘라 풀밭으로 녹인다(자로 그은 띠가 아니게). 보행 접지는 지오메트리 그대로.
  function patchTrailBrush(m,{ragged=false}={}){
   m.onBeforeCompile=shader=>{
+   bindSeason(shader);
    shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nattribute float trailEdge;varying float vTbSide;varying vec2 vTbUv;varying vec3 vTbWorld;')
     .replace('#include <project_vertex>','#include <project_vertex>\nvTbSide=trailEdge;vTbUv=uv;vTbWorld=(modelMatrix*vec4(transformed,1.)).xyz;');
-   shader.fragmentShader=shader.fragmentShader.replace('#include <common>',`#include <common>\nvarying float vTbSide;varying vec2 vTbUv;varying vec3 vTbWorld;\n${BRUSH_GLSL}`)
+   shader.fragmentShader=shader.fragmentShader.replace('#include <common>',`#include <common>\nvarying float vTbSide;varying vec2 vTbUv;varying vec3 vTbWorld;\n${BRUSH_GLSL}${SEASON_GLSL}`)
     .replace('#include <color_fragment>',`#include <color_fragment>
      {
       float side=abs(vTbSide),dist=length(vViewPosition),px=dist*.0014/max(abs(normalize(vViewPosition).y),.2);
@@ -296,13 +317,20 @@ export function createToonMaterials({gradientMap}){
       float st=bsStroke(tp,vec2(1.,0.),.35)*bsFade(px,.35)*.6+bsStroke(tp*.35+9.,vec2(1.,.15),.6)*bsFade(px,1.7)*.4;
       diffuseColor.rgb*=1.+st*.2;
       diffuseColor.rgb*=mix(1.06,.86,smoothstep(.25,thr,side));
+      // 계절: 봄 꽃잎·가을 낙엽이 길에 떨어져 있다. 겨울 길은 밟힌 눈(회갈색·흙 얼룩)이고 가장자리로 갈수록 흰 눈.
+      {vec4 lt=tsLitter(vTbWorld.xz,dist,vTbWorld.y);diffuseColor.rgb=mix(diffuseColor.rgb,lt.rgb,lt.a*.9);}
+      if(tsW.w>.001){
+       float n=bsNoise(vTbWorld.xz*1.3)*.6+bsNoise(vTbWorld.xz*4.+3.)*.4;
+       vec3 tr=mix(TS_TRAMPLED,TS_TRAMPLED_SHADE,smoothstep(.6,.7,n)*.7);
+       diffuseColor.rgb=mix(diffuseColor.rgb,mix(tr,TS_SNOW,smoothstep(.35,.85,side/thr+(n-.5)*.6)),tsW.w);
+      }
      }`)
     // 길 리본은 지형을 따라 마디마다 조금씩 기울어, 툰 3단 명암에서 한 마디가 통째로 어두운 단으로 떨어진다
     // (정상·침엽수 장면에서 길을 가로지르는 어두운 띠가 계단처럼 보였다). 법선을 위쪽으로 거의 세워 길 전체를 고른 밝기로 칠한다.
     .replace('#include <normal_fragment_maps>',`#include <normal_fragment_maps>
      normal=normalize(mix(normal,(viewMatrix*vec4(0.,1.,0.,0.)).xyz,.85));`);
   };
-  m.customProgramCacheKey=()=>`toon-trail-brush-v2-${ragged}`;m.userData.toonTrailBrush=true;
+  m.customProgramCacheKey=()=>`toon-trail-brush-v3-season-${ragged}`;m.userData.toonTrailBrush=true;
   return m;
  }
  const basics=new Map();

@@ -15,6 +15,8 @@
 | `nature.js` | 카툰 전용 자연물(카툰 2차, 「야생의 숨결」 기준): 둥근 덩어리 수관 활엽수·층진 원뿔 침엽수·둥근 덤불·둥근 관목(어린 나무 자리)·가는 풀 다발·둥근 암괴 바위. `natureParts(url)`가 원래 GLB 파일명 대신 새 모양을 주고, `swapGroundCover(mesh)`가 하층 식생·계곡 판돌·입구 생울타리를 바꾼다 |
 | `brush.js` | 붓질 텍스처 GLSL(`bsStroke`·`bsFade`·`bsPlane`). 지형 풀밭·암반, 바위, 흙길, 이끼가 함께 쓴다 |
 | `rock-shade.js` | 바위 명암·칠. 회색 바탕 + 어두운 얼룩 + 이끼 `trcPaint`(지형 암반·바위 노면·계곡 암반·바위 부품 공용), 둥근 암괴 법선 `trcBump`(갈라짐 선·셀 경계 그늘은 쓰지 않음), 각진 면 `trcFacet`(지금은 쓰지 않음), 그늘 면 `rockShadeGLSL` |
+| `season.js` | 계절 모습(2026-11-06): uniform `tsW`(봄·여름·가을·겨울 가중치) 하나를 나무·풀·지형·바위·길 셰이더가 함께 읽는다. 팔레트(`SEASON_PALETTE`)·단풍 비율·벚나무 비율·지형/풀 계절색 표. 날짜 판정은 `src/season.js`, 바꾸기는 `hiking.setSeason`·`?season=` |
+| `season-particles.js` | 봄 꽃잎·가을 낙엽 입자(카메라 둘레, GPU 감기, 텍스처 없음) |
 | `grass-field.js` | 카메라 둘레 풀밭(16m 타일 고정 난수, 화질별 반경 14·22·30m) |
 | `capture-preview.mjs` | 미리보기의 낮·노을·밤 캡처 스크립트(개발 서버를 먼저 띄워야 함) |
 
@@ -66,3 +68,14 @@
 - 얼굴·머리카락·벙거지는 `ToonHiker_Head` 메시로 따로 두고 그림자를 받지 않는다(`userData.noReceiveShadow`).
 - 확인 화면: `/src/toon/character-preview.html?view=front|sideL|back|threeL&clip=Idle|Walk|Run&phase=0~2&pose=sit|tea&gadget=binoculars|phone&selfie=1&anim=1` (`&match=concept`: 시안 보드와 같은 카메라). `charPreview.set({lookYaw,lookPitch})`로 보는 방향, `set({runFrames:n})`로 걷기→뛰기 전환 n프레임째를 본다.
 - 대조 캡처: `node scripts/capture-dongdong.mjs [서버] [폴더]` → `node scripts/make-dongdong-board.mjs [폴더]`, 게임 캡처: `scripts/capture-dongdong-game.mjs`·`scripts/capture-dongdong-stairs.mjs`(계단 디딘 간격·발소리 빈도 측정), 쌍안경·걷기→뛰기: `scripts/capture-dongdong-fixes.mjs`
+
+## 계절 (2026-11-06, docs/변경기록-2026-11-06-계절별-산-모습.md)
+- 나무·덤불 정점 속성 `toonPart`: 0 줄기·굵은 가지, 1 활엽수 잎, 2 겨울 잔가지(겨울 아니면 접음), 3 솔잎, 4 덤불 잎, 6 먼 단계 수관(겨울엔 가까우면 접고 멀면 회갈색 안개).
+- 쌓인 눈은 날씨와 무관하게 겨울 가중치로만 그린다(`tsSnowCover`: 위를 향한 면, 약 45° 넘는 바위는 맨 바위).
+- 확인 촬영: `node scripts/capture-seasons.mjs tree [--time 21:00] [--mobile 1 --size 390x844]` → `node scripts/make-season-board.mjs`.
+
+
+## 즐길거리(2026-11-06)
+- 형상: `trail-props.js`(시안 `props-concepts.js`도 이 파일을 쓴다). 원형 하나를 `makeTrailProp(kind)`로 복제해 형상·재질을 나눠 쓴다. 외곽선은 뒤집은 껍질(`finishTrailModel`).
+- 동작: `hiker-acts.js`. 등산객 `ground()` 뒤 `apply(dt)`로 덮는다. 모자·배낭은 `link-hiker.js`의 `ToonHiker_Hat`·`ToonHiker_Pack` 메시를 숨기고 단단한 사본을 움직인다.
+- 실행·들르기·동물: `../trail-world.js`, 자리: `../trail-sites.js`, 촬영: `scripts/capture-trail-props.mjs`.
