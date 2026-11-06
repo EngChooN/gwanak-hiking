@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {INTERACTION_SITES} from '../assets/realistic/interaction-sites.js';
-import {STAMPS,PAGES,BOARD_PAGES,LANDMARKS,LANDMARK_OBSERVER,ACTIONS,RULES,NOT_SIGN_NOTICE,STONE_NOTICE,CARD_NOTICE,CHIP_LABEL,STREAM_SPOTS} from '../src/interaction-data.js';
+import {STAMPS,PAGES,BOARD_PAGES,LANDMARKS,LANDMARK_ABOUT,LANDMARK_OBSERVER,ACTIONS,RULES,NOT_SIGN_NOTICE,STONE_NOTICE,CARD_NOTICE,CHIP_LABEL,STREAM_SPOTS} from '../src/interaction-data.js';
 import {bearingToDirection,directionToBearing,headingToBearing,bearingToHeading,initialBearing,greatCircle,elevationDeg,landmarkAt,classifyLandmarks,stackLabels,arrowAngle,pickCandidate,markerCandidates,emptyProgress,loadProgress,saveProgress,addStamp,stampCount,hasAllStamps,notebookSlots,cardData,applyStamina,wrap180,landmarksEnabled,weatherVisibility,PROGRESS_KEY} from '../src/interaction-logic.js';
 import {createInteraction,actionPose} from '../src/interaction-controller.js';
 import {KEY_COMMANDS,commandFor,interactKeyId} from '../src/input.js';
@@ -35,7 +35,7 @@ test('랜드마크 거리·고각이 자료 표와 맞다',()=>{
   near(d/1000,doc[lm.id][0],.06,`${lm.name} 거리`);near(elevationDeg(d,lm.topAlt,LANDMARK_OBSERVER.alt),doc[lm.id][1],.25,`${lm.name} 고각`);}
 });
 test('랜드마크 17곳, 인천 쪽 3곳은 방향만, 시선 가림 미확인 4곳은 추정, 남한산 높이 줄 없음',()=>{
- assert.equal(LANDMARKS.length,17);assert.equal(new Set(LANDMARKS.map(l=>l.id)).size,17);
+ assert.equal(LANDMARKS.length,17);for(const l of LANDMARKS)assert.ok(LANDMARK_ABOUT[l.id]?.body?.length>=2&&LANDMARK_ABOUT[l.id].line,l.id);assert.equal(new Set(LANDMARKS.map(l=>l.id)).size,17);
  assert.deepEqual(LANDMARKS.filter(l=>l.far).map(l=>l.name.split(' ')[0]).sort(),['송도국제도시','인천국제공항','인천대교']);
  assert.deepEqual(LANDMARKS.filter(l=>l.blocked).map(l=>l.name).sort(),['광교산','남한산','수리산','청계산']);
  assert.equal(LANDMARKS.find(l=>l.id==='lm-namhan').height,'');
@@ -228,7 +228,7 @@ test('쌍안경: 정상 부근에서 방위 띠·이름표·가운데 맞춤 F, 
  const lm=LANDMARKS.find(l=>l.id==='lm-namsan'),target=initialBearing(LANDMARK_OBSERVER.lat,LANDMARK_OBSERVER.lon,lm.lat,lm.lon);
  const t=setup({sites:[],state:{gadget:'binoculars'},player:{x:o.x,z:o.z,zone:'summit',elevation:654,heading:bearingToHeading(target)}});
  t.tick(.2);const b=t.ui.bino;assert.ok(b.tape.some(m=>m.short==='N서울타워(남산)'));assert.ok(b.labels.length>=1);assert.equal(b.focus.name,'N서울타워(남산)');
- assert.equal(t.c.view.kind,'bino');t.c.handle('interact');assert.equal(t.ui.boardOpen,true);assert.match(t.ui.board.pages[0].title,/남산/);assert.equal(t.ui.board.notice,'직접 계산한 값이며 현장 안내판 글이 아닙니다');
+ assert.equal(t.c.view.kind,'bino');t.c.handle('interact');assert.equal(t.ui.boardOpen,true);assert.match(t.ui.board.pages[0].title,/남산/);assert.equal(t.ui.board.notice,'현장 안내판 글이 아닙니다');assert.match(t.ui.board.pages[0].body[0],/송신탑/);assert.match(t.ui.board.pages[0].body.at(-1),/북쪽.*km/);assert.match(b.focus.lines[0],/남산 위 탑/);
  t.c.handle('panel-close');t.c.handle('labels-toggle');t.tick(.2);assert.equal(t.ui.bino.labels.length,0);assert.equal(t.ui.bino.focus,null);assert.ok(t.ui.bino.tape.length>0);
  const low=setup({sites:[],state:{gadget:'binoculars'},player:{x:0,z:0,zone:'route',elevation:300}});low.tick(.2);assert.equal(low.ui.bino.labels.length,0);assert.match(low.ui.bino.note,/정상 부근/);
 });

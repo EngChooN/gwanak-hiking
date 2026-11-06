@@ -23,7 +23,7 @@ const html=`
  <div class="phone-device">
   <div class="phone-screen">
    <i class="phone-hole"></i>
-   <div class="phone-top"><span class="phone-time" data-phone-time>12:00</span><span class="phone-top-btns"><button type="button" data-act="grid" aria-pressed="false" title="격자 켜기/끄기">▦ 격자</button><button type="button" data-act="orient" title="가로/세로 전환">⟳ <span data-orient-label>가로</span></button><button type="button" data-act="close" title="휴대폰 내리기 (P)">✕</button></span><span class="phone-battery" aria-label="배터리"><i></i><em data-phone-battery>84%</em></span></div>
+   <div class="phone-top"><span class="phone-time" data-phone-time>12:00</span><span class="phone-top-btns"><button type="button" data-act="grid" aria-pressed="false" title="격자 켜기/끄기">▦ 격자</button><button type="button" data-act="orient" title="가로/세로 전환">⟳ <span data-orient-label>가로</span></button><button type="button" data-act="close" class="phone-close" title="휴대폰 내리기 (P)" aria-label="휴대폰 내리기">✕ 내리기</button></span><span class="phone-battery" aria-label="배터리"><i></i><em data-phone-battery>84%</em></span></div>
    <div class="phone-grid" aria-hidden="true"></div>
    <div class="phone-zoom-readout" data-phone-zoom-readout>1x</div>
    <div class="phone-bar">
@@ -36,6 +36,9 @@ const html=`
  </div>
 </div>
 <div class="gadget-chip" data-gadget-chip><span data-chip-text></span><span class="gadget-chip-tools" data-chip-tools><span class="chip-zooms">${PHONE_STOPS.map(s=>`<button type="button" data-zoom="${s}">${s}x</button>`).join('')}</span><button type="button" data-act="selfie" aria-pressed="false">셀카</button><button type="button" data-act="shutter" class="chip-shutter">촬영</button></span><span class="gadget-chip-tools chip-bino" data-bino-tools hidden><button type="button" data-act="zoom-out" aria-label="쌍안경 배율 낮추기 (−)">−</button><button type="button" data-act="zoom-in" aria-label="쌍안경 배율 높이기 (+)">＋</button></span><button type="button" data-act="close" class="chip-close"></button></div>`;
+// 휴대폰·태블릿(터치)에서는 휴대폰 틀 방향을 손에 든 화면 방향에 맞춘다. 가로 화면에 세로 틀을 그리면 틀이 작아져 버튼이 겹친다(2026-11-06).
+export const isTouchDevice=(win=globalThis)=>!!(win.matchMedia?.('(pointer: coarse)').matches||win.navigator?.maxTouchPoints>0);
+export const screenOrient=(w,h)=>w>h?'landscape':'portrait';
 export function installGadgetUI(doc=document,win=window){
  const root=doc.createElement('div');root.id='gadget-ui';root.dataset.mode='none';root.innerHTML=html;doc.body.append(root);
  const app=doc.getElementById('app'),world=doc.getElementById('world'),$=s=>root.querySelector(s),all=s=>[...root.querySelectorAll(s)];
@@ -56,13 +59,13 @@ export function installGadgetUI(doc=document,win=window){
   root.dataset.selfie=String(selfie);all('[data-zoom]').forEach(b=>{b.disabled=selfie;});
   $('[data-bino-zoom]').textContent=formatZoom(d.binoculars?.zoom??8);
   const chip=$('[data-chip-text]');
-  if(m.mode==='binoculars-first'){chip.innerHTML='<kbd>B</kbd> 닫기 · 배율';}
-  else if(m.mode==='binoculars-third')chip.innerHTML='쌍안경 모드 · <kbd>B</kbd> 닫기 <small>(1인칭에서 볼 수 있어요)</small>';
-  else if(m.mode==='phone-third')chip.innerHTML='휴대폰 모드 · <kbd>P</kbd> 닫기';
+  if(m.mode==='binoculars-first'){chip.innerHTML='쌍안경 배율';}
+  else if(m.mode==='binoculars-third')chip.innerHTML='쌍안경 모드 <small>(1인칭에서 볼 수 있어요)</small>';
+  else if(m.mode==='phone-third')chip.innerHTML='휴대폰 모드';
   else chip.textContent='';
   $('[data-chip-tools]').hidden=m.mode!=='phone-third';
   $('[data-bino-tools]').hidden=m.mode!=='binoculars-first'; // 쌍안경 배율은 휠·핀치 말고 버튼으로도(2026-11-06 모든 기능 버튼화)
-  root.querySelector('.chip-close').textContent=m.mode==='phone-third'?'✕':m.mode==='none'?'':'✕';
+  const close=root.querySelector('.chip-close');close.innerHTML=m.mode==='none'?'':'✕ 내리기';close.setAttribute('aria-label',m.mode.startsWith('binoculars')?'쌍안경 내리기 (B)':'휴대폰 내리기 (P)');
  }
  root.addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
@@ -74,8 +77,6 @@ export function installGadgetUI(doc=document,win=window){
    case'orient':orient=orient==='landscape'?'portrait':'landscape';store.set(GADGET_UI_KEYS.orient,orient);paint();break;
   }
  });
- // 닫기 안내(B 닫기 / P 닫기)를 눌러도 닫히게 한다.
- $('[data-chip-text]').addEventListener('click',()=>send('gadget-off'));
  win.addEventListener('hiking:state',e=>render(e.detail||{}));
  // 촬영 직후 썸네일 갱신: main.js가 같은 프레임에 이벤트를 보내므로 3D 캔버스가 아직 살아 있다. 저장 사진과 같이 반전하지 않은 모습.
  win.addEventListener('hiking:photo',()=>{
@@ -86,6 +87,8 @@ export function installGadgetUI(doc=document,win=window){
  });
  const tick=()=>{$('[data-phone-time]').textContent=clockText();};tick();setInterval(tick,15000);
  navigator.getBattery?.().then(b=>{const f=()=>{$('[data-phone-battery]').textContent=`${Math.round(b.level*100)}%`;};f();b.addEventListener('levelchange',f);}).catch(()=>{});
+ const touch=isTouchDevice(win);root.dataset.touch=String(touch);
+ if(touch){const fit=()=>{const o=screenOrient(win.innerWidth,win.innerHeight);if(o!==orient){orient=o;paint();}};fit();win.addEventListener('resize',fit);win.addEventListener('orientationchange',()=>setTimeout(fit,200));}
  paint();
  return {render,get mode(){return last.mode;},root};
 }

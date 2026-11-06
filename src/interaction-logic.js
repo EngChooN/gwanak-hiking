@@ -91,12 +91,17 @@ export function markerCandidates(cands,player,{done=()=>false,max=6}={}){
 
 // ── 스탬프·수첩 저장 ──────────────────────────────────
 export const PROGRESS_KEY='gwanak-interaction:v1';
-export const emptyProgress=()=>({stamps:{},stones:0,read:{},certifiedAt:null,drinks:0,dips:0,stretches:0});
+export const emptyProgress=()=>({stamps:{},stones:0,read:{},certifiedAt:null,drinks:0,dips:0,stretches:0,fun:{}});
+// 즐길거리 칸(코스 스탬프 6개와 따로, 완등 카드 조건에 넣지 않는다): 역기 10회 → 산스장 득근, 에어건 → 깨끗한 신발
+export const FUN_BADGES=Object.freeze([{id:'gym',glyph:'득근',name:'산스장 득근',hint:'산스장 역기 10번'},{id:'shoes',glyph:'✨',name:'깨끗한 신발',hint:'입구 에어건으로 신발 털기'}]);
+// 처음 얻으면 true(시각 기록), 이미 있으면 false
+export function addFun(p,id,at){if(!FUN_BADGES.some(b=>b.id===id))return false;p.fun??={};if(p.fun[id])return false;p.fun[id]={at};return true;}
 export function loadProgress(storage){
  try{const raw=storage?.getItem(PROGRESS_KEY);if(!raw)return emptyProgress();const v=JSON.parse(raw),out=emptyProgress();
   for(const s of STAMPS){const r=v.stamps?.[s.id];if(r&&Number.isFinite(r.at))out.stamps[s.id]={at:r.at,km:Number.isFinite(r.km)?r.km:s.km,elev:Number.isFinite(r.elev)?r.elev:s.elev,weather:String(r.weather??'')};}
   for(const k of ['stones','drinks','dips','stretches'])out[k]=Number.isFinite(v[k])?Math.max(0,Math.floor(v[k])):0;
   if(v.read&&typeof v.read==='object')for(const [k,t] of Object.entries(v.read))if(t===true)out.read[k]=true;
+  for(const b of FUN_BADGES){const r=v.fun?.[b.id];if(r&&Number.isFinite(r.at))out.fun[b.id]={at:r.at};}
   out.certifiedAt=Number.isFinite(v.certifiedAt)?v.certifiedAt:null;return out;
  }catch{return emptyProgress();}
 }

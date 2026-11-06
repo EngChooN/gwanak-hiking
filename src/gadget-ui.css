@@ -19,7 +19,7 @@ body.gadget-on .hud-hint,body.gadget-on .hud-restore{display:none!important}
 .bino-zoom b{font-weight:700;letter-spacing:.04em}
 /* 닫기 안내 칩(쌍안경·3인칭 휴대폰 공통) */
 #gadget-ui:not([data-mode=none]) .gadget-chip{display:flex;position:absolute;left:50%;transform:translateX(-50%);top:calc(14*var(--u));align-items:center;gap:calc(10*var(--u));padding:calc(7*var(--u)) calc(16*var(--u));border-radius:calc(20*var(--u));background:#0c211cd9;border:1px solid #ffffff38;font-size:max(12px,calc(14*var(--u)));pointer-events:none;max-width:94vw;flex-wrap:wrap;justify-content:center}
-.gadget-chip [data-chip-text]{pointer-events:auto;cursor:pointer}.gadget-chip kbd{margin:0 2px}.gadget-chip small{opacity:.7}
+.gadget-chip [data-chip-text]{pointer-events:none}.gadget-chip kbd{margin:0 2px}.gadget-chip small{opacity:.7}
 .gadget-chip button{pointer-events:auto;min-height:max(36px,calc(34*var(--u)));min-width:max(36px,calc(40*var(--u)));padding:0 calc(10*var(--u));border-radius:calc(14*var(--u));background:#ffffff1c;border:1px solid #ffffff3a}
 .gadget-chip button[aria-pressed=true]{background:#f4d67c;color:#16261f}
 .gadget-chip-tools{display:flex;gap:calc(6*var(--u));align-items:center}.chip-zooms{display:flex;gap:calc(4*var(--u))}
@@ -27,8 +27,7 @@ body.gadget-on .hud-hint,body.gadget-on .hud-restore{display:none!important}
 #gadget-ui[data-mode=phone-first] .gadget-chip{display:none}
 /* 셀카는 0.5x 광각 고정: 줌 단추·배율 표시를 숨긴다 */
 #gadget-ui[data-selfie=true] .phone-zooms,#gadget-ui[data-selfie=true] .phone-zoom-readout{visibility:hidden;pointer-events:none}
-#gadget-ui[data-mode=binoculars-first] .chip-close,#gadget-ui[data-mode=binoculars-third] .chip-close{display:none}
-#gadget-ui[data-mode=binoculars-first] .gadget-chip{top:auto;bottom:calc(14*var(--u))}
+#gadget-ui[data-mode=binoculars-first] .gadget-chip{top:auto;bottom:calc(max(10px,14*var(--u)) + var(--sb,env(safe-area-inset-bottom,0px)))}
 /* 3인칭 휴대폰: 조작줄은 화면 아래 가운데(HUD 단추줄 위) */
 #gadget-ui[data-mode=phone-third] .gadget-chip{top:auto;bottom:calc(88*var(--u))}
 @media(max-width:700px){#gadget-ui[data-mode=phone-third] .gadget-chip{bottom:calc(150px + env(safe-area-inset-bottom))}}
@@ -67,3 +66,16 @@ body.gadget-on .hud-hint,body.gadget-on .hud-restore{display:none!important}
 .phone-thumb{border-radius:calc(12*var(--u));background:#222}.phone-thumb canvas{width:100%;height:100%;display:none}.phone-thumb[data-has=true] canvas{display:block}
 .phone-thumb.pop{animation:thumb-pop .45s ease-out}@keyframes thumb-pop{0%{transform:scale(1.35);box-shadow:0 0 0 3px #fff}100%{transform:scale(1);box-shadow:0 0 0 0 #fff0}}
 @media(prefers-reduced-motion:reduce){.phone-thumb.pop{animation:none}}
+/* ── 터치 화면 (2026-11-06) ──
+ 쌍안경·휴대폰을 든 동안에는 걸을 수 없으니 조이스틱과 그 안내를 숨겨 버튼과 겹치지 않게 한다.
+ 내리기 버튼은 손가락 크기(48px 이상)로, 휴대폰 틀 방향은 화면 방향을 따르므로(gadget-ui.js) 방향 전환 버튼은 숨긴다. */
+body.gadget-on #joystick{display:none!important}
+.chip-close{font-weight:800;white-space:nowrap}
+.phone-close{font-weight:800;white-space:nowrap}
+#gadget-ui[data-touch=true] .gadget-chip button{min-height:48px!important;min-width:48px!important}
+#gadget-ui[data-touch=true] .chip-close{padding:0 16px!important}
+#gadget-ui[data-touch=true] [data-act=orient]{display:none}
+#gadget-ui[data-touch=true] .phone-top button{min-height:44px;min-width:44px}
+#gadget-ui[data-touch=true] .phone-close{min-width:72px!important}
+/* 화면 가운데 정렬(left:50%)이라 폭이 화면 절반으로 줄어 줄바꿈되던 것을 내용 폭으로 */
+#gadget-ui .gadget-chip{width:max-content}

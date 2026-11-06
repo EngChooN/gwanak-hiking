@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import {sunPosition,resolveUtcMs} from './daytime.js';
+import {sunPosition,resolveUtcMs,effectiveTime} from './daytime.js';
 
 // 서울 원경 건물 외관 공용 셰이더(산풍경). 정점 속성:
 //  color(외벽 기본색) · seoulType(0 아파트 1 업무 2 저층 3 공장 4 옥상 설비 5 항공장애등 6 63빌딩 금빛 유리 7 롯데 은빛 유리 8 탑 콘크리트 9 전망대 유리)
@@ -26,7 +26,7 @@ let lastClock=-1,lastSearch=null,cached={elevation:45,azimuth:180};
 export function updateCityLight({camera,quality=2,now=performance.now(),search=globalThis.location?.search??''}={}){
  if(now-lastClock>500||search!==lastSearch){
   lastClock=now;lastSearch=search;
-  const time=new URLSearchParams(search).get('time');
+  const time=effectiveTime(new URLSearchParams(search).get('time'));
   try{const {utcMs}=resolveUtcMs({time,nowMs:Date.now()});cached=sunPosition(utcMs);}catch{}
  }
  const e=cached.elevation,az=cached.azimuth*Math.PI/180,alt=e*Math.PI/180;

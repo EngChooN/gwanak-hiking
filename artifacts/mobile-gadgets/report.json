@@ -1,0 +1,132 @@
+{
+ "portrait/bino-from-first": {
+  "on": "binoculars",
+  "rect": [
+   248,
+   741,
+   80,
+   48
+  ],
+  "visible": true,
+  "inside": true,
+  "size": 48,
+  "hit": "self",
+  "text": "✕ 내리기",
+  "closed": true,
+  "ok": true
+ },
+ "portrait/bino-from-third": {
+  "on": "binoculars",
+  "rect": [
+   248,
+   741,
+   80,
+   48
+  ],
+  "visible": true,
+  "inside": true,
+  "size": 48,
+  "hit": "self",
+  "text": "✕ 내리기",
+  "closed": true,
+  "ok": true
+ },
+ "portrait/phone-from-first": {
+  "on": "phone",
+  "rect": [
+   185,
+   148,
+   76,
+   44
+  ],
+  "visible": true,
+  "inside": true,
+  "size": 44,
+  "hit": "self",
+  "text": "✕ 내리기",
+  "closed": true,
+  "ok": true
+ },
+ "portrait/phone-from-third": {
+  "on": "phone",
+  "rect": [
+   185,
+   148,
+   76,
+   44
+  ],
+  "visible": true,
+  "inside": true,
+  "size": 44,
+  "hit": "self",
+  "text": "✕ 내리기",
+  "closed": true,
+  "ok": true
+ },
+ "portrait/errors": [],
+ "landscape/bino-from-first": {
+  "on": "binoculars",
+  "rect": [
+   475,
+   300,
+   80,
+   48
+  ],
+  "visible": true,
+  "inside": true,
+  "size": 48,
+  "hit": "self",
+  "text": "✕ 내리기",
+  "closed": true,
+  "ok": true
+ },
+ "landscape/bino-from-third": {
+  "on": "binoculars",
+  "rect": [
+   475,
+   300,
+   80,
+   48
+  ],
+  "visible": true,
+  "inside": true,
+  "size": 48,
+  "hit": "self",
+  "text": "✕ 내리기",
+  "closed": true,
+  "ok": true
+ },
+ "landscape/phone-from-first": {
+  "on": "phone",
+  "rect": [
+   412,
+   35,
+   76,
+   44
+  ],
+  "visible": true,
+  "inside": true,
+  "size": 44,
+  "hit": "self",
+  "text": "✕ 내리기",
+  "closed": true,
+  "ok": true
+ },
+ "landscape/phone-from-third": {
+  "on": "phone",
+  "rect": [
+   412,
+   35,
+   76,
+   44
+  ],
+  "visible": true,
+  "inside": true,
+  "size": 44,
+  "hit": "self",
+  "text": "✕ 내리기",
+  "closed": true,
+  "ok": true
+ },
+ "landscape/errors": []
+}

@@ -1,7 +1,7 @@
 // 상호작용 컨트롤러: 후보 찾기 → 알약 → 실행(스탬프·안내판·산길 행동·쌍안경 이름표·인사 메뉴)을 한곳에서 돌린다.
 // 장면·카메라는 모르고 main.js가 deps로 넘긴 값만 쓴다(시험에서는 가짜 deps). 키는 input.js가 command로 넘긴다.
-import {STAMPS,PAGES,BOARD_PAGES,GPX_SOURCE,NOT_SIGN_NOTICE,STONE_NOTICE,LANDMARKS,LANDMARK_OBSERVER,ACTIONS,RULES} from './interaction-data.js';
-import {pickCandidate,markerCandidates,arrowAngle,headingToBearing,loadProgress,saveProgress,addStamp,stampCount,hasAllStamps,notebookSlots,cardData,applyStamina,landmarkAt,classifyLandmarks,stackLabels,landmarksEnabled,weatherVisibility,TAPE_HALF,clock} from './interaction-logic.js';
+import {STAMPS,PAGES,BOARD_PAGES,GPX_SOURCE,NOT_SIGN_NOTICE,STONE_NOTICE,LANDMARKS,LANDMARK_ABOUT,LANDMARK_OBSERVER,ACTIONS,RULES} from './interaction-data.js';
+import {addFun,FUN_BADGES,pickCandidate,markerCandidates,arrowAngle,headingToBearing,loadProgress,saveProgress,addStamp,stampCount,hasAllStamps,notebookSlots,cardData,applyStamina,landmarkAt,classifyLandmarks,stackLabels,landmarksEnabled,weatherVisibility,TAPE_HALF,clock} from './interaction-logic.js';
 
 const FRAME_KEY='gwanak-photo-frame';
 const READ_KIND={trailSign:'이정표 읽기',infoBoard:'안내판 읽기',summitBoard:'안내판 읽기'};
@@ -126,22 +126,22 @@ export function createInteraction({state,sites=[],streams=[],player,ui,sound,sto
    const placed=c.inView.map(r=>{const q=projectDir(r.bearing,r.elev);return q&&q.visible?{...r,x:q.x,y:q.y}:null;}).filter(Boolean);
    labels=stackLabels(placed.slice(0,6)).map(r=>({x:r.x,y:r.y,name:r.name,sub:r.directionOnly?'방향만 · 멀리 인천 방향':`${r.km.toFixed(1)}km${r.hazyNow?' · 지금은 안 보여요':r.blocked?' · 추정':''}${r.height&&!r.hazyNow?' · '+r.height.split(' · ')[0]:''}`,row:r.row,rise:Math.max(14,Math.min(30+r.row*38,r.y-(globalThis.innerHeight||900)*.3-44)),dim:!r.seeable&&!r.directionOnly||r.clearest&&r.km>vis*.9,directionOnly:r.directionOnly,focus:c.focus?.id===r.id}));
    edges=c.edges.filter(r=>!c.inView.some(v=>v.id===r.id)).map(r=>({delta:r.delta,directionOnly:r.directionOnly,text:`${short(r)}${r.directionOnly?' (방향만)':''} · ${Math.abs(r.delta).toFixed(0)}° ${r.delta<0?'왼쪽':'오른쪽'}`}));
-   if(c.focus){const f=c.focus;focus={id:f.id,name:f.name,row:f,lines:[`방위 ${f.bearing.toFixed(1)}° · 거리 ${f.km.toFixed(1)}km${f.height?' · 높이 '+f.height:''}`,f.directionOnly?'가시거리 기준 밖이라 방향만 표시해요':f.hazyNow?'지금 날씨에서는 안 보여요':f.clearest?'가장 맑은 날에만 보여요':f.blocked?'다른 산에 가려질 수 있어요 (추정)':'맑은 날 보여요',...(f.note?[f.note]:[])]};}
+   if(c.focus){const f=c.focus;focus={id:f.id,name:f.name,row:f,lines:[...(LANDMARK_ABOUT[f.id]?[LANDMARK_ABOUT[f.id].line+' · F 설명 보기']:[]),`방위 ${f.bearing.toFixed(1)}° · 거리 ${f.km.toFixed(1)}km${f.height?' · 높이 '+f.height:''}`,f.directionOnly?'가시거리 기준 밖이라 방향만 표시해요':f.hazyNow?'지금 날씨에서는 안 보여요':f.clearest?'가장 맑은 날에만 보여요':f.blocked?'다른 산에 가려질 수 있어요 (추정)':'맑은 날 보여요',...(f.note?[f.note]:[])]};}
   }
   return {bearing:b,tape,labels,edges,focus,note:tagsOn?null:'이름표 꺼짐 · N으로 켜기',hit:focus};
  }
+ const compass8=b=>['북','북동','동','남동','남','남서','서','북서'][Math.round(((b%360)+360)%360/45)%8];
  function landmarkPages(f){
-  const lm=f.row,chips=[];
+  const lm=f.row,chips=[],about=LANDMARK_ABOUT[lm.id];
   chips.push(lm.directionOnly||lm.blocked||lm.clearest?{kind:'est',text:lm.directionOnly?'가시거리 밖 · 방향만':lm.blocked?'시선 가림 미확인':'가장 맑은 날만'}:{kind:'ok',text:'맑은 날 보임'});
-  const body=[`진북 기준 ${lm.bearing.toFixed(1)}° 방향, 약 ${lm.km.toFixed(1)}km 떨어져 있어요.${lm.height?` 높이는 ${lm.height}입니다.`:''}`];
-  body.push('좌표는 대표점이라 건물·봉우리 꼭대기와 몇백 m 다를 수 있고, 지형이나 건물에 시선이 가려지는지는 아직 확인하지 않았어요.');
-  if(lm.note)body.push(lm.note);
-  return [{title:lm.name,body,chips,source:'좌표·높이 · 위키백과 대표 좌표와 표기 값 — 방위·고도각은 직접 계산'}];
+  // 설명이 먼저, 방향·거리는 끝에 한 줄로(2026-11-06 대표 요청).
+  const body=[...(about?.body??[]),`여기서 ${compass8(lm.bearing)}쪽(${lm.bearing.toFixed(0)}°)으로 약 ${lm.km.toFixed(1)}km 떨어져 있어요.${lm.height?` 높이 ${lm.height}.`:''}`];
+  return [{title:lm.name,body,chips,source:'설명 · 위키백과·나무위키 등 공개 자료를 확인해 새로 쓴 글 · 방향·거리는 직접 계산'}];
  }
  // ── 한 번 실행 ──
  function run(i){
   if(!view)return false;const row=view.rows[i];if(!row)return false;
-  if(view.kind==='bino'){ui.openBoard({eyebrow:'쌍안경 · 이름표',pages:landmarkPages(view.focus),notice:'직접 계산한 값이며 현장 안내판 글이 아닙니다'});sound.play('tick');return true;}
+  if(view.kind==='bino'){ui.openBoard({eyebrow:'쌍안경 · 이름표',pages:landmarkPages(view.focus),notice:'현장 안내판 글이 아닙니다'});sound.play('tick');return true;}
   if(view.kind==='frame'){frameOn=!frameOn;try{storage?.setItem(FRAME_KEY,String(frameOn));}catch{}ui.toast(frameOn?'인증샷 틀 켜짐 · 저장 사진에 들어가요':'인증샷 틀 꺼짐');return true;}
   const c=view.cands[i];if(row.state==='lock'){ui.toast(row.reason);return true;}
   if(c.action==='read')openRead(c);
@@ -222,14 +222,16 @@ export function createInteraction({state,sites=[],streams=[],player,ui,sound,sto
  function pickEmote(n){const m=multi(),e=EMOTES[n];wheelOn=false;holdX=null;ui.hideWheel();if(!m||!e)return;if(e.id==='selfie')m.selfieKey();else m.doGesture(e.id);sound.play('greet');}
  function openBook(){
   const slots=notebookSlots(progress),count=stampCount(progress);
-  ui.openBook({slots,count,canCard:count===STAMPS.length,small:globalThis.innerWidth<=700,stats:`오늘 내 돌 ${progress.stones}개 · 약수 ${progress.drinks}번 · 손 담그기 ${progress.dips}번 · 스트레칭 ${progress.stretches}번`});
+  ui.openBook({slots,count,fun:FUN_BADGES.map(b=>({...b,got:!!progress.fun?.[b.id],at:progress.fun?.[b.id]?.at})),canCard:count===STAMPS.length,small:globalThis.innerWidth<=700,stats:`오늘 내 돌 ${progress.stones}개 · 약수 ${progress.drinks}번 · 손 담그기 ${progress.dips}번 · 스트레칭 ${progress.stretches}번`});
  }
  // 사진 저장 때 불러, 정상석 앞에서 찍은 사진은 완등 카드용으로 기억한다.
  function notePhoto(url){if(!url||!nearSummitStone(12))return;const img=new Image();img.onload=()=>{summitPhoto=img;};img.src=url;}
  function bakeFrame(g,w,h,drawPhotoFrame){if(!frameActive())return false;drawPhotoFrame(g,w,h,frameInfo());return true;}
  function reset(){if(action){sound.cancel();action=null;}ui.setAction(null);ui.closeBoard();ui.closeBook();ui.closeCard();ui.hideWheel();ui.setPill(null);ui.setMarkers([]);wheelOn=false;holdX=null;current=null;view=null;}
  const frameActive=()=>frameOn&&gadget()==='phone'&&player().zone==='summit'&&nearSummitStone(RULES.showStamp);
- const api={update,handle,run,reset,frameActive,openBook,openCard,notePhoto,bakeFrame,pitch:0,drop:0,
+ // 즐길거리 도장(main.js가 hiking:trail 이벤트로 부른다). 처음이면 알림 한 번.
+ function award(id){const b=FUN_BADGES.find(x=>x.id===id);if(!b||!addFun(progress,id,now()))return false;persist();sound.play('stamp');ui.toast(id==='gym'?'💪 산스장 득근 도장 쾅! · 수첩에 남겼어요':'✨ 깨끗한 신발 · 수첩에 남겼어요',{ms:3000});return true;}
+ const api={update,handle,run,reset,frameActive,openBook,award,openCard,notePhoto,bakeFrame,pitch:0,drop:0,
   active:()=>!!view,anyPanel:()=>ui.boardOpen||ui.bookOpen||ui.cardOpen,modal:()=>ui.bookOpen||ui.cardOpen,panelPages:()=>ui.boardPages,wheel:()=>wheelOn,
   progress,cands,
   get view(){return view?{kind:view.kind,id:view.cands?.[0]?.id??view.focus?.id??null,rows:view.rows.map(r=>({...r}))}:null;},

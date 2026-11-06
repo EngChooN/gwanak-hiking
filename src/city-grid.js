@@ -226,7 +226,7 @@ export function createCityGrid({parent,material,atmosphere,status={},cellSize=CI
  async function drain(){
   building=true;
   try{while(pending.size&&!closed){
-   let next=null;for(const c of pending)if(!next||c.distanceSq<next.distanceSq)next=c;pending.delete(next);
+   let next=null;for(const c of pending)if(!next||(c.rank??c.distanceSq)<(next.rank??next.distanceSq))next=c;pending.delete(next);
    if(next.geometries||!next.wanted)continue;
    let slice=performance.now();const version=next.version,pause=async()=>{if(performance.now()-slice>6){await new Promise(resolve=>setTimeout(resolve,0));slice=performance.now();}};
    const geometries=await cellGeometry(next.records,pause,LIMITS.cityDetailed);
@@ -243,8 +243,9 @@ export function createCityGrid({parent,material,atmosphere,status={},cellSize=CI
   const visible=[];let distanceRejected=0,frustumTests=0;
   const zoom=Math.max(1,camera.zoom||1),zoomed=zoom>1.01,lodQuality=zoomed?Math.min(2,quality+1):quality,middleReach=[2000,3500,5000][lodQuality]*zoom;
   // 그릴 수 있는 거리 안의 칸 중 가까운 LIMITS.cityCells개만 지오메트리를 둔다. 시선과 무관하게 거리로 고르므로 고개를 돌려도 다시 만들지 않는다.
-  const ranked=[];for(const cell of cells.values()){cell.distanceSq=boxDistanceSquared(cell.bounds,camera.position);cell.wanted=false;if(cell.distanceSq<middleReach*middleReach)ranked.push(cell);}
-  ranked.sort((a,b)=>a.distanceSq-b.distanceSq);for(const cell of ranked.slice(0,LIMITS.cityCells)){cell.wanted=true;request(cell);}
+  // 쌍안경(배율>1)에서는 시야 안 칸을 먼저 고른다(2026-11-06). 거리순만 쓰면 산 주변 칸이 상한을 채워, 확대해 보는 도심 칸이 납작한 실루엣 띠로 남았다.
+  const ranked=[];for(const cell of cells.values()){cell.distanceSq=boxDistanceSquared(cell.bounds,camera.position);cell.wanted=false;cell.rank=cell.distanceSq;if(cell.distanceSq<middleReach*middleReach){if(zoomed&&!culler.inFrustum(cell.bounds))cell.rank+=1e12;ranked.push(cell);}}
+  ranked.sort((a,b)=>a.rank-b.rank);for(const cell of ranked.slice(0,LIMITS.cityCells)){cell.wanted=true;request(cell);}
   for(const cell of [...built])if(!cell.wanted&&built.size>LIMITS.cityCells||cell.distanceSq>(middleReach*1.5)**2){dropGeometry(cell);status.cityBuild.evictions++;}
   for(const cell of cells.values()){
    cell.mesh.visible=false;
@@ -253,7 +254,8 @@ export function createCityGrid({parent,material,atmosphere,status={},cellSize=CI
    frustumTests++;if(!culler.inFrustum(cell.bounds))continue;
    const angle=Math.atan2(camera.position.x-cell.center.x,camera.position.z-cell.center.z);
    const direction=((Math.round(angle/(Math.PI*2/DIRECTIONS))%DIRECTIONS)+DIRECTIONS)%DIRECTIONS;
-   visible.push({cell,distanceSq,direction,range:quality===2?cell.proxyRange:cell.ranges[direction]});
+   // 쌍안경에서는 아직 못 만든 칸도 납작한 띠 대신 대표 건물 상자(밑동·지붕 있음)로 그린다.
+   visible.push({cell,distanceSq,direction,range:quality===2||zoomed?cell.proxyRange:cell.ranges[direction]});
   }
   visible.sort((a,b)=>a.distanceSq-b.distanceSq);
   // 쌍안경(camera.zoom>1): 확대된 시야 기준 거리로 단계를 고르고, 거리 단계는 한 칸 높은 화질, 예산은 시야가 좁아진 만큼 1.5배.
@@ -268,14 +270,14 @@ export function createCityGrid({parent,material,atmosphere,status={},cellSize=CI
    if(level<2){cell.mesh.geometry=cell.geometries[level];cell.mesh.visible=true;triangles+=cell.triangles[level]-range.count/3;nearMeshes++;if(level===0)detailed++;else simple++;}
    else distant.push(item);
   }
-  const key=distant.map(item=>`${item.cell.key}:${item.direction}:${quality}`).join(';');
+  const key=distant.map(item=>`${item.cell.key}:${item.direction}:${quality}:${zoomed}`).join(';');
   if(farKey!==key){
    let count=0;const index=far.geometry.index;
    for(const {range}of distant){index.array.set(templateIndices.subarray(range.start,range.start+range.count),count);count+=range.count;}
    index.needsUpdate=true;far.geometry.setDrawRange(0,count);farKey=key;
   }
   far.visible=distant.length>0;
-  status.cityGrid={...status.cityGrid,visibleCells:visible.length,detailedCells:detailed,simpleCells:simple,silhouetteCells:quality===2?0:distant.length,proxyCells:quality===2?distant.length:0,frustumTests,distanceRejected,baseTriangles:triangles,baseDrawCalls:nearMeshes+(far.visible?1:0),baseTriangleBudget:budget,zoom};
+  status.cityGrid={...status.cityGrid,visibleCells:visible.length,detailedCells:detailed,simpleCells:simple,silhouetteCells:quality===2||zoomed?0:distant.length,proxyCells:quality===2||zoomed?distant.length:0,frustumTests,distanceRejected,baseTriangles:triangles,baseDrawCalls:nearMeshes+(far.visible?1:0),baseTriangleBudget:budget,zoom};
  }
  function dispose(){closed=true;root.removeFromParent();for(const cell of cells.values())dropGeometry(cell);EMPTY.dispose();far.geometry.dispose();nearMaterial.dispose();if(farMaterial!==material)farMaterial.dispose();cells.clear();}
  // 밤 거리 불빛(Points) 등 시각·화질에 따라 매 프레임 갱신할 대상.
