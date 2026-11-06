@@ -278,6 +278,9 @@ export function bindSeoulLabels(root,status){
  let visible=false;status.cityLabels=false;
  const key=e=>{if(e.code!=='KeyL'||e.repeat||e.ctrlKey||e.metaKey||e.altKey||/INPUT|TEXTAREA|SELECT/.test(e.target?.tagName)||e.target?.isContentEditable)return;visible=!visible;root.traverse(o=>{if(o.userData.seoulLabel)o.visible=visible;});status.cityLabels=visible;};
  window.addEventListener('keydown',key);
- const credit=document.createElement('a');credit.href='https://www.openstreetmap.org/copyright';credit.target='_blank';credit.rel='noopener';credit.textContent='© OpenStreetMap contributors · ODbL · L: 이름표';credit.style.cssText='position:fixed;right:12px;bottom:6px;font-size:10px;color:#e2e7e6;text-shadow:0 1px 3px #111;z-index:3';document.body.append(credit);
- return ()=>{window.removeEventListener('keydown',key);credit.remove();};
+ const credit=document.createElement('a');credit.href='https://www.openstreetmap.org/copyright';credit.target='_blank';credit.rel='noopener';credit.textContent='© OpenStreetMap contributors · ODbL';
+ // 출처는 화면 아래 출처 한 줄(#source-line)에 붙인다(등산 수첩 HUD). 그 줄이 없으면 오른쪽 아래에 따로 둔다.
+ const line=document.getElementById('source-line'),wrap=document.createElement('span');wrap.className='osm-credit';wrap.append(' · ',credit);const hint=document.createElement('span');hint.className='osm-key';hint.textContent=' · L 이름표';wrap.append(hint);
+ if(line)line.append(wrap);else{wrap.style.cssText='position:fixed;right:12px;bottom:6px;font-size:10px;color:#e2e7e6;text-shadow:0 1px 3px #111;z-index:3';document.body.append(wrap);}
+ return ()=>{window.removeEventListener('keydown',key);wrap.remove();};
 }

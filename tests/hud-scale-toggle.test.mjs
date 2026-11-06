@@ -3,12 +3,12 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {installHudToggle,HUD_SAVE_KEY} from '../src/hud-toggle.js';
 const read=f=>readFileSync(new URL('../'+f,import.meta.url),'utf8');
-test('HUD 길이는 --u 비례이고 휴대폰 배치는 1px로 되돌린다',()=>{
+test('상호작용·기구 화면 길이는 --u 비례이고 휴대폰 배치는 1px로 되돌린다(수첩 HUD는 hud-notebook.css)',()=>{
  const css=read('src/style.css');
  assert.match(css,/--u:max\(\.6px,min\(\.0520833vw,\.0925926vh\)\)/);
  assert.match(css,/@media\(max-width:700px\),\(max-height:540px\) and \(orientation:landscape\)\{:root\{--u:1px\}\}/);
- assert.match(css,/\.brand\{[^}]*font-size:max\(10px,calc\(29\*var\(--u\)\)\)/);
- assert.ok(!/pause-overlay/.test(css),'일시정지 표시 CSS가 없다');
+ assert.match(read('src/main.js'),/import '\.\/hud-notebook\.css';/);
+ for(const f of ['src/style.css','src/hud-notebook.css'])assert.ok(!/pause-overlay/.test(read(f)),`${f}: 일시정지 표시 CSS가 없다`);
 });
 test('H 키는 input·main의 이벤트로만 오고 HUD 모듈은 keydown을 받지 않는다',()=>{
  const src=read('src/hud-toggle.js');

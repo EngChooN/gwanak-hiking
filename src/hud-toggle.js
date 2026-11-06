@@ -5,7 +5,7 @@ export function installHudToggle(doc=document,win=window){
  const app=doc.getElementById('app');if(!app)return;
  let hidden=false;try{hidden=localStorage.getItem(HUD_SAVE_KEY)==='true';}catch{}
  const hint=doc.createElement('div');hint.className='hud-hint';hint.setAttribute('aria-live','polite');hint.innerHTML='<kbd>H</kbd> 다시 보기';
- const restore=doc.createElement('button');restore.type='button';restore.className='hud-restore';restore.textContent='HUD 보기';restore.setAttribute('aria-label','HUD 다시 보기');
+ const restore=doc.createElement('button');restore.type='button';restore.className='hud-restore';restore.innerHTML='👁 화면 보이기 <kbd>H</kbd>';restore.setAttribute('aria-label','화면 다시 보이기 (H)');
  doc.body.append(hint,restore);
  const hideButton=doc.getElementById('hud-hide');let timer=0;
  function apply(showHint){

@@ -5,8 +5,6 @@ import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {clone as cloneSkinned} from 'three/addons/utils/SkeletonUtils.js';
 import {createRealisticHiker} from './realistic-hiker.js';
-import {createOutfitSystem} from './hiker-outfits.js';
-import {OUTFITS} from './outfit-config.js';
 import {NET,TIERS,GESTURES,FLAG,encodeState,decodeState,createInterpolator,classify,nearestWithin,selfieSpot,createSocial,createModeration,REPORT_REASONS,sanitizeName,anonymousName} from './multi-protocol.js';
 import {createBroadcastTransport,createLoopbackHub} from './multi-transport.js';
 import {applyGesture,boneSet} from './multi-gestures.js';
@@ -25,7 +23,7 @@ export async function mountMultiplayer({scene,camera,hikerUrl,prepareGltf=null,n
  // 전송: 가짜 방(sim)이면 같은 프로세스 안의 허브, 아니면 브라우저 창 사이 채널.
  const hub=simN?createLoopbackHub({latency:Number(q.get('latency'))||60,jitter:20,loss:Number(q.get('loss'))||0}):null;
  const transport=hub?hub.join():createBroadcastTransport(room);
- const roster=new Map();             // id → {id,name,outfit,color,interp,gesture,sessionRole,lastSeen,hiker,...}
+ const roster=new Map();             // id → {id,name,color,interp,gesture,sessionRole,lastSeen,hiker,...}
  let seq=0,sendAcc=0,lastAnnounce=-Infinity,tagsOn=true,frozenUntil=0,shotDone=false;
  const stats={sent:0,received:0,bytesOut:0,decoded:0,avatarsDrawn:0,capsules:0,hidden:0,frame:0};
  const send=m=>{stats.sent++;stats.bytesOut+=JSON.stringify(m).length;transport.send(m);};
@@ -41,8 +39,7 @@ export async function mountMultiplayer({scene,camera,hikerUrl,prepareGltf=null,n
  function makeAvatar(){
   const sc=cloneSkinned(gltf.scene),h=createRealisticHiker({scene:sc,animations:gltf.animations});
   sc.traverse(o=>{if(o.isMesh)o.castShadow=false;});
-  let outfits=null;if(h.profile?.dressable!==false)try{outfits=createOutfitSystem(h.scene);}catch{}
-  const entry={hiker:h,bones:boneSet(h.model),outfits,assigned:null,walkPhase:0,prevY:null,slope:0,heading:null};
+  const entry={hiker:h,bones:boneSet(h.model),assigned:null,walkPhase:0,prevY:null,slope:0,heading:null};
   h.scene.visible=false;scene.add(h.scene);pool.push(entry);return entry;
  }
  for(let i=0;i<fullCap;i++)makeAvatar();
@@ -96,7 +93,7 @@ export async function mountMultiplayer({scene,camera,hikerUrl,prepareGltf=null,n
    if(moderation.isBlocked(d.id))return;
    r.interp.push(r.lastSeen,d);return;
   }
-  if(m.t==='j'){const r=roster.get(m.id)??(roster.size<NET.maxRoster?addPlayer(m.id):null);if(r){r.name=sanitizeName(m.n,anonymousName(m.id));r.outfit=m.o|0;r.lastSeen=performance.now()/1000;}return;}
+  if(m.t==='j'){const r=roster.get(m.id)??(roster.size<NET.maxRoster?addPlayer(m.id):null);if(r){r.name=sanitizeName(m.n,anonymousName(m.id));r.lastSeen=performance.now()/1000;}return;}
   if(m.t==='b'){roster.delete(m.id);return;}
   social.handle(m,performance.now()/1000,(from,kind,now)=>{const r=roster.get(from);if(r){r.gesture={kind,from:now,until:now+GESTURES[kind].seconds};say(`${r.name}님이 ${kind==='wave'?'손을 흔들어요':'인사했어요'}`);}});
   const sess=social.state.session;
@@ -104,10 +101,10 @@ export async function mountMultiplayer({scene,camera,hikerUrl,prepareGltf=null,n
   if(m.t==='se')endSession();
  });
  function addPlayer(id){
-  const r={id,name:anonymousName(id),outfit:hash(id)%OUTFITS.length,color:COLORS[hash(id)%COLORS.length],interp:createInterpolator(),gesture:null,lastSeen:performance.now()/1000,sample:null,flags:0,entry:null};
+  const r={id,name:anonymousName(id),color:COLORS[hash(id)%COLORS.length],interp:createInterpolator(),gesture:null,lastSeen:performance.now()/1000,sample:null,flags:0,entry:null};
   roster.set(id,r);return r;
  }
- function announce(force=false){const now=performance.now()/1000;if(!force&&now-lastAnnounce<1)return;lastAnnounce=now;send({t:'j',id:myId,n:myName,o:hash(myId)%OUTFITS.length});}
+ function announce(force=false){const now=performance.now()/1000;if(!force&&now-lastAnnounce<1)return;lastAnnounce=now;send({t:'j',id:myId,n:myName});}
  announce(true);addEventListener('pagehide',()=>{try{transport.send({t:'b',id:myId});}catch{}});
 
  // ── 키 입력(휴대폰은 위 버튼). 기존 키(E·Q·H·B·P·T·C·V·L·M·R·F 등)와 겹치지 않는 X·G·K·N만 쓴다.
@@ -138,7 +135,6 @@ export async function mountMultiplayer({scene,camera,hikerUrl,prepareGltf=null,n
    const p=roster.get(r.p.id);if(p.entry)continue;
    const e=pool.find(x=>!x.assigned);if(!e)break;
    e.assigned=p.id;p.entry=e;e.prevY=null;e.walkPhase=0;e.heading=null;e.hiker.scene.visible=true;
-   try{e.outfits?.apply(OUTFITS[p.outfit%OUTFITS.length].id);}catch{}
   }
  }
  function driveAvatar(r,dt,now){

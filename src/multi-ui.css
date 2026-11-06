@@ -1,19 +1,24 @@
-.multi-panel{position:fixed;right:12px;top:120px;z-index:30;width:236px;padding:10px 12px;border-radius:12px;background:rgba(18,26,22,.78);color:#eef3ec;font:13px/1.4 system-ui,sans-serif;backdrop-filter:blur(6px);pointer-events:auto}
-.multi-head{display:flex;gap:8px;align-items:baseline}.multi-count{opacity:.75;font-size:12px}
-.multi-near{margin:4px 0 8px;font-size:12px;opacity:.85}
+/* 함께 걷기(?multi 시제품). 등산 수첩 톤: 종이 패널·핀 꼬리표 이름표. 패널은 배낭 → 함께 걷기로 연다(hud-notebook.css). */
+.multi-panel{position:fixed;right:calc(12px + env(safe-area-inset-right));top:calc(70px + env(safe-area-inset-top));z-index:30;width:256px;padding:12px 14px;border-radius:9px;background:var(--paper,#fbf3df);color:var(--ink,#4a3618);font:13px/1.4 var(--nb-font,system-ui),sans-serif;box-shadow:2px 3px 0 var(--edge,#b49563),0 4px 10px rgba(52,34,8,.2);pointer-events:auto}
+.multi-head{display:flex;gap:8px;align-items:baseline;font-weight:900}.multi-count{color:var(--ink2,#7a5f3a);font-size:12px;font-weight:600}
+.multi-near{margin:4px 0 8px;font-size:12px;color:var(--ink2,#7a5f3a)}
 .multi-buttons{display:flex;flex-wrap:wrap;gap:6px}
-.multi-btn{min-height:36px;padding:0 10px;border:0;border-radius:8px;background:#e8efe4;color:#16301f;font:600 12px system-ui;cursor:pointer}
-.multi-btn:disabled{opacity:.4;cursor:default}.multi-btn kbd{margin-left:6px;padding:1px 5px;border-radius:4px;background:#16301f;color:#e8efe4;font:11px ui-monospace,monospace}
-.multi-roster{margin-top:8px;max-height:160px;overflow:auto;border-top:1px solid #ffffff22;padding-top:6px}
-.multi-row{display:flex;gap:4px;align-items:center;margin:2px 0}.multi-row span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.multi-mini{min-height:28px;padding:0 8px;border:0;border-radius:6px;background:#ffffff22;color:#fff;font:12px system-ui;cursor:pointer}.multi-mini.ok{background:#4caf6a}
-.multi-note{margin-top:8px;font-size:11px;opacity:.55}
+.multi-btn{min-height:44px;padding:0 12px;border:0;border-radius:9px;background:var(--paper2,#f4e7c8);color:var(--ink,#4a3618);font:800 12px var(--nb-font,system-ui);box-shadow:1px 2px 0 var(--edge,#b49563);cursor:pointer}
+.multi-btn:disabled{opacity:.45;cursor:default}.multi-btn kbd{margin-left:6px;padding:1px 5px;border-radius:4px;border:1px solid var(--rule,#d9c79d);font:600 10px ui-monospace,monospace}
+@media (hover:none),(pointer:coarse){.multi-btn kbd{display:none}}
+.multi-roster{margin-top:8px;max-height:160px;overflow:auto;border-top:1px dashed var(--rule,#d9c79d);padding-top:6px}
+.multi-row{display:flex;gap:4px;align-items:center;margin:2px 0}.multi-row span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
+.multi-mini{min-height:44px;min-width:44px;padding:0 8px;border:0;border-radius:8px;background:var(--paper2,#f4e7c8);color:var(--ink,#4a3618);font:700 12px var(--nb-font,system-ui);box-shadow:1px 2px 0 var(--edge,#b49563);cursor:pointer}.multi-mini.ok{background:var(--stamp,#b9472f);color:#fff;box-shadow:0 2px 0 var(--stamp-d,#7f2f20)}
+.multi-note{margin-top:8px;font-size:11px;color:var(--ink2,#7a5f3a)}
 .multi-tags{position:fixed;inset:0;z-index:20;pointer-events:none;overflow:hidden}
 .multi-tag{position:absolute;left:0;top:0;white-space:nowrap;will-change:transform}
-.multi-tag[data-kind=name] .multi-tag-name{padding:2px 8px;border-radius:999px;background:rgba(18,26,22,.72);color:#fff;font:600 12px system-ui}
-.multi-tag[data-kind=dot]::before{content:'';display:block;width:7px;height:7px;border-radius:50%;background:#fff;box-shadow:0 0 0 2px rgba(18,26,22,.6)}
-.multi-tag[data-gesture=wave] .multi-tag-name::after{content:' 👋'}.multi-tag[data-gesture=hello] .multi-tag-name::after{content:' 🙇'}
-.multi-toast{position:fixed;left:50%;top:70px;transform:translate(-50%,-8px);z-index:40;padding:8px 14px;border-radius:999px;background:rgba(18,26,22,.85);color:#fff;font:13px system-ui;opacity:0;transition:.2s;pointer-events:none}.multi-toast.on{opacity:1;transform:translate(-50%,0)}
-.multi-request{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);z-index:40;display:flex;gap:8px;align-items:center;padding:10px 14px;border-radius:12px;background:rgba(18,26,22,.9);color:#fff;font:13px system-ui}
+.multi-tag[data-kind=name] .multi-tag-name{position:relative;display:block;padding:4px 9px 4px 16px;border-radius:5px;background:var(--paper2,#f4e7c8);color:var(--ink,#4a3618);font:800 12px var(--nb-font,system-ui);box-shadow:2px 3px 0 var(--edge,#b49563),0 4px 10px rgba(52,34,8,.2)}
+.multi-tag[data-kind=name] .multi-tag-name::before{content:'';position:absolute;left:5px;top:50%;width:5px;height:5px;margin-top:-2.5px;border-radius:50%;background:var(--pin,#8a6a3a)}
+.multi-tag[data-kind=name] .multi-tag-name::after{content:'';position:absolute;left:50%;bottom:-6px;margin-left:-6px;border:6px solid transparent;border-bottom:0;border-top-color:var(--paper2,#f4e7c8)}
+.multi-tag[data-kind=dot]::before{content:'';display:block;width:8px;height:8px;border-radius:50%;background:var(--stamp,#b9472f);box-shadow:0 0 0 2px var(--paper2,#f4e7c8)}
+.multi-tag[data-gesture=wave] .multi-tag-name::after,.multi-tag[data-gesture=hello] .multi-tag-name::after{content:none}
+.multi-tag[data-gesture=wave]::after{content:'👋';position:absolute;left:100%;top:0;margin-left:4px}.multi-tag[data-gesture=hello]::after{content:'🙇';position:absolute;left:100%;top:0;margin-left:4px}
+.multi-toast{position:fixed;left:50%;top:calc(70px + env(safe-area-inset-top));transform:translate(-50%,-8px);z-index:40;padding:10px 14px 10px 20px;border-radius:6px;background:var(--paper2,#f4e7c8);color:var(--ink,#4a3618);font:800 13px var(--nb-font,system-ui);box-shadow:2px 3px 0 var(--edge,#b49563);opacity:0;transition:.2s;pointer-events:none}.multi-toast.on{opacity:1;transform:translate(-50%,0)}
+.multi-request{position:fixed;left:50%;bottom:calc(120px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:40;display:flex;gap:8px;align-items:center;padding:10px 14px;border-radius:9px;background:var(--paper,#fbf3df);color:var(--ink,#4a3618);font:700 13px var(--nb-font,system-ui);box-shadow:2px 3px 0 var(--edge,#b49563),0 4px 10px rgba(52,34,8,.2)}
 .multi-request[hidden]{display:none}
 @media (max-width:700px){.multi-panel{width:auto;max-width:calc(100vw - 24px)}}

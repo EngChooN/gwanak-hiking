@@ -14,9 +14,6 @@ import {createLoadingTracker,createStabilityCounter,LOADING_EVENT,START_EVENT} f
 import {insidePlaza,fromGate} from './plaza.js';
 import {createNightLighting} from './night-lighting.js';
 import {FACILITY_LAMPS} from './night-lighting-config.js';
-import {createOutfitSystem} from './hiker-outfits.js';
-import {pickerPlan,loadOutfit,saveOutfit,OUTFITS} from './outfit-config.js';
-import {renderOutfitPreviews,mountOutfitPicker,mountOutfitMenu} from './outfit-picker.js';
 import {movementHeading} from './hiker-facing.js';
 import {createToonStyle} from './toon/index.js';
 import {loadToonHiker,prepareToonHikerGltf} from './toon/link-hiker.js';
@@ -40,16 +37,14 @@ import {STREAM_SPOTS} from './interaction-data.js';
 import {createFrameMetrics} from './performance-metrics.js';
 import {AdaptiveQuality} from './adaptive-quality.js';
 import './hud-v2.css';
+import './hud-notebook.css';
+import {installNotebookHud,formatRemainKm} from './hud-notebook.js';
 import {markLoad,installGlbTiming,loadTiming} from './load-timing.js';
 markLoad('main');installGlbTiming();
 // 로딩 신호와 준비 완료 Promise는 가장 먼저 만든다. 'hiking:start'(또는 hiking.start()) 전에는 입력·시간·자동 걷기를 막는다.
 const loading=createLoadingTracker({emit:detail=>window.dispatchEvent(new CustomEvent(LOADING_EVENT,{detail}))});
 let resolveReady,rejectReady,started=false,startRequested=false,beginHike=()=>{};const readyPromise=new Promise((resolve,reject)=>{resolveReady=resolve;rejectReady=reject;});readyPromise.catch(()=>{});
-// 복장 선택 화면이 뜨면 카드를 고르는 순간이 '시작'이다. ?outfit=1~4나 자동화 브라우저는 건너뛴다.
-const outfitPlan=pickerPlan({search:location.search,webdriver:navigator.webdriver===true,saved:(()=>{try{return loadOutfit(localStorage);}catch{return null;}})()});
-// 카툰 전용 캐릭터(src/toon/link-hiker.js) 한 벌이라 복장 고르기 화면을 띄우지 않는다.
-outfitPlan.show=false;
-const manualStart=outfitPlan.show||document.documentElement.dataset.startMode==='manual'||new URLSearchParams(location.search).get('startMode')==='manual';
+const manualStart=document.documentElement.dataset.startMode==='manual'||new URLSearchParams(location.search).get('startMode')==='manual';
 const failLoading=e=>{if(started)return;const detail=loading.fail(e);rejectReady(Object.assign(new Error(detail?.error??String(e)),{detail}));};
 window.addEventListener('error',e=>{if(!started&&loading.phase==='loading')failLoading(e.error??e.message);});
 window.addEventListener('unhandledrejection',e=>{if(!started&&loading.phase==='loading')failLoading(e.reason);});
@@ -76,7 +71,10 @@ const ambientCredits=document.createElement('p');ambientCredits.textContent='환
 const sourceLink=document.createElement('a');sourceLink.href=`${import.meta.env.BASE_URL}environment/출처-이용조건.md`;sourceLink.textContent='환경음 원본·제작자·작품 URL·CC0 이용 조건 전체 표';sourceLink.target='_blank';sourceLink.rel='noopener';document.querySelector('.sound-credits').append(ambientCredits,sourceLink);
 const unlockSound=()=>{void audio.unlock();if(audio.context)ambient.attach(audio.context,audio.master);};window.addEventListener('pointerdown',unlockSound,{capture:true,passive:true});window.addEventListener('keydown',unlockSound,{capture:true});
 window.addEventListener('hiking:sound',e=>{const {enabled,volume}=e.detail||{};if(typeof enabled==='boolean'){audio.setEnabled(enabled);ambient.setEnabled(enabled);if(enabled)unlockSound();try{localStorage.setItem(SOUND_SAVE_KEY,String(enabled));}catch{}}if(Number.isFinite(volume)){audio.setVolume(volume);ambient.setVolume(audio.volume);try{localStorage.setItem(VOLUME_SAVE_KEY,String(audio.volume));}catch{}}});
-const QUALITY_SAVE_KEY='gwanak-quality-mode';let qualityMode=(()=>{const q=new URLSearchParams(location.search).get('quality');const m={auto:'auto',high:'2',balanced:'1',low:'0'}[q];if(m)return m;try{return localStorage.getItem(QUALITY_SAVE_KEY)||'auto';}catch{return'auto';}})();$('quality').onclick=()=>{const order=['auto','2','1','0'];qualityMode=order[(order.indexOf(qualityMode)+1)%order.length];try{localStorage.setItem(QUALITY_SAVE_KEY,qualityMode);}catch{}$('quality').textContent=`화질 ${{auto:'자동','2':'높음','1':'균형','0':'낮음'}[qualityMode]}`;try{quality=qualityMode==='auto'?(mobile?1:2):Number(qualityMode);goodWindows=0;resize();updateUI();}catch{}$('quality').blur();};
+const QUALITY_SAVE_KEY='gwanak-quality-mode';let qualityMode=(()=>{const q=new URLSearchParams(location.search).get('quality');const m={auto:'auto',high:'2',balanced:'1',low:'0'}[q];if(m)return m;try{return localStorage.getItem(QUALITY_SAVE_KEY)||'auto';}catch{return'auto';}})();function setQualityMode(mode){qualityMode=mode;try{localStorage.setItem(QUALITY_SAVE_KEY,qualityMode);}catch{}$('quality').textContent=`화질 ${{auto:'자동','2':'높음','1':'균형','0':'낮음'}[qualityMode]}`;try{quality=qualityMode==='auto'?(mobile?1:2):Number(qualityMode);goodWindows=0;resize();updateUI();}catch{}}
+$('quality').onclick=()=>{const order=['auto','2','1','0'];setQualityMode(order[(order.indexOf(qualityMode)+1)%order.length]);$('quality').blur();};
+// 설정 탭의 화질 분절 단추(등산 수첩 HUD)는 모드를 바로 고른다.
+window.addEventListener('hiking:quality',e=>{const m={auto:'auto',high:'2',balanced:'1',low:'0'}[e.detail?.mode];if(m)setQualityMode(m);});
 $('sound-toggle').onclick=()=>{window.dispatchEvent(new CustomEvent('hiking:sound',{detail:{enabled:!audio.enabled}}));$('sound-toggle').blur();};
 window.addEventListener('hiking:step',e=>ambient.onStep(audio.play(e.detail,{view:state.view,})));updateAudioUI();
 const inspectionFov=Number(new URLSearchParams(location.search).get('fov'));const inspectionMode=[55,70].includes(inspectionFov);const scene=new THREE.Scene();const camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.08,30000);let renderer;
@@ -116,8 +114,7 @@ let firstHeading=true;const hikerUrl=`${import.meta.env.BASE_URL}assets/toon/mod
 const hiker=await guard(loadToonHiker(hikerUrl));loading.done('hikers');markLoad('hiker');const avatar=hiker.scene;scene.add(avatar);
 // 셰이더 미리 준비: 지형·하늘·등산객 재질이 생긴 지금 compileAsync를 걸어 두면, GPU가 숲 배치(CPU) 동안 병렬로 컴파일하고 뒤의 prepare()는 캐시를 쓴다(2026-11-06).
 void lighting.compile().then(()=>markLoad('early-compile')).catch(()=>{});
-let outfits=null;const setOutfit=id=>{if(!outfits)return null;const applied=outfits.apply(id);try{saveOutfit(localStorage,applied);}catch{}return applied;};
-if(hiker.profile?.dressable!==false)try{outfits=createOutfitSystem(avatar);outfits.apply(outfitPlan.outfit);}catch(e){landscape.status.errors.push(`복장: ${e.message}`);}if(toon)toon.toonify(avatar,{kind:'character'});avatar.traverse(o=>{if(o.isMesh){o.castShadow=!o.userData.outline;o.receiveShadow=!o.userData.noReceiveShadow;}});
+if(toon)toon.toonify(avatar,{kind:'character'});avatar.traverse(o=>{if(o.isMesh){o.castShadow=!o.userData.outline;o.receiveShadow=!o.userData.noReceiveShadow;}});
 const look=createLook(),autoView=createAutoView();let moving=false,speed=0,last=performance.now(),saveAt=last,uiAt=0,frameSum=0,frames=0,quality=qualityMode==='auto'?(mobile?1:2):Number(qualityMode),qualityWindow=performance.now(),goodWindows=0;const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;const touchQuery=matchMedia('(pointer: coarse)');const updateDevice=()=>document.body.classList.toggle('touch',touchQuery.matches||navigator.maxTouchPoints>0);touchQuery.addEventListener('change',updateDevice);updateDevice();
 const adaptiveQuality=new AdaptiveQuality(quality);
 // 비용 분리 검수에서만 같은 DPR·그림자 조건을 고정한다. 일반 실행에는 적용하지 않는다.
@@ -127,7 +124,7 @@ avatar.userData.metricKind='등산객';
 function resize(){const width=innerWidth,height=innerHeight;camera.aspect=width/height;camera.far=30000;camera.fov=inspectionMode?inspectionFov:height>width?78:65;camera.updateProjectionMatrix();renderer.setSize(width,height);adaptiveQuality.setViewport(`${width}x${height}@${devicePixelRatio}`);if(adaptiveQuality.cap!==quality)adaptiveQuality.setCap(quality);const settings=adaptiveQuality.settings,dpr=Math.min(devicePixelRatio,settings.dpr);renderer.setPixelRatio(dpr);lighting.resize(quality,width,height,dpr,settings);}window.addEventListener('resize',resize);resize();
 function suspend(){if(!started)return;audio.stop();ambient.setPaused(true);state.auto=false;input.clear();save();}
 const teaReady=()=>state.pose==='sit'&&hiker.interaction?.sitLinear>=.999;
-mountRestUI();installHudToggle();installGadgetUI();
+mountRestUI();installHudToggle();installGadgetUI();installNotebookHud();
 const interactionUI=mountInteractionUI();
 const INTERACTION_COMMANDS=['interact','choice-1','choice-2','choice-3','panel-close','page-prev','page-next','stamps-toggle','card-open','labels-toggle','stretch','emote-menu','emote-pick'];
 let interaction=null;
@@ -170,7 +167,9 @@ const lifecycleSave=()=>{suspend();if(document.pointerLockElement)document.exitP
 const pad=n=>String(n).padStart(2,'0');const time=s=>`${pad(Math.floor(s/3600))}:${pad(Math.floor(s/60)%60)}:${pad(Math.floor(s)%60)}`;
 const minX=Math.min(...route.points.map(p=>p.x)),maxX=Math.max(...route.points.map(p=>p.x)),minZ=Math.min(...route.points.map(p=>p.z)),maxZ=Math.max(...route.points.map(p=>p.z));
 const mapScale=Math.min(250/(maxX-minX),250/(maxZ-minZ)),mapX=p=>160+(p.x-(minX+maxX)/2)*mapScale,mapY=p=>150+(p.z-(minZ+maxZ)/2)*mapScale;$('map-path').setAttribute('d',route.points.map((p,i)=>`${i?'L':'M'}${mapX(p)} ${mapY(p)}`).join(' '));
-function updateUI(){const p=sample(state.s),plaza=state.zone==='plaza',course=courseDistance(state);window.dispatchEvent(new CustomEvent('hiking:state',{detail:{...state,plaza:state.plaza&&{...state.plaza},phone:{...state.phone},binoculars:{...state.binoculars},viewZoom:viewZoom(state),speed,teaReady:teaReady(),offTrail:offTrailNow(),interact:interaction?.view??null,zone:state.zone,courseDistance:course,courseLength:COURSE_LENGTH,position:playerPosition(state,walkingGround),started}}));$('status').textContent=state.pose==='tea'?'차 마시는 중':state.pose==='sit'?'앉아서 쉬는 중':state.running?'달리는 중':moving?'걷는 중':'쉬는 중';$('progress-fill').style.width=`${course/COURSE_LENGTH*100}%`;{const total=Math.round(COURSE_LENGTH),done=Math.min(total,Math.round(course)),fmt=n=>n.toLocaleString('ko-KR');$('distance').textContent=`${plaza?'출발 전 · 광장 · ':''}${fmt(done)} / ${fmt(total)} m`;$('remaining').textContent=`정상까지 ${fmt(total-done)} m`;}$('altitude').innerHTML=`${worldPosition()[1].toFixed(0)} <em>m</em>`;$('elapsed').textContent=time(state.elapsed);$('speed').innerHTML=`${(speed*3.6).toFixed(1)} <em>km/h</em>`;$('eta').textContent=`${Math.ceil(durationBetween(state.s,route.length)/60)}분`;$('surface').textContent=plaza?'광장 · 포장':offTrailNow()?'길 밖 · 흙·낙엽':MATERIALS[p.material].label;$('quality').textContent=`화질 ${['낮음','균형','높음'][quality]} · ${qualityMode==='auto'?'자동':'고정'}`;$('auto').classList.toggle('active',state.auto);for(const g of ['binoculars','phone']){$(g).classList.toggle('active',state.gadget===g);$(g).setAttribute('aria-pressed',String(state.gadget===g));}$('auto').setAttribute('aria-pressed',state.auto);$('view').querySelector('span').textContent=state.view==='first'?'3인칭':'1인칭';$('view').disabled=viewLocked(state);$('view').title=viewLocked(state)?'쌍안경·휴대폰을 쓰는 동안은 1인칭 고정':'';{const [x,,z]=worldPosition();$('map-dot').setAttribute('cx',mapX({x,z}));$('map-dot').setAttribute('cy',mapY({x,z}));}$('checkpoints').innerHTML=checkpoints.map((c,i)=>`<div>${state.checkpoints.includes(c.id)?'●':'○'} ${c.name} · 임시${c.s<state.s&&!state.checkpoints.includes(c.id)?' · 시범 시작 전 구간':''}</div>`).join('');}
+// 지도: 걸은 길(빨간 실선)은 지도 창이 열려 있을 때만, 1m 넘게 움직였을 때 다시 그린다. 남은 길은 #map-path 점선.
+let walkedS=-1;const drawWalked=()=>{if(!$('map').open)return;const s=state.zone==='route'||state.zone==='summit'?Math.min(state.s,route.length):0;if(Math.abs(s-walkedS)<1)return;walkedS=s;const pts=[];for(const g of route.segments){if(g.start>=s)break;pts.push(g.a);}const q=sample(s);if(pts.length)pts.push({x:q.x,z:q.z});$('map-walked').setAttribute('d',pts.map((p,i)=>`${i?'L':'M'}${mapX(p).toFixed(1)} ${mapY(p).toFixed(1)}`).join(' '));};
+function updateUI(){const p=sample(state.s),plaza=state.zone==='plaza',course=courseDistance(state);window.dispatchEvent(new CustomEvent('hiking:state',{detail:{...state,plaza:state.plaza&&{...state.plaza},phone:{...state.phone},binoculars:{...state.binoculars},viewZoom:viewZoom(state),speed,teaReady:teaReady(),offTrail:offTrailNow(),interact:interaction?.view??null,zone:state.zone,courseDistance:course,courseLength:COURSE_LENGTH,position:playerPosition(state,walkingGround),started}}));$('status').textContent=state.pose==='tea'?'차 마시는 중':state.pose==='sit'?'앉아서 쉬는 중':state.running?'달리는 중':moving?'걷는 중':'서 있음';$('progress-fill').style.width=`${course/COURSE_LENGTH*100}%`;{const total=Math.round(COURSE_LENGTH),done=Math.min(total,Math.round(course)),fmt=n=>n.toLocaleString('ko-KR');$('distance').textContent=`${plaza?'출발 전 · 광장 · ':''}${fmt(done)} / ${fmt(total)} m`;$('remaining').textContent=formatRemainKm(total-done);}$('altitude').innerHTML=`${worldPosition()[1].toFixed(0)} <em>m</em>`;$('elapsed').textContent=time(state.elapsed);$('speed').innerHTML=`${(speed*3.6).toFixed(1)} <em>km/h</em>`;$('eta').textContent=`${Math.ceil(durationBetween(state.s,route.length)/60)}분`;$('surface').textContent=plaza?'광장 · 포장':offTrailNow()?'길 밖 · 흙·낙엽':MATERIALS[p.material].label;$('quality').textContent=`화질 ${['낮음','균형','높음'][quality]} · ${qualityMode==='auto'?'자동':'고정'}`;$('auto').classList.toggle('active',state.auto);for(const g of ['binoculars','phone']){$(g).classList.toggle('active',state.gadget===g);$(g).setAttribute('aria-pressed',String(state.gadget===g));}$('auto').setAttribute('aria-pressed',state.auto);$('view').querySelector('span').textContent=state.view==='first'?'3인칭':'1인칭';$('view').disabled=viewLocked(state);$('view').title=viewLocked(state)?'쌍안경·휴대폰을 쓰는 동안은 1인칭 고정':'';{const [x,,z]=worldPosition();$('map-dot').setAttribute('cx',mapX({x,z}));$('map-dot').setAttribute('cy',mapY({x,z}));drawWalked();}$('checkpoints').innerHTML=checkpoints.map((c,i)=>`<div>${state.checkpoints.includes(c.id)?'●':'○'} ${c.name} · 임시${c.s<state.s&&!state.checkpoints.includes(c.id)?' · 시범 시작 전 구간':''}</div>`).join('');}
 if(state.zone==='plaza'){$('resume-note').textContent='출발 전 · 일주문 앞 광장 · W/A/S/D로 둘러보거나 자동 걷기(R)로 출발하세요';}else if(saved&&!startOption){$('resume-note').textContent=`${[...checkpoints].reverse().find(c=>state.checkpoints.includes(c.id))?.name||'정상 접근'} · ${Math.round(state.s)}m 지점에서 이어왔습니다 · W로 걷거나 자동 걷기(R)로 이어가세요`;}else{$('resume-note').textContent='정상 접근 시범 구간 · 자동 걷기 또는 W로 출발하세요';}const hideResumeNote=()=>setTimeout(()=>{if(storageOK)$('resume-note').style.opacity='0';},3500);
 const camGoal=new THREE.Vector3(),lookGoal=new THREE.Vector3();let cameraReady=false,summitShown=state.summitArrived||state.s>=route.length;let firstFrameMs=null;const clockStart=performance.now();
 const frameMetrics=createFrameMetrics();
@@ -239,7 +238,7 @@ function frame(now){
   camera.lookAt(lookGoal);cameraReady=true;
  });
  frameMetrics.stage('terrain',()=>terrain.update(state.s,quality));
- night.update(dt,{camera,avatar,view:state.view,selfie:selfieActive(state),zone:state.zone==='summit'?'route':state.zone,s:state.s,hiker,hatKind:OUTFITS.find(o=>o.id===outfits?.current)?.head.hat?.kind??'none'});
+ night.update(dt,{camera,avatar,view:state.view,selfie:selfieActive(state),zone:state.zone==='summit'?'route':state.zone,s:state.s,hiker});
  if(multi)frameMetrics.stage('multi',()=>multi.update(dt,now/1000));
  frameMetrics.stage('render',()=>lighting.render(avatar.position));
  if(photoRequested){photoRequested=false;takePhoto();}
@@ -277,7 +276,6 @@ function readiness(){
  const entrance=landscape.status.entrance;
  return {radius:READY_RADIUS,terrainSamples:checked,terrainMissing:missing,terrain:missing.length===0&&terrain.loaded.size>0,nearLod:landscape.status.natureReady===true,facilities:!!entrance?.frame&&!!entrance?.counts&&insidePlaza(entrancePlazaStart.x,entrancePlazaStart.z),hikers:!!avatar&&avatar.parent===scene,zone:state.zone};
 }
-const outfitMenu=outfits?mountOutfitMenu($('map'),{selected:outfits.current,onPick:setOutfit}):null;
 const ready=readiness();if(!ready.terrain)failLoading(new Error(`출발점 반경 ${READY_RADIUS}m 지형 누락 ${ready.terrainMissing.length}곳`));
 loading.set('facilities',ready.facilities?1:.5);if(!ready.facilities)failLoading(new Error('광장 시설을 불러오지 못했습니다'));
 // 준비 실패는 위 error/unhandledrejection 수신기가 로딩 오류 신호로 바꾼다.
@@ -318,8 +316,6 @@ function checkStability(frameMs,now){
  readyInfo={...readiness(),stableFrames:stability.stable,stableTimeout:!done,firstFrameMs};
  if(!readyInfo.terrain||!readyInfo.nearLod||!readyInfo.facilities||!readyInfo.hikers){failLoading(new Error('출발점 주변 준비 조건 미충족'));return;}
  markLoad('ready');loading.ready({readiness:readyInfo});resolveReady({...loading.snapshot(),readiness:readyInfo});startBackgroundCities();
- if(outfitPlan.show&&outfits){const previews=renderOutfitPreviews({renderer,avatar,apply:id=>outfits.apply(id)});outfits.apply(outfitPlan.outfit);
-  mountOutfitPicker({previews,selected:outfitPlan.outfit,onPick:id=>{setOutfit(id);outfitMenu?.update(id);unlockSound();window.hiking.start();}});}
  if(!manualStart)startRequested=true;beginHike();
 }
 // '시작' 신호 이후에만 입력·경과 시간·자동 걷기가 진행된다. 로딩 중에 눌린 키는 버린다.
@@ -364,7 +360,7 @@ if(sectionJumpEnabled(location.search)){
  window.hiking.jumpTargets=()=>targets.map(t=>t.id);window.hiking.jumpTo=id=>{const t=targets.find(x=>x.id===id);return !!t&&jump(t);};
 }
 // 진단 전용 읽기 인터페이스. 위치 변경·시간 배속 기능은 제공하지 않는다.
-window.__hiker=hiker;window.hiking.summitMap=()=>summitWalkMap(walkingGround.summit,lateralLimit);window.__surface=landscape.surfaceHeight;window.__walkingGround=walkingGround;window.__landscape=landscape;Object.assign(window.hiking,{outfit:()=>outfits&&{current:outfits.current,plan:outfitPlan,attachments:outfits.attachments(),info:outfits.info},setOutfit:id=>{const applied=setOutfit(id);outfitMenu?.update(applied);return applied;},outfitPreviews:(options={})=>{if(!outfits)return {};const keep=outfits.current,result=renderOutfitPreviews({renderer,avatar,apply:id=>outfits.apply(id),...options});outfits.apply(keep);return result;},readiness:()=>readyInfo??readiness(),position:()=>playerPosition(state,walkingGround),snapshot:()=>({...state}),audio:()=>audio.snapshot(),metrics:()=>window.__hikingMetrics,rendering:()=>JSON.parse(JSON.stringify({...lighting.status,fov:camera.fov,exposure:renderer.toneMappingExposure})),orientation:()=>({...look,camera:camera.position.toArray(),avatarHeading:avatar.rotation.y,routeHeading:sample(state.s).heading,zone:state.zone,baseHeading:baseHeading(),cameraHeading:baseHeading()+look.yaw}),groundCheck:()=>{const p=sample(state.s);return [-.5,0,.5].map(l=>landscape.groundCheck(p.x+p.nx*l,p.z+p.nz*l));},landscape:()=>({...landscape.status}),coordinates:()=>{const p=sample(state.s);const [x,y,z]=worldPosition();return {x,y,z};}});
+window.__hiker=hiker;window.hiking.summitMap=()=>summitWalkMap(walkingGround.summit,lateralLimit);window.__surface=landscape.surfaceHeight;window.__walkingGround=walkingGround;window.__landscape=landscape;Object.assign(window.hiking,{readiness:()=>readyInfo??readiness(),position:()=>playerPosition(state,walkingGround),snapshot:()=>({...state}),audio:()=>audio.snapshot(),metrics:()=>window.__hikingMetrics,rendering:()=>JSON.parse(JSON.stringify({...lighting.status,fov:camera.fov,exposure:renderer.toneMappingExposure})),orientation:()=>({...look,camera:camera.position.toArray(),avatarHeading:avatar.rotation.y,routeHeading:sample(state.s).heading,zone:state.zone,baseHeading:baseHeading(),cameraHeading:baseHeading()+look.yaw}),groundCheck:()=>{const p=sample(state.s);return [-.5,0,.5].map(l=>landscape.groundCheck(p.x+p.nx*l,p.z+p.nz*l));},landscape:()=>({...landscape.status}),coordinates:()=>{const p=sample(state.s);const [x,y,z]=worldPosition();return {x,y,z};}});
 window.hiking.night=()=>night.info();window.hiking.headlamp=on=>{if(typeof on==='boolean')night.toggleHeadlamp(),night.info().headlamp.on!==on&&night.toggleHeadlamp();else night.toggleHeadlamp();night.syncButton();return night.info().headlamp;};window.hiking.setOthers=list=>night.setOthers(list);
 window.hiking.gadgetView=()=>({gadget:state.gadget,phone:{...state.phone},binoculars:{...state.binoculars},view:state.view,selfie:selfieActive(state),cameraZoom:camera.zoom,targetZoom:viewZoom(state),fogFar:scene.fog.far,avatarVisible:avatar.visible,camera:camera.position.toArray()});
 // 청크 스트리밍(기획서 §2.5): ready(pos)는 그 위치의 지형·식생 청크가 붙을 때까지 기다린다. pos 생략 시 현재 위치.

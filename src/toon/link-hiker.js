@@ -201,7 +201,7 @@ export function buildToonHikerGltf(base){
   // 앉기: 엉덩이를 땅에 붙이고 다리를 앞으로 쭉 뻗는다(아기처럼). 컵·보온병은 오른쪽 가까이, 스틱은 배낭 왼쪽에 기댄다.
   seat:{hipAbove:seatHip,footX:.085,footZ:-.16,cupRest:[.2,-.1],flask:[.27,-.2],cupChest:[.05,.2,-.2],poles:[{tip:[-.3,.26],lean:[-.2,.36,.2]},{tip:[-.34,.18],lean:[-.22,.36,.15]}]},
   stance:{footHalf:.075,poleX:.2,poleForward:.1},poleStep:{forward:.12,lift:.07},poleLength:.62,
-  arm:TOON_ARM,moveSlack:.01,dressable:false,binoLean:4,standSlack:.003,cameraScale:.62,
+  arm:TOON_ARM,moveSlack:.01,binoLean:4,standSlack:.003,cameraScale:.62,
   // 작은 카툰 쌍안경(hiker-gadgets.js TOON_BINOCULARS_SIZE)은 두 눈 사이 눈높이(binoUp)에서 접안 컵이 얼굴에 닿게(binoEye) 든다.
   // 머리가 커서 얼굴이 어깨보다 한참 앞이다: 쌍안경은 눈 가까이, 휴대폰은 턱 아래 가슴 앞에 들고, 쇄골을 들어 올리고 내밀어 짧은 팔이 닿게 한다.
   gadget:{binoEye:.061,binoUp:.016,binoTorso:[.85,.3],binoShrugUp:70,binoShrugSide:30,binoStyle:'toon',binoDepth:.024,phoneForward:.1,phoneDown:.15,shrug:30,protract:28},

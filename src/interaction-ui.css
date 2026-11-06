@@ -135,13 +135,6 @@ body.touch .ix-board h2{font-size:22px}body.touch .ix-board p{font-size:16px}
 .ix-tagbtn{position:absolute;left:calc(14px + env(safe-area-inset-left));bottom:calc(86*var(--u) + env(safe-area-inset-bottom));min-height:44px;padding:0 14px;border-radius:12px;border:1px solid #ffffff38;background:#0c211ccf;font-size:max(12px,calc(15*var(--u)))}
 @media(max-width:700px){.ix-focus{bottom:calc(150px + env(safe-area-inset-bottom))}.ix-tagbtn{bottom:calc(150px + env(safe-area-inset-bottom))}}
 
-/* 터치 화면: 수첩·스트레칭은 조작줄(nav)이 이미 꽉 차서 왼쪽 아래(조이스틱 위) 둥근 단추로 둔다. 키보드 화면은 nav에 있다. */
-.ix-quick{display:none}
-body.touch .ix-quick{display:flex;position:absolute;left:calc(14px + env(safe-area-inset-left));bottom:calc(150px + env(safe-area-inset-bottom));gap:8px}
-body.touch .ix-quick button{pointer-events:auto;width:48px;height:48px;border-radius:50%;background:#173e36ea;border:1px solid #f4d67c70;font-size:20px;line-height:1;display:grid;place-items:center;color:#f4d67c}
-body.touch nav #stamps,body.touch nav #stretch{display:none}
-body.gadget-on .ix-quick{display:none}
-@media(max-height:540px) and (orientation:landscape){body.touch .ix-quick{bottom:calc(138px + env(safe-area-inset-bottom));left:auto;right:calc(14px + env(safe-area-inset-right))}}
 
 /* 가로 휴대폰(높이 540 이하): 안내판은 오른쪽 옆 시트, 알림·수첩은 작게 */
 @media(max-height:540px) and (orientation:landscape){

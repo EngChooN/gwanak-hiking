@@ -21,7 +21,11 @@ export function jumpTargets({summit=null}={}){
  if(summit)list.push({id:'summit',label:'정상 구역',pos:summit,summit:true});
  return list;
 }
+// 등산 수첩 HUD가 있으면 설정 탭의 '개발용' 점선 칸(.nb-dev-slot)에 들어가고, 목록은 따로 펼치는 종이 시트(data-sheet="jump")가 된다.
+// 그 칸이 없으면(다른 화면) 예전처럼 화면 왼쪽 가운데에 둔다.
 export function mountSectionJump({targets,onJump,root=document.body}){
+ const slot=document.querySelector('[data-dev-slot]'),sheets=document.querySelector('.nb-sheets');
+ if(slot&&sheets)return mountInSettings({targets,onJump,slot,sheets});
  const box=document.createElement('div');box.id='section-jump';box.hidden=true;
  box.innerHTML='<button type="button" class="sj-toggle" aria-expanded="false" aria-controls="sj-list">구간 이동</button><ul id="sj-list" class="sj-list" hidden></ul>';
  const toggle=box.querySelector('.sj-toggle'),list=box.querySelector('.sj-list');
@@ -33,4 +37,16 @@ export function mountSectionJump({targets,onJump,root=document.body}){
  document.addEventListener('pointerdown',e=>{if(!list.hidden&&!box.contains(e.target))open(false);});
  root.append(box);
  return {show:()=>{box.hidden=false;},hide:()=>{box.hidden=true;open(false);},element:box};
+}
+function mountInSettings({targets,onJump,slot,sheets}){
+ const sheetOpen=id=>window.dispatchEvent(new CustomEvent('hiking:sheet',{detail:{id}}));
+ const box=document.createElement('div');box.id='section-jump';box.hidden=true;
+ box.innerHTML='<button type="button" class="sj-toggle nb-it nb-dev" aria-expanded="false" aria-controls="sj-list"><em aria-hidden="true">🧭</em><span>구간 이동</span><small>개발용 · 바로 이동</small></button>';
+ const sheet=document.createElement('section');sheet.className='nb-sheet nb-jump';sheet.dataset.sheet='jump';sheet.setAttribute('role','dialog');sheet.setAttribute('aria-label','구간 이동');sheet.hidden=true;
+ sheet.innerHTML='<h4><span>🧭 구간 이동 <i class="nb-devmark">개발용</i></span><button type="button" class="nb-close" data-sheet-close aria-label="구간 이동 닫기">✕</button></h4><p class="nb-note">고르면 그 지점으로 바로 옮겨요 · 진행 기록은 그대로</p><ul id="sj-list" class="sj-list nb-grid"></ul>';
+ const toggle=box.querySelector('.sj-toggle'),list=sheet.querySelector('.sj-list');
+ for(const t of targets){const li=document.createElement('li'),b=document.createElement('button');b.type='button';b.className='nb-it';b.textContent=t.label;b.dataset.jump=t.id;b.addEventListener('click',()=>{if(onJump(t)!==false)sheetOpen(null);});li.append(b);list.append(li);}
+ toggle.addEventListener('click',()=>sheetOpen('jump'));
+ slot.append(box);sheets.append(sheet);
+ return {show:()=>{box.hidden=false;},hide:()=>{box.hidden=true;if(!sheet.hidden)sheetOpen(null);},element:box};
 }

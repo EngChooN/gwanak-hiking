@@ -29,7 +29,7 @@ export function createEnvironment({search=globalThis.location?.search??'',nowMs=
   let sun,moon,label;
   if(legacy&&!timeParam){sun={elevation:legacy.elevation,azimuth:legacy.azimuth};moon={elevation:-40,azimuth:(legacy.azimuth+180)%360,illumination:.5};label=legacy.label;info.manualTime=true;info.legacySun=true;}
   else{const {utcMs,manual}=resolveUtcMs({time:timeParam,nowMs:nowMs()});sun=sunPosition(utcMs);moon=moonPosition(utcMs);label=seoulClock(utcMs).label;info.manualTime=manual;info.legacySun=false;}
-  info.timeLabel=label;info.sunDown=sun.elevation<0;
+  info.timeLabel=label;info.sunDown=sun.elevation<0;info.sunElevation=Math.round(sun.elevation*2)/2;
   return composeEnvironment({sun,moon,weather:ctl.state.look});
  }
  function update(dt){

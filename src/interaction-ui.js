@@ -40,7 +40,7 @@ export function drawPhotoFrame(g,w,h,info){
 
 export function mountInteractionUI(doc=document,win=window){
  const root=doc.createElement('div');root.id='interaction-ui';
- root.innerHTML=`<div class="ix-markers"></div><div class="ix-quick"><button type="button" data-q="stamps-toggle" aria-label="스탬프 수첩 (J)">▣</button><button type="button" data-q="stretch" aria-label="스트레칭 (Z)">✦</button></div><div class="ix-vignette"></div><div class="ix-pill-wrap" hidden></div><div class="ix-action" hidden></div><div class="ix-toast" hidden></div>
+ root.innerHTML=`<div class="ix-markers"></div><div class="ix-vignette"></div><div class="ix-pill-wrap" hidden></div><div class="ix-action" hidden></div><div class="ix-toast" hidden></div>
  <div class="ix-scrim" hidden></div><div class="ix-board" role="dialog" aria-label="안내판" hidden></div><div class="ix-book" role="dialog" aria-label="스탬프 수첩" hidden></div><div class="ix-card" hidden><canvas></canvas><div class="row"></div></div><div class="ix-wheel" hidden></div>`;
  const bino=doc.createElement('div');bino.id='ix-bino';bino.innerHTML='<div class="ix-tape"></div><div class="ix-labels"></div><div class="ix-edges"></div><div class="ix-bino-note" hidden></div><div class="ix-focus" hidden></div><button type="button" class="ix-tagbtn">이름표 <kbd>N</kbd></button>';
  const frame=doc.createElement('div');frame.id='ix-frame';frame.hidden=true;frame.innerHTML='<div class="brd"></div><div class="badge">정상 인증</div><div class="band"></div>';
@@ -49,13 +49,17 @@ export function mountInteractionUI(doc=document,win=window){
  const stop=e=>e.stopPropagation();
  bino.querySelector('.ix-tagbtn').addEventListener('click',()=>send('labels-toggle'));
  for(const el of [root,bino])el.addEventListener('pointerdown',e=>{if(e.target.closest('button,.ix-board,.ix-book,.ix-card,.ix-scrim,.ix-focus'))e.stopPropagation();});
- for(const b of root.querySelectorAll('.ix-quick button')){b.addEventListener('pointerdown',stop);b.addEventListener('click',()=>{b.blur();send(b.dataset.q);});}
  const markers=$('.ix-markers'),pillWrap=$('.ix-pill-wrap'),actionEl=$('.ix-action'),toastEl=$('.ix-toast'),scrim=$('.ix-scrim'),boardEl=$('.ix-board'),bookEl=$('.ix-book'),cardEl=$('.ix-card'),wheelEl=$('.ix-wheel'),vignette=$('.ix-vignette');
  let toastTimer=0,pillSig='',board=null,boardIndex=0,cardCanvas=cardEl.querySelector('canvas'),markerEls=new Map(),lastCardData=null;
  // ── 알약 ──
+ // 세상 속 줄(where:'world')은 등산 수첩 HUD의 빨간 도장(첫 줄)·상황 꼬리표(나머지 줄)가 그린다(hud-notebook.js).
+ // 휴대폰 화면 안 줄(where:'phone')만 여기서 휴대폰 틀 위 꼬리표로 그린다.
+ const sendView=v=>win.dispatchEvent(new CustomEvent('hiking:interact-view',{detail:v}));
  function setPill(view){
-  if(!view){if(pillSig!==''){pillSig='';pillWrap.hidden=true;pillWrap.replaceChildren();}return;}
+  if(!view){if(pillSig!==''){pillSig='';pillWrap.hidden=true;pillWrap.replaceChildren();sendView(null);}return;}
   const sig=JSON.stringify([view.rows,view.where]);
+  if(view.where!=='phone'){if(sig!==pillSig){pillSig=sig;pillWrap.hidden=true;pillWrap.replaceChildren();sendView({rows:view.rows,where:'world'});}return;}
+  if(pillSig&&!pillSig.endsWith('"phone"]'))sendView(null);
   if(view.where==='phone'&&view.rect){pillWrap.dataset.where='phone';pillWrap.style.left=`${view.rect.cx}px`;pillWrap.style.top=`${view.rect.top-12}px`;pillWrap.style.transform='translate(-50%,-100%)';}
   else{pillWrap.dataset.where='world';pillWrap.style.left=pillWrap.style.top='';pillWrap.style.transform='';}
   if(sig===pillSig)return;pillSig=sig;pillWrap.hidden=false;
@@ -74,6 +78,7 @@ export function mountInteractionUI(doc=document,win=window){
  // ── 행동 진행 ──
  let actionSig='';
  function setAction(m){
+  win.dispatchEvent(new CustomEvent('hiking:action-view',{detail:m?{label:m.label,step:m.step,progress:m.progress,breath:!!m.breath}:null}));
   if(!m){actionEl.hidden=true;actionSig='';vignette.classList.remove('on');return;}
   const sig=m.label+'|'+m.step;if(sig!==actionSig){actionSig=sig;actionEl.innerHTML=`${m.breath?'<div class="ix-breath"></div>':''}<b>${esc(m.label)}</b><small>${esc(m.step)}</small><div class="bar"><i></i></div><small>${esc(m.hint)}</small>`;}
   actionEl.hidden=false;actionEl.querySelector('.bar i').style.width=`${Math.round(m.progress*100)}%`;vignette.classList.toggle('on',m.tint==='water');

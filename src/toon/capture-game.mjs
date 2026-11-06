@@ -12,7 +12,7 @@ for(const style of styles.split(',')){
  for(const [name,start,time] of SHOTS){
   const ctx=await browser.newContext({viewport:{width:1280,height:800},deviceScaleFactor:1}),page=await ctx.newPage(),errors=[];
   page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error'||/THREE\.WebGLProgram/.test(m.text()))errors.push(m.text().slice(0,300));});
-  await page.goto(`${base}/?style=${style}&outfit=1&start=${start}&time=${time}&weather=clear`);
+  await page.goto(`${base}/?style=${style}&start=${start}&time=${time}&weather=clear`);
   await page.waitForFunction(()=>!!window.hiking?.ready,null,{timeout:120000});
   await page.evaluate(()=>window.hiking.ready());
   await page.waitForFunction(()=>window.hiking.started===true,null,{timeout:300000});

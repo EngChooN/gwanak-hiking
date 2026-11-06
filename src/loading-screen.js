@@ -40,7 +40,7 @@ export function mountLoadingScreen(root=document.getElementById('loading-screen'
   if(v.phase==='error'){msg.textContent=`산길을 불러오지 못했습니다. ${v.error?`(${v.error}) `:''}네트워크를 확인하고 다시 시도해 주세요.`;action.textContent='다시 시도';action.dataset.mode='retry';action.hidden=false;}
   else if(v.phase==='ready'){
    // 복장 선택 카드가 같은 순간에 뜨면 카드가 출발 신호 — 로딩 화면은 카드 뒤로 걷힌다.
-   requestAnimationFrame(()=>{if(document.getElementById('outfit-picker')||window.hiking?.started)dismiss();else if(!autoStart()){msg.textContent='산길이 준비되었습니다. 아래 버튼을 누르면 일주문 앞 광장에서 출발합니다.';action.textContent='출발하기';action.dataset.mode='start';action.hidden=false;action.focus({preventScroll:true});}else dismiss();});
+   requestAnimationFrame(()=>{if(window.hiking?.started)dismiss();else if(!autoStart()){msg.textContent='산길이 준비되었습니다. 아래 버튼을 누르면 일주문 앞 광장에서 출발합니다.';action.textContent='출발하기';action.dataset.mode='start';action.hidden=false;action.focus({preventScroll:true});}else dismiss();});
   }else if(v.phase==='started')dismiss();
  }
  // 수동 시작 모드(?startMode=manual 또는 data-start-mode)가 아니면 자동 시작 — main.js가 곧 'started'를 보낸다.
