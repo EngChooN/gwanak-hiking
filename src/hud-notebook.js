@@ -96,6 +96,7 @@ export function installNotebookHud(doc=document,win=window){
   if(b.dataset.proxy){doc.getElementById(b.dataset.proxy)?.click();b.blur();}
   else if(b.dataset.cmd){send(b.dataset.cmd);b.blur();}
   else if(b.dataset.act==='multi'){body.classList.toggle('nb-multi-open');}
+  else if(b.dataset.act==='city-labels'){win.dispatchEvent(new CustomEvent('hiking:city-labels'));b.blur();}
   else if(b.dataset.quality){win.dispatchEvent(new CustomEvent('hiking:quality',{detail:{mode:b.dataset.quality}}));b.blur();}
   // 다른 화면을 여는 항목은 시트를 접는다.
   if(b.id==='help-toggle'||b.id==='hud-hide'||b.dataset.proxy==='lock'||b.dataset.cmd==='stretch'&&openSheet==='rest')setSheet(null);

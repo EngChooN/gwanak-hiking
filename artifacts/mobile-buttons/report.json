@@ -1,0 +1,300 @@
+{
+ "portrait": {
+  "safe": {
+   "sl": 0,
+   "sr": 0,
+   "st": 47,
+   "sb": 34
+  },
+  "jumpBtn": true,
+  "jumpList": 8,
+  "viewBefore": "first",
+  "viewAfter": "third",
+  "viewToggled": true,
+  "label": "1인칭 보기",
+  "bad": [],
+  "overlaps": [],
+  "rows": [
+   {
+    "sel": "#map-toggle",
+    "rect": [
+     6,
+     760,
+     72,
+     50
+    ],
+    "visible": true,
+    "inside": true,
+    "tappable": true,
+    "size": 50
+   },
+   {
+    "sel": "#stamps",
+    "rect": [
+     83,
+     760,
+     72,
+     50
+    ],
+    "visible": true,
+    "inside": true,
+    "tappable": true,
+    "size": 50
+   },
+   {
+    "sel": "[data-tab=backpack]",
+    "rect": [
+     159,
+     760,
+     72,
+     50
+    ],
+    "visible": true,
+    "inside": true,
+    "tappable": true,
+    "size": 50
+   },
+   {
+    "sel": "[data-tab=rest]",
+    "rect": [
+     235,
+     760,
+     72,
+     50
+    ],
+    "visible": true,
+    "inside": true,
+    "tappable": true,
+    "size": 50
+   },
+   {
+    "sel": "[data-tab=settings]",
+    "rect": [
+     312,
+     760,
+     72,
+     50
+    ],
+    "visible": true,
+    "inside": true,
+    "tappable": true,
+    "size": 50
+   },
+   {
+    "sel": "#view",
+    "rect": [
+     17,
+     190,
+     110,
+     44
+    ],
+    "visible": true,
+    "inside": true,
+    "tappable": true,
+    "size": 44
+   },
+   {
+    "sel": "#auto",
+    "rect": [
+     285,
+     647,
+     95,
+     95
+    ],
+    "visible": true,
+    "inside": true,
+    "tappable": true,
+    "size": 95
+   },
+   {
+    "sel": "#run",
+    "rect": [
+     203,
+     667,
+     54,
+     54
+    ],
+    "visible": true,
+    "inside": true,
+    "tappable": true,
+    "size": 54
+   },
+   {
+    "sel": "#binoculars",
+    "rect": [
+     233,
+     595,
+     54,
+     54
+    ],
+    "visible": true,
+    "inside": true,
+    "tappable": true,
+    "size": 54
+   },
+   {
+    "sel": "#phone",
+    "rect": [
+     305,
+     565,
+     54,
+     54
+    ],
+    "visible": true,
+    "inside": true,
+    "tappable": true,
+    "size": 54
+   }
+  ],
+  "errors": []
+ },
+ "landscape": {
+  "safe": {
+   "sl": 47,
+   "sr": 47,
+   "st": 0,
+   "sb": 21
+  },
+  "jumpBtn": true,
+  "jumpList": 8,
+  "viewBefore": "first",
+  "viewAfter": "third",
+  "viewToggled": true,
+  "label": "1인칭 보기",
+  "bad": [],
+  "overlaps": [],
+  "rows": [
+   {
+    "sel": "#map-toggle",
+    "rect": [
+     47,
+     12,
+     56,
+     48
+    ],
+    "visible": true,
+    "inside": true,
+    "tappable": true,
+    "size": 48
+   },
+   {
+    "sel": "#stamps",
+    "rect": [
+     47,
+     66,
+     56,
+     48
+    ],
+    "visible": true,
+    "inside": true,
+    "tappable": true,
+    "size": 48
+   },
+   {
+    "sel": "[data-tab=backpack]",
+    "rect": [
+     47,
+     120,
+     56,
+     48
+    ],
+    "visible": true,
+    "inside": true,
+    "tappable": true,
+    "size": 48
+   },
+   {
+    "sel": "[data-tab=rest]",
+    "rect": [
+     47,
+     174,
+     56,
+     48
+    ],
+    "visible": true,
+    "inside": true,
+    "tappable": true,
+    "size": 48
+   },
+   {
+    "sel": "[data-tab=settings]",
+    "rect": [
+     47,
+     228,
+     56,
+     48
+    ],
+    "visible": true,
+    "inside": true,
+    "tappable": true,
+    "size": 48
+   },
+   {
+    "sel": "#view",
+    "rect": [
+     369,
+     5,
+     110,
+     44
+    ],
+    "visible": true,
+    "inside": true,
+    "tappable": true,
+    "size": 44
+   },
+   {
+    "sel": "#auto",
+    "rect": [
+     700,
+     272,
+     88,
+     88
+    ],
+    "visible": true,
+    "inside": true,
+    "tappable": true,
+    "size": 88
+   },
+   {
+    "sel": "#run",
+    "rect": [
+     618,
+     290,
+     52,
+     52
+    ],
+    "visible": true,
+    "inside": true,
+    "tappable": true,
+    "size": 52
+   },
+   {
+    "sel": "#binoculars",
+    "rect": [
+     635,
+     234,
+     52,
+     52
+    ],
+    "visible": true,
+    "inside": true,
+    "tappable": true,
+    "size": 52
+   },
+   {
+    "sel": "#phone",
+    "rect": [
+     681,
+     197,
+     52,
+     52
+    ],
+    "visible": true,
+    "inside": true,
+    "tappable": true,
+    "size": 52
+   }
+  ],
+  "errors": []
+ }
+}

@@ -8,6 +8,7 @@ import {shrubMaterial,foliageUniforms} from '../../foliage-shader.js';
 import {groundCoverMask} from '../../ground-cover-mask.js';
 import {waterClearance} from '../../water-clearance.js';
 import {groundCoverDensity} from '../../near-detail.js';
+import {LIMITS} from '../../../../src/device-profile.js';
 // 숲 바닥 풀잎을 100%로 그리는 거리(m, 낮음·균형·높음). 그 밖은 보이는 거리(20/30/40m)까지 20%로 줄어든다.
 const FOREST_GRASS_NEAR=[8,12,16];
 
@@ -151,11 +152,13 @@ export function forestLayers(landscape){
  material.customProgramCacheKey=()=> 'forest-blades-wind-v3-understory';
  const dummy=new THREE.Object3D(),tint=new THREE.Color(),items=[];let pavedCleared=0,waterCleared=0;
  for(const list of cells.values()){
-  const mesh=new THREE.InstancedMesh(geometry,material,list.reduce((n,p)=>n+(p.distance<=14?49:21),0));let i=0;
+  // 휴대폰(LIMITS.forestGrass<1)은 교차 배치의 앞부분만 만든다. 그리는 수는 아래 update에서 같은 비율로 맞춰 화면 밀도는 그대로다.
+  const keep=total=>Math.ceil(total*LIMITS.forestGrass);
+  const mesh=new THREE.InstancedMesh(geometry,material,list.reduce((n,p)=>n+keep(p.distance<=14?49:21),0));let i=0;
   // 포기 순서를 영역 전체에 교차 배치한다. 낮음에서도 한쪽 띠만 남기지 않는다.
   // 고정 접두부만 그리므로 화질 변경 때 행렬 업로드가 없다.
   for(let step=0;step<49;step++)for(const p of list){
-   const rows=p.distance<=14?7:3,total=7*rows;if(step>=total)continue;
+   const rows=p.distance<=14?7:3,total=7*rows;if(step>=keep(total))continue;
    const j=step*(total===49?17:8)%total;
    const x=p.gridX+(j%7+.15+random()*.7)*2/7,z=p.gridZ+(Math.floor(j/7)+.15+random()*.7)*2/rows;
    const hit=nearest(x,z);if(hit.distance<hit.width/2+.25)continue;
@@ -198,7 +201,7 @@ export function forestLayers(landscape){
   let visible=0;
   // 숲 바닥 풀잎도 길가 풀과 같은 연속 거리 밀도(near-detail.js groundCoverDensity): 가까운 칸은 그대로, 먼 칸은 교차 배치된 앞부분만.
   for(const item of items){const {mesh,box,count}=item,far=[20,30,40][quality];mesh.visible=culler.visible(box,camera,far);
-   mesh.count=Math.ceil(count*[.22,.5,1][quality]*groundCoverDensity(box.distanceToPoint(camera.position),FOREST_GRASS_NEAR[quality],far));if(mesh.visible)visible+=mesh.count;}
+   mesh.count=Math.min(count,Math.ceil(count/LIMITS.forestGrass*[.22,.5,1][quality]*groundCoverDensity(box.distanceToPoint(camera.position),FOREST_GRASS_NEAR[quality],far)));if(mesh.visible)visible+=mesh.count;}
   landscape.status.scenery.visibleGrass=visible;
   // 덤불은 풀보다 멀리 보이고 화질 낮음에서 30%만 남긴다.
   let visibleShrubs=0;foliageUniforms.foliageTime.value=time.value;

@@ -15,8 +15,13 @@ test('파일 경계를 넘어 같은 2km 칸을 병합하고 건물 범위·높�
  const first=building(10,10),second=building(1900,100,80);city.addBuildings([first]);city.addBuildings([second]);await city.finalize();
  assert.equal(city.cells.size,1);assert.equal(city.root.children.length,2);
  const cell=[...city.cells.values()][0];assert.equal(cell.records.length,2);assert.equal(cell.bounds.max.y,90);
+ // 칸 지오메트리는 finalize가 아니라 가까워졌을 때 update가 뒤에서 만든다(2026-11-06 휴대폰 메모리).
+ assert.equal(cell.geometries,null);
+ const camera=new PerspectiveCamera(65,1,.1,10000);camera.position.set(0,30,0);camera.updateMatrixWorld();city.update(camera,1,{inFrustum:()=>true});await city.settle();
+ assert.equal(status.cityBuild.built,1);
  for(const geometry of cell.geometries){geometry.computeBoundingBox();assert.ok(geometry.boundingBox.min.distanceTo(cell.bounds.min)<.001);assert.ok(geometry.boundingBox.max.distanceTo(cell.bounds.max)<.001);}
  city.addBuildings([building(50,50,100)]);await city.finalize();assert.equal(city.root.children.length,2);assert.equal(cell.records.length,3);assert.equal(cell.bounds.max.y,110);
+ assert.equal(cell.geometries,null);city.update(camera,1,{inFrustum:()=>true});await city.settle();assert.equal(cell.triangles.length,2);
  city.dispose();assert.equal(root.children.length,0);material.dispose();
 });
 test('8방향 실루엣은 실제 투영 양끝과 최저/최고 높이를 보존하고 빈 공간을 단일 거대 상자로 채우지 않는다',()=>{
@@ -44,5 +49,14 @@ test('칸 단위 거리 우선 컬링·먼 칸 통합 제출·호출 상한과 �
  assert.ok(far.geometry.drawRange.count>0);city.update(camera,2,culler);assert.equal(far.geometry.index.version,version);
  city.update(camera,1,culler);assert.ok(status.cityGrid.baseDrawCalls<=50);assert.ok(status.cityGrid.baseTriangles<=300000);
  assert.equal(boxDistanceSquared([...city.cells.values()][0].bounds,camera.position),0);
+ city.dispose();material.dispose();
+});
+test('멀어진 칸 지오메트리는 버리고 동시 보유 칸 수는 상한을 넘지 않는다',async()=>{
+ const material=new MeshStandardMaterial(),status={},city=createCityGrid({parent:new Group(),material,status,cellSize:100});
+ city.addBuildings(Array.from({length:80},(_,i)=>building(i*100+5,5)));await city.finalize();
+ const camera=new PerspectiveCamera(65,1,.1,30000),culler={inFrustum:()=>true};camera.position.set(0,30,0);
+ city.update(camera,1,culler);await city.settle();city.update(camera,1,culler);
+ assert.ok(status.cityBuild.built>0&&status.cityBuild.built<=status.cityBuild.cap);
+ camera.position.set(200000,30,0);city.update(camera,1,culler);await city.settle();assert.equal(status.cityBuild.built,0);assert.ok(status.cityBuild.evictions>0);
  city.dispose();material.dispose();
 });

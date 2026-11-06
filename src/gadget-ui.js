@@ -35,7 +35,7 @@ const html=`
   </div>
  </div>
 </div>
-<div class="gadget-chip" data-gadget-chip><span data-chip-text></span><span class="gadget-chip-tools" data-chip-tools><span class="chip-zooms">${PHONE_STOPS.map(s=>`<button type="button" data-zoom="${s}">${s}x</button>`).join('')}</span><button type="button" data-act="selfie" aria-pressed="false">셀카</button><button type="button" data-act="shutter" class="chip-shutter">촬영</button></span><button type="button" data-act="close" class="chip-close"></button></div>`;
+<div class="gadget-chip" data-gadget-chip><span data-chip-text></span><span class="gadget-chip-tools" data-chip-tools><span class="chip-zooms">${PHONE_STOPS.map(s=>`<button type="button" data-zoom="${s}">${s}x</button>`).join('')}</span><button type="button" data-act="selfie" aria-pressed="false">셀카</button><button type="button" data-act="shutter" class="chip-shutter">촬영</button></span><span class="gadget-chip-tools chip-bino" data-bino-tools hidden><button type="button" data-act="zoom-out" aria-label="쌍안경 배율 낮추기 (−)">−</button><button type="button" data-act="zoom-in" aria-label="쌍안경 배율 높이기 (+)">＋</button></span><button type="button" data-act="close" class="chip-close"></button></div>`;
 export function installGadgetUI(doc=document,win=window){
  const root=doc.createElement('div');root.id='gadget-ui';root.dataset.mode='none';root.innerHTML=html;doc.body.append(root);
  const app=doc.getElementById('app'),world=doc.getElementById('world'),$=s=>root.querySelector(s),all=s=>[...root.querySelectorAll(s)];
@@ -56,17 +56,19 @@ export function installGadgetUI(doc=document,win=window){
   root.dataset.selfie=String(selfie);all('[data-zoom]').forEach(b=>{b.disabled=selfie;});
   $('[data-bino-zoom]').textContent=formatZoom(d.binoculars?.zoom??8);
   const chip=$('[data-chip-text]');
-  if(m.mode==='binoculars-first'){chip.innerHTML='<kbd>B</kbd> 닫기 · 휠로 배율';}
+  if(m.mode==='binoculars-first'){chip.innerHTML='<kbd>B</kbd> 닫기 · 배율';}
   else if(m.mode==='binoculars-third')chip.innerHTML='쌍안경 모드 · <kbd>B</kbd> 닫기 <small>(1인칭에서 볼 수 있어요)</small>';
   else if(m.mode==='phone-third')chip.innerHTML='휴대폰 모드 · <kbd>P</kbd> 닫기';
   else chip.textContent='';
   $('[data-chip-tools]').hidden=m.mode!=='phone-third';
+  $('[data-bino-tools]').hidden=m.mode!=='binoculars-first'; // 쌍안경 배율은 휠·핀치 말고 버튼으로도(2026-11-06 모든 기능 버튼화)
   root.querySelector('.chip-close').textContent=m.mode==='phone-third'?'✕':m.mode==='none'?'':'✕';
  }
  root.addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
   if(b.dataset.zoom){send('phone-zoom',Number(b.dataset.zoom));return;}
   switch(b.dataset.act){
+   case'zoom-in':send('zoom-in');break;case'zoom-out':send('zoom-out');break;
    case'shutter':send('shutter');break;case'selfie':send('selfie');break;case'close':send('gadget-off');break;
    case'grid':grid=!grid;store.set(GADGET_UI_KEYS.grid,String(grid));paint();break;
    case'orient':orient=orient==='landscape'?'portrait':'landscape';store.set(GADGET_UI_KEYS.orient,orient);paint();break;

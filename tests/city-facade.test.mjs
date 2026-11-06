@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {Group,MeshStandardMaterial,Vector3} from 'three';
+import {Group,MeshStandardMaterial,PerspectiveCamera,Vector3} from 'three';
 import {createCityGrid,facadeUse,buildingAppearance,buildingBounds,EQUIPMENT_MIN_HEIGHT} from '../src/city-grid.js';
 import {CITY_TYPES,windowLightAmount,duskAmount,updateCityLight,CITY_LIGHT,cityFacadeMaterial} from '../src/city-facade.js';
 import {landmarkGeometry} from '../src/city-landmarks.js';
@@ -24,6 +24,7 @@ test('옥상 설비는 건물 높이·범위 안에 들어가고 셰이더 속�
  const material=new MeshStandardMaterial(),city=createCityGrid({parent:new Group(),material});
  const tall=square(0,0,40,80,{use:'office'}),low=square(200,0,30,EQUIPMENT_MIN_HEIGHT-5);
  city.addBuildings([tall,low]);await city.finalize();
+ const camera=new PerspectiveCamera(65,1,.1,10000);camera.position.set(0,30,0);city.update(camera,1,{inFrustum:()=>true});await city.settle(); // 칸 지오메트리는 가까워질 때 만든다
  const cell=[...city.cells.values()][0],[full]=cell.geometries;full.computeBoundingBox();
  assert.ok(full.boundingBox.max.y<=cell.bounds.max.y+1e-6);assert.ok(Math.abs(full.boundingBox.max.y-90)<1e-6);
  const type=full.attributes.seoulType.array,info=full.attributes.seoulInfo;

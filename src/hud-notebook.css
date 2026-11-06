@@ -88,6 +88,12 @@ body.in-plaza .nb-goal{display:none}
 .nb-alt small{display:block;font-size:11px;font-weight:600;color:var(--ink2);line-height:1.3}
 .nb-alt.lock{opacity:.7}
 
+/* 시점 칩(2026-11-06): 자주 쓰여 배낭에서 꺼냈다. 진행 카드 오른쪽 옆(가로·PC), 세로 휴대폰은 카드 아래. 카드와 함께 기울지 않게 되돌린다. */
+.nb-view{position:absolute;left:calc(100% + 10px);top:0;display:flex!important;align-items:center;gap:6px;min-height:44px;padding:0 14px 0 10px;border-radius:22px;background:var(--paper);color:var(--ink);box-shadow:var(--lift),var(--soft),var(--hi);font-size:13px;font-weight:900;white-space:nowrap;transform:rotate(1.2deg);transform-origin:left top;pointer-events:auto;touch-action:manipulation}
+.nb-view em{font-style:normal;font-size:18px;line-height:1}
+.nb-view kbd{margin-left:2px}
+.nb-view:disabled{opacity:.55}
+
 /* ───────── 6. 도장 · 칩 ───────── */
 #app .nb-dial{right:calc(var(--sr) + var(--m));bottom:calc(var(--ui-bottom) + var(--m));width:var(--stamp-sz);height:var(--stamp-sz)}
 .nb-stamp{position:absolute;inset:0;display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:0;width:100%;height:100%;border-radius:50%;background:var(--stamp);color:#fff;border:3px dashed var(--stamp-dash)!important;box-shadow:0 4px 0 var(--stamp-d),0 8px 16px rgba(60,15,5,.35);transform:rotate(-8deg);font-weight:900;line-height:1.15;font-size:16px;text-align:center;padding:0 4px}
@@ -307,6 +313,7 @@ body.nb-multi:not(.nb-multi-open) .multi-panel{display:none}
 @media (orientation:portrait){
  :root{--top:10px;--card-w:252px;--stamp-sz:84px;--chip:54px;--R:102px;--m:16px;--bar:58px;--ui-bottom:calc(var(--sb) + var(--bar))}
  #app .nb-card{left:calc(var(--sl) + 14px);top:calc(var(--st) + 10px);padding:9px 12px 10px}
+ .nb-view{left:0;top:calc(100% + 10px);min-height:44px}
  .nb-row1,.nb-badge,#speed,.nb-stam{font-size:11px}
  .nb-title{font-size:17px}
  #plaza-banner{font-size:13px}
