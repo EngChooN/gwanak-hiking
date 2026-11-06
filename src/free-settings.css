@@ -1,0 +1,189 @@
+/* 산 고르기 · '등산 완료' 도장 · 자유 설정판. 사양: docs/UI-산고르기-자유설정-사양.md
+   색은 등산 수첩 토큰(hud-notebook.css :root, 낮·노을·밤)만 쓴다. 누르는 것은 모두 44px 이상.
+   배치: 휴대폰 가로(landscape, 높이 540 이하) · 세로(portrait) · PC(그 밖). */
+
+/* ───────── 1. 산 고르기 ───────── */
+#mountain-pick{position:fixed;inset:0;z-index:120;display:flex;flex-direction:column;align-items:center;gap:18px;padding:calc(var(--st,0px) + 36px) calc(var(--sr,0px) + 24px) calc(var(--sb,0px) + 24px) calc(var(--sl,0px) + 24px);overflow:hidden;font-family:var(--nb-font,"Apple SD Gothic Neo",-apple-system,sans-serif);color:var(--ink);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:opacity .4s ease}
+#mountain-pick.leaving{opacity:0;pointer-events:none}
+#mountain-pick [hidden]{display:none!important}
+#mountain-pick button{font-family:inherit;cursor:pointer;border:0}
+#mountain-pick button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.pk-dim{position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(28,18,6,.55),rgba(28,18,6,.72))}
+:root[data-hud-time=night] .pk-dim{background:linear-gradient(180deg,rgba(6,8,16,.58),rgba(6,8,16,.78))}
+.pk-head{color:#fbf3df;text-align:center;flex:none}
+.pk-brand{display:flex;align-items:center;justify-content:center;gap:8px;margin:0;font-size:12px;letter-spacing:2px;font-weight:700;opacity:.92}
+.pk-brand b{font-size:15px;letter-spacing:2px}
+.pk-devtag{display:inline-flex;align-items:center;height:28px;padding:0 10px;margin-left:8px;border:1.5px dashed #f3a48c;border-radius:6px;color:#fbe3d6;background:rgba(40,20,10,.35);font-size:11.5px;font-weight:800;letter-spacing:0;white-space:nowrap}
+.pk-title{margin:6px 0 4px;font-size:34px;font-weight:900;letter-spacing:-.02em;text-shadow:0 2px 6px #0007}
+.pk-sub{margin:0;font-size:15px;font-weight:600;opacity:.92;line-height:1.5}
+.pk-list{display:flex;gap:14px;justify-content:center;align-items:stretch;max-width:100%;overflow:auto;scrollbar-width:none;padding:2px 4px 8px;flex:none}
+.pk-list::-webkit-scrollbar{display:none}
+.pk-card{flex:none;display:flex;flex-direction:column;background:var(--paper);border-radius:12px;box-shadow:var(--lift),var(--soft),var(--hi);overflow:hidden}
+.pk-art-wrap{position:relative;flex:none;line-height:0}
+.pk-art{display:block;width:100%;border-bottom:2px dashed var(--rule)}
+.pk-tag{position:absolute;left:10px;top:10px;display:inline-flex;align-items:center;height:30px;padding:0 10px;border-radius:6px;background:var(--paper);color:var(--ink);font-size:12px;font-weight:800;line-height:1;box-shadow:1px 2px 0 var(--edge)}
+.pk-body{display:flex;flex-direction:column;gap:7px;padding:10px 14px 12px;flex:1}
+.pk-top{display:flex;align-items:flex-start;gap:10px}
+.pk-who{flex:1;min-width:0}
+.pk-name{display:flex;align-items:baseline;gap:8px;margin:0;font-size:30px;font-weight:900;letter-spacing:-.02em;line-height:1.1}
+.pk-name small{font-size:13px;font-weight:800;color:var(--ink2);background:var(--paper2);border-radius:5px;padding:2px 7px;box-shadow:1px 2px 0 var(--edge)}
+.pk-course{display:block;margin-top:4px;font-size:12.5px;font-weight:700;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pk-seal{flex:none;color:var(--accent);line-height:0}
+.pk-facts{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;font-size:10.5px;font-weight:700;color:var(--ink2)}
+.pk-facts span{background:var(--paper2);border-radius:6px;padding:4px 6px;line-height:1.25}
+.pk-facts b{display:block;font-size:13px;color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
+.pk-rec{margin:0;padding-top:6px;border-top:1px dashed var(--rule);font-size:11.5px;font-weight:700;color:var(--ink2);line-height:1.4}
+.pk-rec b{color:var(--accent)}
+.pk-acts{display:flex;gap:8px;margin-top:auto}
+.pk-acts .btn-stamp{flex:1.3;padding:0 10px}
+.pk-acts .btn-paper{flex:1;padding:0 10px}
+.fs-locked-btn{background:transparent!important;border:1.5px dashed var(--edge)!important;box-shadow:none!important;color:var(--ink2)!important}
+.pk-card.soon .pk-name,.pk-card.soon .pk-course,.pk-card.soon .pk-facts{opacity:.55}
+.pk-soon{flex:none;width:220px;display:flex;flex-direction:column;justify-content:center;gap:6px;padding:16px;border:2px dashed rgba(251,243,223,.55);border-radius:12px;color:#fbf3df;text-align:center;font-size:12.5px;line-height:1.45}
+.pk-soon b{font-size:14px}
+.pk-toast{position:absolute;left:50%;bottom:calc(var(--sb,0px) + 26px);transform:translateX(-50%);margin:0;padding:12px 16px;border-radius:10px;background:var(--paper);color:var(--ink);font-size:13.5px;font-weight:800;box-shadow:var(--lift),var(--soft);white-space:nowrap;z-index:3}
+.pk-free{position:absolute;inset:0;z-index:2;display:grid;place-items:center;background:var(--scrim);padding:calc(var(--st,0px) + 16px) calc(var(--sr,0px) + 16px) calc(var(--sb,0px) + 16px) calc(var(--sl,0px) + 16px)}
+.fs-pick{width:700px;max-width:100%;max-height:100%;overflow:auto}
+/* 휴대폰 세로: 머리글 위, 카드는 아래로 쌓는다. 자유 설정은 아래 시트 */
+@media (orientation:portrait){
+ #mountain-pick{padding:calc(var(--st,0px) + 22px) 14px calc(var(--sb,0px) + 14px);gap:14px;overflow:auto;justify-content:flex-start}
+ .pk-head{text-align:left;align-self:stretch}
+ .pk-brand{justify-content:space-between}
+ .pk-title{font-size:24px}
+ .pk-sub{font-size:13px}
+ .pk-list{flex-direction:column;align-items:center;overflow:visible;padding:0}
+ .pk-name{font-size:24px}
+ .pk-soon{width:auto;align-self:stretch;margin:0 0}
+ .pk-free{place-items:end stretch;padding:calc(var(--st,0px) + 12px) 8px calc(var(--sb,0px) + 8px)}
+ .fs-pick{width:auto;border-radius:14px 14px 6px 6px}
+}
+/* 휴대폰 가로: 왼쪽 머리글 열(212), 오른쪽 카드 가로 목록 */
+@media (orientation:landscape) and (max-height:540px){
+ #mountain-pick{flex-direction:row;align-items:stretch;gap:14px;padding:calc(var(--st,0px) + 12px) calc(var(--sr,0px) + 12px) calc(var(--sb,0px) + 12px) calc(var(--sl,0px) + 16px)}
+ .pk-head{width:212px;text-align:left;display:flex;flex-direction:column;justify-content:center;gap:2px}
+ .pk-brand{justify-content:flex-start;flex-wrap:wrap}
+ .pk-devtag{margin:6px 0 0}
+ .pk-title{font-size:24px}
+ .pk-sub{font-size:12.5px}
+ .pk-list{justify-content:flex-start;flex:1;min-width:0;padding:0 0 2px}
+ .pk-card{height:100%}
+ .pk-body{gap:5px;padding:8px 12px 10px}
+ .pk-name{font-size:22px}
+ .pk-course{font-size:11.5px}
+ .pk-facts b{font-size:12px}
+ .pk-rec{font-size:11px;padding-top:4px}
+ .pk-soon{width:170px}
+ .pk-free{padding:calc(var(--st,0px) + 6px) calc(var(--sr,0px) + 10px) calc(var(--sb,0px) + 6px) calc(var(--sl,0px) + 10px)}
+ .fs-pick{width:640px;height:100%}
+}
+
+/* ───────── 2. 도장 ───────── */
+.fs-seal{display:block;color:var(--accent);transform:rotate(-12deg);overflow:visible}
+:root:not([data-hud-time=night]) .nb-mapbox .fs-seal{mix-blend-mode:multiply}
+.fs-seal-slot{flex:none;display:grid;place-items:center;border-radius:50%;border:2px dashed var(--rule);background:var(--paper2);color:var(--ink2);text-align:center;font-size:10.5px;font-weight:800;line-height:1.3}
+.fs-seal-slot i{display:block;font-style:normal;font-size:18px;line-height:1;margin-bottom:2px;opacity:.6}
+/* 찍히는 동작 1.2초(사양 §2-3). 움직임 줄이기면 마지막 모습만 */
+.fs-stamping .fs-seal{animation:fs-stamp 1.2s cubic-bezier(.3,.7,.3,1) both}
+@keyframes fs-stamp{0%{opacity:0;transform:scale(1.7) rotate(-4deg)}35%{opacity:1;transform:scale(.96) rotate(-12deg)}55%{transform:scale(1.03) rotate(-12deg)}100%{opacity:1;transform:scale(1) rotate(-12deg)}}
+@media (prefers-reduced-motion:reduce){.fs-stamping .fs-seal{animation:none}}
+/* 정상 도착 창: 원래 두 줄 원(.nb-seal) 자리를 도장 그림이 쓴다 */
+.nb-seal.fs-summit-seal{width:auto;height:auto;border:0;border-radius:0;transform:none;display:flex;justify-content:center;margin:0 auto 8px;color:var(--accent)}
+.fs-summit-link{display:inline-flex;align-items:center;min-height:44px;margin:0 auto 10px;padding:0 14px;border:1.5px dashed var(--accent)!important;border-radius:9px;background:transparent;color:var(--accent);font:inherit;font-size:13px;font-weight:900;cursor:pointer}
+/* 지도: 지도 칸 오른쪽 아래 빈 곳 */
+.nb-mapbox{position:relative}
+.fs-mapseal{position:absolute;right:8px;bottom:8px;pointer-events:none;line-height:0}
+.fs-maprec{margin:0 0 6px;font-size:12px;font-weight:700;color:var(--ink2)}
+.fs-maprec b{color:var(--accent)}
+.fs-maplink{margin-top:8px}
+
+/* ───────── 3. 자유 설정판 ───────── */
+.fs-panel{background:var(--paper);color:var(--ink);box-shadow:var(--lift),0 10px 30px rgba(30,20,5,.35),var(--hi);border-radius:4px 14px 14px 4px;padding:12px 16px 14px;font-family:var(--nb-font);overscroll-behavior:contain}
+.fs-panel h4{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 6px;font-size:16px;font-weight:900}
+.fs-panel .fs-t{flex:1}
+.fs-panel button{font-family:inherit;cursor:pointer}
+.fs-cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:4px 20px}
+.fs-now{display:flex;align-items:center;gap:8px;padding:6px 6px 6px 10px;border-radius:10px;background:var(--paper2);font-size:12px;font-weight:700;color:var(--ink2);line-height:1.35}
+.fs-txt{flex:1;min-width:0}
+.fs-now b{display:block;color:var(--ink);font-size:13px}
+.fs-now.manual{outline:1.5px dashed var(--accent);outline-offset:-1.5px}
+.fs-now.manual b{color:var(--accent)}
+.fs-reset{min-height:44px;padding:0 12px;border:0;border-radius:9px;background:var(--paper);color:var(--ink);box-shadow:1px 2px 0 var(--edge);font-size:13px;font-weight:900;white-space:nowrap}
+.fs-reset.on{background:var(--stamp);color:#fff;box-shadow:0 2px 0 var(--stamp-d)}
+.fs-lb{display:flex;justify-content:space-between;align-items:baseline;margin:9px 0 4px;font-size:12px;font-weight:800;color:var(--ink2)}
+.fs-lb small{font-size:11px;font-weight:600}
+.fs-seg{display:grid;gap:5px}
+.fs-seg button{position:relative;min-height:46px;border:0;border-radius:9px;background:var(--paper2);color:var(--ink);box-shadow:1px 2px 0 var(--edge);font-size:12.5px;font-weight:800;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;line-height:1.1;white-space:nowrap;padding:0 2px}
+.fs-seg button em{font-style:normal;font-size:17px;line-height:1}
+.fs-seg button.on{background:var(--stamp);color:#fff;box-shadow:0 2px 0 var(--stamp-d)}
+.fs-seg button.real{outline:2px dashed var(--accent);outline-offset:-2px}
+.fs-seg button.real::after{content:"지금";position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);padding:1px 4px;border-radius:4px;background:var(--paper);color:var(--accent);font-size:9px;font-weight:900;line-height:1}
+.fs-seg button.on.real{outline-color:#fff}
+.fs-route{display:block;width:100%;height:34px}
+.fs-start{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+.fs-start button{min-height:44px;border:0;border-radius:9px;background:var(--paper2);color:var(--ink);box-shadow:1px 2px 0 var(--edge);font-size:12px;font-weight:800;display:flex;align-items:center;gap:6px;padding:0 7px;text-align:left;white-space:nowrap;overflow:hidden}
+.fs-start button i{flex:none;display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--paper);font-style:normal;font-size:11px;box-shadow:inset 0 0 0 1.5px var(--rule)}
+.fs-start button.on{background:var(--stamp);color:#fff;box-shadow:0 2px 0 var(--stamp-d)}
+.fs-start button.on i{background:#fff;color:var(--stamp);box-shadow:none}
+.fs-start button.here i{box-shadow:inset 0 0 0 2px var(--go);color:var(--go);font-weight:900}
+.fs-go{display:flex;gap:8px;align-items:center;margin-top:8px}
+.fs-go .btn-stamp{min-height:46px;padding:0 14px;font-size:14px;white-space:nowrap}
+.fs-go .btn-stamp:disabled{opacity:.45;box-shadow:none}
+.fs-go small{font-size:11px;font-weight:600;color:var(--ink2);line-height:1.35}
+.fs-lockcols{align-items:center}
+.fs-lockbox{display:flex;flex-direction:column;align-items:center;gap:10px;padding:14px;border-radius:10px;background:var(--paper2);text-align:center}
+.fs-lockbox b{display:block;font-size:14px;line-height:1.35}
+.fs-lockbox small{display:block;margin-top:2px;font-size:12px;font-weight:600;color:var(--ink2);line-height:1.4}
+.fs-prog{margin:6px 0 4px}
+.fs-ghost{opacity:.42;filter:saturate(.4);pointer-events:none}
+.fs-ghost .fs-seg button::before{content:"🔒";position:absolute;left:4px;top:3px;font-size:9px}
+/* 게임 안 시트(설정 탭): PC 680, 가로 590(위아래 꽉), 세로 1단 */
+.nb-sheet.fs-sheet{width:680px;padding:12px 16px 14px}
+@media (orientation:landscape) and (max-height:540px){
+ .nb-sheet.fs-sheet{width:590px;max-width:calc(100vw - var(--sl) - var(--sr) - var(--tab-on) - 12px);top:calc(var(--st) + 6px);bottom:calc(var(--sb) + 6px);max-height:none;padding:8px 14px 6px}
+ .fs-panel h4{margin-bottom:2px}
+ .fs-panel .fs-lb{margin:5px 0 3px}
+ .fs-seg button{min-height:44px;flex-direction:row;gap:5px}
+ .fs-seg button em{font-size:15px}
+ .fs-route{height:22px}
+ .fs-go small{display:none}
+ .fs-go .btn-stamp{flex:1}
+ .fs-go{margin-top:6px}
+ .fs-now{padding:4px 4px 4px 10px}
+}
+@media (orientation:portrait){
+ .fs-cols{grid-template-columns:1fr}
+ .nb-sheet.fs-sheet{width:auto;top:calc(var(--st) + 84px);bottom:calc(var(--ui-bottom) + 8px);max-height:none;padding:10px 12px 40px}
+ .fs-panel .fs-lb{margin:7px 0 3px}
+ .fs-route{height:24px}
+ .fs-start{grid-template-columns:repeat(4,minmax(0,1fr))}
+ .fs-start button{flex-direction:column;justify-content:center;gap:1px;padding:2px 2px;font-size:11px;text-align:center;white-space:normal;line-height:1.1;min-height:48px}
+ .fs-start button i{width:18px;height:18px;font-size:10px}
+ .fs-go small{font-size:10.5px}
+}
+/* 설정 탭 맨 위 '자유 설정' 항목 */
+.nb-it.fs-entry{grid-column:1/-1}
+.nb-it.fs-entry .fs-entry-seal{margin-left:auto;line-height:0}
+.nb-it.fs-entry .nb-devmark{margin-left:auto}
+.nb-it.fs-entry.fs-locked{background:transparent;border:1.5px dashed var(--edge);box-shadow:none;color:var(--ink2)}
+.nb-it.fs-clear{grid-column:auto}
+/* 직접 고른 상태의 시각·날씨 꼬리표(사양 §3-3) */
+#env-chip.fs-manual{outline:1.5px dashed var(--accent);outline-offset:-3px;cursor:pointer}
+#env-chip.fs-manual>i,#env-chip.fs-manual>span{display:none}
+#env-chip .fs-chip{font-style:normal;font-size:12px;font-weight:800;color:var(--accent);white-space:nowrap}
+@media (orientation:portrait){
+ #env-chip .fs-chip{font-size:0}
+ #env-chip .fs-chip::after{content:attr(data-short);font-size:13px}
+}
+/* 산 고르기가 떠 있는 동안 뒤 로딩 카드는 감춘다(글자가 비쳐 보이지 않게). 오르기를 누르면 다시 보인다. */
+:root.pk-open #loading-screen .ls-card{visibility:hidden}
+@media (orientation:portrait){.pk-brand{justify-content:flex-start}.pk-devtag{margin-left:auto}}
+.nb-it.fs-entry{padding-right:96px}
+.nb-it.fs-entry .fs-entry-seal,.nb-it.fs-entry .nb-devmark{position:absolute;right:12px;top:50%;transform:translateY(-50%);margin:0}
+/* 휴대폰 가로: 설정 탭이 한 화면에 들어가도록 자유 설정 항목도 한 칸(두 개씩 한 줄), 둘째 줄 글은 뺀다 */
+@media (orientation:landscape) and (max-height:540px){
+ .nb-it.fs-entry{grid-column:auto;padding-right:10px}
+ .nb-it.fs-entry small,.nb-it.fs-clear small{display:none}
+ .nb-it.fs-entry .fs-entry-seal,.nb-it.fs-entry .nb-devmark{position:static;transform:none;margin-left:auto}
+ .fs-pick{padding:6px 14px 4px}
+}
+@media (orientation:landscape) and (max-height:540px){.fs-seg[aria-label=season] button{flex-direction:column;gap:0;font-size:11.5px}.fs-seg[aria-label=season] button em{font-size:14px}}

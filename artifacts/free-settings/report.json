@@ -1,0 +1,447 @@
+{
+ "base": "http://127.0.0.1:4311/",
+ "views": {
+  "portrait": {
+   "산 고르기": {
+    "count": 2,
+    "small": [],
+    "outside": [],
+    "blocked": [],
+    "overlaps": [],
+    "scrollers": [],
+    "clipped": []
+   },
+   "card": {
+    "go": "▶ 오르기",
+    "free": "🎛 자유 설정",
+    "dev": true,
+    "tag": "🍁 지금 가을 · 단풍",
+    "startMode": "manual",
+    "started": false
+   },
+   "산 고르기 자유 설정": {
+    "count": 23,
+    "small": [],
+    "outside": [],
+    "blocked": [],
+    "overlaps": [],
+    "scrollers": [],
+    "clipped": []
+   },
+   "afterStart": {
+    "season": "winter",
+    "manual": "winter",
+    "s": 2634,
+    "pick": false
+   },
+   "설정 탭": {
+    "count": 12,
+    "small": [],
+    "outside": [],
+    "blocked": [],
+    "overlaps": [],
+    "scrollers": [],
+    "clipped": []
+   },
+   "sheetBox": [
+    131,
+    744,
+    844
+   ],
+   "자유 설정 시트": {
+    "count": 23,
+    "small": [],
+    "outside": [],
+    "blocked": [],
+    "overlaps": [],
+    "scrollers": [],
+    "clipped": []
+   },
+   "snowNight": {
+    "chip": "❄18:40눈✎ ❄ 눈 · 밤 · 겨울 직접 고름",
+    "manual": true,
+    "weather": null,
+    "hud": "night",
+    "started": true,
+    "status": "✎ 직접 고른 설정 · 겨울 · 눈 · 밤"
+   },
+   "reset": {
+    "season": "autumn",
+    "manual": null,
+    "chip": false,
+    "free": null
+   },
+   "restart": {
+    "s": -26,
+    "elapsed": 0,
+    "sheet": false
+   },
+   "summitReal": true,
+   "record": {
+    "gwanak": {
+     "first": "2026-11-06",
+     "count": 1,
+     "bestSec": null,
+     "last": "2026-11-06"
+    }
+   },
+   "정상 도착 창": {
+    "count": 3,
+    "small": [],
+    "outside": [],
+    "blocked": [],
+    "overlaps": [],
+    "scrollers": [],
+    "clipped": []
+   },
+   "지도": {
+    "count": 4,
+    "small": [],
+    "outside": [],
+    "blocked": [],
+    "overlaps": [],
+    "scrollers": [],
+    "clipped": []
+   },
+   "map": {
+    "seal": true,
+    "sub": "관악산공원 입구 → 연주대 · GPX 참고 경로 · 등산 완료",
+    "rec": "완등 1회 · 처음 2026.11.06"
+   },
+   "memoryMB": {
+    "max": 250.1,
+    "rows": [
+     250.1,
+     250.1,
+     250.1,
+     250.1,
+     250.1,
+     250.1,
+     250.1,
+     250.1,
+     250.1
+    ]
+   },
+   "errors": [],
+   "pickDone": {
+    "seal": true,
+    "rec": "완등 1회 · 처음 2026.11.06",
+    "go": "▶ 이어 오르기"
+   },
+   "locked": {
+    "toast": "🔒 연주대에서 완등 도장을 받으면 열려요",
+    "dev": false,
+    "panel": false,
+    "game": {
+     "jump": false,
+     "clear": false,
+     "enabled": 0
+    }
+   },
+   "잠긴 자유 설정": {
+    "count": 1,
+    "small": [],
+    "outside": [],
+    "blocked": [],
+    "overlaps": [],
+    "scrollers": [],
+    "clipped": []
+   }
+  },
+  "landscape": {
+   "산 고르기": {
+    "count": 2,
+    "small": [],
+    "outside": [],
+    "blocked": [],
+    "overlaps": [],
+    "scrollers": [],
+    "clipped": []
+   },
+   "card": {
+    "go": "▶ 오르기",
+    "free": "🎛 자유 설정",
+    "dev": true,
+    "tag": "🍁 지금 가을 · 단풍",
+    "startMode": "manual",
+    "started": false
+   },
+   "산 고르기 자유 설정": {
+    "count": 23,
+    "small": [],
+    "outside": [],
+    "blocked": [],
+    "overlaps": [],
+    "scrollers": [],
+    "clipped": []
+   },
+   "afterStart": {
+    "season": "winter",
+    "manual": "winter",
+    "s": 2634,
+    "pick": false
+   },
+   "설정 탭": {
+    "count": 12,
+    "small": [],
+    "outside": [],
+    "blocked": [],
+    "overlaps": [],
+    "scrollers": [],
+    "clipped": []
+   },
+   "sheetBox": [
+    6,
+    363,
+    390
+   ],
+   "자유 설정 시트": {
+    "count": 23,
+    "small": [],
+    "outside": [],
+    "blocked": [],
+    "overlaps": [],
+    "scrollers": [],
+    "clipped": []
+   },
+   "snowNight": {
+    "chip": "❄18:40눈✎ ❄ 눈 · 밤 · 겨울 직접 고름",
+    "manual": true,
+    "weather": null,
+    "hud": "night",
+    "started": true,
+    "status": "✎ 직접 고른 설정 · 겨울 · 눈 · 밤"
+   },
+   "reset": {
+    "season": "autumn",
+    "manual": null,
+    "chip": false,
+    "free": null
+   },
+   "restart": {
+    "s": -26,
+    "elapsed": 0,
+    "sheet": false
+   },
+   "summitReal": true,
+   "record": {
+    "gwanak": {
+     "first": "2026-11-06",
+     "count": 1,
+     "bestSec": null,
+     "last": "2026-11-06"
+    }
+   },
+   "정상 도착 창": {
+    "count": 3,
+    "small": [],
+    "outside": [],
+    "blocked": [],
+    "overlaps": [],
+    "scrollers": [],
+    "clipped": []
+   },
+   "지도": {
+    "count": 4,
+    "small": [],
+    "outside": [],
+    "blocked": [],
+    "overlaps": [],
+    "scrollers": [],
+    "clipped": []
+   },
+   "map": {
+    "seal": true,
+    "sub": "관악산공원 입구 → 연주대 · GPX 참고 경로 · 등산 완료",
+    "rec": "완등 1회 · 처음 2026.11.06"
+   },
+   "memoryMB": {
+    "max": 250.1,
+    "rows": [
+     250.1,
+     250.1,
+     250.1,
+     250.1,
+     250.1,
+     250.1,
+     250.1,
+     250.1,
+     250.1
+    ]
+   },
+   "errors": [],
+   "pickDone": {
+    "seal": true,
+    "rec": "완등 1회 · 처음 2026.11.06",
+    "go": "▶ 이어 오르기"
+   },
+   "locked": {
+    "toast": "🔒 연주대에서 완등 도장을 받으면 열려요",
+    "dev": false,
+    "panel": false,
+    "game": {
+     "jump": false,
+     "clear": false,
+     "enabled": 0
+    }
+   },
+   "잠긴 자유 설정": {
+    "count": 1,
+    "small": [],
+    "outside": [],
+    "blocked": [],
+    "overlaps": [],
+    "scrollers": [],
+    "clipped": []
+   }
+  },
+  "pc": {
+   "산 고르기": {
+    "count": 2,
+    "small": [],
+    "outside": [],
+    "blocked": [],
+    "overlaps": [],
+    "scrollers": [],
+    "clipped": []
+   },
+   "card": {
+    "go": "▶ 오르기",
+    "free": "🎛 자유 설정",
+    "dev": true,
+    "tag": "🍁 지금 가을 · 단풍",
+    "startMode": "manual",
+    "started": false
+   },
+   "산 고르기 자유 설정": {
+    "count": 23,
+    "small": [],
+    "outside": [],
+    "blocked": [],
+    "overlaps": [],
+    "scrollers": [],
+    "clipped": []
+   },
+   "afterStart": {
+    "season": "winter",
+    "manual": "winter",
+    "s": 2634,
+    "pick": false
+   },
+   "설정 탭": {
+    "count": 13,
+    "small": [],
+    "outside": [],
+    "blocked": [],
+    "overlaps": [],
+    "scrollers": [],
+    "clipped": []
+   },
+   "sheetBox": [
+    20,
+    401,
+    1080
+   ],
+   "자유 설정 시트": {
+    "count": 23,
+    "small": [],
+    "outside": [],
+    "blocked": [],
+    "overlaps": [],
+    "scrollers": [],
+    "clipped": []
+   },
+   "snowNight": {
+    "chip": "❄18:40눈✎ ❄ 눈 · 밤 · 겨울 직접 고름",
+    "manual": true,
+    "weather": null,
+    "hud": "night",
+    "started": true,
+    "status": "✎ 직접 고른 설정 · 겨울 · 눈 · 밤"
+   },
+   "reset": {
+    "season": "autumn",
+    "manual": null,
+    "chip": false,
+    "free": null
+   },
+   "restart": {
+    "s": -26,
+    "elapsed": 0,
+    "sheet": false
+   },
+   "summitReal": true,
+   "record": {
+    "gwanak": {
+     "first": "2026-11-06",
+     "count": 1,
+     "bestSec": null,
+     "last": "2026-11-06"
+    }
+   },
+   "정상 도착 창": {
+    "count": 3,
+    "small": [],
+    "outside": [],
+    "blocked": [],
+    "overlaps": [],
+    "scrollers": [],
+    "clipped": []
+   },
+   "지도": {
+    "count": 4,
+    "small": [],
+    "outside": [],
+    "blocked": [],
+    "overlaps": [],
+    "scrollers": [],
+    "clipped": []
+   },
+   "map": {
+    "seal": true,
+    "sub": "관악산공원 입구 → 연주대 · GPX 참고 경로 · 등산 완료",
+    "rec": "완등 1회 · 처음 2026.11.06"
+   },
+   "memoryMB": {
+    "max": 450.1,
+    "rows": [
+     450.1,
+     450.1,
+     450.1,
+     450.1,
+     450.1,
+     450.1,
+     450.1,
+     450.1,
+     450.1
+    ]
+   },
+   "errors": [],
+   "pickDone": {
+    "seal": true,
+    "rec": "완등 1회 · 처음 2026.11.06",
+    "go": "▶ 이어 오르기"
+   },
+   "locked": {
+    "toast": "🔒 연주대에서 완등 도장을 받으면 열려요",
+    "dev": false,
+    "panel": false,
+    "game": {
+     "jump": false,
+     "clear": false,
+     "enabled": 0
+    }
+   },
+   "잠긴 자유 설정": {
+    "count": 1,
+    "small": [],
+    "outside": [],
+    "blocked": [],
+    "overlaps": [],
+    "scrollers": [],
+    "clipped": []
+   }
+  }
+ },
+ "failed": 0
+}

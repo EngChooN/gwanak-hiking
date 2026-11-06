@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>산 고르기 · 완등 도장 · 자유 설정 — 실제 크기 시안</title>
+<style>
+/*__BASE_CSS__*/
+
+/* ═════════ 이번 시안에서 더한 것 ═════════ */
+.hud.pk *,.hud .fs *,.hud .fs{position:static}
+.hud .fs{position:absolute}
+.hud.pk .tag,.hud .fs .tag{position:relative}
+.hud.pk .abs{position:absolute}
+.devtag{display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 10px;border:1.5px dashed var(--stamp);border-radius:6px;color:var(--accent);background:var(--paper2);font-size:11.5px;font-weight:800;white-space:nowrap}
+.hud[data-time=night] .devtag{border-color:var(--accent)}
+
+/* ── 산 고르기 화면 ── */
+.pk-bg{inset:0;background:var(--bg-day) center/cover;filter:blur(6px) saturate(.9);transform:scale(1.08)}
+.dev[data-time=dusk] .pk-bg{background-image:var(--bg-dusk)}
+.dev[data-time=night] .pk-bg{background-image:var(--bg-night)}
+.pk-dim{inset:0;background:linear-gradient(180deg,rgba(28,18,6,.55),rgba(28,18,6,.72))}
+.hud[data-time=night] .pk-dim{background:linear-gradient(180deg,rgba(6,8,16,.55),rgba(6,8,16,.75))}
+.pk-head{color:#fbf3df}
+.pk-brand{font-size:12px;letter-spacing:2px;font-weight:700;opacity:.85}
+.pk-brand b{font-size:15px;letter-spacing:2px;margin-right:6px}
+.pk-title{display:block;font-size:24px;font-weight:900;letter-spacing:-.02em;margin:4px 0 4px;text-shadow:0 2px 6px #0007}
+.pk-sub{display:block;font-size:13px;font-weight:600;opacity:.9;line-height:1.5}
+.pk-list{display:flex;gap:14px;overflow:auto;scrollbar-width:none}
+.pk-list::-webkit-scrollbar{display:none}
+.dev.port .pk-list{flex-direction:column}
+.mcard{flex:none;background:var(--paper);border-radius:12px;box-shadow:var(--lift),var(--soft),var(--hi);overflow:hidden;display:flex;flex-direction:column}
+.mcard .art{display:block;width:100%;flex:none;border-bottom:2px dashed var(--rule)}
+.mcard .art-wrap{position:relative!important;flex:none}
+.mcard .art-wrap .tag{position:absolute!important;left:10px;top:10px;height:30px;font-size:12px}
+.mcard .body{padding:10px 14px 12px;display:flex;flex-direction:column;gap:7px;flex:1}
+.mcard .top{display:flex;align-items:flex-start;gap:10px}
+.mcard .who{flex:1;min-width:0}
+.mcard .name{display:flex;align-items:baseline;gap:8px;font-size:24px;font-weight:900;letter-spacing:-.02em;line-height:1.1}
+.mcard .name small{font-size:13px;font-weight:800;color:var(--ink2);background:var(--paper2);border-radius:5px;padding:2px 7px;box-shadow:1px 2px 0 var(--edge)}
+.mcard .course{display:block;font-size:12.5px;font-weight:700;color:var(--ink2);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mcard .facts{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;font-size:10.5px;color:var(--ink2);font-weight:700}
+.mcard .facts span{background:var(--paper2);border-radius:6px;padding:4px 6px;line-height:1.25}
+.mcard .facts b{display:block;font-size:13px;color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
+.mcard .rec{font-size:11.5px;color:var(--ink2);font-weight:700;border-top:1px dashed var(--rule);padding-top:6px;line-height:1.4}
+.mcard .rec b{color:var(--accent)}
+.mcard .acts{display:flex;gap:8px;margin-top:auto}
+.hud .btn-stamp,.hud .btn-paper{display:inline-flex;align-items:center;justify-content:center;gap:6px;font:inherit;cursor:pointer;white-space:nowrap}
+.hud .btn-stamp{min-height:48px;padding:0 18px;border-radius:10px;background:var(--stamp);color:#fff;font-weight:900;font-size:15px;border:2px dashed var(--stamp-dash);box-shadow:0 3px 0 var(--stamp-d)}
+.hud .btn-paper{min-height:48px;padding:0 12px;border-radius:10px;background:var(--paper2);color:var(--ink);font-weight:800;font-size:13.5px;border:0;box-shadow:1px 2px 0 var(--edge)}
+.mcard .acts .btn-stamp{flex:1.3}.mcard .acts .btn-paper{flex:1}
+.hud .btn-paper.locked{background:transparent;color:var(--ink2);border:1.5px dashed var(--rule);box-shadow:none}
+.hud .btn-paper small{font-size:10.5px;font-weight:700;color:var(--ink2)}
+.mcard.soon .art{filter:grayscale(1) contrast(.8) brightness(1.05)}
+.mcard.soon .name,.mcard.soon .course,.mcard.soon .facts{opacity:.55}
+.mslot{flex:none;border:2px dashed rgba(251,243,223,.55);border-radius:12px;display:grid;place-items:center;text-align:center;color:#fbf3dfdd;font-size:12.5px;font-weight:700;line-height:1.5;padding:10px}
+.mslot b{display:block;font-size:14.5px;font-weight:900;color:#fbf3df}
+.pk-foot{font-size:10px;color:#fffc}
+
+/* ── 완등 도장(실) ── */
+.seal{display:block;flex:none;color:var(--accent)}
+.seal-slot{flex:none;border-radius:50%;border:2px dashed var(--rule);display:grid;place-items:center;text-align:center;color:var(--ink2);font-size:10.5px;font-weight:800;line-height:1.3;background:var(--paper2)}
+.seal-slot i{display:block;font-style:normal;font-size:18px;opacity:.6;line-height:1;margin-bottom:2px}
+.ink-in{animation:ink 1.2s cubic-bezier(.2,.9,.3,1.2) both}
+@keyframes ink{0%{opacity:0;transform:scale(1.7) rotate(-4deg)}35%{opacity:1;transform:scale(.96) rotate(-12deg)}55%{transform:scale(1.03) rotate(-12deg)}100%{transform:scale(1) rotate(-12deg)}}
+
+/* ── 자유 설정판 ── */
+.fs{background:var(--paper);box-shadow:var(--lift),0 10px 30px rgba(30,20,5,.35),var(--hi);border-radius:4px 14px 14px 4px;padding:12px 16px 14px;overflow:auto;color:var(--ink)}
+.dev.port .fs{border-radius:14px 14px 6px 6px}
+.fs h4{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:900;margin-bottom:6px}
+.fs h4 .t{flex:1}
+.fs .close{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:var(--paper2);box-shadow:1px 2px 0 var(--edge);font-size:16px;font-weight:900;border:0;color:inherit;font-family:inherit}
+.fs .cols{display:grid;gap:4px 20px}
+.fs .now{display:flex;align-items:center;gap:8px;background:var(--paper2);border-radius:10px;padding:6px 6px 6px 10px;font-size:12px;font-weight:700;color:var(--ink2);line-height:1.35}
+.fs .now .txt{flex:1;min-width:0}
+.fs .now b{display:block;color:var(--ink);font-size:13px}
+.fs .now.manual{outline:1.5px dashed var(--accent);outline-offset:-1.5px}
+.fs .now.manual b{color:var(--accent)}
+.fs .reset{min-height:44px;padding:0 12px;border-radius:9px;border:0;font:inherit;font-size:13px;font-weight:900;background:var(--paper);color:var(--ink);box-shadow:1px 2px 0 var(--edge);white-space:nowrap;cursor:pointer}
+.fs .reset.on{background:var(--stamp);color:#fff;box-shadow:0 2px 0 var(--stamp-d)}
+.fs .lb{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;font-weight:800;color:var(--ink2);margin:9px 0 4px}
+.fs .lb small{font-size:11px;font-weight:600}
+.fseg{display:grid;gap:5px}
+.fseg button{position:relative!important;min-height:46px;border:0;border-radius:9px;background:var(--paper2);color:var(--ink);box-shadow:1px 2px 0 var(--edge);font:inherit;font-size:12.5px;font-weight:800;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;line-height:1.1;cursor:pointer;white-space:nowrap}
+.fseg button em{font-style:normal;font-size:17px;line-height:1}
+.fseg button.on{background:var(--stamp);color:#fff;box-shadow:0 2px 0 var(--stamp-d)}
+.fseg button.real{outline:2px dashed var(--accent);outline-offset:-2px}
+.fseg button.real::after{content:"지금";position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);font-size:9px;font-weight:900;color:var(--accent);line-height:1;background:var(--paper);padding:1px 4px;border-radius:4px}
+.fseg button.on.real{outline-color:#fff}
+.fs .route{display:block;width:100%;height:34px}
+.fstart{display:grid;gap:5px}
+.fstart button{min-height:44px;border:0;border-radius:9px;background:var(--paper2);color:var(--ink);box-shadow:1px 2px 0 var(--edge);font:inherit;font-size:12px;font-weight:800;display:flex;align-items:center;gap:6px;padding:0 7px;text-align:left;white-space:nowrap;cursor:pointer}
+.fstart button i{font-style:normal;flex:none;display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--paper);font-size:11px;box-shadow:inset 0 0 0 1.5px var(--rule)}
+.fstart button.on{background:var(--stamp);color:#fff;box-shadow:0 2px 0 var(--stamp-d)}
+.fstart button.on i{background:#fff;color:var(--stamp);box-shadow:none}
+.fstart button.here i{box-shadow:inset 0 0 0 2px var(--go)}
+.fs .go{display:flex;gap:8px;align-items:center;margin-top:7px}
+.fs .go .btn-stamp{min-height:46px;font-size:14px}
+.fs .go small{font-size:11px;color:var(--ink2);font-weight:600;line-height:1.35}
+.fs .lockbox{display:flex;gap:12px;align-items:center;background:var(--paper2);border-radius:10px;padding:10px 12px;margin:2px 0 4px}
+.fs .lockbox b{display:block;font-size:14px;line-height:1.35}
+.fs .lockbox small{display:block;font-size:12px;color:var(--ink2);font-weight:600;margin-top:2px;line-height:1.4}
+.fs .lockbox .prog{position:relative!important;height:7px;margin-top:6px}
+.fs .lockbox .prog i{position:absolute!important}
+.fs .ghost{opacity:.42;filter:saturate(.4);pointer-events:none}
+.fs .ghost .fseg button::before{content:"🔒";position:absolute;left:4px;top:3px;font-size:9px}
+/* 휴대폰 가로: 높이 361px 안에 들어가게 줄인다 */
+.dev.land .fs{padding:8px 14px 6px}
+.dev.land .fs h4{margin-bottom:4px}
+.dev.land .fs .lb{margin:6px 0 3px}
+.dev.land .fseg button{min-height:44px;flex-direction:row;gap:5px}
+.dev.land .fseg button em{font-size:15px}
+.dev.land .fs .route{height:22px}
+.dev.port .fs .route{height:28px}
+.dev.land .fs .go small{display:none}
+.dev.land .fs .go .btn-stamp{flex:1}
+.dev.land .fs .go{margin-top:6px}
+.fs .lockcol .lockbox{flex-direction:column;align-items:center;text-align:center;padding:14px}
+/* 설정 탭 안 자유 설정 항목 */
+.dev.land .sheet .it{min-height:44px;padding:2px 10px}
+.dev.land .sheet .grid{gap:6px}
+.dev.land .sheet .lbl{margin:6px 0 3px}
+.it.wide{grid-column:1/-1}
+.it .mini-seal{margin-left:auto}
+.it.lockd{background:transparent;border:1.5px dashed var(--rule);box-shadow:none}
+.it.lockd span,.it.lockd em{opacity:.7}
+.tag.manual{outline:1.5px dashed var(--accent);outline-offset:-1.5px}
+.tag.manual b{color:var(--accent);position:static}
+.toastt{left:50%;transform:translateX(-50%);height:40px}
+
+/* ── 도장 견본 보드 ── */
+.sealboard{display:grid;gap:18px;margin-top:30px}
+.sb-row{display:flex;flex-wrap:wrap;gap:16px;align-items:stretch}
+.sb{background:#fffaf0;border-radius:12px;padding:14px 16px;box-shadow:0 2px 10px #0002}
+.sb h3{font-size:14px;margin-bottom:10px}
+.sb p{font-size:12px;color:#5b5140;line-height:1.55;margin-top:8px;max-width:520px}
+.sb .pap{display:flex;gap:18px;align-items:flex-end;padding:18px;border-radius:10px;background:var(--paper);color:var(--ink)}
+.sb .pap figure{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;color:var(--ink2);font-weight:700}
+</style></head>
+<body>
+<h1 class="board-h">산 고르기 · 완등 도장 · 자유 설정 — 실제 크기 시안</h1>
+<p class="board-lead">등산 수첩 톤(<code>docs/UI-등산수첩-사양.md</code>) 그대로 이어서 그렸습니다. 휴대폰 가로 844×390 · 세로 390×844(아이폰 14 안전 영역 · 빗금) · PC 1440×900. 사양: <code>docs/UI-산고르기-자유설정-사양.md</code></p>
+<div class="ctl" id="ctl">
+ <label>기기 <select id="c-dev"><option value="all">셋 다</option><option value="land">휴대폰 가로</option><option value="port">휴대폰 세로</option><option value="pc">PC</option></select></label>
+ <label>시간 <select id="c-time"><option value="day">낮</option><option value="dusk">노을</option><option value="night">밤</option></select></label>
+ <label>장면 <select id="c-scene">
+  <optgroup label="산 고르기"><option value="pick-new">처음 · 아직 완등 전</option><option value="pick-done">완등 뒤 · 도장 + 자유 설정 열림</option><option value="pick-dev">개발 버전 · 완등 전이지만 열림</option><option value="pick-free">출발 전 자유 설정 펼침</option><option value="pick-locked">완등 전 · 자유 설정 눌렀을 때</option><option value="pick-many">산이 늘어났을 때 (예시 3곳)</option></optgroup>
+  <optgroup label="게임 안"><option value="game-settings">설정 탭 · 자유 설정 항목</option><option value="game-free">자유 설정판 · 직접 고름</option><option value="game-live">자유 설정판 · 현재 그대로</option><option value="game-locked">자유 설정판 · 잠김</option><option value="game-dev">설정 탭 · 개발 버전</option></optgroup>
+  <optgroup label="도장"><option value="summit-unlock">정상 도착 · 도장이 찍히는 순간</option><option value="map-done">지도(M) · 완등 도장</option></optgroup>
+ </select></label>
+ <label><input type="checkbox" id="c-safe" checked> 안전 영역</label>
+ <label><input type="checkbox" id="c-hit"> 터치 영역</label>
+</div>
+<div class="frames" id="frames"></div>
+<div class="sealboard" id="sealboard"></div>
+
+<script>
+/*__BASE_JS__*/
+
+/* ═════════ 이번 시안 ═════════ */
+const TIME_NAME={day:'낮',dusk:'노을',night:'밤'};
+const SEASON={spring:{ic:'🌸',name:'봄',long:'봄 · 벚꽃'},summer:{ic:'🌿',name:'여름',long:'여름'},autumn:{ic:'🍁',name:'가을',long:'가을 · 단풍'},winter:{ic:'⛄',name:'겨울',long:'겨울 · 눈'}};
+const WEATHER=[['clear','☀','맑음'],['overcast','☁','흐림'],['rain','🌧','비'],['snow','❄','눈'],['fog','🌫','안개']];
+const TIMES=[['day','☀','낮'],['dusk','🌇','노을'],['night','🌙','밤']];
+const SEASONS=[['spring','🌸','봄 벚꽃'],['summer','🌿','여름'],['autumn','🍁','가을 단풍'],['winter','⛄','겨울 눈']];
+// 출발 지점 — section-jump.js 목록과 같은 8곳. s는 코스 비율(지도 점 위치), h는 대략 높이 비율
+const STARTS=[['plaza','입구 광장',0,0],['gate','일주문',.03,.04],['plaza-1','제1광장',.16,.14],['acacia','아카시아동산',.32,.3],['shelter-4','제4쉼터',.55,.52],['yeonju-spring','연주샘',.78,.74],['pass-3','제3깔딱고개',.92,.9],['summit','정상 연주대',1,1]];
+const REAL={season:'autumn',weather:'clear',time:'day'};            // 2026-11-06 서울 '실제' 값 (예시)
+
+// ── 계절 그림(카드 머리) — 사계절 시안(artifacts/season-concepts)과 같은 일반적인 계절색 ──
+const PAL={spring:['#fbd3e0','#ee9fbb','#f4b3c8','#c2e46e','#8cc548'],summer:['#61973b','#558a34','#3f7124','#6fa246','#7fb24a'],
+ autumn:['#e8553a','#d8432c','#f39a3a','#ee8a2c','#f7d24a','#f1c33a'],winter:['#8d8079','#a59a9b','#6a5f5b','#8d8079']};
+const SKY={day:['#a9d4ea','#eaf3ee'],dusk:['#e98d5e','#f6d8a8'],night:['#17203a','#3b4664']};
+function rnd(seed){let s=seed;return()=>((s=Math.imul(s^s>>>15,2246822507)^Math.imul(s^s>>>13,3266489909))>>>0)/4294967296;}
+function seasonArt(season,time,w,h,key=''){
+ const r=rnd(7+w),[s1,s2]=SKY[time],p=PAL[season],uid='a'+key+w+h+season+time;
+ const ridge=(y0,amp,ph)=>{let d=`M0 ${h}`;for(let x=0;x<=w;x+=w/24){const y=y0-amp*Math.max(0,Math.sin((x/w)*Math.PI*1.05+ph))-amp*.18*Math.sin(x/w*14+ph*3);d+=` L${x.toFixed(1)} ${y.toFixed(1)}`;}return d+` L${w} ${h}Z`;};
+ const peakX=w*.68,peakY=h*.2;
+ let trees='';
+ for(let i=0;i<70;i++){const x=r()*w,t=r(),y=h*.5+t*h*.55-Math.max(0,Math.sin(x/w*Math.PI*1.05))*h*.22,rr=4+r()*7*(w/300);const c=p[Math.floor(r()*p.length)];
+  trees+=season==='winter'?`<ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="${rr}" ry="${rr*1.15}" fill="${c}" opacity=".85"/><path d="M${x} ${y+rr} V${y-rr*.6} M${x} ${y} l${-rr*.6} ${-rr*.6} M${x} ${y-rr*.2} l${rr*.6} ${-rr*.6}" stroke="#5f554c" stroke-width="1"/><ellipse cx="${x.toFixed(1)}" cy="${(y-rr*.85).toFixed(1)}" rx="${rr*.8}" ry="${rr*.3}" fill="#f4f6f8"/>`
+   :`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${rr.toFixed(1)}" fill="${c}"/><circle cx="${(x-rr*.3).toFixed(1)}" cy="${(y-rr*.35).toFixed(1)}" r="${(rr*.45).toFixed(1)}" fill="#fff" opacity=".18"/>`;}
+ const back=season==='winter'?'#b9c4d4':season==='autumn'?'#c98a5a':season==='spring'?'#b7cf8e':'#7f9a72';
+ const front=season==='winter'?'#eef2f6':season==='autumn'?'#c79a4a':season==='spring'?'#9cc95c':'#5d8a3c';
+ const snowcap=season==='winter'?`<path d="${ridge(h*.42,h*.2,.15)}" fill="#f4f6f8" opacity=".9"/>`:'';
+ const petals=season==='spring'?Array.from({length:14},()=>`<ellipse cx="${(r()*w).toFixed(0)}" cy="${(r()*h*.7).toFixed(0)}" rx="2.2" ry="1.3" fill="#f6cfd9" transform="rotate(${(r()*180).toFixed(0)})" transform-origin="center"/>`).join(''):'';
+ const night=time==='night'?`<rect width="${w}" height="${h}" fill="#0a1230" opacity=".42"/><circle cx="${w*.18}" cy="${h*.2}" r="${h*.07}" fill="#f6efcf"/>`:time==='dusk'?`<rect width="${w}" height="${h}" fill="#e2763a" opacity=".12"/>`:'';
+ return `<svg class="art" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="${uid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${s1}"/><stop offset="1" stop-color="${s2}"/></linearGradient></defs>
+ <rect width="${w}" height="${h}" fill="url(#${uid})"/>
+ <path d="${ridge(h*.42,h*.22,.15)}" fill="${back}"/>${snowcap}
+ <path d="${ridge(h*.62,h*.24,-.25)}" fill="${front}"/>${trees}${petals}
+ <path d="M${w*.12} ${h} C${w*.3} ${h*.82} ${w*.36} ${h*.7} ${w*.48} ${h*.58} S${w*.62} ${h*.36} ${peakX} ${peakY+10}" fill="none" stroke="#fbf3df" stroke-width="3" stroke-dasharray="1 7" stroke-linecap="round"/>
+ <path d="M${peakX} ${peakY+10} v-16" stroke="#4a3618" stroke-width="2"/><path d="M${peakX} ${peakY-6} l12 4 l-12 4z" fill="#b9472f"/>
+ ${night}</svg>`;
+}
+// ── 완등 도장: 이중 원 + 위 '관악산' 원호 + 가운데 '등산 완료' + 아래 날짜 ──
+let SEAL_N=0;
+function sealSVG(size,{name='관악산',date='2026.11.06',count=0,ink=true,cls=''}={}){
+ const id='s'+(SEAL_N++);
+ return `<svg class="seal ${cls}" viewBox="0 0 120 120" width="${size}" height="${size}" style="transform:rotate(-12deg)" role="img" aria-label="${name} 등산 완료 ${date}">
+ <defs>${ink?`<filter id="f${id}" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="2" seed="${4+SEAL_N%5}"/><feColorMatrix values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -2.4 0 0 0 2.05"/><feComposite in="SourceGraphic" operator="in"/></filter>`:''}
+ <path id="t${id}" d="M22 60 A38 38 0 0 1 98 60"/><path id="b${id}" d="M20 60 A40 40 0 0 0 100 60"/></defs>
+ <g fill="currentColor" stroke="currentColor" ${ink?`filter="url(#f${id})"`:''}>
+  <circle cx="60" cy="60" r="55" fill="none" stroke-width="5"/><circle cx="60" cy="60" r="47.5" fill="none" stroke-width="1.6"/>
+  <text font-size="15" font-weight="900" stroke="none" letter-spacing="5" text-anchor="middle"><textPath href="#t${id}" startOffset="50%">${name}</textPath></text>
+  <text font-size="10" font-weight="800" stroke="none" letter-spacing="1.5" text-anchor="middle"><textPath href="#b${id}" startOffset="50%">${date}</textPath></text>
+  <text x="21" y="64" font-size="8" stroke="none" text-anchor="middle">★</text><text x="99" y="64" font-size="8" stroke="none" text-anchor="middle">★</text>
+  <path d="M38 57 L50 44 L56 50 L63 40 L82 57" fill="none" stroke-width="2.6" stroke-linejoin="round"/>
+  <line x1="33" y1="61" x2="87" y2="61" stroke-width="1.4"/>
+  <text x="60" y="81" font-size="17" font-weight="900" stroke="none" text-anchor="middle" letter-spacing="1">등산 완료</text>
+ </g>${count>1?`<g transform="rotate(12 104 100)"><circle cx="104" cy="100" r="13" fill="var(--paper)" stroke="currentColor" stroke-width="2"/><text x="104" y="104.5" font-size="12" font-weight="900" fill="currentColor" text-anchor="middle">×${count}</text></g>`:''}</svg>`;
+}
+const slotHTML=size=>`<div class="seal-slot" style="width:${size}px;height:${size}px"><span><i>⛰</i>완등 도장<br>자리</span></div>`;
+
+// ── 산 카드 ──
+const MOUNTAINS={
+ gwanak:{name:'관악산',alt:'632 m',course:'관악산공원 입구 → 연주대 정상',facts:[['거리','5.1 km'],['예상','2시간 30분'],['스탬프','5곳'],['난이도','보통']]},
+ bukhan:{name:'북한산',alt:'836 m',course:'예시 · 아직 만들지 않은 산',facts:[['거리','—'],['예상','—'],['스탬프','—'],['난이도','—']],soon:true},
+ dobong:{name:'도봉산',alt:'740 m',course:'예시 · 아직 만들지 않은 산',facts:[['거리','—'],['예상','—'],['스탬프','—'],['난이도','—']],soon:true}
+};
+function mcardHTML(id,{dev,time,done,devBuild,artH,sealSize,season='autumn',w}){
+ const m=MOUNTAINS[id],soon=!!m.soon;
+ const tagTxt=soon?'⏳ 준비 중':season===REAL.season?`${SEASON[season].ic} 지금 ${SEASON[season].long}`:`✎ 고른 계절 · ${SEASON[season].long}`;
+ const free=done||devBuild;
+ const rec=soon?'산이 추가되면 이 카드가 열려요':done?`완등 <b>2회</b> · 처음 2026.11.06 · 가장 빠른 <b>2:12:40</b>`:devBuild?'아직 완등 전 · 개발 버전이라 자유 설정이 열려 있어요':'아직 오르지 않았어요 · 연주대에서 도장을 받아요';
+ const seal=soon?'':done?sealSVG(sealSize,{count:2}):slotHTML(sealSize);
+ const freeBtn=soon?'':free?`<button class="btn-paper hit">🎛 자유 설정</button>`:`<button class="btn-paper locked hit">🔒 자유 설정</button>`;
+ const go=soon?`<button class="btn-paper locked hit" style="flex:1">준비 중</button>`:`<button class="btn-stamp hit">▶ 오르기</button>`;
+ return `<article class="mcard ${soon?'soon':''}" data-mountain="${id}" style="width:${w}px">
+  <div class="art-wrap">${seasonArt(soon?'summer':season,time,w,artH,id)}<span class="tag">${tagTxt}</span></div>
+  <div class="body"><div class="top"><div class="who"><div class="name">${m.name}<small>${m.alt}</small></div><span class="course">${m.course}</span></div>${seal}</div>
+  <div class="facts">${m.facts.map(([a,b])=>`<span>${a}<b>${b}</b></span>`).join('')}</div>
+  <div class="rec">${rec}</div><div class="acts">${go}${freeBtn}</div></div></article>`;
+}
+const slotCard=(w,h)=>`<div class="mslot" style="width:${w}px;${h?`height:${h}px`:''}"><span><b>⛰ 다음 산 준비 중</b>산이 늘어나면<br>이 자리에 카드가 붙어요</span></div>`;
+
+// ── 자유 설정판 안쪽 ──
+function freeInner({dev,mode,devBuild,ctx,sel}){
+ // mode: 'manual'|'live'|'locked'
+ const pc=dev==='pc',port=dev==='port',two=!port;
+ const cur=mode==='manual'?sel:REAL;
+ const seg=(list,key,cols)=>`<div class="fseg" style="grid-template-columns:repeat(${cols},1fr)">${list.map(([v,ic,n])=>`<button class="hit ${mode==='manual'&&cur[key]===v?'on':''} ${REAL[key]===v?'real':''}"><em>${ic}</em>${n}</button>`).join('')}</div>`;
+ const startSel=ctx==='pick'?(sel.start||'plaza'):(sel.start||'acacia'),here='shelter-4';
+ const routeSVG=(()=>{const W=300,H=34,pts=STARTS.map(([id,,s,h])=>[8+s*(W-16),H-6-h*(H-14),id]);
+  return `<svg class="route" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><polyline points="${pts.map(p=>p[0]+','+p[1]).join(' ')}" fill="none" stroke="var(--ink2)" stroke-width="2" stroke-dasharray="2 4"/>${pts.map(([x,y,id],i)=>`<circle cx="${x}" cy="${y}" r="${id===startSel?6:3.5}" fill="${id===startSel?'var(--stamp)':ctx==='game'&&id===here?'var(--go)':'var(--paper)'}" stroke="var(--edge)" stroke-width="1.2"/>`).join('')}</svg>`;})();
+ const startCols=port?3:2;
+ const starts=`<div class="fstart" style="grid-template-columns:repeat(${startCols},1fr)">${STARTS.map(([id,n],i)=>`<button class="hit ${id===startSel?'on':''} ${ctx==='game'&&id===here?'here':''}"><i>${i+1}</i>${n}</button>`).join('')}</div>`;
+ const goRow=ctx==='game'?`<div class="go"><button class="btn-stamp hit">📍 여기서 다시 출발</button>${port?'':`<small>진행 기록은 새로 시작해요<br>완등 도장은 그대로 남아요</small>`}</div>`:`<div class="go"><button class="btn-stamp hit" style="flex:1">▶ 이대로 오르기</button></div>`;
+ const nowRow=mode==='manual'
+  ?`<div class="now manual"><span class="txt">✎ 직접 고른 설정<b>${SEASON[cur.season].name} · ${WEATHER.find(w=>w[0]===cur.weather)[2]} · ${TIME_NAME[cur.time]}</b></span><button class="reset hit">↺ 현재 그대로</button></div>`
+  :`<div class="now"><span class="txt">지금은 실제 서울을 따라가요<b>${SEASON[REAL.season].name} · 맑음 · 낮 14:20</b></span><button class="reset on hit">✓ 현재 그대로</button></div>`;
+ const look=`${nowRow}
+  <div class="lb">날씨<small>고르면 바로 바뀌어요</small></div>${seg(WEATHER,'weather',5)}
+  <div class="lb">시간<small>밤에는 헤드랜턴이 켜져요</small></div>${seg(TIMES,'time',3)}
+  <div class="lb">계절</div>${seg(SEASONS,'season',4)}`;
+ const start=`<div class="lb">출발 지점<small>${ctx==='game'?'초록 = 지금 있는 곳':'오르기를 누르면 여기서 출발'}</small></div>${routeSVG}${starts}${goRow}`;
+ const head=`<h4><span class="t">🎛 자유 설정${port?'':` <small style="font-size:12px;font-weight:600;color:var(--ink2)">${mode==='locked'?'· 완등하면 열려요':'· 완등 기념'}</small>`}</span>${devBuild?'<span class="devtag">🛠 개발 버전</span>':''}<button class="close hit" aria-label="닫기">✕</button></h4>`;
+ if(mode==='locked'){
+  const lock=`<div class="lockbox">${slotHTML(port?64:84)}<span><b>연주대 정상에서 완등 도장을 받으면 열려요</b><small>정상까지 1.2 km · 스탬프 3 / 5</small><div class="prog"><i style="width:74%"></i></div><small>열리면 날씨 · 시간 · 계절 · 출발 지점을 마음대로 골라요</small></span></div>`;
+  if(two)return `${head}<div class="cols" style="grid-template-columns:200px 1fr"><div class="lockcol">${lock}</div><div class="ghost">${look.replace(/class="reset on hit"/,'class="reset"').replace(/ hit/g,'')}</div></div>`;
+  return `${head}${lock}
+  <div class="ghost">${look.replace(/class="reset on hit"/,'class="reset"').replace(/ hit/g,'')}</div>`;
+ }
+ return `${head}<div class="cols" style="grid-template-columns:${two?'1fr 1fr':'1fr'}"><div>${look}</div><div>${start}</div></div>`;
+}
+
+// ── 산 고르기 화면 ──
+function pickScreen(dev,time,scene){
+ const D=DEVS[dev],S=SAFE[dev],W=D.w,H=D.h,port=dev==='port',pc=dev==='pc',land=dev==='land';
+ const wrap=document.createElement('div');wrap.className='frame-wrap';
+ wrap.innerHTML=`<h3>${D.name} · ${TIME_NAME[time]} · ${sceneName(scene)}</h3>`;
+ const el=document.createElement('div');el.className=`dev ${dev}`;el.dataset.time=time;wrap.append(el);
+ const hud=document.createElement('div');hud.className='hud pk';hud.dataset.time=time;el.append(hud);
+ const add=(cls,style,html)=>{hud.insertAdjacentHTML('beforeend',`<div class="abs ${cls}" style="${style}">${html}</div>`);return hud.lastElementChild;};
+ add('pk-bg','','');add('pk-dim','','');
+ const done=scene==='pick-done',devBuild=scene==='pick-dev'||scene==='pick-free',many=scene==='pick-many';
+ const sel={season:'winter',weather:'snow',time:'night',start:'gate'};
+ const season=scene==='pick-free'?sel.season:'autumn';
+ const artTime=scene==='pick-free'?sel.time:time;
+ // 머리글
+ const sub=dev==='land'?`서울 11월 6일 · <b>🍁 가을</b><br>${ENV[time].short} 맑음 · ${many?'산 3곳 · 옆으로 넘겨요':'지금은 산 1곳'}`:`지금 서울 · 11월 6일 <b>🍁 가을</b> · ${ENV[time].short} 맑음<br>${many?(port?'산 3곳 · 아래로 넘겨 보세요':'산 3곳 · 옆으로 넘겨 보세요'):'지금은 1곳 · 산은 계속 늘어나요'}`;
+ const head=`<div class="pk-brand" style="display:flex;align-items:center;gap:8px"><span style="flex:1"><b>산길</b>등산 수첩</span>${!pc&&(devBuild||scene==='pick-dev')?(land?'':'<span class="devtag">🛠 개발 버전 · 자유 설정 열림</span>'):''}</div><b class="pk-title">어느 산에 오를까요?</b><span class="pk-sub">${sub}</span>`;
+ const devTag=(devBuild||scene==='pick-dev')?'<span class="devtag">🛠 개발 버전 · 자유 설정 열림</span>':'';
+ let cardW,artH,seal,listStyle,headStyle;
+ if(port){cardW=W-28;artH=150;seal=84;headStyle=`left:${S.l+16}px;right:${S.r+16}px;top:${S.t+14}px`;listStyle=`left:14px;right:14px;top:${S.t+128}px;bottom:${S.b+30}px`;}
+ else if(land){cardW=300;artH=112;seal=70;headStyle=`left:${S.l+14}px;top:${S.t+16}px;width:212px`;listStyle=`left:${S.l+240}px;right:${S.r}px;top:10px;bottom:${S.b+8}px;padding-right:14px`;}
+ else{cardW=400;artH=220;seal=104;headStyle=`left:0;right:0;top:64px;text-align:center`;listStyle=`left:0;right:0;top:250px;justify-content:center;align-items:stretch`;}
+ add('pk-head',headStyle,head+(devTag&&land?`<div style="margin-top:10px">${devTag.replace(' · 자유 설정 열림','')}</div>`:''));
+ if(pc){hud.querySelector('.pk-title').style.fontSize='34px';hud.querySelector('.pk-sub').style.fontSize='15px';}
+ if(pc&&devTag)add('',`right:32px;top:28px`,devTag);
+ const ids=many?['gwanak','bukhan','dobong']:['gwanak'];
+ const cards=ids.map(id=>mcardHTML(id,{dev,time:artTime,done,devBuild,artH,sealSize:seal,season,w:cardW})).join('');
+ const slotH=port?96:land?(H-S.b-18-10):null;
+ add('pk-list',listStyle,cards+(many?'':slotCard(port?cardW:land?200:300,slotH)));
+ if(land){const c=hud.querySelector('.mcard');c.style.height=(H-S.b-18-10)+'px';c.querySelector('.facts').style.fontSize='10px';hud.querySelectorAll('.mcard').forEach(c=>c.style.height=(H-S.b-18-10)+'px');}
+ if(pc)hud.querySelectorAll('.mcard').forEach(c=>{c.querySelector('.body').style.gap='12px';c.querySelector('.body').style.padding='14px 18px 18px';c.querySelector('.name').style.fontSize='30px';c.querySelector('.course').style.fontSize='14px';c.querySelector('.rec').style.fontSize='13px';});
+ // 출처
+ add('pk-foot',port?`left:0;right:0;text-align:center;bottom:${S.b+8}px`:land?`left:${S.l+14}px;bottom:${S.b+6}px`:`left:32px;bottom:20px`,'날씨 Open-Meteo · © OpenStreetMap');
+ // 자유 설정 펼침 / 잠김 알림
+ if(scene==='pick-free'){
+  hud.insertAdjacentHTML('beforeend','<div class="abs scrim"></div>');
+  const fs=document.createElement('div');fs.className='fs abs';
+  if(port)Object.assign(fs.style,{left:'8px',right:'8px',bottom:(S.b+8)+'px',top:(S.t+100)+'px'});
+  else if(land)Object.assign(fs.style,{left:(S.l+40)+'px',right:(S.r+40)+'px',top:'8px',bottom:(S.b+8)+'px',borderRadius:'6px 6px 14px 14px'});
+  else Object.assign(fs.style,{left:'50%',top:'50%',width:'700px',transform:'translate(-50%,-50%)',borderRadius:'6px 6px 14px 14px',padding:'16px 22px 18px'});
+  fs.innerHTML=freeInner({dev,mode:'manual',devBuild:true,ctx:'pick',sel});
+  hud.append(fs);
+ }
+ if(scene==='pick-locked')add('tag toastt',`top:${S.t+(port?96:12)}px;${land?`left:${W/2+100}px`:''}`,'🔒 연주대에서 완등 도장을 받으면 열려요');
+ decorate(el,dev,S);
+ return wrap;
+}
+
+// ── 게임 안 장면: 지난 시안의 HUD 위에 펼침 ──
+function gameScreen(dev,time,scene){
+ const D=DEVS[dev],S=SAFE[dev],port=dev==='port',pc=dev==='pc';
+ const manual=scene==='game-free';
+ const showTime=manual?'night':time;
+ const wrap=render(dev,showTime,'idle','none');
+ wrap.querySelector('h3').textContent=`${D.name} · ${TIME_NAME[showTime]} · ${sceneName(scene)}`;
+ const hud=wrap.querySelector('.hud');hud.querySelectorAll('.joy,.joy-t').forEach(e=>e.remove());
+ if(manual)hud.closest('.dev').dataset.time='night';
+ // 설정 탭 표시
+ hud.querySelectorAll('.tb').forEach(t=>t.classList.toggle('on',t.textContent.includes('설정')));
+ // 직접 고른 설정이면 시각·날씨 꼬리표가 '✎'로 바뀐다
+ if(manual){const envTag=[...hud.querySelectorAll('.tag')].find(t=>/☾|☀/.test(t.textContent));if(envTag){envTag.classList.add('manual');envTag.innerHTML=port?'✎ ❄ 밤':'✎ ❄ 눈 · 밤 <small>· 겨울 직접 고름</small>';if(!port)envTag.style.right=(parseFloat(envTag.style.right)+30)+'px';}}
+ const railW=pc?128:66,bottomUI=port?S.b+58:S.b;
+ const box=document.createElement('div');
+ if(scene==='game-settings'||scene==='game-dev'){
+  box.className='sheet';
+  if(port)Object.assign(box.style,{left:'8px',right:'8px',bottom:(bottomUI+8)+'px',borderRadius:'14px 14px 6px 6px'});
+  else Object.assign(box.style,{left:(S.l+railW+4)+'px',top:(S.t+(pc?20:8))+'px',width:pc?'380px':'330px',bottom:(S.b+(pc?20:8))+'px',overflow:'auto'});
+  const devB=scene==='game-dev';
+  const free=devB?`<button class="s it wide hit"><em>🎛</em><span class="s">자유 설정<small>개발 버전이라 처음부터 열려 있어요</small></span><span class="s devtag" style="margin-left:auto">🛠 개발</span></button>`
+   :`<button class="s it wide hit"><em>🎛</em><span class="s">자유 설정<small>날씨 · 시간 · 계절 · 출발 지점</small></span><span class="s mini-seal">${sealSVG(40,{ink:false})}</span></button>`;
+  const devSlot=devB?`<button class="s it dev-only hit"><em>🧭</em><span class="s">구간 이동<small>개발용 · 바로 이동</small></span></button><button class="s it dev-only hit"><em>🧽</em><span class="s">완등 기록 지우기<small>개발용 · 도장 확인</small></span></button>`
+   :`<button class="s it dev-only hit"><em>🧭</em><span class="s">구간 이동<small>개발용 · 바로 이동</small></span></button>`;
+  box.innerHTML=`<h4 class="s">⚙ 설정<button class="s close hit" aria-label="닫기">✕</button></h4><div class="s grid" style="--cols:2">${free}
+   <button class="s it on hit"><em>♪</em><span class="s">소리<small>켜짐</small></span></button><button class="s it hit"><em>👁</em><span class="s">화면 숨기기${k('H')}<small>풍경만 보기</small></span></button>
+   <button class="s it hit"><em>❓</em><span class="s">도움말${k('?')}<small>조작 안내</small></span></button>${devSlot}</div>
+   <div class="s lbl">화질</div><div class="s seg"><span class="on hit">자동</span><span class="hit">높음</span><span class="hit">균형</span><span class="hit">낮음</span></div>`;
+  if(devB&&!port)box.querySelector('.grid').insertAdjacentHTML('beforebegin','');
+ }else{
+  box.className='fs';
+  if(port)Object.assign(box.style,{left:'8px',right:'8px',bottom:(bottomUI+8)+'px',top:(S.t+(scene==='game-locked'?228:84))+'px'});
+  else Object.assign(box.style,{left:(S.l+railW+4)+'px',top:(S.t+(pc?20:8))+'px',width:pc?'680px':'590px',bottom:(S.b+(pc?20:8))+'px'});
+  if(pc&&scene!=='game-locked')box.style.bottom='auto';
+  if(pc&&scene==='game-locked')box.style.bottom='auto';
+  const mode=scene==='game-locked'?'locked':manual?'manual':'live';
+  box.innerHTML=freeInner({dev,mode,devBuild:false,ctx:'game',sel:{season:'winter',weather:'snow',time:'night',start:'acacia'}});
+ }
+ hud.append(box);
+ if(scene==='game-locked'){hud.insertAdjacentHTML('beforeend',`<div class="tag" style="position:absolute;left:50%;transform:translateX(-50%);top:${S.t+(port?200:pc?24:12)}px;${port?'':`left:${pc?1000:690}px`}">🔒 아직 잠겨 있어요</div>`);}
+ return wrap;
+}
+
+// ── 정상 도착 · 지도 ──
+function dlgScreen(dev,time,scene){
+ const D=DEVS[dev],S=SAFE[dev],port=dev==='port',pc=dev==='pc',two=dev==='land';
+ const wrap=render(dev,time,'idle','none');
+ wrap.querySelector('h3').textContent=`${D.name} · ${TIME_NAME[time]} · ${sceneName(scene)}`;
+ const hud=wrap.querySelector('.hud');hud.querySelectorAll('.joy,.joy-t').forEach(e=>e.remove());
+ hud.insertAdjacentHTML('beforeend','<div class="scrim"></div>');
+ const box=document.createElement('div');box.className='dlg';
+ if(port)Object.assign(box.style,{left:'10px',right:'10px',top:(S.t+10)+'px',bottom:(S.b+10)+'px'});
+ else if(two)Object.assign(box.style,{left:(S.l+40)+'px',right:(S.r+40)+'px',top:'10px',bottom:(S.b+6)+'px'});
+ else Object.assign(box.style,{left:'50%',top:'50%',width:'620px',transform:'translate(-50%,-50%)'});
+ const close=`<button class="s close hit" aria-label="닫기">✕</button>`;
+ if(scene==='summit-unlock'){
+  if(!port&&!two)box.style.width='540px';
+  if(port){box.style.top='auto';}
+  const sz=two?104:port?150:150;
+  box.innerHTML=`<div class="s" style="text-align:center">
+   <div class="s" style="display:flex;justify-content:center;margin:${two?'-6px 0 2px':'4px 0 8px'}">${sealSVG(sz,{cls:'ink-in'})}</div>
+   <h2 class="s">관악산 등산 완료!</h2>
+   <p class="s" style="margin:4px 0 10px">2시간 12분 · 4.21 km · 오른 높이 +548 m · 스탬프 5 / 5</p>
+   <button class="s tag btn hit" style="position:relative;display:inline-flex;margin:0 auto ${two?8:12}px;color:var(--accent)">🎛 자유 설정이 열렸어요 <small>· 열어 보기 ›</small></button>
+   <div class="s" style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><button class="s btn-stamp hit">전망 둘러보기</button><button class="s btn-paper hit">완등 기록 카드</button></div></div>`;
+ }else{
+  const mapH=port?360:two?248:300;
+  const seal=port?92:two?78:96;
+  const svg=`<svg viewBox="0 0 320 300"><path d="M40 270 C70 240 60 210 95 190 S150 170 160 140 S210 120 220 90 S260 60 280 30" fill="none" stroke="var(--stamp)" stroke-width="5" stroke-linecap="round"/>${[[72,228],[116,182],[160,140],[208,108],[250,64]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="5" fill="var(--stamp)" stroke="var(--paper)" stroke-width="2"/>`).join('')}<circle cx="280" cy="30" r="8" fill="var(--paper)" stroke="var(--stamp)" stroke-width="3"/><text x="270" y="56" font-size="12" font-weight="800" fill="var(--ink)" text-anchor="end">연주대 632m</text></svg>`;
+  const mapbox=`<div class="s mapbox" style="height:${mapH}px">${svg}<div class="s" style="position:absolute;right:${port?14:12}px;bottom:${port?14:12}px;mix-blend-mode:${time==='night'?'normal':'multiply'}">${sealSVG(seal,{count:2})}</div></div>`;
+  const side=`<div class="s cps"><span class="got">제1광장</span><span class="got">아카시아동산</span><span class="got">제4쉼터</span><span class="got">연주샘</span><span class="got">제3깔딱고개</span></div>
+   <p class="s" style="margin-top:8px;font-size:12.5px">완등 <b style="color:var(--accent)">2회</b> · 처음 2026.11.06 · 가장 빠른 2:12:40</p>
+   <div class="s lbl">출발 위치</div><div class="s" style="display:flex;gap:8px;flex-wrap:wrap"><button class="s btn-paper hit">입구 일주문에서 시작</button><button class="s btn-paper hit">545m 구간에서 시작</button><button class="s btn-paper hit" style="color:var(--accent)">🎛 자유 설정에서 더 고르기</button></div>`;
+  box.innerHTML=`<div class="s hd"><h2 class="s">우리의 산길<small>관악산공원 입구 → 연주대 · 등산 완료</small></h2>${k('M')}${close}</div>
+   ${two?`<div class="s" style="display:grid;grid-template-columns:300px 1fr;gap:16px"><div class="s">${mapbox}</div><div class="s">${side}</div></div>`:`${mapbox}${side}`}`;
+ }
+ hud.append(box);
+ // .dlg 안 position:static 예외(.s) 밖에서 쓰는 relative
+ box.querySelectorAll('.mapbox').forEach(m=>m.style.position='relative');
+ return wrap;
+}
+
+function sceneName(s){const o=[...document.querySelectorAll('#c-scene option')].find(o=>o.value===s);return o?o.textContent:s;}
+function sealBoard(){
+ const sb=document.getElementById('sealboard');
+ const pap=(time,inner)=>`<div class="hud pk" data-time="${time}" style="position:static"><div class="pap">${inner}</div></div>`;
+ const fig=(svg,cap)=>`<figure>${svg}<span>${cap}</span></figure>`;
+ sb.innerHTML=`<div class="sb-row">
+  <div class="sb"><h3>① 완등 도장 — 낮 · 노을 · 밤 종이</h3><div style="display:flex;gap:12px">${['day','dusk','night'].map(t=>pap(t,fig(sealSVG(150),TIME_NAME[t]+' · '+({day:'#b9472f',dusk:'#a8402a',night:'#f3a48c'})[t]))).join('')}</div>
+   <p>이중 원(바깥 5 · 안쪽 1.6) · 위 원호 산 이름 · 가운데 산 모양 + '등산 완료' · 아래 원호 처음 완등한 날짜 · −12° 기울임. 색은 종이 위 강조색 <code>--accent</code>(밤은 밝은 주홍)이고, 잉크 번짐은 SVG 노이즈로 가장자리만 살짝 깎습니다.</p></div>
+  <div class="sb"><h3>② 크기 · 자리</h3>${pap('day',`${fig(sealSVG(104,{count:2}),'산 카드 PC 104')}${fig(sealSVG(84),'카드 세로 84')}${fig(sealSVG(70),'카드 가로 70')}${fig(sealSVG(92,{count:2}),'지도 92 (×2)')}${fig(sealSVG(40,{ink:false}),'설정 항목 40')}${fig(slotHTML(84),'완등 전 자리')}`)}
+   <p>40px 이하는 글자가 뭉개지므로 잉크 효과 없이 그립니다. 두 번째 완등부터 오른쪽 아래에 '×n' 동그라미를 붙입니다. 날짜는 처음 완등한 날로 고정합니다.</p></div></div>
+ <div class="sb-row"><div class="sb"><h3>③ 찍히는 순간 (정상 도착 대화창 · 1.2초)</h3>${pap('day',[['0 ms','위에서 1.7배 · 투명'],['420 ms','종이에 닿음 · 0.96배'],['660 ms','튕김 1.03배'],['1200 ms','자리 잡음 · −12°']].map(([t,c],i)=>fig(`<div style="opacity:${i?1:.25};transform:scale(${[1.4,.96,1.03,1][i]});filter:${i===1?'blur(.4px)':'none'}">${sealSVG(110)}</div>`,`${t} · ${c}`)).join(''))}
+   <p>닿는 순간(420ms)에 '쿵' 효과음 한 번과 휴대폰 진동 15ms. 움직임 줄이기 설정이면 바로 마지막 모습으로 보입니다. 산 고르기 카드에는 다음에 처음 열 때 한 번만 같은 동작으로 찍힙니다.</p></div></div>`;
+}
+
+// ── 보드 그리기 ──
+// ?wide=1 이면 PC 틀을 1920×1080으로 키운다(AGENTS.md 확인 기준)
+if(Q.get('wide')){DEVS.pc={w:1920,h:1080,name:'PC 1920×1080'};document.head.insertAdjacentHTML('beforeend','<style>.dev.pc{width:1920px!important;height:1080px!important}</style>');}
+function draw(){
+ const dev=Q.get('dev')||document.getElementById('c-dev').value,time=Q.get('time')||document.getElementById('c-time').value,
+  scene=Q.get('scene')||document.getElementById('c-scene').value;
+ const f=document.getElementById('frames');f.innerHTML='';SEAL_N=0;
+ (dev==='all'?['land','port','pc']:[dev]).forEach(d=>f.append(scene.startsWith('pick')?pickScreen(d,time,scene):scene.startsWith('game')?gameScreen(d,time,scene):dlgScreen(d,time,scene)));
+}
+if(Q.get('solo')){document.body.classList.add('solo');document.getElementById('ctl').style.display='none';document.querySelectorAll('.board-h,.board-lead').forEach(e=>e.remove());if(Q.get('scene')!=='seal')document.getElementById('sealboard').remove();}
+if(Q.get('safe')==='0'||(Q.get('solo')&&Q.get('safe')!=='1'))document.body.classList.remove('show-safe');else document.body.classList.add('show-safe');
+if(Q.get('hit')==='1')document.body.classList.add('show-hit');
+const bind=(id,fn)=>{const e=document.getElementById(id);if(e)e.addEventListener('change',fn);};
+['c-dev','c-time','c-scene'].forEach(id=>bind(id,draw));
+bind('c-safe',e=>document.body.classList.toggle('show-safe',e.target.checked));
+bind('c-hit',e=>document.body.classList.toggle('show-hit',e.target.checked));
+if(Q.get('scene')==='seal'){document.getElementById('frames').remove();}else draw();
+if(document.getElementById('sealboard'))sealBoard();
+</script>
+</body></html>
