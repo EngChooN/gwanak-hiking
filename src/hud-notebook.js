@@ -8,7 +8,7 @@ import {checkpoints} from './route.js';
 import {GATE_S} from './plaza.js';
 import {COURSE_LENGTH} from './movement.js';
 
-export const SHEETS=Object.freeze(['backpack','rest','settings','jump']);
+export const SHEETS=Object.freeze(['backpack','rest','settings','jump','free']);
 // 해 높이(도) → HUD 색. 노을은 해가 지평선 근처(−4°~8°)일 때다. 값을 모르면 낮.
 export function timeOfDay(elevation){
  if(!Number.isFinite(elevation))return 'day';
@@ -80,7 +80,7 @@ export function installNotebookHud(doc=document,win=window){
  function setSheet(id){
   openSheet=SHEETS.includes(id)?id:null;
   for(const s of all('.nb-sheet'))s.hidden=s.dataset.sheet!==openSheet;
-  for(const t of tabs.querySelectorAll('[data-tab]')){const on=t.dataset.tab===openSheet||(openSheet==='jump'&&t.dataset.tab==='settings');if(t.hasAttribute('aria-expanded'))t.setAttribute('aria-expanded',String(on));t.classList.toggle('on',on);}
+  for(const t of tabs.querySelectorAll('[data-tab]')){const on=t.dataset.tab===openSheet||((openSheet==='jump'||openSheet==='free')&&t.dataset.tab==='settings');if(t.hasAttribute('aria-expanded'))t.setAttribute('aria-expanded',String(on));t.classList.toggle('on',on);}
   body.classList.toggle('nb-sheet-open',!!openSheet);
   if(openSheet)syncSheets();
  }

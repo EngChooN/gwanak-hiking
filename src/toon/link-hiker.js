@@ -75,7 +75,7 @@ function tube(a,b,r0,r1,{radial=14,rings=3}={}){
 }
 const noodle=(pts,r)=>smoothGeo(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),16,r,8,false));
 // 타원체(가운데 c, 반지름 r) 표면 위 yaw·pitch 자리. 붙일 형상의 +Z가 겉면 법선을 보고 위쪽이 화면 위를 본다(시안 surf와 같다).
-function surfaceFrame(c,r,yaw,pitch,{lift=0,roll=0}={}){
+export function surfaceFrame(c,r,yaw,pitch,{lift=0,roll=0}={}){
  const d=new Vector3(Math.sin(yaw)*Math.cos(pitch),Math.sin(pitch),Math.cos(yaw)*Math.cos(pitch));
  const p=c.clone().add(d.clone().multiply(r)),n=new Vector3(d.x/r.x,d.y/r.y,d.z/r.z).normalize();
  const q=new Quaternion().setFromRotationMatrix(new THREE.Matrix4().lookAt(new Vector3(),n.clone().negate(),new Vector3(0,1,0)));
@@ -103,7 +103,7 @@ export function buildToonHikerGltf(base){
  const boneIndex=n=>{const i=bones.indexOf(B(n));if(i<0)throw new Error(`뼈 없음: ${n}`);return i;};
 
  // 2) 몸(바람막이·목도리·배낭·팔·장갑·바지)·머리(얼굴·머리카락·벙거지)·등산화. 바인드 자세 = 지금 뼈 자세(앞 +Z, 왼쪽 +X). 좌표는 시안과 같다.
- const body=new Parts(boneIndex),head=new Parts(boneIndex),boots=new Parts(boneIndex),C=PALETTE,v=(x=0,y=0,z=0)=>new Vector3(x,y,z);
+ const body=new Parts(boneIndex),head=new Parts(boneIndex),boots=new Parts(boneIndex),hat=new Parts(boneIndex),pack=new Parts(boneIndex),C=PALETTE,v=(x=0,y=0,z=0)=>new Vector3(x,y,z);
  const spineChain=['Hips','Spine','Spine1','Spine2'].map(n=>[n,W(n).y]);
  // 높이에 따라 골반~가슴 뼈 사이를 선형으로 나눈다(숙일 때 몸통이 부드럽게 휜다).
  const trunk=y=>{
@@ -118,9 +118,10 @@ export function buildToonHikerGltf(base){
  for(const s of [-1,1])body.add(noodle([v(s*.09,.5,.11),v(s*.1,.4,.15),v(s*.1,.27,.14)],.016),C.strap,V=>trunk(V.y),.5);
  // 큰 배낭(등)과 앞주머니, 위에 얹은 돗자리
  {const packW=V=>{const t=smooth(.3,.45,V.y);return [['Spine1',1-t],['Spine2',t]];};
-  body.add(ellipsoid(v(0,.38,-.2),v(.17,.19,.11),{w:20,h:16,shape:boxy(.55,.7)}),C.pack,packW);
-  body.add(ellipsoid(v(0,.31,-.31),v(.11,.08,.04),{w:14,h:10,shape:boxy(.6,.7)}),C.packDark,packW);
-  body.add(smoothGeo(new THREE.CapsuleGeometry(.056,.26,6,16).rotateZ(Math.PI/2).translate(0,.595,-.19)),C.mat,on('Spine2'));}
+  // 배낭은 따로 'ToonHiker_Pack' 메시(즐길거리 벤치에서 내려놓을 때 숨기고 같은 모양 소품을 옆에 둔다)
+  pack.add(ellipsoid(v(0,.38,-.2),v(.17,.19,.11),{w:20,h:16,shape:boxy(.55,.7)}),C.pack,packW);
+  pack.add(ellipsoid(v(0,.31,-.31),v(.11,.08,.04),{w:14,h:10,shape:boxy(.6,.7)}),C.packDark,packW);
+  pack.add(smoothGeo(new THREE.CapsuleGeometry(.056,.26,6,16).rotateZ(Math.PI/2).translate(0,.595,-.19)),C.mat,on('Spine2'));}
  // 팔: 바람막이 소매(어깨 공·위팔·팔꿈치·아래팔) → 빨간 벙어리장갑(엄지 따로)
  for(const side of ['Left','Right']){
   const arm=W(side+'Arm'),fore=W(side+'ForeArm'),hand=W(side+'Hand'),mid=W(side+'HandMiddle1'),thumb=W(side+'HandThumb1');
@@ -164,32 +165,38 @@ export function buildToonHikerGltf(base){
   head.add(place(ellipsoid(v(s.x*.32,-s.y*.4,s.z*.75),v(s.x*.17,s.y*.14,s.z*.5),{w:8,h:6}),f),C.white,H,0);}
  for(const s of [-1,1])head.add(place(ellipsoid(v(),v(.042,.022,.01),{w:16,h:12}),surfaceFrame(hc,hr,s*.56,-.33,{lift:-.003})),C.blush,H,0);
  const mouthFrame=surfaceFrame(hc,hr,0,-.36,{lift:.002});head.add(place(smile(.017,.0045),mouthFrame),C.mouth,H,0);
- // 벙거지: 머리 위(머리 뼈 기준 시안 자리)에 뒤로 살짝 젖혀 쓴다. 띠는 빨강.
+ // 벙거지: 머리 위(머리 뼈 기준 시안 자리)에 뒤로 살짝 젖혀 쓴다. 띠는 빨강. 따로 'ToonHiker_Hat' 메시(거꾸리·에어건에서 모자가 떨어지고 날아간다).
  {const hq=new Quaternion().setFromAxisAngle(v(1,0,0),-.1),ho=v(0,hc.y+.14,hc.z),put=g=>{g.applyQuaternion(hq);g.translate(ho.x,ho.y,ho.z);return g;};
-  head.add(put(smoothGeo(new THREE.CylinderGeometry(.2,.236,.13,32,1,true).translate(0,.065,0))),C.hat,H);
-  head.add(put(ellipsoid(v(0,.13,0),v(.2,.04,.2),{w:28,h:12})),C.hat,H);
-  head.add(put(new THREE.CylinderGeometry(.239,.239,.035,32,1,true).translate(0,.025,0)),C.band,H,.6);
+  hat.add(put(smoothGeo(new THREE.CylinderGeometry(.2,.236,.13,32,1,true).translate(0,.065,0))),C.hat,H);
+  hat.add(put(ellipsoid(v(0,.13,0),v(.2,.04,.2),{w:28,h:12})),C.hat,H);
+  hat.add(put(new THREE.CylinderGeometry(.239,.239,.035,32,1,true).translate(0,.025,0)),C.band,H,.6);
   const g=new THREE.CylinderGeometry(.34,.34,.022,40,1,false),p=g.attributes.position;for(let i=0;i<p.count;i++){const r=Math.hypot(p.getX(i),p.getZ(i));if(r>.2)p.setY(i,p.getY(i)-(r-.2)*.38);}
-  head.add(put(smoothGeo(g)),C.hat,H);}
+  hat.add(put(smoothGeo(g)),C.hat,H);}
 
  const skeleton=new THREE.Skeleton(bones);
  const material=(name)=>new THREE.MeshStandardMaterial({name,vertexColors:true,roughness:.85,metalness:0});
  const bodyMesh=new THREE.SkinnedMesh(body.geometry(),material('toon_hiker_body'));bodyMesh.name='ToonHiker_Body';
  const headMesh=new THREE.SkinnedMesh(head.geometry(),material('toon_hiker_head'));headMesh.name='ToonHiker_Head';headMesh.userData.noReceiveShadow=true;
  const bootMesh=new THREE.SkinnedMesh(boots.geometry(),material('toon_hiker_boots'));bootMesh.name='ToonHiker_boots';
- for(const m of [bodyMesh,headMesh,bootMesh]){scene.add(m);m.bind(skeleton,new THREE.Matrix4());}
+ const hatMesh=new THREE.SkinnedMesh(hat.geometry(),material('toon_hiker_hat'));hatMesh.name='ToonHiker_Hat';hatMesh.userData.noReceiveShadow=true;
+ const packMesh=new THREE.SkinnedMesh(pack.geometry(),material('toon_hiker_pack'));packMesh.name='ToonHiker_Pack';
+ for(const m of [bodyMesh,headMesh,bootMesh,hatMesh,packMesh]){scene.add(m);m.bind(skeleton,new THREE.Matrix4());}
  // 외곽선: 카툰 화면의 낮 외곽선은 꺼져 있어(palette outline.strength.day=0) 캐릭터만 뒤집은 껍질로 얇은 선을 긋는다.
  // 같은 형상·뼈대를 쓰고 바인드 공간 법선 방향으로 밀어낸 뒷면만 그린다. MeshToonMaterial이라 toonify가 바꾸지 않는다.
  const line=new THREE.MeshToonMaterial({name:'toon_hiker_outline',color:LINE_COLOR,side:THREE.BackSide});
  line.onBeforeCompile=sh=>{sh.uniforms.lineWidth={value:LINE_WIDTH};sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nattribute float outline;uniform float lineWidth;').replace('#include <begin_vertex>','#include <begin_vertex>\ntransformed+=normalize(normal)*lineWidth*outline;');};
  line.customProgramCacheKey=()=>'toon-hiker-outline-v1';
- for(const [m,name] of [[bodyMesh,'ToonHiker_lineA'],[headMesh,'ToonHiker_lineH'],[bootMesh,'ToonHiker_lineB']]){const o=new THREE.SkinnedMesh(m.geometry,line);o.name=name;o.userData.outline=true;scene.add(o);o.bind(skeleton,new THREE.Matrix4());}
+ for(const [m,name] of [[bodyMesh,'ToonHiker_lineA'],[headMesh,'ToonHiker_lineH'],[bootMesh,'ToonHiker_lineB'],[hatMesh,'ToonHiker_lineHat'],[packMesh,'ToonHiker_linePack']]){const o=new THREE.SkinnedMesh(m.geometry,line);o.name=name;o.userData.outline=true;o.userData.outlineOf=m.name;scene.add(o);o.bind(skeleton,new THREE.Matrix4());}
 
  // 3) 동작: 서기·걷기·뛰기·계단·바위를 모두 여기서 만든다(원본 사람 동작은 다리가 짧은 몸에 맞지 않는다).
  const pose=createPoser({bones,restQ,restP,B,W,scene});
  const geometry={heel:-.04,ball:.07,ankle:W('LeftFoot').y};
  const clips=[lookClip(pose,geometry),...['Walk','Run','Stairs','Rock'].map(n=>gaitClip(n,pose,GAIT_SHAPE[n.toLowerCase()],geometry))];
  pose.reset();
+ // 바인드 자세(뼈 로컬 회전·위치). 즐길거리 동작(src/toon/hiker-acts.js)이 이 자세에서 출발해 몸짓을 만든다.
+ scene.userData.restPose=Object.fromEntries(bones.map(b=>[b.name,{q:b.quaternion.toArray(),p:b.position.toArray()}]));
+ // 머리 뼈 기준 얼굴 자리(눈 둘·입·볼, 바인드 모델 공간 m). 눈 감기·볼 빨개짐·입가 초콜릿을 붙인다.
+ scene.userData.face={hc:hc.toArray(),hr:hr.toArray(),eyes:eyeFrames.map(f=>({p:f.p.toArray(),q:f.q.toArray()})),eye:EYE.size.toArray(),mouth:{p:mouthFrame.p.toArray(),q:mouthFrame.q.toArray()}};
  // 4) 등산객 코드가 쓰는 치수(머리 뼈 기준 눈·입, 가슴 높이, 앉은 자세, 쌍안경·휴대폰 자리)
  const headBone=B('Head');scene.updateMatrixWorld(true);
  const eyeMid=eyeFrames[0].p.clone().add(eyeFrames[1].p).multiplyScalar(.5);

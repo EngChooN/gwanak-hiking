@@ -1,0 +1,292 @@
+{
+ "off": {
+  "checks": [
+   {
+    "what": "꺼짐: 즐길거리 소리 재생 0건(효과음 모듈)",
+    "pass": true,
+    "info": {
+     "played": 0,
+     "muted": 2,
+     "context": "입력 대기"
+    }
+   },
+   {
+    "what": "꺼짐: 페이지 전체 재생 호출 0건(버퍼·합성 모두)",
+    "pass": true,
+    "info": {
+     "buffer": 0,
+     "osc": 0
+    }
+   },
+   {
+    "what": "꺼짐: 즐길거리 소리 파일 요청 0건",
+    "pass": true,
+    "info": ""
+   },
+   {
+    "what": "꺼짐: 라디오 0",
+    "pass": true,
+    "info": {
+     "radio": 0,
+     "dist": 6.2
+    }
+   },
+   {
+    "what": "페이지 오류 0",
+    "pass": true,
+    "info": ""
+   }
+  ],
+  "squirrel": false,
+  "squirrel2": true,
+  "magpie": true,
+  "snapshot": {
+   "enabled": false,
+   "on": null,
+   "context": "입력 대기",
+   "busGain": null,
+   "playing": [],
+   "radio": 0,
+   "loaded": [],
+   "played": 0,
+   "muted": 2,
+   "locked": 0,
+   "late": 0,
+   "errors": [],
+   "byName": {}
+  },
+  "watch": {
+   "buffer": 0,
+   "osc": 0,
+   "trailFetch": []
+  },
+  "errors": []
+ },
+ "on": {
+  "checks": [
+   {
+    "what": "입력 전: 즐길거리 소리 없음(AudioContext는 사용자 입력 때만)",
+    "pass": true,
+    "info": {
+     "played": 0,
+     "context": "입력 대기",
+     "buffer": 0
+    }
+   },
+   {
+    "what": "켜짐: 효과음 버스가 마스터에 붙고 게인 1",
+    "pass": true,
+    "info": {
+     "busGain": 1,
+     "context": "running"
+    }
+   },
+   {
+    "what": "켜짐: crunch 파일 재생",
+    "pass": true,
+    "info": {
+     "n": 1
+    }
+   },
+   {
+    "what": "켜짐: airgun 파일 재생",
+    "pass": true,
+    "info": {
+     "n": 1
+    }
+   },
+   {
+    "what": "켜짐: meow 파일 재생",
+    "pass": true,
+    "info": {
+     "n": 1
+    }
+   },
+   {
+    "what": "켜짐: pant 파일 재생",
+    "pass": true,
+    "info": {
+     "n": 2
+    }
+   },
+   {
+    "what": "켜짐: scream 파일 재생",
+    "pass": true,
+    "info": {
+     "n": 1
+    }
+   },
+   {
+    "what": "켜짐: roll 파일 재생",
+    "pass": true,
+    "info": {
+     "n": 2
+    }
+   },
+   {
+    "what": "켜짐: zap 파일 재생",
+    "pass": true,
+    "info": {
+     "n": 6
+    }
+   },
+   {
+    "what": "켜짐: squeak 파일 재생",
+    "pass": true,
+    "info": {
+     "n": 1
+    }
+   },
+   {
+    "what": "켜짐: caw 파일 재생",
+    "pass": true,
+    "info": {
+     "n": 3
+    }
+   },
+   {
+    "what": "켜짐: whoo 파일 재생",
+    "pass": true,
+    "info": {
+     "n": 1
+    }
+   },
+   {
+    "what": "켜짐: radio 파일 재생",
+    "pass": true,
+    "info": {
+     "n": 1
+    }
+   },
+   {
+    "what": "켜짐: 소리 파일 11개 받음(라디오 포함)",
+    "pass": true,
+    "info": "airgun-hiss.wav,squirrel-squeak.wav,cat-meow.wav,magpie-caw.wav,choco-crunch.wav,soul-whoo.wav,pant-huff.wav,cramp-zap.wav,cramp-scream.wav,cramp-roll.wav,radio-ppongjjak-loop.wav"
+   },
+   {
+    "what": "켜짐: 오류 없음",
+    "pass": true,
+    "info": ""
+   },
+   {
+    "what": "쥐: 뒹굴기 소리가 나다가 발끝 당기기 뒤 멈춤",
+    "pass": true,
+    "info": {
+     "mid": 2,
+     "after": 2,
+     "playing": []
+    }
+   },
+   {
+    "what": "쥐: 비명 1회",
+    "pass": true,
+    "info": {
+     "scream": 1
+    }
+   },
+   {
+    "what": "라디오: 40m 앞에서는 0, 산스장 옆에서는 들림",
+    "pass": true,
+    "info": {
+     "far": 0,
+     "near": 0.0857,
+     "dist": 6.2
+    }
+   },
+   {
+    "what": "벤치: 영혼 후우",
+    "pass": true,
+    "info": {
+     "whoo": 1
+    }
+   },
+   {
+    "what": "켜짐 → '소리 꺼짐' 누른 뒤: 버스 0, 새 재생 0건",
+    "pass": true,
+    "info": {
+     "enabled": [
+      false,
+      false
+     ],
+     "busGain": [
+      0,
+      0
+     ],
+     "ctx": "running",
+     "played": [
+      1,
+      1
+     ],
+     "buffer": [
+      6,
+      6
+     ]
+    }
+   },
+   {
+    "what": "페이지 오류 0",
+    "pass": true,
+    "info": ""
+   }
+  ],
+  "squirrel": false,
+  "squirrel2": true,
+  "magpie": true,
+  "snapshot": {
+   "enabled": true,
+   "on": true,
+   "context": "running",
+   "busGain": 1,
+   "playing": [],
+   "radio": 0,
+   "loaded": [
+    "zap",
+    "crunch",
+    "squeak",
+    "pant",
+    "scream",
+    "caw",
+    "meow",
+    "airgun",
+    "whoo",
+    "roll"
+   ],
+   "played": 20,
+   "muted": 0,
+   "locked": 1,
+   "late": 0,
+   "errors": [],
+   "byName": {
+    "crunch": 1,
+    "caw": 3,
+    "airgun": 1,
+    "meow": 1,
+    "pant": 2,
+    "scream": 1,
+    "zap": 6,
+    "roll": 2,
+    "radio": 1,
+    "squeak": 1,
+    "whoo": 1
+   }
+  },
+  "watch": {
+   "buffer": 47,
+   "osc": 3,
+   "trailFetch": [
+    "airgun-hiss.wav",
+    "squirrel-squeak.wav",
+    "cat-meow.wav",
+    "magpie-caw.wav",
+    "choco-crunch.wav",
+    "soul-whoo.wav",
+    "pant-huff.wav",
+    "cramp-zap.wav",
+    "cramp-scream.wav",
+    "cramp-roll.wav",
+    "radio-ppongjjak-loop.wav"
+   ]
+  },
+  "errors": []
+ }
+}

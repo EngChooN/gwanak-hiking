@@ -1,0 +1,103 @@
+/* 즐길거리 HUD(src/trail-hud.js)와 말풍선(#trail-bubble, src/trail-world.js). 디자인: 산디자인 2026-11-06, 시안 design/즐길거리-HUD-시안.html
+   등산 수첩 종이·도장 색(hud-notebook.css 토큰)을 그대로 쓰고, 낮·노을·밤은 <html data-hud-time>을 따라 바뀐다.
+   층: 버튼은 HUD(z 6), 말풍선 20, 알림 32~33. 휴대폰 버튼은 모두 44px 이상·안전 영역 안. */
+
+/* ───────── 0. 즐길거리 전용 토큰(형광펜 노랑·말풍선) ───────── */
+:root{--hl:#ffe066;--hl-ink:#4a3618;--hl-edge:#d2a92a;--bub:#fffaf0;--bub-ink:#3a2a14;--bub-line:#4a3618;--bub-shadow:2px 3px 0 rgba(74,54,24,.35)}
+:root[data-hud-time=dusk]{--hl:#ffd45a;--hl-ink:#45301a;--hl-edge:#c48d22;--bub:#fff3dc;--bub-ink:#3b2814;--bub-line:#45301a;--bub-shadow:2px 3px 0 rgba(80,35,12,.38)}
+:root[data-hud-time=night]{--hl:#e5b453;--hl-ink:#2a1e10;--hl-edge:#8a6420;--bub:#43372a;--bub-ink:#f6ead0;--bub-line:#c9a46a;--bub-shadow:2px 3px 0 rgba(0,0,0,.55)}
+
+/* ───────── 1. 간식 줄: 진행 카드 스테미너 밑 ───────── */
+.nb-snack{display:flex;align-items:center;gap:6px;margin-top:7px;font-size:12px;font-weight:800;color:var(--ink)}
+/* 개수 칩: 수첩 칸처럼 종이2 + 안쪽 선. 숫자는 고정폭 */
+.nb-snack-chip{display:inline-flex;align-items:center;gap:3px;height:26px;padding:0 9px;border-radius:13px;background:var(--paper2);box-shadow:inset 0 0 0 1.5px var(--rule);white-space:nowrap;font-variant-numeric:tabular-nums}
+#choco-count[data-n="0"]{color:var(--ink2);opacity:.75}
+/* ⚡ 빨라짐: 형광펜으로 칠한 꼬리표. 남은 시간이 보이도록 살짝만 숨쉰다 */
+.nb-snack-chip.boost{margin-left:auto;background:var(--hl);color:var(--hl-ink);box-shadow:inset 0 0 0 1.5px var(--hl-edge),1px 2px 0 var(--edge);transform:rotate(-2deg);animation:tb-pulse 1.2s ease-in-out infinite}
+/* 먹기: 작은 빨간 도장 */
+.nb-snack-eat{margin-left:auto;display:inline-flex;align-items:center;justify-content:center;min-height:32px;min-width:76px;padding:0 12px;border-radius:16px;border:2px dashed var(--stamp-dash);background:var(--stamp);color:#fff;font:inherit;font-weight:900;cursor:pointer;box-shadow:0 2px 0 var(--stamp-d);touch-action:manipulation;pointer-events:auto}
+.nb-snack-eat:active{transform:translateY(1px);box-shadow:none}
+.nb-snack-eat.off{background:var(--track);color:var(--ink2);border-color:var(--rule);box-shadow:none;cursor:default}
+@media (hover:none),(pointer:coarse){.nb-snack-eat{min-height:44px;min-width:88px;border-radius:22px}.nb-snack-chip{height:30px;padding:0 10px}}
+@keyframes tb-pulse{50%{transform:rotate(-2deg) scale(1.05)}}
+
+/* ───────── 2. 즐길거리 줄: 화면 아래 가운데(PC), 휴대폰 가로는 도장 왼쪽, 세로는 도장 둘레 칩 위 ───────── */
+#app #trail-bar{left:50%;transform:translateX(-50%);bottom:calc(var(--ui-bottom) + 40px);display:flex;flex-wrap:wrap;justify-content:center;gap:8px;max-width:min(640px,calc(100vw - 2*(var(--m) + var(--stamp-sz) + var(--R) + var(--chip))));pointer-events:auto}
+#app #trail-bar[hidden],.nb-snack-eat[hidden],#app #trail-bar.tb-gadget,.nb-snack.tb-gadget .nb-snack-eat{display:none!important}
+/* 기구 버튼: 수첩에서 뜯어 낸 종이 쪽지(왼쪽 핀 + 아이콘 동그라미) */
+.tb-btn{position:relative;display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;align-items:center;column-gap:8px;min-height:52px;min-width:120px;padding:6px 14px 6px 10px;border-radius:12px;border:0;background:var(--paper);color:var(--ink);font:inherit;text-align:left;box-shadow:var(--lift),var(--soft),var(--hi);cursor:pointer;touch-action:manipulation;overflow:hidden;-webkit-user-select:none;user-select:none;animation:tb-in .22s cubic-bezier(.2,1.4,.4,1) both}
+.tb-btn em{grid-row:1/3;display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--paper2);box-shadow:1px 2px 0 var(--edge);font-style:normal;font-size:20px;line-height:1}
+.tb-btn b{font-size:15px;font-weight:900;white-space:nowrap;letter-spacing:-.01em}
+.tb-btn small{font-size:11px;font-weight:700;color:var(--ink2);white-space:nowrap}
+.tb-btn:active{transform:translateY(2px);box-shadow:var(--soft),var(--hi)}
+.tb-btn:nth-child(2n){animation-delay:.04s}.tb-btn:nth-child(3n){animation-delay:.08s}
+/* 들르기: 빨간 도장 + 아래 형광펜 띠가 4초 동안 줄어든다(남은 시간). 막대 밑에 종이색 홈을 깔아 줄어드는 게 보이게 */
+.tb-offer{display:flex;flex-direction:column;align-items:flex-start;gap:1px;min-width:220px;min-height:60px;padding:8px 18px 18px;background:var(--stamp);color:#fff;border:3px dashed var(--stamp-dash);box-shadow:0 4px 0 var(--stamp-d),0 8px 16px rgba(60,15,5,.35);transform:rotate(-1deg);animation:tb-in .25s cubic-bezier(.2,1.4,.4,1) both}
+.tb-offer b{font-size:17px}.tb-offer small{color:#fff;opacity:.88}
+.tb-offer::after{content:"";position:absolute;left:0;right:0;bottom:0;height:6px;background:var(--stamp-d)}
+.tb-offer:active{transform:rotate(-1deg) translateY(2px);box-shadow:0 2px 0 var(--stamp-d),0 5px 10px rgba(60,15,5,.35)}
+.tb-time{position:absolute;left:0;bottom:0;z-index:1;height:6px;width:100%;background:var(--hl);transform-origin:left;animation:tb-time var(--sec,4s) linear forwards}
+@keyframes tb-time{0%{transform:scaleX(1)}75%{background:var(--hl)}100%{transform:scaleX(0);background:#fff}}
+@keyframes tb-in{from{transform:translateY(20px) scale(.9);opacity:0}}
+/* 역기 연타: 크게, '득근 게이지' = 수첩 도장 칸 10개. 찬 칸은 형광펜, 10칸째는 빨간 '득' */
+.tb-lift{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:240px;min-height:80px;padding:8px 16px 10px;background:var(--stamp);color:#fff;border:3px dashed var(--stamp-dash);box-shadow:0 4px 0 var(--stamp-d),0 8px 16px rgba(60,15,5,.35)}
+.tb-lift em{display:none}.tb-lift b::before{content:"💪 "}
+.tb-lift b{font-size:17px}.tb-lift b span{font-variant-numeric:tabular-nums}
+.tb-gauge{display:flex;gap:4px;padding:3px 6px;border-radius:9px;background:var(--stamp-d)}
+.tb-gauge i{width:15px;height:15px;border-radius:50%;box-shadow:inset 0 0 0 1.5px #ffffff66;transition:background .08s,transform .08s}
+.tb-gauge i.on{background:var(--hl);box-shadow:none;transform:scale(1.08)}
+.tb-gauge i:last-child{position:relative}
+.tb-gauge i:last-child::after{content:"득";position:absolute;inset:0;display:grid;place-items:center;font:900 9px/1 var(--nb-font);color:#ffffffaa}
+.tb-gauge i:last-child.on{background:#fff}.tb-gauge i:last-child.on::after{color:var(--stamp)}
+.tb-lift.hit{animation:tb-hit .12s ease-out}
+.tb-lift:active{transform:translateY(2px);box-shadow:0 2px 0 var(--stamp-d)}
+@keyframes tb-hit{50%{transform:scale(.95)}}
+
+/* ───────── 3. 휴대폰 가로: 도장 둘레 칩(달리기 180°)의 왼쪽, 출처 줄 위 ───────── */
+@media (orientation:landscape) and (max-height:540px){
+ #app #trail-bar{left:calc(var(--sl) + 50% - 70px);bottom:calc(var(--sb) + 36px);max-width:400px}
+ .tb-btn{min-height:46px;min-width:96px;padding:4px 10px 4px 8px;column-gap:6px}.tb-btn em{width:30px;height:30px;font-size:17px}.tb-btn b{font-size:13px}.tb-btn small{font-size:10px}
+ .tb-offer{min-width:200px;min-height:54px;padding:6px 14px 16px}.tb-offer b{font-size:15px}
+ .tb-lift{min-height:66px;min-width:220px}.tb-gauge i{width:13px;height:13px}
+ .nb-snack{margin-top:5px}
+ .nb-foot{display:none!important} /* 간식 줄 자리를 내준다(노면·방위는 지도 탭에 있음) */
+}
+/* ───────── 4. 휴대폰 세로: 도장 둘레 칩 위, 좌우 가득. 상황 꼬리표가 떠 있으면 그 위로 ───────── */
+@media (orientation:portrait){
+ #app #trail-bar{left:calc(var(--sl) + 14px);right:calc(var(--sr) + 14px);transform:none;max-width:none;bottom:calc(var(--ui-bottom) + var(--m) + var(--stamp-sz)/2 + var(--R) + var(--chip)/2 + 10px)}
+ #app:has(.nb-ctx:not([hidden])) #trail-bar{bottom:calc(var(--ui-bottom) + var(--m) + var(--stamp-sz)/2 + var(--R) + var(--chip)/2 + 150px)}
+ .tb-btn{min-height:50px;min-width:0;flex:1 1 40%;padding:4px 10px 4px 8px}.tb-btn em{width:30px;height:30px;font-size:17px}.tb-btn b{font-size:14px}
+ .tb-offer,.tb-lift{flex:1 1 100%}
+ .tb-offer{padding:6px 14px 16px}
+ .nb-snack{margin-top:5px}
+}
+/* ⑥ 쥐: 발끝 당기기(급함 = 형광펜 노랑 + 굵은 테), 스테미너 칸 '쥐 0:02' */
+.tb-cramp{min-width:220px;background:var(--hl);color:var(--hl-ink);box-shadow:0 0 0 3px var(--hl-edge),var(--lift)}
+.tb-cramp em{background:#fff8;animation:tb-wiggle .8s ease-in-out infinite} /* 버튼은 가만히(누르기 쉽게), 발 그림만 들썩 */
+.tb-cramp small{color:var(--hl-ink);opacity:.8}
+.nb-cramp{flex:none;padding:1px 7px;border-radius:9px;background:var(--hl);color:var(--hl-ink);font-weight:900;white-space:nowrap;font-variant-numeric:tabular-nums}
+@keyframes tb-wiggle{50%{transform:rotate(-12deg) scale(1.08)}}
+@media (orientation:portrait){.tb-cramp{flex:1 1 100%}}
+
+/* ───────── 5. 말풍선(#trail-bubble) ─────────
+   trail-world.js가 넣는 기본 스타일 위에 수첩 톤을 덮는다(선택자를 한 단계 세게: html body #trail-bubble).
+   종류(className): ''   = 동동이 말 — 수첩 종이 + 잉크 테두리 + 아래 꼬리
+                     sfx  = 소리 글자 — 형광펜 노랑 띠, 기울임, 꼬리 없음, 굵게
+                     tag  = 이름표·속마음(…무거워) — 종이2 + 핀, 작게 */
+html body #trail-bubble{padding:7px 13px 8px;border-radius:14px;background:var(--bub);border:2.5px solid var(--bub-line);color:var(--bub-ink);font:800 clamp(13px,1.6vw,18px)/1.3 var(--nb-font);letter-spacing:-.01em;word-break:keep-all;max-width:min(76vw,330px);box-shadow:var(--bub-shadow);transition:opacity .15s,transform .15s}
+html body #trail-bubble.on{animation:tb-pop .22s cubic-bezier(.2,1.5,.4,1) both}
+html body #trail-bubble::after{background:var(--bub);border-right:2.5px solid var(--bub-line);border-bottom:2.5px solid var(--bub-line);bottom:-9px;width:13px;height:13px}
+html body #trail-bubble.sfx{padding:3px 12px 4px;border-radius:4px;border:0;background:linear-gradient(transparent 12%,var(--hl) 12% 88%,transparent 88%);color:var(--hl-ink);font-size:clamp(16px,2vw,23px);font-weight:900;font-style:italic;letter-spacing:.02em;white-space:nowrap;box-shadow:none;text-shadow:1.5px 1.5px 0 var(--bub);transform:translate(-50%,-100%) rotate(-6deg)}
+html body #trail-bubble.sfx.on{animation:tb-sfx .26s cubic-bezier(.2,1.8,.4,1) both}
+:root[data-hud-time=night] body #trail-bubble.sfx{text-shadow:1.5px 1.5px 0 #00000088}
+html body #trail-bubble.tag{padding:4px 11px 5px 20px;border-radius:6px;border:0;background:var(--paper2);color:var(--ink);font-size:clamp(12px,1.3vw,15px);font-weight:800;white-space:nowrap;box-shadow:var(--lift),var(--soft)}
+html body #trail-bubble.tag::before{content:"";position:absolute;left:7px;top:50%;width:6px;height:6px;margin-top:-3px;border-radius:50%;background:var(--pin);box-shadow:inset 0 1px 1px #0004}
+html body #trail-bubble.tag::after{display:none}
+@keyframes tb-pop{from{opacity:0;transform:translate(-50%,-100%) scale(.7)}}
+@keyframes tb-sfx{from{opacity:0;transform:translate(-50%,-100%) rotate(-14deg) scale(1.5)}}
+
+/* 움직임 줄이기: 들썩·튀어나옴은 끄고 남은 시간 막대만 둔다 */
+@media (prefers-reduced-motion:reduce){
+ .nb-snack-chip.boost,.tb-cramp em,html body #trail-bubble.on,html body #trail-bubble.sfx.on,.tb-btn,.tb-offer{animation:none}
+ .tb-time{animation:tb-time var(--sec,4s) linear forwards}
+}

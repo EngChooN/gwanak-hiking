@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>산스장·간식·벤치·동물·먼지털이 시안 — 관악산</title>
+<style>html,body{margin:0;height:100%;overflow:hidden;background:#a2c8d3;font-family:system-ui,'Apple SD Gothic Neo',sans-serif}canvas{display:block}
+#panel{position:fixed;left:12px;bottom:12px;padding:8px 10px;border-radius:10px;background:rgba(20,26,48,.7);color:#f4efe6;font-size:13px;z-index:5}
+#panel button{margin:2px;border:0;border-radius:6px;padding:4px 8px;background:#f4efe6;color:#1d2a44;cursor:pointer}
+#title{position:fixed;left:18px;top:16px;padding:8px 14px;border-radius:12px;background:#fbf4e4;border:2px solid #3a2d22;color:#3a2d22;font-weight:800;font-size:22px;box-shadow:3px 3px 0 #3a2d22}
+#title small{display:block;font-weight:600;font-size:14px;color:#6b5a48;margin-top:2px}
+.bubble{position:fixed;transform:translate(-50%,-100%);padding:8px 13px;border-radius:16px;background:#fff;border:2.5px solid #2e2420;color:#2e2420;font-weight:800;font-size:18px;white-space:nowrap;box-shadow:2px 3px 0 rgba(46,36,32,.35);pointer-events:none}
+.bubble::after{content:'';position:absolute;left:50%;bottom:-11px;width:14px;height:14px;background:#fff;border-right:2.5px solid #2e2420;border-bottom:2.5px solid #2e2420;transform:translateX(-50%) rotate(45deg)}
+.bubble.tag{font-size:15px;padding:4px 10px;background:#fbf4e4;font-weight:700}
+.bubble.tag::after{background:#fbf4e4}
+.bubble.sfx{background:#ffe066;font-size:24px;font-style:italic;border-radius:8px;transform:translate(-50%,-100%) rotate(-6deg)}
+.bubble.sfx::after{display:none}
+.hud{position:fixed;right:18px;top:16px;display:flex;gap:8px}
+.chip{padding:8px 14px;border-radius:999px;background:#fbf4e4;border:2px solid #3a2d22;color:#3a2d22;font-weight:800;font-size:18px;box-shadow:2px 2px 0 #3a2d22}
+.chip.on{background:#ffd9a8}
+.btn{position:fixed;padding:12px 20px;border-radius:14px;background:#3a2d22;color:#fbf4e4;font-weight:800;font-size:18px;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+<div id="title"></div>
+<div id="overlay"></div>
+<div id="panel"></div>
+<script type="module" src="./props-concepts.js"></script>
+</body>
+</html>

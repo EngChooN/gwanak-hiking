@@ -1,0 +1,162 @@
+{
+ "pc": {
+  "checks": [
+   {
+    "what": "🍫 먹기 버튼 보임·눌림",
+    "pass": true,
+    "info": "{\"rect\":[379,147,77,34],\"inside\":true,\"tappable\":true,\"hitBy\":null,\"size\":34,\"disabled\":false}"
+   },
+   {
+    "what": "초콜릿 5→4개·⚡ 칩·버튼 막힘",
+    "pass": true,
+    "info": "{\"c0\":{\"n\":5,\"chip\":\"🍫 5/5\"},\"c1\":{\"n\":4,\"left\":29.20009999999999,\"chip\":\"🍫 4/5\",\"boost\":\"⚡ 빨라짐 0:30\",\"disabled\":true}}"
+   },
+   {
+    "what": "효과 중 다시 눌러도 안 줄어듦",
+    "pass": true,
+    "info": ""
+   },
+   {
+    "what": "말풍선 층 HUD < 말풍선 < 알림",
+    "pass": true,
+    "info": "{\"bubble\":20,\"hud\":6,\"bar\":6,\"alert\":32}"
+   },
+   {
+    "what": "걷기(자동) 버튼 보임·눌림",
+    "pass": true,
+    "info": "{\"rect\":[1786,946,108,108],\"inside\":true,\"tappable\":true,\"hitBy\":null,\"size\":108,\"disabled\":false}"
+   },
+   {
+    "what": "자동걷기 중 들르기 버튼(4초)",
+    "pass": true,
+    "info": "{\"act\":\"pet-cat\",\"id\":\"cat-plaza\",\"label\":\"🐱 고양이 쓰다듬기들렀다가 자동 걷기를 이어 가요\"}"
+   },
+   {
+    "what": "들르기 버튼 보임·눌림",
+    "pass": true,
+    "info": "{\"rect\":[850,973,220,67],\"inside\":true,\"tappable\":true,\"hitBy\":null,\"size\":67,\"disabled\":false}"
+   },
+   {
+    "what": "들르기 → 동작 → 자동걷기 복귀",
+    "pass": true,
+    "info": ""
+   },
+   {
+    "what": "누르지 않으면 4초 뒤 사라짐",
+    "pass": true,
+    "info": ""
+   },
+   {
+    "what": "💨 신발 털기 버튼 보임·눌림",
+    "pass": true,
+    "info": "{\"rect\":[900,988,120,52],\"inside\":true,\"tappable\":true,\"hitBy\":null,\"size\":52,\"disabled\":false}"
+   },
+   {
+    "what": "말풍선 화면 안",
+    "pass": true,
+    "info": "{\"on\":true,\"text\":\"내 모자!!\",\"inside\":true}"
+   },
+   {
+    "what": "수첩 '깨끗한 신발' 칸",
+    "pass": true,
+    "info": ""
+   },
+   {
+    "what": "수첩 버튼 보임·눌림",
+    "pass": true,
+    "info": "{\"rect\":[0,76,116,50],\"inside\":true,\"tappable\":true,\"hitBy\":null,\"size\":50,\"disabled\":false}"
+   },
+   {
+    "what": "수첩 즐길거리 칸 2개, 신발 찍힘",
+    "pass": true,
+    "info": "[{\"got\":false,\"t\":\"?산스장 득근산스장 역기 10번\"},{\"got\":true,\"t\":\"✨깨끗한 신발17:19\"}]"
+   },
+   {
+    "what": "산스장 6m 안 기구 버튼 4개",
+    "pass": true,
+    "info": "{\"pos\":{\"zone\":\"route\",\"x\":55.07169028044376,\"z\":2156.9698071884904,\"heading\":-2.4753578545288626,\"s\":2432.5,\"lateral\":2.9780526063883217},\"view\":\"near\"}"
+   },
+   {
+    "what": "🏋 역기 버튼 보임·눌림",
+    "pass": true,
+    "info": "{\"rect\":[708,988,120,52],\"inside\":true,\"tappable\":true,\"hitBy\":null,\"size\":52,\"disabled\":false}"
+   },
+   {
+    "what": "역기 연타 10번 → '산스장 득근' 도장",
+    "pass": true,
+    "info": "reps 10"
+   },
+   {
+    "what": "🙃 거꾸리 버튼 보임·눌림",
+    "pass": true,
+    "info": "{\"rect\":[836,988,120,52],\"inside\":true,\"tappable\":true,\"hitBy\":null,\"size\":52,\"disabled\":false}"
+   },
+   {
+    "what": "🙃 거꾸리 동작",
+    "pass": true,
+    "info": ""
+   },
+   {
+    "what": "🌀 허리돌리기 버튼 보임·눌림",
+    "pass": true,
+    "info": "{\"rect\":[964,988,120,52],\"inside\":true,\"tappable\":true,\"hitBy\":null,\"size\":52,\"disabled\":false}"
+   },
+   {
+    "what": "🌀 허리돌리기 동작",
+    "pass": true,
+    "info": ""
+   },
+   {
+    "what": "🤸 철봉 버튼 보임·눌림",
+    "pass": true,
+    "info": "{\"rect\":[1092,988,120,52],\"inside\":true,\"tappable\":true,\"hitBy\":null,\"size\":52,\"disabled\":false}"
+   },
+   {
+    "what": "🤸 철봉 동작",
+    "pass": true,
+    "info": ""
+   },
+   {
+    "what": "벤치 6m 안 앉기 버튼",
+    "pass": true,
+    "info": ""
+   },
+   {
+    "what": "🪑 벤치에 앉기 버튼 보임·눌림",
+    "pass": true,
+    "info": "{\"rect\":[898,988,124,52],\"inside\":true,\"tappable\":true,\"hitBy\":null,\"size\":52,\"disabled\":false}"
+   },
+   {
+    "what": "벤치 스테미너 = 서 있을 때의 22.5/8≈2.8배(땅에 앉기 15의 1.5배)",
+    "pass": true,
+    "info": "서 있음 8.0 · 벤치 23.0 · 2.87배"
+   },
+   {
+    "what": "🧍 일어나기 버튼 보임·눌림",
+    "pass": true,
+    "info": "{\"rect\":[876,988,168,52],\"inside\":true,\"tappable\":true,\"hitBy\":null,\"size\":52,\"disabled\":false}"
+   },
+   {
+    "what": "일어나서 길로 돌아옴",
+    "pass": true,
+    "info": ""
+   },
+   {
+    "what": "스테미너 칸 '쥐 0:0n'",
+    "pass": true,
+    "info": "쥐 0:03"
+   },
+   {
+    "what": "🦶 발끝 당기기 버튼 보임·눌림",
+    "pass": true,
+    "info": "{\"rect\":[850,988,220,52],\"inside\":true,\"tappable\":true,\"hitBy\":null,\"size\":52,\"disabled\":false}"
+   },
+   {
+    "what": "발끝 당기기 → 1초 남짓에 풀림",
+    "pass": true,
+    "info": "1012ms"
+   }
+  ],
+  "errors": []
+ }
+}

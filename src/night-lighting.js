@@ -3,7 +3,7 @@
 // 다른 사람의 헤드랜턴은 광원 없이 InstancedMesh 바닥 빛 데칼 + Points 글로우로만 그린다(규칙은 docs 변경기록 '멀티플레이 대비 조명 규칙').
 import * as THREE from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
-import {sunPosition,resolveUtcMs} from './daytime.js';
+import {sunPosition,resolveUtcMs,effectiveTime,timeOverridden} from './daytime.js';
 import {PARK_LAMP_LATERAL,PARK_END_S,LAMP_HEIGHT,REAL_LIGHT_COUNT,PLAZA_LAMPS,FACILITY_LAMPS,HEADLAMP,OTHERS,lampAmount,headlampDark,headlampOn,lampStations,lampWeights,selectOthers,mountFor,crowdFromSearch} from './night-lighting-config.js';
 
 const LAMP_COLOR=0xffd9a0,LAMP_INTENSITY=95,DECAL_COLOR=[1,.78,.46],OTHER_COLOR=[1,.95,.82];
@@ -115,8 +115,8 @@ export function createNightLighting({scene,renderer=null,place,groundHeight,gate
  const state={lamps:0,head:0,headOverride:null,dark:0,elevation:30,sinceSun:1e9,fps:null};
  function sunElevation(dt){
   state.sinceSun+=dt;if(state.sinceSun<.5)return state.elevation;state.sinceSun=0;
-  if(legacySun)return state.elevation=30;
-  const {utcMs}=resolveUtcMs({time:timeParam,nowMs:nowMs()});return state.elevation=sunPosition(utcMs).elevation;
+  if(legacySun&&!timeOverridden())return state.elevation=30;
+  const {utcMs}=resolveUtcMs({time:effectiveTime(timeParam),nowMs:nowMs()});return state.elevation=sunPosition(utcMs).elevation;
  }
  let fillLight=null;
  const fwd=new THREE.Vector3(),headPos=new THREE.Vector3(),tmp=new THREE.Vector3();

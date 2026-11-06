@@ -163,7 +163,7 @@ body.touch .osm-key{display:none}
 .key-hint kbd{margin:0 1px!important}
 body.touch .key-hint,body.nb-sheet-open .key-hint{display:none}
 @media (hover:none),(pointer:coarse){.key-hint{display:none}}
-#resume-note{position:fixed;left:50%;top:calc(var(--st) + 84px);transform:translateX(-50%);z-index:5;max-width:min(80vw,460px);width:max-content;padding:10px 16px;border-radius:8px;background:var(--paper2);color:var(--ink);box-shadow:var(--lift),var(--soft),var(--hi);font-size:13px;font-weight:700;text-align:center;transition:opacity 1s}
+#resume-note{position:fixed;left:50%;top:calc(var(--st) + 84px);transform:translateX(-50%);z-index:33;max-width:min(80vw,460px);width:max-content;padding:10px 16px;border-radius:8px;background:var(--paper2);color:var(--ink);box-shadow:var(--lift),var(--soft),var(--hi);font-size:13px;font-weight:700;text-align:center;transition:opacity 1s}
 
 /* ───────── 9. 상호작용·알림·기구 화면을 같은 종이 톤으로 ───────── */
 #interaction-ui,#ix-bino,#ix-frame{--gold:var(--paper2);--gold2:var(--accent);--red:var(--stamp)}

@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ko" data-hud-time="day">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>즐길거리 HUD 부품 — 산디자인</title>
+<!-- 실제 게임 CSS를 그대로 읽는다. ?time=day|dusk|night, ?w=휴대폰 너비 -->
+<link rel="stylesheet" href="/src/hud-notebook.css">
+<link rel="stylesheet" href="/src/trail-hud.css">
+<style>
+ body{margin:0;font-family:var(--nb-font);color:var(--ink)}
+ .scene{position:relative;min-height:100vh;padding:14px 14px 24px;box-sizing:border-box;background:linear-gradient(#8fc7e8,#cfe8d8 46%,#6f9c4c 47%,#4f7a36)}
+ :root[data-hud-time=dusk] .scene{background:linear-gradient(#5b4a8a,#f08a5d 40%,#f6c27a 46%,#6b6b3a 47%,#4a4a26)}
+ :root[data-hud-time=night] .scene{background:linear-gradient(#0b1530,#22325c 46%,#1d2a1c 47%,#121a12)}
+ h2{margin:0 0 10px;font-size:15px;font-weight:900;display:inline-block;padding:3px 10px;border-radius:6px;background:var(--paper2);box-shadow:var(--lift)}
+ .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 16px}
+ .lbl{width:100%;font-size:11px;font-weight:800;color:#fff;text-shadow:0 1px 2px #000a}
+ .card{width:252px;padding:9px 12px 10px;background:var(--paper);border-radius:9px;box-shadow:var(--lift),var(--soft),var(--hi);font-size:12px;color:var(--ink2);transform:rotate(-1.2deg)}
+ .stam{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:700}.stam i{flex:1;height:7px;border-radius:4px;background:var(--track);position:relative;overflow:hidden}.stam i::after{content:"";position:absolute;inset:0 30% 0 0;background:var(--go)}
+ .bar{display:flex;flex-wrap:wrap;gap:8px;width:362px}
+ .bar .tb-btn{flex:1 1 40%;min-width:0}.bar .tb-offer,.bar .tb-lift,.bar .tb-cramp{flex:1 1 100%}
+ .tb-btn,.tb-offer,.nb-snack-chip.boost{animation:none!important}
+ .tb-time{animation-delay:-1.6s!important;animation-play-state:paused!important}
+ .bubbles{position:relative;height:150px;width:362px}
+ .scene #trail-bubble{position:absolute;opacity:1;animation:none!important;z-index:1}
+ #trail-bubble{left:0;top:0;transform:translate(-50%,-100%);padding:7px 12px;border-radius:15px;background:#fff;border:2.5px solid #2e2420;color:#2e2420;text-align:center;pointer-events:none}
+ #trail-bubble::after{content:'';position:absolute;left:50%;bottom:-10px;width:13px;height:13px;background:inherit;border-right:2.5px solid #2e2420;border-bottom:2.5px solid #2e2420;transform:translateX(-50%) rotate(45deg)}
+ #trail-bubble.sfx::after{display:none}
+</style>
+</head>
+<body>
+<div class="scene">
+ <h2 id="ttl">낮</h2>
+ <div class="row"><span class="lbl">진행 카드 간식 줄 — 보통 / 빨라짐 / 다 먹음</span>
+  <div class="card"><div class="stam"><small>🏃</small><i></i><b>70</b></div>
+   <div class="nb-snack"><span id="choco-count" class="nb-snack-chip">🍫 4/5</span><button class="nb-snack-eat" type="button"><span>🍫 먹기</span></button></div></div>
+  <div class="card"><div class="stam"><small>🏃</small><i></i><b>70</b></div>
+   <div class="nb-snack"><span class="nb-snack-chip">🍫 3/5</span><span class="nb-snack-chip boost">⚡ 빨라짐 0:28</span></div></div>
+  <div class="card"><div class="stam"><small>🏃</small><i></i><b>70</b></div>
+   <div class="nb-snack"><span class="nb-snack-chip" id="choco-count" data-n="0">🍫 0/5</span><button class="nb-snack-eat off" type="button" disabled><span>🍫 다 먹음</span></button></div></div>
+ </div>
+ <div class="row"><span class="lbl">즐길거리 줄 — 들르기(4초, 1.6초 지난 모습) · 기구 버튼 · 역기 7/10 · 발끝 당기기</span>
+  <div class="bar">
+   <button class="tb-btn tb-offer" type="button" style="--sec:4s"><b>🪑 벤치에 앉았다 가기</b><small>들렀다가 자동 걷기를 이어 가요</small><i class="tb-time"></i></button>
+   <button class="tb-btn" type="button"><em>🏋</em><b>역기</b><small>연타 10번</small></button>
+   <button class="tb-btn" type="button"><em>🙃</em><b>거꾸리</b><small>3초 매달리기</small></button>
+   <button class="tb-btn" type="button"><em>🌀</em><b>허리돌리기</b><small>빙글빙글</small></button>
+   <button class="tb-btn" type="button"><em>🤸</em><b>철봉</b><small>매달리기</small></button>
+  </div>
+  <div class="bar">
+   <button class="tb-btn tb-lift" type="button"><em>💪</em><b>들어 올리기 <span>7/10</span></b><span class="tb-gauge"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i></span></button>
+   <button class="tb-btn" type="button"><em>💨</em><b>신발 털기</b><small>에어건</small></button>
+   <button class="tb-btn" type="button"><em>🐱</em><b>쓰다듬기</b><small>산고양이</small></button>
+   <button class="tb-btn tb-cramp" type="button"><em>🦶</em><b>발끝 당기기</b><small>누르면 1초 만에 풀려요</small></button>
+  </div>
+ </div>
+ <div class="row"><span class="lbl">말풍선 — 동동이 말 / 소리 글자(sfx) / 이름표·속마음(tag)</span>
+  <div class="bubbles">
+   <div id="trail-bubble" class="on" style="left:120px;top:52px">팔이… 짧아서… 머리로 들었다</div>
+   <div id="trail-bubble" class="on sfx" style="left:300px;top:44px">치이이익—!!!</div>
+   <div id="trail-bubble" class="on" style="left:110px;top:118px">후우… (영혼 휴식 중)</div>
+   <div id="trail-bubble" class="on sfx" style="left:250px;top:104px">부들부들</div>
+   <div id="trail-bubble" class="on tag" style="left:315px;top:142px">…무거워</div>
+  </div>
+ </div>
+</div>
+<script>
+ const q=new URLSearchParams(location.search),t=q.get('time')||'day';
+ document.documentElement.dataset.hudTime=t;document.getElementById('ttl').textContent={day:'낮',dusk:'노을',night:'밤'}[t]||t;
+</script>
+</body>
+</html>

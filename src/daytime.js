@@ -20,6 +20,11 @@ export function parseClock(text){
  const m=/^(\d{1,2}):?(\d{2})$/.exec(String(text??'').trim());if(!m)return null;
  const h=Number(m[1]),min=Number(m[2]);return h<24&&min<60?h*60+min:null;
 }
+// 자유 설정의 시간(낮·노을·밤 → "HH:MM"). 걸려 있으면 ?time=보다 앞선다. null이면 원래 규칙(?time= 또는 지금).
+let timeOverride=null;
+export function setTimeOverride(text){timeOverride=parseClock(text)===null?null:String(text);return timeOverride;}
+export const effectiveTime=urlTime=>timeOverride??urlTime??null;
+export const timeOverridden=()=>timeOverride!==null;
 // ?time=HH:MM 은 서울 오늘 날짜의 그 시각. 없으면 지금.
 export function resolveUtcMs({time=null,nowMs=Date.now()}={}){
  const minutes=parseClock(time);if(minutes===null)return {utcMs:nowMs,manual:false};

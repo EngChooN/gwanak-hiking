@@ -222,7 +222,7 @@ export function setupRendering(renderer,scene,camera,mobile,environmentSky,{styl
     if(target)renderer.setRenderTarget(target);
     try{return renderer.compileAsync(scene,camera);}finally{if(target)renderer.setRenderTarget(previous);}
   }
-  return {resize,render,prepare,compile:compileScene,status,environmentReady:Promise.all([environmentReady,ssaoReady]).then(()=>{}),setShadowFocus,style:toonMode?'toon':'realistic'};
+  return {resize,render,prepare,compile:compileScene,status,environment,environmentReady:Promise.all([environmentReady,ssaoReady]).then(()=>{}),setShadowFocus,style:toonMode?'toon':'realistic'};
 }
 
 // 카메라 근평면 네 모서리와 중앙에서 충돌을 검사해 지형·계단 앞쪽으로 당긴다.

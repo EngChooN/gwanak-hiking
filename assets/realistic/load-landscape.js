@@ -3,6 +3,7 @@ import {createEntrance,clearEntranceEntries,createEntranceGround} from './entran
 import {SPECIMEN_TREES,PLAZA_FACILITIES,plazaFootprint} from './entrance-plaza.js';
 import {createSectionScenery,scenerySites,clearSceneryPlacements} from './section-scenery.js';
 import {createInteractionProps} from './interaction-sites.js';
+import {resolveTrailSites} from '../../src/trail-sites.js';
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {MeshoptDecoder} from 'three/addons/libs/meshopt_decoder.module.js';
@@ -229,7 +230,10 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
   // 상호작용 소품(스탬프함·안내판·약수터·돌탑, 동물 자리). 배치는 interaction-sites.js. ?animals=preview면 동물 자리를 보인다.
   const summitFrame=id=>{const s=summitSites.find(site=>site.id===id);return s&&{x:s.x,z:s.z,yaw:s.yaw};};
   const interactionProps=createInteractionProps(route,surfaceHeight,{frames:{gate:entrance.frame,marker:summitFrame('marker'),eungjinjeon:summitFrame('eungjinjeon')},avoid:[...summitSites,...sectionSites],previewAnimals:new URLSearchParams(location.search).get('animals')==='preview'});
-  group.add(interactionProps.group);const natureClearSites=[...sectionSites,...interactionProps.clearSites];
+  // 자동걷기 즐길거리(산스장·벤치·먼지털이기) 자리. 모형은 가까이 갈 때 src/trail-world.js가 만들고, 나무·풀은 여기서 미리 비운다.
+  const trailProps=resolveTrailSites(route,surfaceHeight,{frames:{gate:entrance.frame},avoid:[...summitSites,...sectionSites,...interactionProps.sites]});
+  status.trailProps=trailProps;
+  group.add(interactionProps.group);const natureClearSites=[...sectionSites,...interactionProps.clearSites,...trailProps.clearSites];
   status.interactionProps={sites:interactionProps.sites,spawns:interactionProps.spawns,clearSites:interactionProps.clearSites,stats:interactionProps.stats()};
   status.entrance={frame:entrance.frame,counts:facilityTriangleCounts(entrance.items),status:'입구 설정의 일주문 가설 위치 · 현장 실측 전 · 치수·현판 색 미확인'};
   // 200m 청크 칸(기획서 §2.4). 청크 id는 index.json의 'i_j'.

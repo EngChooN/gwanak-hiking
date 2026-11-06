@@ -2,6 +2,7 @@ import {route,sample,speedFor,strideFor,isStairs,checkpoints,DEMO_START,ROUTE_ID
 import {ENTRANCE_HYPOTHESIS} from './entrance-config.js';
 import {routeRevision} from './route-revision.js';
 import {SUMMIT_ENTER_S,insideSummit,projectToRoute,summitMove,reachedSummit} from './summit.js';
+import {chocoSpeed,restoreChocolates,CHOCO_MAX,SIT_RECOVER,benchRecoverRate} from './trail-rules.js';
 import {GATE_S,PLAZA_START,insidePlaza,routeFromWorld,worldFromGateFrame,segmentHitsGate,autoTarget,toGate,fromGate} from './plaza.js';
 const currentRevision=routeRevision(route.points,checkpoints,SUMMIT_REFERENCE_ELEVATION);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -32,7 +33,7 @@ const ZONES=['route','plaza','summit'];
 // start: 'plaza'(일주문 앞 광장) | 'gate'(일주문 아래 s=GATE_S) | 'demo'(545m 구간) | 'summit'(정상 10m 앞, 도착 화면이 바로 뜨지 않게). entrance:true는 'plaza'와 같다.
 export function initialState({entrance=false,start=entrance?'plaza':'demo'}={}){
  const plaza=start==='plaza',s=start==='demo'?DEMO_START:start==='summit'?route.length-SUMMIT_START_BACK:ROUTE_MIN_S;
- return {version:1,routeId:ROUTE_ID,routeRevision:currentRevision,entranceHypothesis:ENTRANCE_HYPOTHESIS,zone:plaza?'plaza':'route',plaza:plaza?{...PLAZA_START}:null,summit:null,summitArrived:false,s,lateral:0,elapsed:0,distance:0,ascent:0,steps:0,stepPhase:0,checkpoints:[],auto:false,view:'first',sessions:1,stamina:100,runExhausted:false,running:false,pose:'stand',teaRemaining:0};
+ return {version:1,routeId:ROUTE_ID,routeRevision:currentRevision,entranceHypothesis:ENTRANCE_HYPOTHESIS,zone:plaza?'plaza':'route',plaza:plaza?{...PLAZA_START}:null,summit:null,summitArrived:false,s,lateral:0,elapsed:0,distance:0,ascent:0,steps:0,stepPhase:0,checkpoints:[],auto:false,view:'first',sessions:1,stamina:100,runExhausted:false,running:false,pose:'stand',teaRemaining:0,chocolates:CHOCO_MAX,chocoLeft:0};
 }
 // 일주문 기준 거리(코스 표시용). 광장은 0m다.
 export const courseDistance=state=>state.zone==='plaza'?0:Math.max(0,state.s-GATE_S);
@@ -64,7 +65,7 @@ export function restore(raw){try{
  const plazaSave=v.zone==='plaza'||(!ZONES.includes(v.zone)&&v.s<ROUTE_MIN_S);
  if(plazaSave&&v.entranceHypothesis!==ENTRANCE_HYPOTHESIS)return initialState({entrance:true});
  const stamina=Number.isFinite(v.stamina)?clamp(v.stamina,0,100):100,pose=['stand','sit','tea'].includes(v.pose)?v.pose:'stand';
- const result={...initialState(),elapsed:Math.max(0,v.elapsed),distance:Math.max(0,v.distance),ascent:Number.isFinite(v.ascent)?Math.max(0,v.ascent):0,steps:Math.max(0,Math.floor(v.steps)),stepPhase:clamp(v.stepPhase,0,1-1e-12),checkpoints:Array.isArray(v.checkpoints)?[...new Set(v.checkpoints.filter(x=>checkpoints.some(c=>c.id===x)))]:[],auto:false,view:v.view==='third'?'third':'first',sessions:Math.max(1,Number(v.sessions)||1)+1,stamina,runExhausted:stamina===0||(v.runExhausted===true&&stamina<30),running:false,pose,teaRemaining:pose==='tea'?clamp(Number.isFinite(v.teaRemaining)?v.teaRemaining:TEA_SECONDS,.001,TEA_SECONDS):0};
+ const result={...initialState(),shortcut:v.shortcut===true,elapsed:Math.max(0,v.elapsed),distance:Math.max(0,v.distance),ascent:Number.isFinite(v.ascent)?Math.max(0,v.ascent):0,steps:Math.max(0,Math.floor(v.steps)),stepPhase:clamp(v.stepPhase,0,1-1e-12),checkpoints:Array.isArray(v.checkpoints)?[...new Set(v.checkpoints.filter(x=>checkpoints.some(c=>c.id===x)))]:[],auto:false,view:v.view==='third'?'third':'first',sessions:Math.max(1,Number(v.sessions)||1)+1,stamina,runExhausted:stamina===0||(v.runExhausted===true&&stamina<30),running:false,pose,teaRemaining:pose==='tea'?clamp(Number.isFinite(v.teaRemaining)?v.teaRemaining:TEA_SECONDS,.001,TEA_SECONDS):0,chocolates:restoreChocolates(v.chocolates),chocoLeft:0};
  if(plazaSave){
   // 새 형식은 plaza{x,z,heading}, 예전 형식(s<0 접근로)은 그 자리의 월드 좌표로 옮긴다. 경계 밖이면 출발점.
   let plaza=v.zone==='plaza'?v.plaza:null;
@@ -131,18 +132,21 @@ export function advance(state,input,dt,onStep=()=>{},ground){
  let f=Math.sign(input.forward||0),side=Math.sign(input.side||0);const direct=!!(f||side);
  if(direct&&state.pose!=='stand')setPose(state,'stand');
  if(state.pose!=='stand'){
-  recover(state,15,dt);
+  recover(state,SIT_RECOVER,dt);
   if(state.pose==='tea'){state.teaRemaining=Math.max(0,state.teaRemaining-dt);if(state.teaRemaining<=1e-8){recover(state,30,1);state.pose='sit';state.teaRemaining=0;}}
   return 0;
  }
  if(ground?.summit&&state.zone==='route'&&state.s>=SUMMIT_ENTER_S)enterSummit(state);
  if(state.zone==='summit'){state.auto=false;}else if(direct)state.auto=false;else if(state.auto)f=1;
- if(!f&&!side){recover(state,8,dt);return 0;}
+ // 벤치에 앉아 있는 동안(즐길거리 동작, 자세는 'stand')은 땅에 앉을 때보다 1.5배 빨리 찬다.
+ if(!f&&!side){recover(state,input.benchRest?benchRecoverRate():8,dt);return 0;}
  // 직접 입력은 카메라 기준. 뒷걸음(S 포함)은 앞으로 걷는 속도의 0.6배다.
  const yaw=direct&&Number.isFinite(input.yaw)?input.yaw:0,backward=direct&&f<0,{along,right}=cameraRelative(f,side,yaw);
  if(state.zone==='summit')return advanceSummit(state,f,side,direct&&Number.isFinite(input.yaw)?input.yaw:0,!!input.run,dt,onStep,ground,input.strideScale,input.runMultiplier);
  const plaza=state.zone==='plaza',p=sample(plaza?ROUTE_MIN_S:state.s),off=!plaza&&isOffTrail(state.s,state.lateral),running=!!input.run&&!state.runExhausted&&state.stamina>0;
- const speed=(plaza?speedFor(0,'paved',1):speedFor(p.slope,p.material,along<0?-1:1))*(running?runMultiplierFor(input.runMultiplier):1)*(off?OFF_TRAIL_MULTIPLIER:1)*(backward?BACKWARD_MULTIPLIER:1),budget=speed*dt;
+ // 초콜릿(30초 +20%)은 걷기·뛰기·자동걷기 모두에 곱한다. 계단 노면은 한 칸 한 걸음 리듬을 지키려고 그대로 둔다.
+ const boost=chocoSpeed(state,{stairs:onStairs({plaza,seg:p,off})});
+ const speed=(plaza?speedFor(0,'paved',1):speedFor(p.slope,p.material,along<0?-1:1))*(running?runMultiplierFor(input.runMultiplier):1)*(off?OFF_TRAIL_MULTIPLIER:1)*(backward?BACKWARD_MULTIPLIER:1)*boost,budget=speed*dt;
  const motionPosition=(s,l)=>{const pos=positionAt(s,l,ground);if(!isOffTrail(s,l))pos[1]=sample(s).y;return pos;};
  const plazaPosition=(x,z)=>[x,ground?.height(x,z,false)??route.points[0].y,z];
  let a,b,distance,allowedBudget=budget,entersOff=false,next;
@@ -203,7 +207,7 @@ function advanceSummit(state,f,side,yaw,run,dt,onStep,ground,strideScale,runMult
  const G=ground.summit,P=state.summit,sites=G.sites(),backward=f<0,running=run&&!state.runExhausted&&state.stamina>0;
  const h=P.heading+yaw,n=Math.hypot(f,side),dx=(-Math.sin(h)*f+Math.cos(h)*side)/n,dz=(-Math.cos(h)*f-Math.sin(h)*side)/n;
  const a={x:P.x,z:P.z},ay=G.height(a.x,a.z),here=projectToRoute(a.x,a.z),seg0=sample(here.s),onRibbon0=Math.abs(here.lateral)<=seg0.width/2+.3;
- const material=onRibbon0?seg0.material:'rock',mult=(running?runMultiplierFor(runMultiplier):1)*(onRibbon0?1:OFF_TRAIL_MULTIPLIER)*(backward?BACKWARD_MULTIPLIER:1);
+ const material=onRibbon0?seg0.material:'rock',mult=(running?runMultiplierFor(runMultiplier):1)*(onRibbon0?1:OFF_TRAIL_MULTIPLIER)*(backward?BACKWARD_MULTIPLIER:1)*chocoSpeed(state,{stairs:onRibbon0&&isStairs(material)});
  const tryMove=(vx,vz,length)=>{
   const q={x:a.x+vx*length,z:a.z+vz*length},ok=summitMove(G,sites,a,q,lateralLimit);if(!ok)return null;
   const {r,ribbon,seg,toRoute}=ok,qy=G.height(q.x,q.z),horizontal=Math.hypot(q.x-a.x,q.z-a.z);

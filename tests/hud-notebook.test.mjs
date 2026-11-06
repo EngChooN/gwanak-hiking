@@ -33,7 +33,7 @@ test('진행 눈금·남은 거리·화질 글자',()=>{
  assert.deepEqual(t.map(x=>x.at),[0,.5,1]);
  assert.equal(formatRemainKm(1234),'1.2 km');assert.equal(formatRemainKm(-5),'0.0 km');
  assert.equal(qualityModeFromText('화질 높음'),'high');assert.equal(qualityModeFromText('화질 자동 · 균형'),'auto');assert.equal(qualityModeFromText('균형'),'balanced');
- assert.deepEqual([...SHEETS],['backpack','rest','settings','jump']);
+ assert.deepEqual([...SHEETS],['backpack','rest','settings','jump','free']);
 });
 test('지킬 조건: 일시정지 없음·조이스틱·구간 이동은 설정 개발용·기능 버튼 id 유지',()=>{
  const html=read('index.html');

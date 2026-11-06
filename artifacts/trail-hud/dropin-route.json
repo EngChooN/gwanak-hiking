@@ -1,0 +1,123 @@
+{
+ "rows": [
+  {
+   "id": "bench-1540",
+   "kind": "bench",
+   "m": 1552,
+   "s": 1562.5,
+   "fromPath": 1.61,
+   "offers": [
+    {
+     "id": "bench-1540",
+     "act": "bench-sit"
+    }
+   ],
+   "offerAt": 16.8,
+   "played": true,
+   "backToAuto": true,
+   "doneAt": 36.3,
+   "movedOn": true,
+   "pass": true
+  },
+  {
+   "id": "bench-1710",
+   "kind": "bench",
+   "m": 1692,
+   "s": 1703,
+   "fromPath": 1.61,
+   "offers": [
+    {
+     "id": "bench-1710",
+     "act": "bench-sit"
+    }
+   ],
+   "offerAt": 14.5,
+   "played": true,
+   "backToAuto": true,
+   "doneAt": 34,
+   "movedOn": true,
+   "pass": true
+  },
+  {
+   "id": "bench-2156",
+   "kind": "bench",
+   "m": 2148,
+   "s": 2162.5,
+   "fromPath": 1.6,
+   "offers": [
+    {
+     "id": "bench-2156",
+     "act": "bench-sit"
+    }
+   ],
+   "offerAt": 15,
+   "played": true,
+   "backToAuto": true,
+   "doneAt": 34.5,
+   "movedOn": true,
+   "pass": true
+  },
+  {
+   "id": "gym",
+   "kind": "gym",
+   "m": 2416,
+   "s": 2432.5,
+   "fromPath": 6.2,
+   "offers": [
+    {
+     "id": "cat-pavilion",
+     "act": "pet-cat"
+    },
+    {
+     "id": "gym",
+     "act": "gym-lift"
+    }
+   ],
+   "offerAt": 15.2,
+   "played": true,
+   "backToAuto": true,
+   "doneAt": 36.7,
+   "movedOn": true,
+   "pass": true
+  },
+  {
+   "id": "bench-kkal-before",
+   "kind": "bench",
+   "m": 3639,
+   "s": 3675,
+   "fromPath": 1.6,
+   "offers": [
+    {
+     "id": "bench-kkal-before",
+     "act": "bench-sit"
+    }
+   ],
+   "offerAt": 18,
+   "played": true,
+   "backToAuto": true,
+   "doneAt": 36.7,
+   "movedOn": true,
+   "pass": true
+  },
+  {
+   "id": "bench-kkal-after",
+   "kind": "bench",
+   "m": 4513,
+   "s": 4600.5,
+   "fromPath": 1.41,
+   "offers": [
+    {
+     "id": "bench-kkal-after",
+     "act": "bench-sit"
+    }
+   ],
+   "offerAt": 36.8,
+   "played": true,
+   "backToAuto": true,
+   "doneAt": 55.4,
+   "movedOn": true,
+   "pass": true
+  }
+ ],
+ "errors": []
+}

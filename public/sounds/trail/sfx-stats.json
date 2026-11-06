@@ -1,0 +1,96 @@
+{
+ "made": "scripts/make-trail-sfx.mjs",
+ "license": "CC0 1.0 (산디자인 자체 합성, 외부 녹음·샘플 없음)",
+ "files": [
+  {
+   "file": "radio-ppongjjak-loop.wav",
+   "seconds": 8,
+   "sampleRate": 22050,
+   "bytes": 352844,
+   "peakDb": -4,
+   "rmsDb": -12.5,
+   "loop": true,
+   "seam": 0.0054
+  },
+  {
+   "file": "airgun-hiss.wav",
+   "seconds": 1.45,
+   "sampleRate": 44100,
+   "bytes": 127934,
+   "peakDb": -3,
+   "rmsDb": -14.5
+  },
+  {
+   "file": "squirrel-squeak.wav",
+   "seconds": 0.34,
+   "sampleRate": 44100,
+   "bytes": 30032,
+   "peakDb": -3,
+   "rmsDb": -17.4
+  },
+  {
+   "file": "cat-meow.wav",
+   "seconds": 0.78,
+   "sampleRate": 44100,
+   "bytes": 68840,
+   "peakDb": -3,
+   "rmsDb": -14.6
+  },
+  {
+   "file": "magpie-caw.wav",
+   "seconds": 0.42,
+   "sampleRate": 44100,
+   "bytes": 37088,
+   "peakDb": -3,
+   "rmsDb": -22.1
+  },
+  {
+   "file": "choco-crunch.wav",
+   "seconds": 0.5,
+   "sampleRate": 44100,
+   "bytes": 44144,
+   "peakDb": -3,
+   "rmsDb": -26.7
+  },
+  {
+   "file": "soul-whoo.wav",
+   "seconds": 1.6,
+   "sampleRate": 44100,
+   "bytes": 141164,
+   "peakDb": -3,
+   "rmsDb": -17.7
+  },
+  {
+   "file": "pant-huff.wav",
+   "seconds": 1,
+   "sampleRate": 44100,
+   "bytes": 88244,
+   "peakDb": -6,
+   "rmsDb": -24.8
+  },
+  {
+   "file": "cramp-zap.wav",
+   "seconds": 0.42,
+   "sampleRate": 44100,
+   "bytes": 37088,
+   "peakDb": -4,
+   "rmsDb": -19.6
+  },
+  {
+   "file": "cramp-scream.wav",
+   "seconds": 1.05,
+   "sampleRate": 44100,
+   "bytes": 92654,
+   "peakDb": -5,
+   "rmsDb": -15.8
+  },
+  {
+   "file": "cramp-roll.wav",
+   "seconds": 1.5,
+   "sampleRate": 44100,
+   "bytes": 132344,
+   "peakDb": -6,
+   "rmsDb": -22.9
+  }
+ ]
+}

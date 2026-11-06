@@ -87,8 +87,16 @@ export const CLEAR_FALLBACK={kind:'clear',level:null};
 export function createWeatherController({search=globalThis.location?.search??'',fetchImpl=globalThis.fetch,now=Date.now,intervalMs=REFRESH_MS,onChange=()=>{},setIntervalImpl=setInterval,clearIntervalImpl=clearInterval,isOnline=()=>globalThis.navigator?.onLine!==false}={}){
  const manual=manualWeather(search);
  const state={source:manual?'manual':'fallback',...(manual??CLEAR_FALLBACK),windSpeed:manual?.windSpeed??null,visibility:null,fetchedAt:null,error:null,calls:0};
- state.look=weatherLook(state);let timer=null,busy=false;
- const apply=patch=>{Object.assign(state,patch);state.look=weatherLook(state);onChange(state);};
+ // real = 실제(또는 ?weather=) 날씨. 자유 설정으로 고른 날씨(forced)가 있으면 화면은 그것을 따르고, real은 '지금' 표시용으로 계속 갱신한다.
+ const REAL_KEYS=['source','kind','level','windSpeed','visibility'],real=Object.fromEntries(REAL_KEYS.map(k=>[k,state[k]]));let forced=null;
+ const sync=()=>{if(forced)Object.assign(state,{source:'free',kind:forced,level:null,visibility:null});else for(const k of REAL_KEYS)state[k]=real[k];state.real={...real};state.look=weatherLook(state);};
+ sync();let timer=null,busy=false;
+ const apply=patch=>{Object.assign(state,patch);for(const k of REAL_KEYS)if(k in patch)real[k]=patch[k];sync();onChange(state);};
+ // 자유 설정 날씨: clear·overcast·rain·snow·fog(별칭 허용). null이면 실제 날씨로 돌아간다. 모르는 값은 false.
+ function setOverride(kind){
+  const k=kind==null||kind===''?null:MANUAL_ALIASES[String(kind).toLowerCase()];if(k===undefined)return false;
+  forced=k;sync();onChange(state);return true;
+ }
  async function refresh(){
   if(manual||busy)return state;
   if(!isOnline()){apply({source:'fallback',...CLEAR_FALLBACK,windSpeed:null,visibility:null,error:'오프라인'});return state;}
@@ -102,5 +110,5 @@ export function createWeatherController({search=globalThis.location?.search??'',
  }
  function start(){if(timer)return;if(manual){onChange(state);return;}void refresh();timer=setIntervalImpl(refresh,intervalMs);}
  function stop(){if(timer){clearIntervalImpl(timer);timer=null;}}
- return {state,refresh,start,stop,manual:!!manual};
+ return {state,refresh,start,stop,setOverride,get override(){return forced;},manual:!!manual};
 }

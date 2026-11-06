@@ -1,6 +1,6 @@
 // 시각(daytime.js)과 날씨(weather.js)를 합친 "지금의 환경"을 프레임마다 부드럽게 따라가는 보관소.
 // 렌더링(rendering.js)이 매 프레임 update()를 부르고 current를 읽어 빛·하늘·연무·입자에 반영한다.
-import {composeEnvironment,sunPosition,moonPosition,resolveUtcMs,seoulClock,wrap360} from './daytime.js';
+import {composeEnvironment,sunPosition,moonPosition,resolveUtcMs,seoulClock,wrap360,effectiveTime,timeOverridden} from './daytime.js';
 import {createWeatherController,KIND_LABEL,KIND_ICON,iconFor} from './weather.js';
 import {SUN_PRESETS} from './look-profile.js';
 export const TAU_SECONDS=2.5;
@@ -27,14 +27,14 @@ export function createEnvironment({search=globalThis.location?.search??'',nowMs=
  const info={timeLabel:'',manualTime:false,legacySun:false,kind:'clear',level:null,source:'fallback',icon:KIND_ICON.clear,weatherLabel:KIND_LABEL.clear};
  function target(){
   let sun,moon,label;
-  if(legacy&&!timeParam){sun={elevation:legacy.elevation,azimuth:legacy.azimuth};moon={elevation:-40,azimuth:(legacy.azimuth+180)%360,illumination:.5};label=legacy.label;info.manualTime=true;info.legacySun=true;}
-  else{const {utcMs,manual}=resolveUtcMs({time:timeParam,nowMs:nowMs()});sun=sunPosition(utcMs);moon=moonPosition(utcMs);label=seoulClock(utcMs).label;info.manualTime=manual;info.legacySun=false;}
+  if(legacy&&!timeParam&&!timeOverridden()){sun={elevation:legacy.elevation,azimuth:legacy.azimuth};moon={elevation:-40,azimuth:(legacy.azimuth+180)%360,illumination:.5};label=legacy.label;info.manualTime=true;info.legacySun=true;}
+  else{const {utcMs,manual}=resolveUtcMs({time:effectiveTime(timeParam),nowMs:nowMs()});sun=sunPosition(utcMs);moon=moonPosition(utcMs);label=seoulClock(utcMs).label;info.manualTime=manual;info.legacySun=false;}
   info.timeLabel=label;info.sunDown=sun.elevation<0;info.sunElevation=Math.round(sun.elevation*2)/2;
   return composeEnvironment({sun,moon,weather:ctl.state.look});
  }
  function update(dt){
   const t=target(),w=ctl.state;
-  Object.assign(info,{kind:w.kind,level:w.level,source:w.source,icon:iconFor(w.kind,info.sunDown),weatherLabel:KIND_LABEL[w.kind]});
+  Object.assign(info,{kind:w.kind,level:w.level,source:w.source,realKind:w.real?.kind??w.kind,freeTime:timeOverridden(),icon:iconFor(w.kind,info.sunDown),weatherLabel:KIND_LABEL[w.kind]});
   const k=current?1-Math.exp(-Math.max(0,Math.min(dt,.5))/TAU_SECONDS):1;
   current=current?patchAngles(easeTo(current,t,k),current,t,k):t;
   // 입자·소리는 날씨 수치 그대로를 이미 부드럽게 따라가므로 따로 처리하지 않는다.
