@@ -17,12 +17,14 @@ export function groundCoverMask(route,{nearest=indexRoute(route),sites=[],water=
   const q=local(x,z);
   return plazaFootprint(q.x,q.z,reach)||HEDGES.some(h=>Math.abs(q.x-h.x)<h.depth/2+reach&&q.z>h.from-reach&&q.z<h.to+reach);
  }
- function blocked(x,z,reach=0){
+ // hit: 같은 (x,z)로 이미 구한 nearest 결과가 있으면 넘겨 다시 찾지 않는다(숲 배치 풀 포기, 2026-11-06).
+ function blocked(x,z,reach=0,hit=null){
   if(entrance(x,z,reach))return true;
-  const h=nearest(x,z);
+  const h=hit??nearest(x,z);
   if(Number.isFinite(h.distance)&&(hard(route[h.index])||hard(route[h.index+1]))&&h.distance<h.width/2+reach)return true;
   if(water?.blocked(x,z,reach))return true;
-  return sites.some(site=>Math.hypot(x-site.x,z-site.z)<site.supportRadius+reach);
+  for(const site of sites)if(Math.hypot(x-site.x,z-site.z)<site.supportRadius+reach)return true;
+  return false;
  }
  return {entrance,blocked,local,water};
 }

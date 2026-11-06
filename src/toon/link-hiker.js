@@ -14,10 +14,10 @@ const {Vector3,Quaternion,Color}=THREE;
 // 시안 치수(m, 발바닥 0 기준). 머리는 반지름 0.25m 타원체(가운데 0.73m), 큰 눈은 얼굴(턱~정수리) 높이의 42% 자리.
 export const DONGDONG=Object.freeze({height:1.0,headRatio:2.1,headCenter:.73,headRadius:Object.freeze([.25,.225,.23]),eyeAt:.42,hip:.2,shoulder:.45,crotch:.16});
 // 걷기 속도(평지 0.72m×1.9걸음/s≈1.37m/s)는 그대로 두고 보폭만 짧은 다리(엉덩이 관절 0.2m)에 맞춘다:
-// 걷기 0.22m → 6.2걸음/s(한 주기 0.32초), 뛰기(걷기의 2.5배 ≈3.4m/s) 0.42m → 8.2걸음/s(한 주기 0.24초).
+// 걷기 0.22m → 6.2걸음/s(한 주기 0.32초), 뛰기(걷기의 1.55배 ≈2.1m/s, 7.6km/h) 0.30m → 7걸음/s(한 주기 0.29초).
 // 계단은 보폭 배율 1: 한 걸음(0.35m, 디딤판 0.30m·높이 0.18m)이 계단 한 칸이라 한 칸에 한 발씩 통통 뛰어오른다.
-export const TOON_STRIDE=Object.freeze({walk:.22/.72,run:.42/.72,stairs:1});
-export const TOON_RUN_SPEED=2.5;
+export const TOON_STRIDE=Object.freeze({walk:.22/.72,run:.30/.72,stairs:1});
+export const TOON_RUN_SPEED=1.55; // 평지 1.37m/s×1.55≈2.1m/s≈7.6km/h
 // 뼈 길이 배율(부모 기준 오프셋). 원본 등산객(1.7m 사람 비율) → 동동이.
 // 엉덩이 관절 0.198m·무릎 0.133m·발목 0.071m, 어깨 관절 0.443m(너비 ±0.14m), 목 0.485m·머리 뼈 0.505m.
 // 팔은 시안(어깨~장갑 가운데 0.25m)보다 조금 길게(위팔 0.115m·아래팔 0.11m) 두어 쌍안경·차 컵을 얼굴 앞까지 들 수 있게 한다.
@@ -221,7 +221,7 @@ export const TOON_ARM=Object.freeze({upper:.115,fore:.11,
 // 다리(엉덩이 관절~발목 0.127m)가 짧아 디딤 비율을 줄이고 걸음마다 몸을 크게 통통 튀긴다(bob). 뛰기는 공중 구간이 길다.
 export const GAIT_SHAPE=Object.freeze({
  walk:{step:.22,stance:.42,strike:10,toeOff:22,lift:.045,kick:0,lean:5,headBack:2,shift:.03,yaw:7,roll:5,bob:.018,crouch:.004,twist:1.1,lowAt:'double'},
- run:{step:.42,stance:.26,reach:.03,back:.03,strike:5,toeOff:30,lift:.05,kick:.06,lean:13,headBack:6,shift:0,yaw:9,roll:4,bob:.022,crouch:.01,twist:1.2,lowAt:'mid'},
+ run:{step:.30,stance:.26,reach:.03,back:.03,strike:5,toeOff:30,lift:.05,kick:.06,lean:13,headBack:6,shift:0,yaw:9,roll:4,bob:.022,crouch:.01,twist:1.2,lowAt:'mid'},
  // 계단: 한 걸음 0.35m(디딤판 0.30m·높이 0.18m) = 한 칸. 다리(0.13m)로는 두 칸에 두 발을 함께 디딜 수 없어, 한 발로 디디고 통통 뛰어 다음 칸에 다른 발을 딛는다(뛰기처럼 공중 구간).
  // 디딤 비율 0.24: 디디는 동안 발이 몸 아래 ±8cm만 움직여 다리가 닿는다. 디딜 때 낮아지고 뜰 때 높아진다(bob, lowAt 'mid').
  stairs:{step:.35,stance:.24,reach:.02,back:.02,strike:4,toeOff:20,lift:.04,kick:.02,lean:9,headBack:5,shift:0,yaw:5,roll:3,bob:.03,crouch:.01,twist:1,lowAt:'mid'},

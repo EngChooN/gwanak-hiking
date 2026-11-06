@@ -87,15 +87,19 @@ test('하산: 정상 구역에서 길 쪽(s 감소)으로 내려서면 코스 �
  for(let i=0;i<1200&&state.zone==='route';i++)advance(state,{forward:1,yaw:0},.05,()=>{},ground);
  assert.equal(state.zone,'summit');
 });
-test('길 둘레 한도 밖(내려가는 쪽 비탈)으로는 정상 구역에서도 내려서지 못한다',()=>{
+test('정상 원 안에서는 길 둘레 한도 밖 평지도 걷고, 코스 이동으로는 한도 안에서만 넘어간다',()=>{
  const G=makeGround([]).summit,s0=route.length-50,p=sample(s0);let checked=0;
  for(const side of [-1,1])for(let off=lateralLimit(s0)+2;off<lateralLimit(s0)+14;off+=2){
   const q={x:p.x+p.nx*side*off,z:p.z+p.nz*side*off},r=projectToRoute(q.x,q.z);
   if(r.s>=SUMMIT_ENTER_S||Math.abs(r.lateral)<=lateralLimit(r.s)||!insideSummit(q.x,q.z))continue;
   const from={x:q.x-p.nx*side*.3,z:q.z-p.nz*side*.3};checked++;
-  assert.equal(summitMove(G,[],from,q,lateralLimit),null,'한도 밖은 막힌다');assert.ok(summitMove(G,[],from,q,()=>1e9),'한도를 풀면 같은 걸음이 통과한다');
+  const m=summitMove(G,[],from,q,lateralLimit);assert.ok(m,'한도 밖이어도 원 안 평지는 걷는다(보이지 않는 벽 없음)');assert.equal(m.toRoute,false,'한도 밖에서는 정상 구역에 남는다');
  }
  assert.ok(checked>0);
+ // 한도 안 길 위로 내려서면 코스 이동으로 넘어간다.
+ const on=sample(SUMMIT_ENTER_S-3),m=summitMove(G,[],{x:on.x+.2,z:on.z},{x:on.x,z:on.z},lateralLimit);assert.ok(m&&m.toRoute);
+ // 한도 밖에서 걷다가 원 밖으로는 못 나간다.
+ const out=summitMove(G,[],{x:SUMMIT_CENTER.x+SUMMIT_RADIUS-.5,z:SUMMIT_CENTER.z},{x:SUMMIT_CENTER.x+SUMMIT_RADIUS+.5,z:SUMMIT_CENTER.z},lateralLimit);assert.equal(out,null);
 });
 test('저장·복원: 정상 구역 위치와 도착 표시가 그대로 돌아온다',()=>{
  const ground=makeGround([]),state=stateAt(SUMMIT_CENTER.x+3,SUMMIT_CENTER.z+3,1.2,{summitArrived:true,s:route.length-10});
@@ -120,4 +124,9 @@ test('걸을 수 있는 범위 지도: 입구에서 번지며 낭떠러지·시�
  const G=makeGround().summit,m=summitWalkMap(G,lateralLimit,{cell:2}),at=(x,z)=>{const i=Math.round((x-m.x0)/m.cell),j=Math.round((z-m.z0)/m.cell);return m.walk[j*m.n+i]===1;};
  assert.ok(m.walkable>200);assert.equal(at(SUMMIT_CENTER.x,SUMMIT_CENTER.z+4),true);
  assert.equal(at(ROUTE_END.x,CLIFF_Z-6),false,'낭떠러지 아래');assert.equal(at(marker.x,marker.z),false,'정상석');assert.equal(at(SUMMIT_CENTER.x+SUMMIT_RADIUS+2,SUMMIT_CENTER.z),false,'원 밖');
+});
+test('바위 충돌 안에 서 있으면 빠져나올 수 있고, 밖에서는 바위로 들어가지 못한다',()=>{
+ const flat0=()=>634,inRock=(x,z)=>Math.hypot(x,z)<1;
+ assert.equal(summitStepOk(flat0,{x:-2,z:0},{x:-.5,z:0},{rockBlocked:inRock}),false,'밖→안 막힘');
+ assert.equal(summitStepOk(flat0,{x:-.5,z:0},{x:-.55,z:0},{rockBlocked:inRock}),true,'안→밖 허용');
 });

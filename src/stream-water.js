@@ -73,15 +73,32 @@ export function buildBedGeometry(samples,height,raise=null){
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('color',new THREE.Float32BufferAttribute(col,3));g.setIndex(idx);g.computeVertexNormals();g.computeBoundingSphere();
  return g;
 }
-// 낙수: 턱 가장자리마다 폭 1.3m 물 막이 위에서 아래로 곡선을 그리며 떨어진다. 정점 uv=(가로 0~1, 위 0→아래 1). 턱이 없으면 null.
+// 낙수 곡선(2026-11-06): 물은 턱 가장자리에서 수평으로 떠나 포물선으로 떨어진다(수평 거리 out=reach·t, 낙차 비율 t²).
+// 위 끝 접선이 수평이라 위 물 띠와 꺾임 없이 이어진다. reach는 낙차가 클수록 멀고, 아래 표본 행까지 거리(room)의 80%를 넘지 않는다.
+// 카툰 물 띠(toon/water.js curveLedges)도 같은 식으로 턱 구간을 휘게 한다.
+export const FALL_ROWS=9,FALL_COLS=[-.85,-.42,0,.42,.85];
+export const fallReach=(h,room=Infinity)=>Math.max(.05,Math.min(.22+.5*h,room*.8));
+export const fallCurve=t=>({out:t,drop:t*t});
+// 낙수 아래쪽으로 곡선이 쓸 수 있는 거리: 턱 아래 표본(lower)에서 FALL_ROOM_MIN(m) 넘게 떨어진 첫 하류 표본까지.
+// 1m 간격 표본이 턱 바로 아래(0.02m 안쪽)에 겹치는 일이 있어, 가까운 표본은 곡선 구간으로 흡수한다.
+export const FALL_ROOM_MIN=.3;
+export function fallRoom(points,lower){
+ const a=points[lower];for(let i=lower-1;i>=0;i--){const d=Math.hypot(points[i].x-a.x,points[i].z-a.z);if(d>=FALL_ROOM_MIN)return {index:i,room:d};}
+ return {index:-1,room:Infinity};
+}
+// 낙수: 턱 가장자리마다 폭 1.7m 물 막이 위에서 아래로 포물선을 그리며 떨어진다(FALL_ROWS행×FALL_COLS열).
+// 막은 물 띠 곡면에서 바깥(곡선 법선)으로 3cm 띄운다. 정점 uv=(가로 0~1, 곡선 길이 비율 위 0→아래 1). 턱이 없으면 null.
 export function buildFallGeometry(samples,height){
- const pos=[],uv=[],idx=[],cols=[-.65,-.33,0,.33,.65],rows=[0,.5,1];
+ const pos=[],uv=[],idx=[],cols=FALL_COLS,R=FALL_ROWS;
  for(let k=1;k<samples.length;k++){const s=samples[k],h=ledgeRaise(s.along);if(!(h>0&&ledgeRaise(samples[k-1].along)===0))continue;
-  const base=pos.length/3;
-  for(let j=0;j<rows.length;j++){const t=rows[j],out=.02+t*t*(.22+.5*h);
-   for(let i=0;i<cols.length;i++){const x=s.x+s.side[0]*cols[i]+s.dir[0]*out,z=s.z+s.side[1]*cols[i]+s.dir[1]*out,y0=height(s.x+s.side[0]*cols[i],s.z+s.side[1]*cols[i])+.03;
-    pos.push(x,y0+(h+.005)*(1-t)+.0*t,z);uv.push(i/(cols.length-1),t);}}
-  for(let j=0;j<rows.length-1;j++)for(let i=0;i<cols.length-1;i++){const a=base+j*cols.length+i,b=a+1,c=a+cols.length,d=c+1;idx.push(a,b,c,b,d,c);}
+  const base=pos.length/3,reach=fallReach(h,fallRoom(samples,k-1).room);
+  const lens=[0];for(let j=1;j<R;j++){const a=fallCurve((j-1)/(R-1)),b=fallCurve(j/(R-1));lens.push(lens[j-1]+Math.hypot((b.out-a.out)*reach,(b.drop-a.drop)*h));}
+  for(let j=0;j<R;j++){const t=j/(R-1),{out,drop}=fallCurve(t);
+   // 곡선 법선(바깥·위): 접선 (reach, -2h·t)에 수직.
+   const tx=reach,ty=-2*h*t,n=Math.hypot(tx,ty)||1,nOut=-ty/n*.03,nUp=tx/n*.03;
+   for(let i=0;i<cols.length;i++){const cx=s.x+s.side[0]*cols[i],cz=s.z+s.side[1]*cols[i],top=height(cx,cz)+.035+h,land=height(cx+s.dir[0]*reach,cz+s.dir[1]*reach)+.035;
+    const o=out*reach+nOut;pos.push(cx+s.dir[0]*o,top+(land-top)*drop+nUp,cz+s.dir[1]*o);uv.push(i/(cols.length-1),lens[j]/lens[R-1]);}}
+  for(let j=0;j<R-1;j++)for(let i=0;i<cols.length-1;i++){const a=base+j*cols.length+i,b=a+1,c=a+cols.length,d=c+1;idx.push(a,b,c,b,d,c);}
  }
  if(!pos.length)return null;
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeBoundingSphere();

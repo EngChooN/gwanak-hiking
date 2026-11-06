@@ -15,7 +15,8 @@ export const PLAZA_LAMPS=Object.freeze([
 // 스탬프함(정상석 남 2.5m)·안내판(북동 2.9m)과 3.5m 이상 떨어진다. 정상석 자료가 없으면 fromEnd·side로 둔다. 위치는 추정.
 export const FACILITY_LAMPS=Object.freeze([{id:'yeonjuam',metres:4545,side:4.5,height:3.2},{id:'summit',anchor:'marker',offset:[3.5,5.5],fromEnd:14,side:3.2,height:3.2}]);
 // 실제 헤드랜턴은 거리 제곱 감쇠보다 완만하게(decay 1.1) 해서 가까운 바닥이 하얗게 타지 않고 15m 앞까지 보이게 한다.
-export const HEADLAMP=Object.freeze({reach:15,distance:24,decay:1.1,angle:.45,penumbra:.9,intensity:14,color:0xfff2dc});
+export const HEADLAMP=Object.freeze({reach:15,distance:24,decay:1.1,angle:.45,penumbra:.9,intensity:14,color:0xfff2dc,beamAhead:.23,fillAhead:.5,fillDistance:1.1,fillIntensity:.12});
+// beamAhead: 빛 원점을 머리 가운데에서 앞으로 더 내는 거리(m, 머리 반지름 ~0.25 밖). fill*: 셀카 때 얼굴 앞에서 오는 은은한 반사광.
 // 자동 점등은 해가 진 뒤. 공원등은 해질 무렵(고도 +2°부터 서서히), 헤드랜턴은 어두워진 뒤(−3°).
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 const smooth=(a,b,x)=>{const t=clamp((x-a)/(b-a));return t*t*(3-2*t);};

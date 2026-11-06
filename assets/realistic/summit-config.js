@@ -42,14 +42,15 @@ export function facilitySites(route,height){
  });
 }
 export function facilityGround(sites,x,z,base){
- // 기초 내부는 다른 시설의 전이 영역보다 우선한다. 경계의 부동소수점 오차도 흡수한다.
- const distances=sites.map(site=>({site,d:Math.hypot(x-site.x,z-site.z)}));
- const core=distances.filter(({site,d})=>d<=site.supportRadius+1e-9).sort((a,b)=>a.d-b.d)[0];
- if(core)return core.site.y;
- let strongest=0,target=base;
- for(const {site,d} of distances){const t=Math.max(0,Math.min(1,(d-site.supportRadius)/3));
-  const weight=1-t*t*(3-2*t);if(weight>strongest){strongest=weight;target=site.y;}
+ // 기초 내부는 다른 시설의 전이 영역보다 우선한다(가장 가까운 기초, 같은 거리면 앞 순서). 경계의 부동소수점 오차도 흡수한다.
+ // 숲 배치가 지점마다 부르는 경로라 배열을 만들지 않고 한 번에 훑는다(2026-11-06 첫 로딩 단축, 결과는 같다).
+ let core=null,coreD=Infinity,strongest=0,target=base;
+ for(const site of sites){
+  const d=Math.hypot(x-site.x,z-site.z);
+  if(d<=site.supportRadius+1e-9){if(d<coreD){coreD=d;core=site;}continue;}
+  const t=Math.min(1,(d-site.supportRadius)/3),weight=1-t*t*(3-2*t);if(weight>strongest){strongest=weight;target=site.y;}
  }
+ if(core)return core.y;
  return strongest===0?base:base+(target-base)*strongest;
 }
 export const FOREST_CONFIG={

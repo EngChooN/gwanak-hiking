@@ -18,7 +18,8 @@ export function waterClearance(route){
  const line=[];for(let m=STREAM_COURSE.from;m<=STREAM_COURSE.to;m+=STREAM_COURSE.step)line.push(sectionPoint(route,m,streamSide(m)));
  const pond=sectionPoint(route,POND.metres,POND.side);
  // 16m 칸 → 그 칸(과 이웃 칸)을 지나는 선분 번호. 큰 숲 격자에서도 점마다 전체 중심선을 훑지 않는다.
- const grid=new Map(),key=(i,j)=>`${i},${j}`;
+ // 칸 열쇠는 문자열 대신 정수(숲 배치가 점마다 부른다, 2026-11-06).
+ const grid=new Map(),key=(i,j)=>(i+1048576)*2097152+(j+1048576);
  for(let k=1;k<line.length;k++){const a=line[k-1],b=line[k];
   for(let i=Math.floor(Math.min(a.x,b.x)/CELL)-1;i<=Math.floor(Math.max(a.x,b.x)/CELL)+1;i++)for(let j=Math.floor(Math.min(a.z,b.z)/CELL)-1;j<=Math.floor(Math.max(a.z,b.z)/CELL)+1;j++){const c=key(i,j);if(!grid.has(c))grid.set(c,[]);grid.get(c).push(k);}}
  // 물줄기 중심선까지 거리(m). 16m 밖은 Infinity.

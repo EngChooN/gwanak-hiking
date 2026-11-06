@@ -17,9 +17,14 @@ export const strideScaleFor=(scale,running,stairs=false)=>scale?((stairs?scale.s
 // 보폭 계산과 같은 조건으로 계단 위인지 정한다(광장·길 밖은 계단이 아니다).
 export const onStairs=({plaza=false,seg,off=false})=>!plaza&&!off&&!!seg&&isStairs(seg.material);
 export function strideAt({plaza=false,seg,direction=1,off=false,backward=false}){return (plaza?strideFor({slope:0,material:'paved'}):strideFor(seg,direction))*(off&&!plaza?OFF_TRAIL_STRIDE:1)*(backward?BACKWARD_STRIDE:1);}
-export const lateralLimit=s=>s<0?Math.max(...entranceLateralBounds(s).map(Math.abs)):sample(s).width/2+OFF_TRAIL_METRES;
-export const isOffTrail=(s,lateral)=>s>=0&&Math.abs(lateral)>sample(s).width/2;
-export function positionAt(s,lateral,ground){const p=sample(s),a=sample(s-2),b=sample(s+2),length=Math.hypot(b.x-a.x,b.z-a.z),nx=s<0?p.nx:-(b.z-a.z)/length,nz=s<0?p.nz:(b.x-a.x)/length,x=p.x+nx*lateral,z=p.z+nz*lateral;return [x,ground?.height(x,z,isOffTrail(s,lateral))??p.y,z];}
+// 일주문 아래~GPX 시작(GATE_S≤s<0)은 폭 12m 포장 진입로다. 예전에는 문 통로 폭(±1.75m)에 묶여 넓은 길 한가운데에 보이지 않는 벽이 있었다(2026-11-06).
+// 이제 코스와 같이 노면 폭 안은 길, 그 밖 8m까지는 길 밖이다. 그보다 뒤(광장 쪽 접근로, 예전 저장 형식)만 입구 다각형 폭을 쓴다.
+export const lateralLimit=s=>s<GATE_S?Math.max(...entranceLateralBounds(s).map(Math.abs)):sample(s).width/2+OFF_TRAIL_METRES;
+export const isOffTrail=(s,lateral)=>s>=GATE_S&&Math.abs(lateral)>sample(s).width/2;
+const lateralBounds=s=>[-lateralLimit(s),lateralLimit(s)];
+// 법선: 진입로 마지막 2m부터는 코스와 같은 앞뒤 2m 평균 법선을 써서, s=0(진입로→GPX)에서 옆 위치가 튀지 않게 한다.
+// (예전에는 s<0만 선분 법선이라 s=0에서 옆으로 1.5m 선 자리가 수십 cm 튀어 그 자리에서 걸렸다.)
+export function positionAt(s,lateral,ground){const p=sample(s),a=sample(s-2),b=sample(s+2),length=Math.hypot(b.x-a.x,b.z-a.z),nx=s<-2?p.nx:-(b.z-a.z)/length,nz=s<-2?p.nz:(b.x-a.x)/length,x=p.x+nx*lateral,z=p.z+nz*lateral;return [x,ground?.height(x,z,isOffTrail(s,lateral))??p.y,z];}
 // 코스(zone 'route')의 시작은 일주문 아래(GATE_S). 그보다 뒤는 광장(zone 'plaza')의 자유이동이다.
 export const ROUTE_MIN_S=GATE_S+1e-6;
 export const SUMMIT_START_BACK=10;
@@ -51,7 +56,7 @@ export function setPlayerPosition(state,pos,ground){
   const r=projectToRoute(summit.x,summit.z);if(r.s<SUMMIT_ENTER_S)return false;Object.assign(state,{zone:'summit',plaza:null,summit,s:r.s,lateral:r.lateral});return true;
  }
  if(!Number.isFinite(pos.s))return false;
- const s=clamp(pos.s,ROUTE_MIN_S,route.length),bounds=s<0?entranceLateralBounds(s):[-lateralLimit(s),lateralLimit(s)];
+ const s=clamp(pos.s,ROUTE_MIN_S,route.length),bounds=lateralBounds(s);
  Object.assign(state,{zone:'route',plaza:null,summit:null,s,lateral:clamp(Number.isFinite(pos.lateral)?pos.lateral:0,...bounds)});return true;
 }
 export function restore(raw){try{
@@ -68,7 +73,7 @@ export function restore(raw){try{
  }
  if(v.zone==='summit'&&validSummit(v.summit)&&projectToRoute(v.summit.x,v.summit.z).s>=SUMMIT_ENTER_S){const r=projectToRoute(v.summit.x,v.summit.z);return {...result,zone:'summit',plaza:null,summit:{x:v.summit.x,z:v.summit.z,heading:v.summit.heading},summitArrived:v.summitArrived===true,s:r.s,lateral:r.lateral};}
  const s=clamp(v.s,ROUTE_MIN_S,route.length),half=sample(s).width/2;
- const lateral=s<0?clamp(v.lateral,...entranceLateralBounds(s)):Math.abs(v.lateral)>lateralLimit(s)?clamp(v.lateral,-half+.25,half-.25):v.lateral;
+ const lateral=Math.abs(v.lateral)>lateralLimit(s)?clamp(v.lateral,-half+.25,half-.25):v.lateral;
  return {...result,zone:'route',plaza:null,summitArrived:v.summitArrived===true,s,lateral};
 }catch{return initialState();}}
 export function setPose(state,pose){
@@ -97,6 +102,29 @@ function planPlaza(state,f,side,budget,ground,yaw=0){
  const from=toGate(P.x,P.z),to=toGate(P.x+dx*budget,P.z+dz*budget);
  for(const [gx,gz] of [[to.gx,to.gz],[to.gx,from.gz],[from.gx,to.gz]]){const q=fromGate(gx,gz),hit=resolve(q.x,q.z);if(hit)return {hit,direction:{x:dx,z:dz}};}
  return {hit:null,direction:{x:dx,z:dz}};
+}
+// 코스 한 프레임 이동 후보(길 앞뒤 ds·옆 dl). 막히면 앞뒤·옆 중 한 성분만 남겨 벽(급경사·바위·일주문·옆 한도)을 따라 미끄러진다.
+// 길 밖이 끼는 걸음(길 밖에서, 또는 길 밖으로)은 양 끝 높이를 모두 화면에 보이는 지형(ground.height(x,z,true))으로 잰다.
+// 예전에는 길 위 = GPX 중심선 높이, 길 밖 = 지형 높이라 가장자리에서 높이가 계단처럼 끊겼고(수십 cm), 그 단차 때문에
+// 속도 한도 계산이 맞지 않거나 경사 검사(canMove)에 걸려 길 가장자리를 넘지 못했다. 막히면 미끄러지지도 않고 멈췄다(2026-11-06).
+const distance3=(a,b)=>Math.hypot(b[0]-a[0],b[1]-a[1],b[2]-a[2]);
+function planRoute(state,ds,dl,{budget,off,ground,motionPosition}){
+ const [x0,,z0]=positionAt(state.s,state.lateral);
+ const terrainPosition=(s,l)=>{const [x,,z]=positionAt(s,l),y=ground.height(x,z,true);return [x,Number.isFinite(y)?y:sample(s).y,z];};
+ const plan=(ds,dl)=>{
+  let s=clamp(state.s+ds,ROUTE_MIN_S,route.length),l=clamp(state.lateral+dl,...lateralBounds(s));
+  const entering=isOffTrail(s,l),rough=!!ground&&(off||entering),at=rough?terrainPosition:motionPosition,allowed=entering&&!off?budget*OFF_TRAIL_MULTIPLIER:budget,a=at(state.s,state.lateral);
+  let b=at(s,l),d=distance3(a,b);
+  // 곡선·지면 높이를 포함한 실제 거리로 속도를 제한해 급한 단차를 뛰어넘지 않는다. 지형 삼각형 경계에서 4번 안에 딱 맞지 않으면 한 번 더 줄인다.
+  for(let i=0;i<5&&d>allowed+1e-10;i++){const r=(i<4?1:.95)*allowed/d;s=state.s+(s-state.s)*r;l=state.lateral+(l-state.lateral)*r;b=at(s,l);d=distance3(a,b);}
+  if(!(d>1e-9&&d<=allowed+1e-6))return null;
+  // 일주문 기둥·바리케이드는 경로 안팎과 무관하게 막는다.
+  const q=positionAt(s,l);if(segmentHitsGate(x0,z0,q[0],q[2]))return null;
+  if(rough&&!ground.canMove(a,b))return null;
+  return {s,lateral:l,a,b,distance:d,allowed,entersOff:isOffTrail(s,l)};
+ };
+ for(const [u,v] of [[ds,dl],[ds,0],[0,dl]]){if(!u&&!v)continue;const hit=plan(u,v);if(hit)return hit;}
+ return null;
 }
 export function advance(state,input,dt,onStep=()=>{},ground){
  state.running=false;if(dt<=0||!Number.isFinite(dt))return 0;dt=Math.min(dt,.1);
@@ -128,36 +156,25 @@ export function advance(state,input,dt,onStep=()=>{},ground){
   next=plan.hit;b=plazaPosition(next.x,next.z);distance=Math.hypot(...a.map((v,j)=>b[j]-v));
  }else{
   const normal=Math.hypot(along,right)||1,rawS=state.s+budget*along/normal;
-  let proposedS=clamp(rawS,ROUTE_MIN_S,route.length);
-  let proposedSide=clamp(state.lateral+budget*right/normal,...(proposedS<0?entranceLateralBounds(proposedS):[-lateralLimit(proposedS),lateralLimit(proposedS)]));
-  if(state.auto)proposedSide=state.lateral-Math.sign(state.lateral)*Math.min(Math.abs(state.lateral),budget*.6);
+  let ds=clamp(rawS,ROUTE_MIN_S,route.length)-state.s,dl=budget*right/normal;
+  if(state.auto)dl=-Math.sign(state.lateral)*Math.min(Math.abs(state.lateral),budget*.6);
   a=motionPosition(state.s,state.lateral);
   // 일주문 아래에서 뒤로 가면 문 선분 좌표계를 그대로 연장해 광장으로 돌아간다.
   if(rawS<ROUTE_MIN_S){
-   const w=worldFromGateFrame(rawS,proposedSide),[x0,,z0]=positionAt(state.s,state.lateral);
+   const w=worldFromGateFrame(rawS,clamp(state.lateral+dl,...lateralBounds(ROUTE_MIN_S))),[x0,,z0]=positionAt(state.s,state.lateral);
    if(!segmentHitsGate(x0,z0,w.x,w.z)&&insidePlaza(w.x,w.z)){next={zone:'plaza',x:w.x,z:w.z};b=plazaPosition(w.x,w.z);distance=Math.hypot(...a.map((v,j)=>b[j]-v));}
-   else proposedS=Math.max(proposedS,state.s);
+   else ds=Math.max(ds,0);
   }
+  // 길 옆 한도(8m) 밖이어도 정상 원 안이면 정상 자유 구역으로 넘어가 걷는다. 예전에는 입구(s) 앞에서 옆으로 정상 원에 들어가는 길이 한도에 막혔다(2026-11-06).
+  if(!next&&ground?.summit&&!state.auto){const s1=clamp(state.s+ds,ROUTE_MIN_S,route.length),l1=state.lateral+dl,[x,,z]=positionAt(s1,l1);
+   if(Math.abs(l1)>lateralLimit(s1)&&insideSummit(x,z)){enterSummit(state);return advanceSummit(state,f,side,yaw,!!input.run,dt,onStep,ground,input.strideScale,input.runMultiplier);}}
   if(!next){
-   b=motionPosition(proposedS,proposedSide);distance=Math.hypot(...a.map((v,i)=>b[i]-v));
-   entersOff=isOffTrail(proposedS,proposedSide);
-   allowedBudget=entersOff&&!off?budget*OFF_TRAIL_MULTIPLIER:budget;
-   // 곡선·지면 높이를 포함한 실제 거리로 속도를 제한해 급한 단차를 뛰어넘지 않는다.
-   for(let i=0;i<4&&distance>allowedBudget+1e-10;i++){
-    const ratio=allowedBudget/distance;proposedS=state.s+(proposedS-state.s)*ratio;proposedSide=state.lateral+(proposedSide-state.lateral)*ratio;
-    b=motionPosition(proposedS,proposedSide);distance=Math.hypot(...a.map((v,j)=>b[j]-v));
-   }
-   // 일주문 기둥·바리케이드: 경로 안팎과 무관하게 막고, 막히면 앞뒤·좌우 중 한 성분만 남겨 미끄러진다.
-   const gateHit=(s,l)=>{const q=positionAt(s,l);const [x0,,z0]=positionAt(state.s,state.lateral);return segmentHitsGate(x0,z0,q[0],q[2]);};
-   if(gateHit(proposedS,proposedSide)){
-    if(!gateHit(proposedS,state.lateral))proposedSide=state.lateral;else if(!gateHit(state.s,proposedSide))proposedS=state.s;else{recover(state,8,dt);return 0;}
-    b=motionPosition(proposedS,proposedSide);distance=Math.hypot(...a.map((v,j)=>b[j]-v));
-   }
-   next={zone:'route',s:proposedS,lateral:proposedSide};
+   const hit=planRoute(state,ds,dl,{budget,off,ground,motionPosition});
+   if(!hit){recover(state,8,dt);return 0;}
+   ({a,b,distance}=hit);allowedBudget=hit.allowed;entersOff=hit.entersOff;next={zone:'route',s:hit.s,lateral:hit.lateral};
   }
  }
- const blocked=!plaza&&next.zone==='route'&&ground&&(off||entersOff)&&!ground.canMove(a,b);
- if(blocked||!Number.isFinite(distance)||distance<1e-9||distance>allowedBudget+1e-6){recover(state,8,dt);return 0;}
+ if(!Number.isFinite(distance)||distance<1e-9||distance>allowedBudget+1e-6){recover(state,8,dt);return 0;}
  const oldS=plaza?null:state.s,oldLateral=state.lateral,oldPhase=state.stepPhase,oldWorld=a;
  if(next.zone==='plaza'){
   const heading=plaza?state.plaza.heading:sample(state.s).heading;
@@ -181,7 +198,7 @@ function enterSummit(state){
  Object.assign(state,{zone:'summit',plaza:null,summit:{x,z,heading:sample(state.s).heading},auto:false});
 }
 // 정상 구역 한 프레임. 카메라(시선) 기준 W/A/S/D, 막히면 월드 x·z 성분 하나만 남겨 미끄러진다.
-// 길(s<SUMMIT_ENTER_S)로 내려서면 코스 이동으로 이어진다. 길 둘레 lateralLimit 밖이면 그쪽은 막힌다.
+// 길(s<SUMMIT_ENTER_S−1m)로 내려서면 코스 이동으로 이어진다. 길 둘레 lateralLimit 밖이면 정상 구역에 남는다(summit.summitMove).
 function advanceSummit(state,f,side,yaw,run,dt,onStep,ground,strideScale,runMultiplier){
  const G=ground.summit,P=state.summit,sites=G.sites(),backward=f<0,running=run&&!state.runExhausted&&state.stamina>0;
  const h=P.heading+yaw,n=Math.hypot(f,side),dx=(-Math.sin(h)*f+Math.cos(h)*side)/n,dz=(-Math.cos(h)*f-Math.sin(h)*side)/n;
@@ -198,7 +215,11 @@ function advanceSummit(state,f,side,yaw,run,dt,onStep,ground,strideScale,runMult
  let hit=null;
  for(const [vx,vz] of [[dx,dz],[dx,0],[0,dz]]){
   if(!vx&&!vz)continue;let length=speedAt(0)*dt,m=null;
-  for(let i=0;i<4;i++){m=tryMove(vx,vz,length);if(!m)break;const allowed=speedAt(m.slope)*dt;if(m.distance<=allowed+1e-10)break;length*=allowed/m.distance;m=null;}
+  // 걸음 길이를 줄이면 지형 삼각형 경계를 넘나들며 경사가 바뀌어 딱 맞지 않을 수 있다. 4번 안에 못 맞추면
+  // 예전에는 막힘으로 쳐서 완만한 비탈에서도 축 방향으로만 기어갔다(정상부 걸림, 2026-11-06). 이제 마지막엔 남은 비율만큼 더 줄여 받아들인다.
+  let refused=false;
+  for(let i=0;i<4;i++){m=tryMove(vx,vz,length);if(!m){refused=true;break;}const allowed=speedAt(m.slope)*dt;if(m.distance<=allowed+1e-10)break;length*=allowed/m.distance;m=null;}
+  if(!m&&!refused){const last=tryMove(vx,vz,length*.95);if(last&&last.distance<=speedAt(last.slope)*dt*1.05)m=last;}
   if(m){hit=m;break;}
  }
  if(!hit){recover(state,8,dt);return 0;}

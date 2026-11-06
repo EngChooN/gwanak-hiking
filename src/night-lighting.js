@@ -118,9 +118,10 @@ export function createNightLighting({scene,renderer=null,place,groundHeight,gate
   if(legacySun)return state.elevation=30;
   const {utcMs}=resolveUtcMs({time:timeParam,nowMs:nowMs()});return state.elevation=sunPosition(utcMs).elevation;
  }
+ let fillLight=null;
  const fwd=new THREE.Vector3(),headPos=new THREE.Vector3(),tmp=new THREE.Vector3();
  let scaleCache=700;const sizeVec=new THREE.Vector2();
- function update(dt,{camera,avatar=null,view='first',zone='route',s=0,hatKind='none',hiker=null}={}){
+ function update(dt,{camera,avatar=null,view='first',selfie=false,zone='route',s=0,hatKind='none',hiker=null}={}){
   const elevation=sunElevation(dt);
   const lampGoal=lampAmount(elevation),darkGoal=headlampDark(elevation);
   state.lamps+=(lampGoal-state.lamps)*smooth(.9,dt);state.dark=darkGoal;
@@ -136,20 +137,24 @@ export function createNightLighting({scene,renderer=null,place,groundHeight,gate
   // 내 헤드랜턴
   const h=state.head;head.intensity=HEADLAMP.intensity*h;
   if(h>.003){
-   if(view==='third'&&avatar){
+   if((view==='third'||selfie)&&avatar){
     const rot=avatar.rotation.y,fx=-Math.sin(rot),fz=-Math.cos(rot),bone=avatar.getObjectByName?.('Head'),m=mountFor(hatKind);
     if(bone)bone.getWorldPosition(headPos);else headPos.set(avatar.position.x,avatar.position.y+(hiker?.eyeHeight??1.6),avatar.position.z);
     // 머리뼈는 목 아래쪽 기준일 수 있어 눈높이 기준으로 보정한다.
     if(hiker?.eyeHeight)headPos.y=avatar.position.y+hiker.eyeHeight;
     headPos.x+=fx*m.forward;headPos.z+=fz*m.forward;headPos.y+=m.up;
     ownLamp.position.copy(headPos);ownLamp.rotation.set(-.1,rot,0);
-    head.position.copy(headPos);fwd.set(fx,-.115,fz).normalize();
+    // 빛 원점은 모자챙·얼굴 앞(HEADLAMP.beamAhead)에 둔다. 얼굴 안쪽에 두면 얼굴에 동그란 빛 무늬가 생긴다. 원뿔은 원점 뒤를 비추지 않으므로 얼굴·몸은 빛을 받지 않는다.
+    fwd.set(fx,-.115,fz).normalize();head.position.copy(headPos).addScaledVector(tmp.set(fx,0,fz),HEADLAMP.beamAhead);
    }else{
     camera.getWorldDirection(fwd);fwd.y=Math.min(fwd.y,-.06);fwd.normalize();head.position.copy(camera.position).addScaledVector(fwd,.12);head.position.y-=.04;
    }
    head.target.position.copy(head.position).addScaledVector(fwd,HEADLAMP.reach);head.target.updateMatrixWorld();
   }
-  const showOwn=view==='third'&&h>.003&&!!avatar;
+  // 셀카: 얼굴에는 앞쪽에서 오는 아주 약한 반사광만 준다(가로등 풀에서 가장 약한 광원 1개를 빌려 쓰므로 실제 광원 수는 그대로).
+  if(fillLight){fillLight.distance=20;fillLight.decay=2;fillLight=null;}
+  if(selfie&&h>.003&&avatar){const l=pool.reduce((m,x)=>x.intensity<m.intensity?x:m);if(l){fillLight=l;const rot=avatar.rotation.y;l.position.copy(headPos).addScaledVector(tmp.set(-Math.sin(rot),0,-Math.cos(rot)),HEADLAMP.fillAhead);l.position.y+=.02;l.color.setHex(HEADLAMP.color);l.distance=HEADLAMP.fillDistance;l.decay=2;l.intensity=HEADLAMP.fillIntensity*h;}}
+  const showOwn=(view==='third'||selfie)&&h>.003&&!!avatar;
   ownLamp.visible=ownGlow.visible=showOwn;lens.material.emissiveIntensity=h*5;ownGlowMat.uniforms.uAmount.value=h;
   if(showOwn)ownGlowGeo.attributes.position.set([headPos.x,headPos.y,headPos.z],0),ownGlowGeo.attributes.position.needsUpdate=true;
   // 다른 등산객

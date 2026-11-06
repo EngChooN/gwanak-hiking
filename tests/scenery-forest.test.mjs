@@ -93,12 +93,14 @@ test('낮아진 풀은 포기 사이를 채워 길 바깥을 연속해서 덮는
  }
  assert.ok(count/360>10);assert.ok(occupied.size/(120*12)>.9);
  // 낮음에서는 개수를 줄여도 같은 영역 전체에 포기가 남아야 한다.
- a.update(new THREE.PerspectiveCamera(),0);count=0;occupied.clear();
+ // 2026-11-06부터 먼 칸은 거리 밀도로 더 줄어드므로(근거리 100% 8m) 카메라 둘레 12m 띠에서 화질 배율만 본다.
+ const camera=new THREE.PerspectiveCamera();camera.position.set(40,501.6,7);
+ a.update(camera,0);count=0;occupied.clear();
  for(const mesh of a.group.children[0].children)for(let i=0;i<mesh.count;i++){
   mesh.getMatrixAt(i,matrix);position.setFromMatrixPosition(matrix);
-  if(position.x>=10&&position.x<70&&position.z>=4&&position.z<10){
-   count++;occupied.add(`${Math.floor((position.x-10)*2)},${Math.floor((position.z-4)*2)}`);
+  if(position.x>=34&&position.x<46&&position.z>=4&&position.z<10){
+   count++;occupied.add(`${Math.floor((position.x-34)*2)},${Math.floor((position.z-4)*2)}`);
   }
  }
- assert.ok(count/360>2);assert.ok(occupied.size/(120*12)>.35);
+ assert.ok(count/72>2);assert.ok(occupied.size/(24*12)>.35);
 });

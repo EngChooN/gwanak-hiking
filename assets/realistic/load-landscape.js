@@ -16,6 +16,7 @@ import {instanceGeometry} from './instance-geometry.js';
 import {twigCutout} from './foliage-material.js';
 import {patchFoliage,foliageUniforms} from './foliage-shader.js';
 import {createNearTrees,NEAR_TREE_IDS} from './near-trees.js';
+import {createCullingReuse} from '../../src/culling-reuse.js';
 import {surfaceIndex} from './surface-index.js';
 import {stairTerrainClearance} from './terrain-clearance.js';
 import {createStairBase,stairGapReport} from './stair-base.js';
@@ -157,13 +158,14 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
   const status={style:toonMode?'toon':style,source:manifest.inventoryFallback?'파일 목록':'manifest',cityChunks:0,buildings:0,waterPolygons:0,errors:[],ready:false};
   if(manifest.version!==1)throw new Error('미지원 자산 버전');
   if(!manifest.observation||!manifest.atmosphere||!manifest.directionCaptures)throw new Error('서울 원경 기준 갱신 후 prepare.mjs 재실행 필요');
-  // 실사 전용 셰이더(terrain-material.js)와 HDR 로더는 카툰 번들에 들어가지 않게 동적으로 불러온다.
+  // 실사 모드는 2026-11-06 없앴다: 실사 PBR 텍스처·HDR·지형 셰이더(terrain-material.js)는 더 불러오지 않는다(빌드에도 들어가지 않는다).
+  if(!toonMode)throw new Error('카툰 재질(materialFactory)이 필요합니다 — 실사 모드는 제거됨');
   const [near,routeSource,materials,sky,chunkIndex,shaders]=await Promise.all([
     readGrid(base,manifest.near),readJSON(base+manifest.route),
     toonMode?{...materialFactory.materials()}:loadMaterials(base,manifest),
-    toonMode?null:import('three/addons/loaders/RGBELoader.js').then(({RGBELoader})=>new RGBELoader().setDataType(THREE.FloatType).loadAsync(base+manifest.hdri)),
+    null,
     readJSON(chunkBase+'index.json'),
-    toonMode?null:import('./terrain-material.js')
+    null
   ]);
   if(chunkIndex.schemaVersion!==1||chunkIndex.chunkSize!==200)throw new Error('미지원 청크 목록');
   const route=assignSurfaceRoute(routeSource);
@@ -271,6 +273,8 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
   const culler=createChunkCuller(),bounds=new WeakMap();
   const boundsOf=o=>{if(!bounds.has(o))bounds.set(o,chunkBounds(o));return bounds.get(o);};
   let natureQuality=2;
+  // 카메라가 거의 그대로면 지형 청크 가시성·숲 버킷 순회를 지난 결과로 둔다(src/culling-reuse.js). 청크·나무가 붙거나 떨어지면 다시 잰다.
+  const cullReuse=createCullingReuse();status.culling=cullReuse.status;
   // ── 지형 200m 청크 스트리밍 ──
   // 청크 파일(terrain/{i}_{j}.f32)은 near 격자 표본 그대로다. 메시는 기존과 같은 높이 함수(chunkHeight: 노면 회랑·계단 보정)로 2m 간격을 만들고,
   // 보행·배치용 높이 조회는 near 격자 전역 색인을 그대로 쓴다(기획서 §3). 컬링 단위는 50m 조각(청크당 최대 16개).
@@ -297,8 +301,8 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
     return holder.children.length?holder:null;
   }
   const terrainStream=createChunkStreamer({chunks:chunkIndex.chunks,chunkSize:CHUNK,radius:terrainRadius,load:loadTerrainChunk,
-    attach(holder,chunk){terrain.add(holder);freezeStatic(holder);for(const mesh of holder.children)chunks.set(mesh.name,mesh);terrainAttached.add(chunk.id);coveredCells.add(`${Math.floor(chunk.x0/CHUNK)},${Math.floor(chunk.z0/CHUNK)}`);maskBase();checkPlaza();},
-    detach(holder,chunk){for(const mesh of holder.children)chunks.delete(mesh.name);terrainAttached.delete(chunk.id);coveredCells.delete(`${Math.floor(chunk.x0/CHUNK)},${Math.floor(chunk.z0/CHUNK)}`);maskBase();}});
+    attach(holder,chunk){cullReuse.markDirty();terrain.add(holder);freezeStatic(holder);for(const mesh of holder.children)chunks.set(mesh.name,mesh);terrainAttached.add(chunk.id);coveredCells.add(`${Math.floor(chunk.x0/CHUNK)},${Math.floor(chunk.z0/CHUNK)}`);maskBase();checkPlaza();},
+    detach(holder,chunk){cullReuse.markDirty();for(const mesh of holder.children)chunks.delete(mesh.name);terrainAttached.delete(chunk.id);coveredCells.delete(`${Math.floor(chunk.x0/CHUNK)},${Math.floor(chunk.z0/CHUNK)}`);maskBase();}});
   // ── 식생 200m 청크 스트리밍 ──
   // 배치 목록(숲 혼합·색·구조 보정 결과)은 registerVegetation으로 한 번 받고, 청크마다 LOD 인스턴스를 만들어 붙인다.
   // 반경 밖으로 나간 청크는 InstancedMesh·사진판 판을 해제한다(GLB 공용 geometry·재질은 userData.shared로 남는다).
@@ -325,7 +329,7 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
     natureBuckets.set(chunk.id,bucket);
   }
   function detachVegetation(holder,chunk){
-    natureBuckets.delete(chunk.id);const gone=new Set(holder.children);
+    cullReuse.markDirty();natureBuckets.delete(chunk.id);const gone=new Set(holder.children);
     for(const lod of gone)nearTrees.unregister?.(lod);
     for(let i=vegetation.length-1;i>=0;i--)if(gone.has(vegetation[i]))vegetation.splice(i,1);
   }
@@ -360,14 +364,19 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
     checkPlaza();
     {const t=terrainStream.status();status.pendingTerrainChunks=t.pending;status.terrainChunks=t;if(vegetationStream)status.vegetationChunks=vegetationStream.status();}
     culler.update(camera);
+    // 건너뛰는 프레임에도 바람·근경 나무·도시·길가 풀은 아래에서 그대로 갱신한다.
+    const reuseCulling=cullReuse.check(camera,quality);
+    if(!reuseCulling){
     let terrainVisible=0;for(const mesh of chunks.values()){mesh.visible=culler.visible(boundsOf(mesh),camera);if(mesh.visible)terrainVisible++;}
     status.terrainVisibleChunks=terrainVisible;
+    }
     if(natureQuality!==quality){natureQuality=quality;for(const lod of vegetation){applyNatureQuality(lod,quality);applyDenseTrees(lod,quality);}}
     foliageUniforms.foliageTime.value=performance.now()/1000;nearTrees.update(camera,quality);status.nearTrees=nearTrees.status;
     const atEntrance=Math.hypot(camera.position.x-route[0].x,camera.position.z-route[0].z)<90;
     // 입구에서는 근경 숲이 사진판으로 뭉개지지 않게 삼각형·호출 예산을 조금 더 준다(fps 실측: 변경기록 2026-11-03 입구광장 화면결함).
     // 쌍안경(camera.zoom>1): 확대된 시야 기준으로 거리 판정을 줄이고, 시야가 좁아진 만큼 예산을 1.5배로 올린다. THREE.LOD는 camera.zoom을 스스로 나눈다.
     const zoom=Math.max(1,camera.zoom||1),zoomBoost=zoom>1.01?1.5:1;
+    if(!reuseCulling){
     let visible=0,budget=([60000,120000,300000][quality]+(atEntrance?[30000,90000,120000][quality]:0))*zoomBoost,priorityTriangles=0;const candidates=[];
     // 근경 입체 나무(near-trees.js)가 가까운 나무를 맡으면서 사진판 청크가 삼각형 예산에 걸려 숨던 일이 없어졌다.
     // 먼 청크까지 모두 그리면 호출이 약 1,200회로 늘어나므로 가까운 순서로 화질별 호출 상한을 둔다(이전 실측 약 340회).
@@ -397,6 +406,7 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
         const calls=lod.levels[index].object.children.length;
         if(triangles>budget||calls>natureCalls){lod.visible=false;budgetHidden++;}else {budget-=triangles;natureCalls-=calls;visible++;levelUse[index]=(levelUse[index]??0)+1;}
     }status.entranceNatureCallBudget=atEntrance?{limit:[220,430,700][quality],remaining:natureCalls,priorityTriangles}:null;status.natureCallBudget={limit:atEntrance?[220,430,700][quality]:[200,300,380][quality],remaining:natureCalls};status.natureVisibleChunks=visible;status.natureBudgetHidden=budgetHidden;status.natureLevelUse=levelUse;status.natureBaseTriangleBudget=[60000,120000,300000][quality];
+    }
     city.update(camera,quality,culler);
     for(const mesh of grasses.children){
       const box=boundsOf(mesh),grassZoom=Math.min(zoom,3);updateGroundCover(mesh,box.distanceToPoint(camera.position)/grassZoom,quality);
@@ -417,6 +427,7 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
   }
   // 이미 부모(bucket.root)에 붙고 행렬이 고정된 LOD를 거리·예산 판정 목록에 넣는다.
   function attachNature(lod,bucket){
+    cullReuse.markDirty();
     for(const p of lod.userData.contactOccluders??[])contactOcclusion.stamp(p.x,p.z,p.radius,p.opacity);
     if(lod.userData.contactOccluders?.length)contactDirty=true;
     const kind=lod.userData.natureKind;status.contactOccluderKinds??={};
@@ -453,16 +464,7 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
         const uv=g.attributes.uv,pos=g.attributes.position;for(let i=0;i<uv.count;i++)uv.setXY(i,(pos.getX(i)+30000)/60000,(pos.getZ(i)+30000)/60000);uv.needsUpdate=true;
         mesh.material.map=map;mesh.material.color.set(0xffffff);mesh.material.needsUpdate=true;
       }
-      if(manifest.seoulSurface){
-        const surface=await readJSON(base+manifest.seoulSurface),roads=seoulRoadGeometry(surface.roads,(x,z)=>gridHeight(grid,x,z));
-        const roadMesh=new THREE.Mesh(roads,applyAtmosphere(new THREE.MeshBasicMaterial({vertexColors:true,side:THREE.DoubleSide}),manifest.atmosphere));roadMesh.name='서울 간선도로·교량';holder.add(roadMesh);
-        // 교량 측판·교각과 밤 거리 불빛(산풍경 city-water.js). 불빛은 도시 격자가 시각·화질에 맞춰 켜고 끈다.
-        const bridges=new THREE.Mesh(seoulBridgeStructure(surface.roads,(x,z)=>gridHeight(grid,x,z)),roadMesh.material);bridges.name='서울 교량 측판·교각';holder.add(bridges);
-        if(toon){toon.toonify(roadMesh,{kind:'prop'});toon.toonify(bridges,{kind:'prop'});}
-        const lamps=seoulRoadLights(surface.roads,(x,z)=>gridHeight(grid,x,z));cityStyle?.styleNightLight(lamps);holder.add(lamps);
-        // 카툰: 간선도로 차량 불빛 줄기(src/toon/city.js). 실사는 cityStyle이 없다.
-        cityStyle?.styleRoads?.(surface.roads,(x,z)=>gridHeight(grid,x,z),holder);city.addNightLights(lamps);status.seoulLamps=lamps.userData.lampCount;status.seoulRoads=surface.roads.length;status.seoulBridges=surface.roads.filter(r=>r.bridge).length;
-      }
+      // 서울 간선도로·교량·거리 불빛(seoul-surface.json, 약 10MB)은 streamRoads()가 준비 완료 뒤 따로 붙인다(2026-11-06 첫 로딩 단축).
       // 카툰: 랜드마크도 도심과 같은 재질(창 격자·밤 불빛)로. 도심 스타일이 없을 때만 일반 툰 재질.
       for(const p of manifest.landmarks)holder.add(toon?(cityStyle?.applyLandmark?cityStyle.applyLandmark(createSeoulLandmark(p,manifest.atmosphere)):toon.toonify(createSeoulLandmark(p,manifest.atmosphere),{kind:'prop'})):createSeoulLandmark(p,manifest.atmosphere));
       if(toon)toon.toonify(mesh,{kind:'prop'});
@@ -470,6 +472,24 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
       farGroup=holder;group.add(holder);freezeStatic(holder);return holder;
     })().catch(e=>{farPromise=null;throw e;});
     return farPromise;
+  }
+  // 서울 간선도로·교량·거리 불빛. 원경(streamFar) 위에 얹으며 첫 진입에는 필요 없어 main.js가 준비 완료 뒤 도시 건물과 함께 부른다.
+  let roadsPromise=null;
+  function streamRoads(){
+    if(!manifest.seoulSurface)return Promise.resolve(null);
+    roadsPromise??=streamFar().then(async holder=>{
+      const grid=far;
+      const surface=await readJSON(base+manifest.seoulSurface),roads=seoulRoadGeometry(surface.roads,(x,z)=>gridHeight(grid,x,z));
+      const roadMesh=new THREE.Mesh(roads,applyAtmosphere(new THREE.MeshBasicMaterial({vertexColors:true,side:THREE.DoubleSide}),manifest.atmosphere));roadMesh.name='서울 간선도로·교량';holder.add(roadMesh);
+      // 교량 측판·교각과 밤 거리 불빛(산풍경 city-water.js). 불빛은 도시 격자가 시각·화질에 맞춰 켜고 끈다.
+      const bridges=new THREE.Mesh(seoulBridgeStructure(surface.roads,(x,z)=>gridHeight(grid,x,z)),roadMesh.material);bridges.name='서울 교량 측판·교각';holder.add(bridges);
+      if(toon){toon.toonify(roadMesh,{kind:'prop'});toon.toonify(bridges,{kind:'prop'});}
+      const lamps=seoulRoadLights(surface.roads,(x,z)=>gridHeight(grid,x,z));cityStyle?.styleNightLight(lamps);holder.add(lamps);
+      // 카툰: 간선도로 차량 불빛 줄기(src/toon/city.js). 실사는 cityStyle이 없다.
+      cityStyle?.styleRoads?.(surface.roads,(x,z)=>gridHeight(grid,x,z),holder);city.addNightLights(lamps);status.seoulLamps=lamps.userData.lampCount;status.seoulRoads=surface.roads.length;status.seoulBridges=surface.roads.filter(r=>r.bridge).length;
+      freezeStatic(holder);return holder;
+    }).catch(e=>{roadsPromise=null;throw e;});
+    return roadsPromise;
   }
   const unbindCityLabels=bindSeoulLabels(group,status);
   const loadedCities=new Map(),cityMaterial=applyAtmosphere(new THREE.MeshStandardMaterial({color:0x78878b,roughness:.92}),manifest.atmosphere);
@@ -525,7 +545,7 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
     return ()=>{sun.removeFromParent();ambient.removeFromParent();if(scene.background===sky)scene.background=old.background;if(scene.environment===sky)scene.environment=old.environment;scene.fog=old.fog;renderer.toneMapping=old.toneMapping;renderer.toneMappingExposure=old.exposure;renderer.outputColorSpace=old.colorSpace;};
   }
   freezeStatic(group);
-  return {group,get manifest(){return manifest;},status,route,interactionProps,entranceReady:()=>plazaReady,materials,sky,rawHeight,floorHeight,surfaceHeight,update,streamFar,streamCity,finalizeCities:()=>city.finalize(),streamWater,applyEnvironment,
+  return {group,get manifest(){return manifest;},status,route,interactionProps,entranceReady:()=>plazaReady,materials,sky,rawHeight,floorHeight,surfaceHeight,update,streamFar,streamRoads,streamCity,finalizeCities:()=>city.finalize(),streamWater,applyEnvironment,
     collisionObjects:()=>[path,...chunks.values()],
     cameraCollisionObjects(a,b){
       // 붐과 근평면 폭을 포함한 XZ 상자. 정적 월드 좌표 지형만 대상으로 한다.

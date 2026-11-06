@@ -36,6 +36,7 @@ export function capBloomInput(bloom,{cap=BLOOM.cap,knee=BLOOM.knee}={}){
 // 카툰은 Preetham 하늘·환경광 굽기·SSAO·실사 블룸/색 보정을 만들지 않는다. 시각·날씨·태양·그림자·강수·소리는 두 모드가 같다.
 export function setupRendering(renderer,scene,camera,mobile,environmentSky,{style='realistic',toon=null}={}){
   const toonMode=style==='toon'&&!!toon?.pipeline;
+  if(!toonMode)throw new Error('카툰 후처리(toon.pipeline)가 필요합니다 — 실사 모드는 제거됨');
   const parameters=new URLSearchParams(location.search),requestedMode=parameters.get('aoMode');
   const diagnosticMode=['off','normal','full'].includes(requestedMode)?requestedMode:null;
   const profiler=createAOProfiler(renderer,parameters.get('aoProfile')==='1');
@@ -81,9 +82,8 @@ export function setupRendering(renderer,scene,camera,mobile,environmentSky,{styl
     status.hdri='Preetham 물리 기반 Sky 셰이더(three.js, MIT) · 외부 HDRI 없음';
   }).catch(error=>{status.hdri='실패: '+error.message;console.warn('하늘 환경광 생성 실패',error);});
   let composer=null,ao=null,bloom=null,grade=null,bloomScale=.5,current=-1,lastResize=null;
-  // SSAO는 실사 전용이라 카툰 번들에 넣지 않는다. 받기 전에 resize가 불리면 합성기 생성을 미루고, 받은 뒤 마지막 크기로 다시 맞춘다.
-  let SSAOPass=null;
-  const ssaoReady=toonMode?Promise.resolve():import('three/addons/postprocessing/SSAOPass.js').then(m=>{SSAOPass=m.SSAOPass;if(lastResize)resize(...lastResize);});
+  // SSAO는 실사 전용이었다(2026-11-06 실사 모드 제거로 빌드에서 뺌). 카툰 후처리는 toon.pipeline이 맡는다.
+  const SSAOPass=null,ssaoReady=Promise.resolve();
   function resize(quality,width,height,dpr,adaptive={}){
     lastResize=[quality,width,height,dpr,{...adaptive}];
     if(toonMode){
@@ -206,7 +206,7 @@ export function setupRendering(renderer,scene,camera,mobile,environmentSky,{styl
       const selected=lastResize;
       await warmRenderingPaths({mobile,
         apply:(quality,enableAO)=>resize(quality,selected[1],selected[2],selected[3],{ao:enableAO}),
-        compile:()=>renderer.compileAsync(scene,camera),
+        compile:compileScene,
         render:()=>render(camera.position),
         restore:()=>resize(...selected)
       });
@@ -215,7 +215,14 @@ export function setupRendering(renderer,scene,camera,mobile,environmentSky,{styl
     }catch(error){status.compileError=error.message;throw error;}
     finally{status.compiling=false;}
   }
-  return {resize,render,prepare,status,environmentReady:Promise.all([environmentReady,ssaoReady]).then(()=>{}),setShadowFocus,style:toonMode?'toon':'realistic'};
+  // 셰이더 미리 준비. 카툰은 RenderPass가 합성기 버퍼(렌더 타깃)에 그려 출력 색공간·톤매핑이 화면과 다른 셰이더 변형을 쓴다.
+  // 그 타깃을 걸어 둔 채 compileAsync를 불러야 실제로 쓸 변형이 컴파일된다(compile 순회는 호출 안에서 동기로 끝난다). 2026-11-06.
+  function compileScene(){
+    const target=toonMode?toon.pipeline.composer?.readBuffer??null:null,previous=renderer.getRenderTarget();
+    if(target)renderer.setRenderTarget(target);
+    try{return renderer.compileAsync(scene,camera);}finally{if(target)renderer.setRenderTarget(previous);}
+  }
+  return {resize,render,prepare,compile:compileScene,status,environmentReady:Promise.all([environmentReady,ssaoReady]).then(()=>{}),setShadowFocus,style:toonMode?'toon':'realistic'};
 }
 
 // 카메라 근평면 네 모서리와 중앙에서 충돌을 검사해 지형·계단 앞쪽으로 당긴다.

@@ -3,7 +3,7 @@
 // 사용: (vite preview 또는 dev 서버를 띄운 뒤) BASE_URL=http://127.0.0.1:4173 STYLE=realistic|toon node scripts/measure-chunk-memory.mjs [출력 폴더]
 import {chromium} from '@playwright/test';
 import {mkdirSync,writeFileSync} from 'node:fs';
-const out=process.argv[2]??'artifacts/ab-chunks-2026-11-05',base=process.env.BASE_URL||'http://127.0.0.1:4173',styles=(process.env.STYLE??'realistic,toon').split(',');
+const out=process.argv[2]??'artifacts/ab-chunks-2026-11-05',base=process.env.BASE_URL||'http://127.0.0.1:4173',styles=['toon']; // 2026-11-06 실사 모드 제거 뒤 카툰 하나
 const route=(process.env.ROUTE??'plaza,summit,plaza,summit,plaza').split(',');
 mkdirSync(out,{recursive:true});
 const browser=await chromium.launch({channel:'chrome',headless:true,args:['--enable-webgl','--ignore-gpu-blocklist']});

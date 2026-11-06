@@ -34,19 +34,24 @@ export function indexRoute(route){
     return node;
   };
   const tree=build(route.slice(1).map((_,i)=>i));
+  // 최근접 후보는 지역 변수로만 갱신하고 결과 객체는 마지막에 한 번 만든다(숲 배치가 수십만 번 부른다, 2026-11-06). 결과는 같다.
+  let px=0,pz=0,bestD=Infinity,bestSq=Infinity,bestI=Infinity,bestT=0;
+  const bound=n=>Math.max(n.minX-px,0,px-n.maxX)**2+Math.max(n.minZ-pz,0,pz-n.maxZ)**2;
+  const visit=node=>{
+    if(bound(node)>bestSq+1e-9)return;
+    if(node.ids){for(const i of node.ids){
+      const a=route[i],b=route[i+1],dx=b.x-a.x,dz=b.z-a.z;
+      const t=Math.max(0,Math.min(1,((px-a.x)*dx+(pz-a.z)*dz)/(dx*dx+dz*dz||1)));
+      const distance=Math.hypot(px-mix(a.x,b.x,t),pz-mix(a.z,b.z,t));
+      if(distance<bestD||(distance===bestD&&i<bestI)){bestSq=distance**2;bestD=distance;bestI=i;bestT=t;}
+    }}else{const first=bound(node.left)<=bound(node.right)?node.left:node.right;visit(first);visit(first===node.left?node.right:node.left);}
+  };
   return (x,z)=>{
-    let best={distance:Infinity,index:Infinity},bestSq=Infinity;
-    const bound=n=>Math.max(n.minX-x,0,x-n.maxX)**2+Math.max(n.minZ-z,0,z-n.maxZ)**2;
-    const visit=node=>{
-      if(bound(node)>bestSq+1e-9)return;
-      if(node.ids){for(const i of node.ids){
-        const a=route[i],b=route[i+1],dx=b.x-a.x,dz=b.z-a.z;
-        const t=Math.max(0,Math.min(1,((x-a.x)*dx+(z-a.z)*dz)/(dx*dx+dz*dz||1)));
-        const distance=Math.hypot(x-mix(a.x,b.x,t),z-mix(a.z,b.z,t));
-        if(distance<best.distance||(distance===best.distance&&i<best.index)){bestSq=distance**2;best={distance,y:mix(a.y,b.y,t),s:mix(a.s,b.s,t),width:mix(a.width,b.width,t),index:i,t};}
-      }}else{const first=bound(node.left)<=bound(node.right)?node.left:node.right;visit(first);visit(first===node.left?node.right:node.left);}
-    };
-    visit(tree);return best;
+    px=x;pz=z;bestD=Infinity;bestSq=Infinity;bestI=Infinity;bestT=0;
+    visit(tree);
+    if(bestI===Infinity)return {distance:Infinity,index:Infinity};
+    const a=route[bestI],b=route[bestI+1],t=bestT;
+    return {distance:bestD,y:mix(a.y,b.y,t),s:mix(a.s,b.s,t),width:mix(a.width,b.width,t),index:bestI,t};
   };
 }
 export function cutHeight(raw,hit){

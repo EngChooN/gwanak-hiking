@@ -5,8 +5,11 @@ import {route,sample} from './route.js';
 export const SUMMIT_BODY=.25;
 export const SUMMIT_ZONE_BACK=40;
 export const SUMMIT_ENTER_S=route.length-SUMMIT_ZONE_BACK;
+// 정상 → 코스로 돌아가는 문턱은 입구보다 1m 아래다. 입구 근처 굽은 곳 안쪽에서는 한 자리가 코스 좌표 두 곳으로 읽혀(투영 s가 수 cm 뒤로 튐)
+// 코스 → 정상 → 코스 전환이 프레임마다 오가며 제자리걸음을 했다(2026-11-06). 1m 띠 안은 정상 구역으로 걷는다.
+export const SUMMIT_EXIT_MARGIN=1;
 export const SUMMIT_RADIUS=45;
-export const SUMMIT_MAX_SLOPE=Math.tan(40*Math.PI/180);
+export const SUMMIT_MAX_SLOPE=Math.tan(45*Math.PI/180); // 코스 길 밖(walking-ground MAX_WALK_SLOPE)과 같은 약 45°
 export const SUMMIT_STEP=.4;
 // 걷기 막는 시설(받침 반경 + 여유). helipad는 평평한 공터라 걷는다.
 // 상호작용 소품(스탬프함·정상 안내판·응진전 안내판)은 소품의 걷기 막기 반경(collisionRadius)이 supportRadius로 넘어온다.
@@ -31,13 +34,15 @@ export function facilityBlocks(sites,a,b,body=SUMMIT_BODY){
   if(db<r&&db<da)return site.id;}
  return null;
 }
-// 두 점 사이를 SUMMIT_STEP 간격으로 훑어 급경사·절벽(약 40° 넘는 경사)과 바위 덩어리를 가려낸다. height(x,z)는 걷는 면 높이.
+// 두 점 사이를 SUMMIT_STEP 간격으로 훑어 급경사·절벽(약 45° 넘는 경사)과 바위 덩어리를 가려낸다. height(x,z)는 걷는 면 높이.
 // 경사는 각 점 앞뒤 0.4m(0.8m 폭)의 높이차로 잰다. 한 프레임 이동은 짧아서 이동 구간만으로는 경사를 못 재기 때문이다.
 // 계단 디딤판 한 단(실측 0.18m)은 SUMMIT_TREAD(0.2m)까지, 0.8m 폭 높이차는 0.1m까지 너그럽게 봐 준다.
 export const SUMMIT_LOOK=.4,SUMMIT_TREAD=.2,SUMMIT_WINDOW_TOL=.1;
+// 이미 바위 충돌 안에 서 있으면(순간 이동·청크가 늦게 붙음) 바위는 보지 않아 빠져나올 수 있게 한다. 시설 막힘과 같은 규칙이다.
 export function summitStepOk(height,a,b,{rockBlocked=null}={}){
  const dx=b.x-a.x,dz=b.z-a.z,length=Math.hypot(dx,dz),n=Math.max(1,Math.ceil(length/SUMMIT_STEP)),ux=length>1e-9?dx/length:0,uz=length>1e-9?dz/length:0;let prev=height(a.x,a.z);
  if(!Number.isFinite(prev))return false;
+ if(rockBlocked&&rockBlocked(a.x,a.z,prev))rockBlocked=null;
  for(let i=1;i<=n;i++){
   const t=i/n,x=a.x+dx*t,z=a.z+dz*t,h=height(x,z);if(!Number.isFinite(h))return false;
   if(Math.abs(h-prev)>SUMMIT_MAX_SLOPE*(length/n)+SUMMIT_TREAD)return false;
@@ -54,12 +59,13 @@ export function reachedSummit(x,z,sites=[]){
  return !!marker&&Math.hypot(x-marker.x,z-marker.z)<=(marker.supportRadius??1.5)+SUMMIT_BLOCKERS.marker+SUMMIT_BODY+SUMMIT_ARRIVAL_RADIUS-1;
 }
 
-// 한 걸음(a→q)이 정상 구역 규칙을 지키는가. 원 안·시설 밖·40° 이하·바위 밖, 길(s<입구)로 내려서면 길 둘레 한도 안.
+// 한 걸음(a→q)이 정상 구역 규칙을 지키는가. 원 안·시설 밖·45° 이하·바위 밖.
+// 길(s<입구−1m)로 내려서도 길 둘레 한도(lateralLimit) 안일 때만 코스 이동으로 넘어가고, 한도 밖이면 정상 구역에 남는다.
+// (예전에는 한도 밖을 막아서 정상 원 안 남서쪽·동쪽 평지에 보이지 않는 벽이 생겼다. 2026-11-06)
 // 통과하면 길 좌표와 노면 정보를 돌려준다. lateralLimit(s)는 코스 이동의 옆 한도(movement.lateralLimit).
 export function summitMove(G,sites,a,q,lateralLimit){
  if(!insideSummit(q.x,q.z)||facilityBlocks(sites,a,q))return null;
- const r=projectToRoute(q.x,q.z),seg=sample(r.s),ribbon=Math.abs(r.lateral)<=seg.width/2+.3,toRoute=r.s<SUMMIT_ENTER_S;
- if(toRoute&&Math.abs(r.lateral)>lateralLimit(r.s))return null;
+ const r=projectToRoute(q.x,q.z),seg=sample(r.s),ribbon=Math.abs(r.lateral)<=seg.width/2+.3,toRoute=r.s<SUMMIT_ENTER_S-SUMMIT_EXIT_MARGIN&&Math.abs(r.lateral)<=lateralLimit(r.s);
  if(!G.canStep(a,q,{rocks:!ribbon}))return null;
  return {r,seg,ribbon,toRoute};
 }

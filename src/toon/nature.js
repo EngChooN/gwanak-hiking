@@ -494,6 +494,8 @@ export function createToonNature({gradientMap,uniforms}){
   forest:grassClump({blades:7,height:.44,spread:.18,flowers:1,seed:17},palette).geometry('toon-grass-forest',{extra:'toonFlower'}),
   // 카메라 둘레 풀밭(grass-field.js): 넓게 퍼진 큰 다발.
   field:grassClump({blades:17,height:.58,spread:.42,flowers:2,seed:21},palette).geometry('toon-grass-field',{extra:'toonFlower'}),
+  // 풀밭 먼 쪽(grass-field.js 거리 LOD): 잎 수만 절반. 같은 seed라 앞쪽 잎 8장 배치·키·퍼짐이 가까운 다발과 같다. 꽃은 그대로 2송이.
+  fieldFar:grassClump({blades:8,height:.58,spread:.42,flowers:2,seed:21},palette).geometry('toon-grass-field-far',{extra:'toonFlower'}),
  };
  const shrubGeometry=shrub(palette).geometry('toon-shrub');
  // 계곡 물가 판돌(section-scenery.js slabGeometry: 모난 회갈색 판, 물가·물속): 둥근 회색 암괴로 바꾼다(참고 04_14·06_07).

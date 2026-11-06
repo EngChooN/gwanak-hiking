@@ -68,12 +68,12 @@ test('카툰 보폭: 이동 속도는 그대로, 짧은 다리에 맞춰 걸음 
  assert.ok(cadence>5.5&&cadence<7,`걷기 걸음/초 ${cadence}`);
  // 보폭은 다리 길이(엉덩이 관절 0.2m)에 맞는다: 걷기 1.1배, 뛰기 2.1배 안팎
  assert.ok(stride/DONGDONG.hip<1.3&&WALK_STRIDE.flat*TOON_STRIDE.run/DONGDONG.hip<2.3);
- assert.ok(TOON_STRIDE.run>TOON_STRIDE.walk*1.5);
- // 카툰 뛰기(대표 결정): 걷기의 2.5배 속도. 실사는 1.6배 그대로.
- assert.equal(runMultiplierFor(undefined),RUN_MULTIPLIER);assert.equal(RUN_MULTIPLIER,1.6);assert.equal(runMultiplierFor(TOON_RUN_SPEED),2.5);
+ assert.ok(TOON_STRIDE.run>TOON_STRIDE.walk*1.3);
+ // 카툰 뛰기(대표 피드백): 평지 약 7~8km/h(걷기의 1.55배). 보폭×걸음수=이동 속도라 발이 미끄러지지 않는다.
+ assert.equal(runMultiplierFor(undefined),RUN_MULTIPLIER);assert.equal(RUN_MULTIPLIER,1.6);assert.equal(runMultiplierFor(TOON_RUN_SPEED),TOON_RUN_SPEED);{const kmh=WALK_STRIDE.flat*1.9*TOON_RUN_SPEED*3.6;assert.ok(kmh>=7&&kmh<=8,`뛰기 ${kmh}km/h`);}
  const runStride=WALK_STRIDE.flat*TOON_STRIDE.run;assert.ok(Math.abs(runStride-GAIT_SHAPE.run.step)<1e-9);
  const sprint=mult=>{const s=initialState({start:'demo'});for(let i=0;i<60;i++)advance(s,{forward:1,run:true,runMultiplier:mult},1/30);return s.distance;};
- assert.ok(Math.abs(sprint(TOON_RUN_SPEED)/sprint(undefined)-2.5/1.6)<.02,'카툰 뛰기만 빨라진다');
+ assert.ok(Math.abs(sprint(TOON_RUN_SPEED)/sprint(undefined)-TOON_RUN_SPEED/1.6)<.02,'카툰 뛰기만 빨라진다');
  assert.equal(strideScaleFor(null,true),1);assert.equal(strideScaleFor(TOON_STRIDE,false),TOON_STRIDE.walk);assert.equal(strideScaleFor(TOON_STRIDE,true),TOON_STRIDE.run);
  // 같은 시간 걸으면 이동 거리는 같고 걸음 수만 보폭 배율만큼 늘어난다.
  // 흙길에서 같은 시간 걸으면 이동 거리는 같고 걸음 수만 보폭 배율만큼 늘어난다. 계단에서는 보폭 배율 1(한 칸에 한 걸음)이라 걸음 수가 같다.
@@ -108,7 +108,7 @@ test('카툰 캐릭터 상호작용: 걷기·뛰기 접지, 뛰기→걷기 전�
  let boots=0;h.model.traverse(o=>{if(o.isSkinnedMesh&&/boots/i.test(o.name))boots++;});assert.equal(boots,1,'접지에 쓰는 장화 메시는 하나(외곽선 껍질은 이름이 다름)');
  // 걷기↔뛰기: 섞는 동안 두 클립의 디딤 구간을 같은 위상에 맞추고 걸음 길이도 같은 빠르기로 옮겨, 섞는 전 구간에서 디딘 발이 6mm 안에 붙는다.
  let ph=0;for(const running of [false,true]){let err=0;
-  for(let i=0;i<90;i++){const step=running?st.run:st.walk,dph=(running?8.2:6.2)/30;ph+=dph;h.scene.position.z-=dph*step;h.scene.updateMatrixWorld(true);
+  for(let i=0;i<90;i++){const step=running?st.run:st.walk,dph=(running?7:6.2)/30;ph+=dph;h.scene.position.z-=dph*step;h.scene.updateMatrixWorld(true);
    h.update({clip:'Walk',distance:ph,stride:1,stepLength:step,running,dt:1/30,speed:1.4});
    for(const c of h.ground({moving:true,phase:ph,surfaceHeight:flat}))if(c.planted){assert.ok(Number.isFinite(c.bottom));err=Math.max(err,c.error);}}
   assert.ok(err<.006,`${running?'걷기→뛰기':'걷기'} 디딘 발 오차(섞는 동안 포함) ${err}`);
@@ -137,14 +137,6 @@ test('카툰 캐릭터 상호작용: 걷기·뛰기 접지, 뛰기→걷기 전�
  }
  for(let i=0;i<20;i++){h.update({clip:'Idle',pose:'stand',dt:.1});h.ground({moving:false,phase:0,surfaceHeight:flat});}
  assert.ok(Math.abs(h.eyeHeight-h.profile.eyeHeight.stand)<.01&&h.eyeHeight>.65&&h.eyeHeight<.78,`선 눈 ${h.eyeHeight}`);
-});
-
-test('실사 등산객은 그대로: 기본 치수와 뛰기 보폭 배율 1.16, 뛰기 클립 없음, 눈높이·스틱 기본값',async()=>{
- assert.equal(STANDING_EYE_HEIGHT,1.6);assert.equal(SEATED_EYE_HEIGHT,.85);assert.deepEqual({...POLE_STEP},{forward:.28,lift:.18});assert.deepEqual(poleStep(.3,'Left'),poleStep(.3,'Left',false,POLE_STEP));
- assert.equal(DEFAULT_HIKER_PROFILE.runStride,1.16);assert.equal(DEFAULT_HIKER_PROFILE.chestY,1.21);assert.deepEqual(DEFAULT_HIKER_PROFILE.eyeLocal,[-.0025,.0995,.115]);
- const h=createRealisticHiker(await parse('../assets/realistic/models/hiker/Hiker.glb'));
- assert.equal(h.profile.kind,'realistic');assert.equal(h.strideScale,null);assert.equal(h.eyeHeight,1.6);assert.equal(h.actions.Run,undefined);
- h.update({clip:'Walk',stepLength:.7,running:true,dt:1/60});assert.ok(Math.abs(h.step-.7*1.16)<1e-12);
 });
 
 test('카툰 캐릭터 선 자세·쌍안경: 무릎이 거의 펴지고 발이 땅에 닿으며, 쌍안경을 보면 상체가 앞으로 숙는다',async()=>{

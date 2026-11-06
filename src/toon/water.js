@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import {STREAM_HALF_WIDTH,STREAM_ROCK_CELL,STREAM_LEDGE_CELL,streamRock,ledgeRaise} from '../stream-water.js';
+import {STREAM_HALF_WIDTH,STREAM_ROCK_CELL,STREAM_LEDGE_CELL,streamRock,ledgeRaise,FALL_ROWS,FALL_COLS,fallReach,fallCurve,fallRoom} from '../stream-water.js';
 import {waterFor,TOON} from './palette.js';
 // 카툰 계곡 물(4단계, 기준값 §1-1 물 #3e8878·얕은 물 #8bc6af, 참고 06_07·06_17·04_14·06_13).
 // 실사 물 셰이더(stream-water.js)는 MeshBasic+onBeforeCompile이라 toonify가 단색 MeshToon으로 바꾸면 크림색 판이 된다.
@@ -110,19 +110,23 @@ function streamMaterial({pond=false,span=5}={}){
 }
 
 // 낙수 막: 위에서 아래로 흐르는 흰 세로 줄. 가운데는 거의 하얗고 가장자리는 옅은 청록으로 풀린다.
+// vUv.y는 포물선 곡선 길이 비율(stream-water.js buildFallGeometry)이라 줄이 곡선을 따라 흐른다.
+// 떨어질수록 빨라지게 줄 좌표를 pow(y,.7)로 당겨 아래쪽 줄이 길게 늘어난다. 아래 끝은 흰 거품으로 짙어져 물보라로 이어진다.
 const FALL_VERT='varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}';
 const FALL_FRAG=`
 ${COMMON}
 varying vec2 vUv;
 void main(){
  float lane=floor(vUv.x*14.),r=twH(lane+3.);
- float flow=fract(vUv.y*1.2-twTime*(1.3+r*.8)+r*7.);
+ float flow=fract(pow(vUv.y,.7)*1.6-twTime*(1.3+r*.8)+r*7.);
  // 세로 줄: 칸 안에서 가운데가 굵은 둥근 줄(네모 블록처럼 보이지 않게).
  float lx=abs(fract(vUv.x*14.)-.5);
  float white=twStep(.35,flow)*(1.-twStep(.32,lx))*step(.25,twH(lane+11.));
- vec3 col=mix(mix(twShallow,twFoam,.55),twFoam,white);
+ // 아래 끝 거품: 떨어진 물이 부딪히는 자리. 잡음으로 윗선이 들쭉날쭉하다.
+ float splash=twStep(.82-.08*twN(vec2(vUv.x*9.,twTime*1.5)),vUv.y);
+ vec3 col=mix(mix(twShallow,twFoam,.55),twFoam,max(white,splash));
  float side=1.-smoothstep(.36,.5,abs(vUv.x-.5));
- float a=side*smoothstep(0.,.06,vUv.y)*(.72+.25*white)*(1.-.35*smoothstep(.75,1.,vUv.y));
+ float a=side*smoothstep(0.,.08,vUv.y)*mix(.72+.25*white,.92,splash);
  gl_FragColor=vec4(col*twGain,a);
 }`;
 function fallMaterial(){
@@ -211,18 +215,55 @@ function getSprayMaterial(){
  sprayMaterial??=new THREE.ShaderMaterial({name:'toon-spray',uniforms:SPRAY_UNIFORMS,vertexShader:SPRAY_VERT,fragmentShader:SPRAY_FRAG,transparent:true,depthWrite:false});
  sprayMaterial.userData.shared=true;sprayMaterial.userData.toonWater=true;return sprayMaterial;
 }
-// fall 기하(stream-water.js buildFallGeometry: 낙수마다 3행×5열, 맨 아래 행 j=2)에서 아래 가장자리 점을 골라 물보라 점을 만든다.
+// fall 기하(stream-water.js buildFallGeometry: 낙수마다 FALL_ROWS행×FALL_COLS열, 맨 아래 행이 아래 웅덩이에 닿는 자리)에서 물보라 점을 만든다.
+// 점은 막의 아래 끝 폭을 따라 놓고, 떨어지던 방향(마지막 두 행 차이)으로 0~0.35m 흩어 막 끝에서 물보라가 이어져 나오게 한다.
 export function buildSprayGeometry(fallGeometry){
- const p=fallGeometry.attributes.position,per=15,pos=[],seed=[];
+ const p=fallGeometry.attributes.position,C=FALL_COLS.length,per=FALL_ROWS*C,pos=[],seed=[];
  for(let base=0;base+per<=p.count;base+=per){
+  const last=base+(FALL_ROWS-1)*C,mid=Math.floor(C/2),fx=p.getX(last+mid)-p.getX(last-C+mid),fz=p.getZ(last+mid)-p.getZ(last-C+mid),fn=Math.hypot(fx,fz)||1;
   for(let k=0;k<SPRAY_PER;k++){
-   const t=(k+.5)/SPRAY_PER,i=Math.min(4,Math.floor(t*5)),a=base+10+i,h=n=>{const v=Math.sin((base*7.1+k*13.3+n*3.7))*43758.5453;return v-Math.floor(v);};
-   pos.push(p.getX(a),p.getY(a)+.05,p.getZ(a));seed.push(h(1),h(2),(h(3)-.5)*2,h(4));
+   const t=(k+.5)/SPRAY_PER*(C-1),i=Math.min(C-2,Math.floor(t)),f=t-i,a=last+i,h=n=>{const v=Math.sin((base*7.1+k*13.3+n*3.7))*43758.5453;return v-Math.floor(v);},ahead=.35*h(5);
+   pos.push(p.getX(a)+(p.getX(a+1)-p.getX(a))*f+fx/fn*ahead,p.getY(a)+(p.getY(a+1)-p.getY(a))*f+.04,p.getZ(a)+(p.getZ(a+1)-p.getZ(a))*f+fz/fn*ahead);seed.push(h(1),h(2),(h(3)-.5)*2,h(4));
   }
  }
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('aSeed',new THREE.Float32BufferAttribute(seed,4));g.computeBoundingSphere();
  if(g.boundingSphere)g.boundingSphere.radius+=2;
  return g;
+}
+
+// 물 띠의 낙수 턱을 포물선으로(2026-11-06). buildStreamGeometry는 턱 가장자리에 아래(0.02m 전)·위 표본을 붙여 물높이를 한 번에 꺾는다.
+// 그래서 물 띠가 턱에서 수직 벽으로 서고, 그 앞 낙수 막과 겹쳐 각진 판으로 보였다.
+// 여기서는 그 아래 행 대신 포물선 위 FALL_ROWS-1행을 끼운다. 턱 가장자리에서 수평으로 떠나 reach만큼 나가 아래 웅덩이 물높이에 닿는다(낙수 막과 같은 식).
+// along도 실제 거리만큼 줄여 물결·거품이 곡선을 따라 흘러내린다. 행당 cols 정점, aFrame(dir.xz, side.xz)을 읽는다. 바꾼 턱 수를 돌려준다.
+export function curveLedges(geometry,cols=7,center=3){
+ const P=geometry?.attributes?.position,S=geometry?.attributes?.aStream,F=geometry?.attributes?.aFrame;if(!P||!S||!F)return 0;
+ const rows=P.count/cols;if(!Number.isInteger(rows)||rows<2)return 0;
+ const names=Object.keys(geometry.attributes),src=Object.fromEntries(names.map(n=>[n,geometry.attributes[n]])),out=Object.fromEntries(names.map(n=>[n,[]]));
+ const copyRow=k=>{for(const n of names){const a=src[n],w=a.itemSize;for(let c=0;c<cols;c++)for(let e=0;e<w;e++)out[n].push(a.array[(k*cols+c)*w+e]);}};
+ const cy=(k,c=center)=>P.getY(k*cols+c),centers=Array.from({length:rows},(_,k)=>({x:P.getX(k*cols+center),z:P.getZ(k*cols+center)}));
+ // 턱: along 0.05m 안에서 물높이가 0.05m 넘게, 수평 거리의 6배 넘게 솟는 행 쌍(곡선으로 바꾼 행은 여기 걸리지 않는다).
+ const lips=new Set();for(let k=0;k+1<rows;k++){const da=S.getY((k+1)*cols+center)-S.getY(k*cols+center),dy=cy(k+1)-cy(k);if(da<.05&&dy>.05&&dy>da*6)lips.add(k+1);}
+ // 턱마다 곡선이 차지하는 하류 행 범위(첫 행 ~ 턱 앞 행)를 정한다. 그 행들은 곡선 행으로 바뀐다.
+ const replaced=new Map();for(const L of lips){const {index}=fallRoom(centers,L-1);replaced.set(index+1,L);}
+ let curved=0,newRows=0;
+ for(let k=0;k<rows;k++){
+  if(!replaced.has(k)){copyRow(k);newRows++;continue;}
+  // k..L-1: 턱 아래 행들(0.3m 안쪽), L: 턱 가장자리 행. 이 행들 대신 t=1(착수)→t=1/(R-1) 행을 넣는다(행 순서는 along 오름차순=상류 쪽).
+  const L=replaced.get(k),lower=L-1,h=cy(L)-cy(lower),prev=k-1,room=prev>=0?Math.hypot(centers[prev].x-centers[lower].x,centers[prev].z-centers[lower].z):Infinity,reach=fallReach(h,room),along=S.getY(L*cols+center);
+  for(let j=FALL_ROWS-1;j>=1;j--){const t=j/(FALL_ROWS-1),{out:o,drop}=fallCurve(t);
+   for(let c=0;c<cols;c++){const i=L*cols+c,dx=F.getX(i),dz=F.getY(i),lowY=cy(lower,c),land=prev>=0&&room>1e-6?lowY+(cy(prev,c)-lowY)*Math.min(1,reach/room):lowY;
+    for(const n of names){const a=src[n],w=a.itemSize;
+     if(n==='position')out[n].push(P.getX(i)+dx*reach*o,P.getY(i)+(land-P.getY(i))*drop,P.getZ(i)+dz*reach*o);
+     else if(n==='aStream')out[n].push(S.getX(i),along-reach*o);
+     else for(let e=0;e<w;e++)out[n].push(a.array[i*w+e]);}}
+   newRows++;}
+  k=L-1;curved++;
+ }
+ if(!curved)return 0;
+ for(const n of names){const a=src[n];geometry.setAttribute(n,new THREE.Float32BufferAttribute(out[n],a.itemSize,a.normalized));}
+ const idx=[];for(let k=1;k<newRows;k++){const j=k*cols,p=j-cols;for(let c=0;c<cols-1;c++)idx.push(p+c,p+c+1,j+c,p+c+1,j+c+1,j+c);}
+ geometry.setIndex(idx);geometry.computeBoundingSphere();geometry.computeBoundingBox?.();
+ return curved;
 }
 
 // 물 띠·암반 홈 기하의 꺾인 모서리를 둥글게(카툰 2차, 산풍경). 표본(행)마다 옆 방향을 앞뒤 ±reach행 평균으로 바꾸고,
@@ -263,6 +304,8 @@ export function createToonWater({materials}={}){
     o.material=stream;status.streams++;
     // 물길이 꺾이는 자리의 각진 모서리(final4 계곡 왼쪽 위)를 둥글게. 고리 판을 만들기 전에 고친다.
     if(!o.geometry.userData.toonSmoothed&&smoothRibbon(o.geometry,7,3)){o.geometry.userData.toonSmoothed=true;status.smoothed=(status.smoothed??0)+1;}
+    // 낙수 턱의 수직 벽을 포물선으로(낙수 막과 같은 곡선).
+    if(!o.geometry.userData.toonCurved){const n=curveLedges(o.geometry,7,3);o.geometry.userData.toonCurved=true;if(n)status.curvedLedges=(status.curvedLedges??0)+n;}
     const rg=!o.userData.toonRings&&buildRingGeometry(o.geometry);
     if(rg){const rm=new THREE.Mesh(rg,getRingMaterial());rm.name='계곡 바위 물결';rm.renderOrder=(o.renderOrder??0)+1;o.add(rm);o.userData.toonRings=rm;status.rings=(status.rings??0)+rg.index.count/6;}
    }

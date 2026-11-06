@@ -85,10 +85,17 @@ export function grassClumps(placements,height){
  return root;
 }
 
+// 하층 풀 거리 밀도(2026-11-06 최적화 7번): near 안은 100%, near→far 사이를 floor(20%)까지 곧게 줄인다.
+// 이전 2단 계단(near 밖 35%)보다 먼 풀을 덜 그리고 계단 경계의 팝핑도 없다. 프레임마다 수가 흔들려 깜빡이지 않게 step 단위로 자른다.
+export const GROUND_COVER={near:[10,16,24],far:[28,45,65],floor:.2,step:.05};
+export function groundCoverDensity(distance,near,far,floor=GROUND_COVER.floor){
+ const t=Math.max(0,Math.min(1,(distance-near)/(far-near)));
+ const steps=Math.round(1/GROUND_COVER.step);return Math.round((1-(1-floor)*t)*steps)/steps;
+}
 // 고정 난수 순서의 접두부만 사용하여 화질 변경 시 재생성·행렬 업로드를 피한다.
 export function updateGroundCover(mesh,distance,quality){
- const far=[28,45,65][quality],near=[10,16,24][quality];
+ const far=GROUND_COVER.far[quality],near=GROUND_COVER.near[quality];
  mesh.visible=distance<far;
- const density=[.25,.5,1][quality]*(distance<near?1:.35);
+ const density=[.25,.5,1][quality]*groundCoverDensity(distance,near,far);
  mesh.count=Math.ceil(mesh.userData.fullCount*density);
 }

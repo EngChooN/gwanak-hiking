@@ -2,8 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import {TOON,skyFor,waterFor,exposureFor,lightScaleFor,bearingDir,hexToRgb} from '../src/toon/palette.js';
-import {createToonWater,buildRingGeometry,buildSprayGeometry,SPRAY_PER} from '../src/toon/water.js';
-import {buildStreamGeometry,buildFallGeometry,streamWaterMaterial,fallWaterMaterial,bedRockMaterial,streamRock,ledgeRaise,STREAM_ROCK_CELL} from '../src/stream-water.js';
+import {createToonWater,buildRingGeometry,buildSprayGeometry,curveLedges,SPRAY_PER} from '../src/toon/water.js';
+import {buildStreamGeometry,buildFallGeometry,streamWaterMaterial,fallWaterMaterial,bedRockMaterial,streamRock,ledgeRaise,streamLedge,STREAM_ROCK_CELL,FALL_ROWS,FALL_COLS} from '../src/stream-water.js';
 import {buildCityDots,sampleCityDots,createCityStyle,trafficGeometry,CITY_LOOK,CITY_UNIFORMS} from '../src/toon/city.js';
 import {createToonSky} from '../src/toon/sky.js';
 
@@ -48,10 +48,45 @@ test('바위 고리는 section-scenery처럼 바위 along에 가장 가까운 �
  const R=g.attributes.aRing;for(let i=0;i<R.count;i++)assert.ok(R.getZ(i)>=.2&&R.getZ(i)<=.42,'반경');
 });
 
-test('물보라: 낙수 아래 가장자리마다 SPRAY_PER개',()=>{
+test('물보라: 낙수 아래 끝마다 SPRAY_PER개, 막의 아래 끝(착수 자리) 바로 곁에서 나온다',()=>{
  const built=buildStreamGeometry(line,flat,0,1,ledgeRaise),fallGeo=buildFallGeometry(built.samples,flat);
- const falls=fallGeo.attributes.position.count/15,s=buildSprayGeometry(fallGeo);
- assert.equal(s.attributes.position.count,falls*SPRAY_PER);assert.equal(s.attributes.aSeed.itemSize,4);
+ const per=FALL_ROWS*FALL_COLS.length,falls=fallGeo.attributes.position.count/per,s=buildSprayGeometry(fallGeo);
+ assert.ok(Number.isInteger(falls)&&falls>0);assert.equal(s.attributes.position.count,falls*SPRAY_PER);assert.equal(s.attributes.aSeed.itemSize,4);
+ const P=fallGeo.attributes.position,Q=s.attributes.position;
+ for(let f=0;f<falls;f++){const last=f*per+(FALL_ROWS-1)*FALL_COLS.length;
+  for(let k=0;k<SPRAY_PER;k++){const i=f*SPRAY_PER+k;let d=Infinity;for(let c=0;c<FALL_COLS.length;c++)d=Math.min(d,Math.hypot(Q.getX(i)-P.getX(last+c),Q.getZ(i)-P.getZ(last+c)));
+   assert.ok(d<.9,`물보라 ${i}가 막 아래 끝에서 ${d.toFixed(2)}m`);assert.ok(Math.abs(Q.getY(i)-P.getY(last))<.15,'착수 높이');}}
+});
+
+// 낙수 곡선(2026-11-06): 각진 판 대신 턱에서 수평으로 떠나 포물선으로 떨어진다.
+test('낙수 막: 여러 단 포물선(위 끝 접선 수평, 내려갈수록 가팔라짐), uv는 곡선 길이를 따라 커진다',()=>{
+ const built=buildStreamGeometry(line,flat,0,1,ledgeRaise),g=buildFallGeometry(built.samples,flat),P=g.attributes.position,U=g.attributes.uv,C=FALL_COLS.length,mid=Math.floor(C/2);
+ assert.ok(FALL_ROWS>=8,'단이 충분하다');
+ const per=FALL_ROWS*C;
+ for(let base=0;base<P.count;base+=per){
+  const pt=j=>({h:Math.hypot(P.getX(base+j*C+mid)-P.getX(base+mid),P.getZ(base+j*C+mid)-P.getZ(base+mid)),y:P.getY(base+j*C+mid),v:U.getY(base+j*C+mid)});
+  let prevSlope=-1,prevV=-1;
+  for(let j=1;j<FALL_ROWS;j++){const a=pt(j-1),b=pt(j),slope=(a.y-b.y)/Math.max(1e-6,b.h-a.h);
+   assert.ok(b.y<a.y,'아래로');assert.ok(b.h>a.h,'앞으로');assert.ok(slope>prevSlope-1e-6,'점점 가팔라진다(꺾인 판이 아니다)');prevSlope=slope;
+   assert.ok(b.v>prevV);prevV=b.v;}
+  const first=(pt(0).y-pt(1).y)/(pt(1).h-pt(0).h),last=(pt(FALL_ROWS-2).y-pt(FALL_ROWS-1).y)/(pt(FALL_ROWS-1).h-pt(FALL_ROWS-2).h);
+  assert.ok(first<.5,`위 끝은 거의 수평 ${first.toFixed(2)}`);assert.ok(last>first*5,'아래는 가파르다');
+  assert.equal(U.getY(base+mid),0);assert.ok(Math.abs(U.getY(base+(FALL_ROWS-1)*C+mid)-1)<1e-6);
+ }
+});
+
+test('카툰 물 띠: 낙수 턱의 수직 벽을 포물선 단으로 바꾸고, 낙수 막과 같은 곡선 위에 놓인다',()=>{
+ const built=buildStreamGeometry(line,flat,0,1,ledgeRaise),g=built.geometry,rows0=g.attributes.position.count/7;
+ const falls=buildFallGeometry(built.samples,flat).attributes.position.count/(FALL_ROWS*FALL_COLS.length);
+ const n=curveLedges(g,7,3);assert.equal(n,falls,'턱마다 하나');
+ const P=g.attributes.position,S=g.attributes.aStream,rows=P.count/7;
+ assert.ok(rows>=rows0+falls*(FALL_ROWS-3)&&rows<=rows0+falls*(FALL_ROWS-2),'턱마다 아래 행(0.3m 안쪽 1~2개)이 곡선 FALL_ROWS-1행으로 바뀐다');assert.equal(g.index.count,(rows-1)*6*6);assert.equal(g.attributes.aFrame.count,P.count);
+ // 이웃 행 사이 가운데 열의 경사: 수직 벽(수평 0.02m에 수십 cm 낙차)이 없어야 한다. 포물선 끝 기울기는 2h/reach 안쪽.
+ let steepest=0;for(let k=1;k<rows;k++){const a=(k-1)*7+3,b=k*7+3,dh=Math.hypot(P.getX(b)-P.getX(a),P.getZ(b)-P.getZ(a)),dy=Math.abs(P.getY(b)-P.getY(a));if(dy>.01)steepest=Math.max(steepest,dy/Math.max(dh,1e-6));
+  assert.ok(S.getY(b)>=S.getY(a)-1e-9,'along은 계속 커진다');}
+ assert.ok(steepest<4,`가장 가파른 단 기울기 ${steepest.toFixed(2)}`);
+ // 다시 불러도 바뀌지 않는다(턱이 이미 곡선).
+ assert.equal(curveLedges(g,7,3),0);
 });
 
 test('노을 하늘 4단·밤 하늘(기준값 §1-2·§1-3)',()=>{

@@ -48,10 +48,13 @@ test('첫 프레임 안정: 컴파일 중이거나 100ms를 넘는 프레임은 
 
 test('main.js는 실제 await 지점마다 단계를 알리고 준비 조건을 확인한 뒤 시작한다',()=>{
  const main=readFileSync(new URL('../src/main.js',import.meta.url),'utf8');
- for(const pattern of [/loading\.set\('terrain',\.6\)/,/loading\.done\('terrain'\)/,/loading\.set\('nature',\.95\*f\)/,/loading\.done\('nature'\)/,/loading\.set\('facilities'/,/loading\.done\('hikers'\)/,/loading\.set\('environment',\.3\+\.6\*f\)/,/loading\.done\('environment'\)/,/loading\.set\('stabilizing'/])assert.match(main,pattern);
+ for(const pattern of [/loading\.set\('terrain',\.6\)/,/loading\.done\('terrain'\)/,/loading\.set\('nature',\.95\*f\)/,/loading\.done\('nature'\)/,/loading\.set\('facilities'/,/loading\.done\('hikers'\)/,/loading\.done\('environment'\)/,/loading\.set\('stabilizing'/])assert.match(main,pattern);
  assert.match(main,/nearLod:landscape\.status\.natureReady===true/);assert.match(main,/terrainMissing/);
  assert.match(main,/loading\.ready\(\{readiness:readyInfo\}\);resolveReady/);
  assert.match(main,/if\(!manualStart\)startRequested=true;beginHike\(\)/);
+ // 서울 도심 건물은 준비 완료 뒤 뒤에서 받는다(2026-11-06 첫 로딩 단축): 날씨·환경 단계는 도시를 기다리지 않는다.
+ assert.match(main,/resolveReady\(\{\.\.\.loading\.snapshot\(\),readiness:readyInfo\}\);startBackgroundCities\(\)/);
+ assert.match(main,/environmentReady\.then\(\(\)=>loading\.done\('environment'\)\)/);
  assert.match(main,/started=true;window\.hiking\.started=true;input\.clear\(\)/);
  assert.match(main,/window\.addEventListener\(START_EVENT,/);assert.match(main,/addEventListener\('unhandledrejection'/);
  assert.doesNotMatch(main,/setInterval\([^)]*loading/,'시간 기반 가짜 진행 없음');

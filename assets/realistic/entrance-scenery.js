@@ -6,7 +6,7 @@ import {project} from './geo.js';
 import {createPlazaGround,plazaFacilities,plazaFootprint,HEDGES} from './entrance-plaza.js';
 const palette={roof:0x55595a,eave:0x474b4c,tile:0x818582,red:0x913d33,green:0x277563,blue:0x336c83,cream:0xd5c5a2,stone:0xa19f94,soil:0x514634,yellow:0xf2c32c,orange:0xdd692e,leaf:0x406339,flower:0xd78fbd,paving:0x3d3f3d,water:0x607d78,wood:0x75543b};
 const materials=new Map(Object.entries(palette).map(([k,color])=>[k,new THREE.MeshStandardMaterial({color,roughness:k==='water'?.28:.88})]));
-materials.get('roof').side=THREE.DoubleSide;
+materials.get('roof').side=materials.get('eave').side=materials.get('wood').side=THREE.DoubleSide;
 function builder(){
  const buckets=new Map();
  function add(g,k,x=0,y=0,z=0){g.translate(x,y,z);if(!buckets.has(k))buckets.set(k,[]);buckets.get(k).push(g);}
@@ -35,6 +35,61 @@ function roof(b,y,w,d,simple){
  // 처마 두께: 처마 끝선 아래로 연함·부연 띠를 내려 납작한 판처럼 보이지 않게 한다.
  if(!simple)for(const side of [-1,1])for(let i=0;i<steps;i++){const a=point(-1+2*i/steps,1,side),c=point(-1+2*(i+1)/steps,1,side);b.beam('eave',[a[0],a[1]-.16,a[2]],[c[0],c[1]-.16,c[2]],.15,5);}
 }
+// 일주문 한옥 팔작지붕(2026-11-06 대표 피드백: 납작한 판 → 한옥 지붕답게).
+// y=처마 끝 중앙 높이, w·d=처마 끝 폭·깊이. 위에서부터 용마루·합각(박공 아래 삼각 벽)·추녀로 내려오고,
+// 지붕면은 용마루 쪽이 가파르고 처마 쪽이 눕는 오목 곡선. 처마 선은 가운데가 들어가고(안허리곡) 네 귀가 들린다(앙곡).
+// 처마 밑은 반자(어두운 판)와 둥근 서까래 줄로 두께를 보인다.
+function hanokRoof(b,y,w,d,simple){
+ const H=1.6,R=w*.34,W2=w/2,D2=d/2,tg=.46,lift=.38,curve=1.3,steps=simple?6:18,ends=simple?4:10;
+ const half=t=>t<tg?R:R+(W2-R)*(t-tg)/(1-tg);
+ const liftAt=(x,t)=>lift*Math.pow(Math.min(1,Math.abs(x)/W2),2.2)*Math.pow(t,2);
+ // 앞뒤 지붕면. u∈[-1,1] 좌우, t∈[0,1] 용마루→처마, side ±1 앞/뒤.
+ const front=(u,t,side)=>{const x=u*half(t),inset=.035*D2*(1-u*u)*t*t;return [x,y+H*Math.pow(1-t,curve)+liftAt(x,t),side*t*(D2-inset)];};
+ // 양 끝 지붕면(합각 아래). s∈[0,1] 합각 밑→처마, v∈[-1,1] 뒤→앞. v=±1 가장자리는 앞뒤 면의 추녀선과 같은 점.
+ const end=(e,s,v)=>{const t=tg+s*(1-tg),p=front(e,t,1),l=liftAt(p[0],t),recess=.035*D2*(1-v*v)*s*s;return [p[0]+e*(-recess),p[1]-l*(1-Math.pow(Math.abs(v),4)),v*p[2]];};
+ const sheet=(fn,nu,nv,k,flip)=>{const v=[];for(let j=0;j<nv;j++)for(let i=0;i<nu;i++){const a=fn(i/nu,j/nv),c=fn((i+1)/nu,j/nv),d0=fn(i/nu,(j+1)/nv),e=fn((i+1)/nu,(j+1)/nv);v.push(...(flip?[a,c,d0,c,e,d0]:[a,d0,c,c,d0,e]).flat());}
+  b.add(surface(v),k);};
+ // 원통·상자와 한 버킷에 합치려면 uv가 같이 있어야 한다(텍스처는 쓰지 않음).
+ const surface=v=>{const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(v,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(new Float32Array(v.length/3*2),2));g.computeVertexNormals();return g;};
+ const down=(p,o)=>[p[0],p[1]-o,p[2]];
+ const top=y+H;
+ for(const side of [-1,1]){
+  sheet((a,c)=>front(-1+2*a,c,side),steps*2,steps,'roof',side<0);
+  // 처마 밑 반자: 처마 쪽 40%를 지붕면 아래 0.2m에 한 장 더 깐다.
+  if(!simple)sheet((a,c)=>down(front(-1+2*a,.6+.4*c,side),.2),steps*2,4,'eave',side>0);
+ }
+ for(const e of [-1,1]){
+  sheet((a,c)=>end(e,c,-1+2*a),ends,ends,'roof',e>0);
+  if(!simple)sheet((a,c)=>down(end(e,.35+.65*c,-1+2*a),.2),ends,3,'eave',e<0);
+  // 합각: 박공 아래 세로 삼각 벽(나무판) + 박공널.
+  const n=8,v=[],base=[e*R*.995,front(1,tg,1)[1],0];
+  for(const side of [-1,1])for(let i=0;i<n;i++){const p=front(e,tg*i/n,side),q=front(e,tg*(i+1)/n,side);v.push(...base,...p.map((x,k)=>k?x-.04:x*.995),...q.map((x,k)=>k?x-.04:x*.995));}
+  b.add(surface(v),'wood');
+  if(!simple){const gb=front(e,tg,1)[1];b.box('cream',e*R*.99,gb+.35,0,.03,.08,tg*D2*1.2);b.box('red',e*R*.99,gb+.18,0,.03,.22,tg*D2*1.5);}
+ }
+ // 용마루: 굵은 마루 + 양 끝 취두(살짝만 들림).
+ b.beam('tile',[-R,top+.1,0],[R,top+.1,0],simple?.14:.17,8);
+ if(!simple)b.beam('roof',[-R,top+.27,0],[R,top+.27,0],.1,6);
+ for(const e of [-1,1])b.beam('tile',[e*R,top+.1,0],[e*(R+.16),top+.26,0],.17,8);
+ // 내림마루(박공선)·추녀마루(귀로 내려가 끝이 들림).
+ const ridge=(pts,r)=>{for(let i=0;i<pts.length-1;i++)b.beam('tile',pts[i],pts[i+1],r,6);};
+ const lineSteps=simple?3:8;
+ for(const e of [-1,1])for(const side of [-1,1]){
+  ridge(Array.from({length:lineSteps+1},(_,i)=>down(front(e,tg*i/lineSteps,side),-.06)),.085);
+  const hip=Array.from({length:lineSteps+1},(_,i)=>down(front(e,tg+(1-tg)*i/lineSteps,side),-.07)),c=hip[hip.length-1];
+  hip.push([c[0]+e*.14,c[1]+.1,c[2]+side*.11]);ridge(hip,.095);
+ }
+ if(simple)return;
+ // 기와골: 지붕면을 따라 내려가는 수키와 줄.
+ for(const side of [-1,1])for(let i=0;i<=44;i++){const u=-1+i/22;for(let j=0;j<5;j++)b.beam('tile',down(front(u,j/5,side),-.035),down(front(u,(j+1)/5,side),-.035),.04,4);}
+ for(const e of [-1,1])for(let i=1;i<14;i++){const v=-1+i/7;for(let j=0;j<4;j++)b.beam('tile',down(end(e,j/4,v),-.035),down(end(e,(j+1)/4,v),-.035),.04,4);}
+ // 처마 끝 막새 띠(두께) + 서까래(초록, 끝마구리 청색).
+ for(const side of [-1,1])for(let i=0;i<steps*2;i++)b.beam('eave',down(front(-1+2*i/(steps*2),1,side),.1),down(front(-1+2*(i+1)/(steps*2),1,side),.1),.11,5);
+ for(const e of [-1,1])for(let i=0;i<ends;i++)b.beam('eave',down(end(e,1,-1+2*i/ends),.1),down(end(e,1,-1+2*(i+1)/ends),.1),.11,5);
+ const rafter=(inner,outer)=>{const a=down(inner,.29),c=down(outer,.29),dir=c.map((x,k)=>x-a[k]),n=Math.hypot(...dir),tip=c.map((x,k)=>x+dir[k]/n*.06);b.beam('green',a,c,.06,6);b.beam('blue',c,tip,.062,6);};
+ for(const side of [-1,1])for(let i=1;i<40;i++){const u=-1+i/20;rafter(front(u,.66,side),front(u,.99,side));}
+ for(const e of [-1,1])for(let i=1;i<14;i++){const v=-1+i/7;rafter(end(e,.45,v),end(e,.99,v));}
+}
 export function textPanel(text,w,h,{background='#194f70',color='#ffffff'}={}){
  if(typeof document==='undefined')return null;
  const c=document.createElement('canvas');c.width=1024;c.height=256;const ctx=c.getContext('2d');ctx.fillStyle=background;ctx.fillRect(0,0,1024,256);ctx.strokeStyle='#a5b5a4';ctx.lineWidth=12;ctx.strokeRect(12,12,1000,232);ctx.fillStyle=color;ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 140px "Noto Serif KR", "AppleMyungjo", serif';ctx.fillText(text,512,132,940);
@@ -53,9 +108,9 @@ export function gateModel(simple=false){
  if(!simple)for(let i=0;i<27;i++){
   const x=-3.9+i*.3;for(const z of [-.44,.44]){b.box('cream',x,4.1,z,.06,.12,.02);b.box(i%2?'red':'blue',x,3.87,z*.76,.15,.12,.025);}
  }
- // 지붕:기둥 비례를 사진처럼 지붕 쪽으로 키운다(폭 11.4m·깊이 4.6m·높이 약 1.9m, 추정).
- roof(b,4.27,11.4,4.6,simple); // 본 처마
- if(!simple)roof(b,4.12,11.8,4.95,true); // 겹처마의 하단 선
+ // 지붕:기둥 비례를 사진에 맞춘다(높이 약 1.7m, 추정). 한옥 팔작지붕(hanokRoof).
+ // 2026-11-06 대표: 기둥에 비해 크고 곡선이 강해 중국식 → 폭 10.2m·깊이 4.1m, 귀 들림·취두 낮춤.
+ hanokRoof(b,4.27,10.2,4.1,simple);
  const root=b.finish(),sign=textPanel('관악산공원',3.25,.65);
  if(sign){sign.position.set(0,3.72,.48);root.add(sign);}
  root.name='관악산공원 · 두 기둥 겹처마 자체 모델';return root;

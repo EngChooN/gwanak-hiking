@@ -32,7 +32,7 @@ function apply(){
  const moving=state.clip!=='Idle',running=state.clip==='Run',look={lookYaw:state.lookYaw??0,lookPitch:state.lookPitch??0};
  // 걷기→뛰기 전환(runFrames): 1초 걷다가 runFrames 프레임(1/30초) 뛰기로 바꾼 순간을 본다. 몸은 실제로 앞으로 나아가고 카메라가 따라간다.
  if(state.runFrames!==undefined){const steps=hiker.profile.animSteps;hiker.scene.position.set(0,0,0);let ph=0;
-  for(let i=0;i<30+state.runFrames;i++){const run=i>=30,step=run?steps.run:steps.walk,dph=(run?8.2:6.2)/30;ph+=dph;hiker.scene.position.z-=dph*step;hiker.scene.updateMatrixWorld(true);
+  for(let i=0;i<30+state.runFrames;i++){const run=i>=30,step=run?steps.run:steps.walk,dph=(run?7:6.2)/30;ph+=dph;hiker.scene.position.z-=dph*step;hiker.scene.updateMatrixWorld(true);
    hiker.update({clip:'Walk',distance:ph,stride:1,stepLength:step,running:run,dt:1/30,pose:'stand',gadget:'none',idleSeconds:0,speed:1.4});hiker.ground({moving:true,phase:ph,surfaceHeight:flat,sample:()=>({}),floorHeight:0});}
   state.runBlend=hiker.gait.run;
  }else{hiker.scene.position.set(0,0,0);hiker.scene.updateMatrixWorld(true);

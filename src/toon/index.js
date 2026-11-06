@@ -36,7 +36,7 @@ export async function createToonStyle({renderer,scene,camera,mobile=false}={}){
     shader.fragmentShader=shader.fragmentShader.replace('reflectedLight.directDiffuse*=contactAO;',`reflectedLight.directDiffuse*=mix(1.,contactAO,${k.direct.toFixed(2)});`)
      .replace('reflectedLight.indirectDiffuse*=contactAO;',`reflectedLight.indirectDiffuse*=mix(1.,contactAO,${k.indirect.toFixed(2)});`);};
    m.customProgramCacheKey=()=>`${key()}|toon-contact-soft`;}
-  grassField=createGrassField({landscape,geometry:nature.geometries.grass.field,material:nature.materials.grassField,scene});status.grassField=grassField.status;
+  grassField=createGrassField({landscape,geometry:nature.geometries.grass.field,farGeometry:nature.geometries.grass.fieldFar,material:nature.materials.grassField,scene});status.grassField=grassField.status;
   return grassField;
  }
  let sky=null,lastTime=globalThis.performance?.now?.()??0,lastWater=lastTime;const sun=new THREE.Vector3(0,1,0);

@@ -57,7 +57,7 @@ test('광장: S 뒷걸음은 몸·시선 방향(plaza.heading)을 바꾸지 않�
  assert.ok(ROUTE_MIN_S>-1e9);
 });
 test('main: 직접 걷기는 몸이 카메라 방향, 뒷걸음은 보행 위상을 거꾸로 돌린다',()=>{
- assert.match(main,/hiker\.turnTo\(direct\?heading:movementHeading\(/);
+ assert.match(main,/hiker\.turnTo\(direct\?heading:autoView\.active\?autoView\.heading:movementHeading\(/); // 자동 걷기는 평활 길 방향(src/auto-view.js)
  assert.match(main,/walkPhase\+=\(backward\?-1:1\)\*/);
  assert.match(main,/distance:walkPhase,/);assert.match(main,/phase:walkPhase,/);
 });

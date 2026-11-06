@@ -112,9 +112,11 @@ export function citySilhouette(records,bounds,direction,strips=32){
  return {positions,normals,indices,colors,info,types};
 }
 
-function cellGeometry(records){
+// pause: 건물 하나마다 부르는 비동기 함수(준비 완료 뒤 뒤에서 만들 때 프레임을 넘겨 주려고, 2026-11-06). 결과는 같다.
+async function cellGeometry(records,pause=null){
  const detailed=[],simple=[];
  for(const {building,box}of records){
+  if(pause)await pause();
   const {roofDrop,parts}=roofEquipment(building);
   const shape=new THREE.Shape(building.footprint.map(([x,z])=>new THREE.Vector2(x,-z)));
   const geometry=new THREE.ExtrudeGeometry(shape,{depth:building.height-roofDrop,bevelEnabled:false,steps:1});geometry.rotateX(-Math.PI/2);geometry.translate(0,building.ground,0);detailed.push(colorBuilding(geometry,building),...parts);
@@ -151,8 +153,9 @@ export function createCityGrid({parent,material,atmosphere,status={},cellSize=CI
  async function finalize(){
   if(closed)throw new Error('해제한 도시');if(!dirty)return;
   let slice=performance.now();
+  const pause=async()=>{if(performance.now()-slice>6){await new Promise(resolve=>setTimeout(resolve,0));slice=performance.now();}};
   for(const cell of cells.values())if(cell.dirty){
-   const geometries=cellGeometry(cell.records);
+   const geometries=await cellGeometry(cell.records,pause);
    if(closed){geometries.forEach(g=>g.dispose());throw new Error('해제한 도시');}
    if(cell.geometries)cell.geometries.forEach(g=>g.dispose());
    cell.geometries=geometries;cell.triangles=geometries.map(triangleCount);
@@ -165,7 +168,10 @@ export function createCityGrid({parent,material,atmosphere,status={},cellSize=CI
   if(cells.size*2>minimumBudget)throw new Error('도시 칸 수가 최소 실루엣 예산을 초과함');
   const strips=Math.max(1,Math.min(STRIPS,Math.floor(minimumBudget/(2*cells.size))));
   const positions=[],normals=[],indices=[],colors=[],types=[],infos=[];let farCapacity=0;
+  // 준비 완료 뒤 뒤에서 도는 단계라(2026-11-06) 실루엣도 칸마다 6ms를 넘기면 한 프레임 쉬어 걷는 중 멈칫하지 않게 한다.
+  slice=performance.now();
   for(const cell of cells.values()){
+   if(performance.now()-slice>6){await new Promise(resolve=>setTimeout(resolve,0));slice=performance.now();if(closed)throw new Error('해제한 도시');}
    cell.ranges=[];
    for(let direction=0;direction<DIRECTIONS;direction++){
     const silhouette=citySilhouette(cell.records,cell.bounds,direction,strips),offset=positions.length/3;

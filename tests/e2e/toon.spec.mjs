@@ -1,21 +1,18 @@
-// 실사·카툰 A/B 모드 e2e(기획서 §4). 프로젝트 metadata.style로 ?style=을 강제하고, 청크 대기 뒤 확인·캡처한다.
+// 카툰 e2e(기획서 §4, 2026-11-06 실사 모드 제거 뒤 카툰 하나). 청크 대기 뒤 확인·캡처한다.
 // 빌드본이 필요하다: npm run build 후 npm run test:e2e.
 import {test,expect} from '@playwright/test';
 import {mkdirSync} from 'node:fs';
 
-// scripts/verify-style-network.mjs의 FORBIDDEN과 같은 규칙(그 파일은 불러오면 바로 브라우저를 띄워서 복사해 둔다).
-const FORBIDDEN={
- realistic:[/\/assets\/toon\//,/\/src\/toon\//,/\/assets\/mode-toon-/],
- toon:[/-diff\.jpg(\?|$)/,/-nor_gl\.png(\?|$)/,/-rough\.jpg(\?|$)/,/\.hdr(\?|$)/,/\/assets\/realistic\/generated\/nature\//,/\/assets\/mode-realistic-/,/terrain-material\.js/],
-};
+// 실사 전용 에셋·코드는 배포에서 빠졌다. 받으려 하면(404 포함) 실사 경로가 남은 것이다.
+const FORBIDDEN=[/-diff\.jpg(\?|$)/,/-nor_gl\.png(\?|$)/,/-rough\.jpg(\?|$)/,/\.hdr(\?|$)/,/\/assets\/realistic\/generated\/nature\//,/\/assets\/realistic\/models\//,/terrain-material\.js/,/RGBELoader/,/SSAOPass/];
 const TIMES={day:'12:00',sunset:'17:20',night:'21:00'};
 const SHOTS='artifacts/e2e-2026-11-05';
 
-async function openGame(page,style,{time='12:00',start='entrance'}={}){
+async function openGame(page,{time='12:00',start='entrance'}={}){
  const errors=[],requests=[];
  page.on('pageerror',e=>errors.push(e.message));
  page.on('request',r=>requests.push(r.url()));
- await page.goto(`/?style=${style}&outfit=1&start=${start}&time=${time}&weather=clear&quality=high`);
+ await page.goto(`/?outfit=1&start=${start}&time=${time}&weather=clear&quality=high`);
  await page.waitForFunction(()=>window.hiking?.started===true||window.hiking?.loading?.().phase==='error',null,{timeout:300000});
  expect(await page.evaluate(()=>window.hiking.started),'게임 시작').toBe(true);
  return {errors,requests};
@@ -31,21 +28,19 @@ async function jump(page,id){
 }
 const forestTarget=page=>page.evaluate(()=>{const ids=window.hiking.jumpTargets().filter(id=>!['plaza','gate','summit'].includes(id));return ids[Math.floor(ids.length/2)];});
 
-test('시작·청크 준비·네트워크 격리',async({page},info)=>{
- const style=info.project.metadata.style;
- const {errors,requests}=await openGame(page,style);
+test('시작·청크 준비·실사 에셋 요청 없음',async({page})=>{
+ const {errors,requests}=await openGame(page);
  await settle(page);
  const status=await page.evaluate(()=>window.hiking.chunks.status());
  expect(status.loaded,'출발점 주변 지형 청크').toBeGreaterThan(0);
- const bad=requests.filter(u=>FORBIDDEN[style].some(re=>re.test(u)));
- expect(bad,'다른 모드 전용 요청').toEqual([]);
- expect(await page.evaluate(()=>window.hiking.style)).toBe(style);
+ const bad=requests.filter(u=>FORBIDDEN.some(re=>re.test(u)));
+ expect(bad,'실사 전용 요청').toEqual([]);
+ expect(await page.evaluate(()=>window.hiking.style)).toBe('toon');
  expect(errors,'페이지 오류').toEqual([]);
 });
 
-test('정상 왕복 후 청크 해제·메모리 복귀',async({page},info)=>{
- const style=info.project.metadata.style;
- const {errors}=await openGame(page,style);
+test('정상 왕복 후 청크 해제·메모리 복귀',async({page})=>{
+ const {errors}=await openGame(page);
  await settle(page);
  const mem=()=>page.evaluate(()=>window.hiking.chunks.status().memory);
  await jump(page,'summit');await jump(page,'plaza');
@@ -60,9 +55,8 @@ test('정상 왕복 후 청크 해제·메모리 복귀',async({page},info)=>{
  expect(errors).toEqual([]);
 });
 
-test('카툰 기준 스냅샷(광장·정상)',async({page},info)=>{
- test.skip(info.project.metadata.style!=='toon','기준 스냅샷은 카툰 세트만 새로 만든다(실사는 기존 캡처 스크립트로 검증)');
- await openGame(page,'toon');
+test('카툰 기준 스냅샷(광장·정상)',async({page})=>{
+ await openGame(page);
  await settle(page);
  await expect(page).toHaveScreenshot('toon-plaza-day.png');
  await jump(page,'summit');
@@ -70,10 +64,9 @@ test('카툰 기준 스냅샷(광장·정상)',async({page},info)=>{
 });
 
 for(const [label,time] of Object.entries(TIMES)){
- test(`카툰 캡처 ${label} × 숲·정상 전망`,async({page},info)=>{
-  test.skip(info.project.metadata.style!=='toon','카툰 전용');
+ test(`카툰 캡처 ${label} × 숲·정상 전망`,async({page})=>{
   mkdirSync(SHOTS,{recursive:true});
-  const {errors}=await openGame(page,'toon',{time});
+  const {errors}=await openGame(page,{time});
   await settle(page);
   await jump(page,await forestTarget(page));
   await page.screenshot({path:`${SHOTS}/toon-${label}-forest.png`});

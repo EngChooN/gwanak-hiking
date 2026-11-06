@@ -105,3 +105,19 @@ test('밤 전체 밝기: 감성 분위기 조정으로 달빛·주변광을 더 
  const e=composeEnvironment({sun:sunPosition(t),moon:moonPosition(t)});
  assert.ok(e.ambient>.18&&e.ambient<.35);assert.ok(e.night===1&&e.light.intensity<.4);
 });
+
+test('헤드랜턴: 빛 원점은 얼굴 앞(머리 반지름 밖)이고, 셀카에서도 같은 원점·뒤쪽은 비추지 않으며 광원 수는 그대로',()=>{
+ const {scene,night,camera}=build();const avatar=new THREE.Group();avatar.position.set(500,10,300);
+ const step=(o={})=>{for(let i=0;i<60;i++)night.update(.1,{camera,avatar,zone:'route',s:2500,view:'first',...o});};
+ const count=()=>{let n=0;scene.traverse(o=>{if(o.isLight)n++;});return n;};const before=count();
+ for(const o of [{view:'third'},{view:'first',selfie:true}]){
+  step(o);const ahead=night.head.position.clone().sub(avatar.position).setY(0).length();
+  assert.ok(ahead>=.3&&ahead<.5,`원점 앞 ${ahead}`);
+  const axis=night.head.target.position.clone().sub(night.head.position).setY(0).normalize(),face=avatar.position.clone().sub(night.head.position).setY(0).normalize();
+  assert.ok(axis.dot(face)<0,'얼굴은 원뿔 뒤쪽(빛 안 받음)');
+ }
+ step({view:'first',selfie:true});const fill=night.pool.find(l=>l.intensity>0&&l.distance<5);
+ assert.ok(fill&&fill.intensity<1,'셀카 얼굴 반사광은 아주 약하다');
+ step({view:'first'});assert.ok(night.pool.every(l=>l.distance>=20),'셀카가 끝나면 광원 복귀');
+ assert.equal(count(),before,'실제 광원 수 그대로');
+});

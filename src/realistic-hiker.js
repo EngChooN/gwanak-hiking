@@ -1,4 +1,3 @@
-import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {AnimationMixer,Box3,Group,Vector3,Quaternion,MathUtils,Euler} from 'three';
 import {armSide,armWristTarget,linkArmPose} from './hiker-arms.js';
 import {followHeading,headingDelta} from './hiker-facing.js';
@@ -28,7 +27,6 @@ export function stanceWarp(c,common,clipStance){
  const h=c%.5,base=c-h;
  return base+(h<common?h/common*clipStance:clipStance+(h-common)/(.5-common)*(.5-clipStance));
 }
-export async function loadRealisticHiker(url,options){return createRealisticHiker(await new GLTFLoader().loadAsync(url),options);}
 // 이미 읽은 glTF로 등산객을 만든다(노드 테스트에서 파일을 직접 파싱해 쓴다).
 // 남성 가슴: 원본 MPFB 몸이 가슴 양쪽(x ±7.5cm, 높이 1.255m)을 가운데보다 1.5cm 앞으로 내밀어 여성형으로 보인다.
 // 몸·상의·칼라·지퍼·어깨끈을 같은 양만큼 뒤로 눌러 겹침 간격은 그대로 두고, 노멀은 같은 기울기로 돌린다.
@@ -294,7 +292,8 @@ export function createRealisticHiker(gltf,{height=1.7}={}){
   const cupRest=groundPoint(...seat.cupRest),upright=rootQ();
   const rightKnee=legs[1].knee.getWorldPosition(new Vector3());
   // 무릎 위 손: 손목은 무릎 꼭대기 조금 뒤·위, 손가락은 무릎 앞으로 늘어뜨리고 손바닥은 아래로.
-  const kneeHand=(i)=>{const sign=i===0?-1:1,k=legs[i].knee.getWorldPosition(new Vector3());return {position:k.add(dir(sign*.01,0,.07).multiplyScalar(.07)).add(new Vector3(0,.075,0)),quaternion:handBasis(dir(sign*.08,-.55,-.83),dir(0,-1,-.25),sign)};};
+  // 카툰 몸은 앉으면 배(앞면 ~0.16m)가 무릎 위를 덮는다(무릎 뼈 위는 몸 안). 손목을 엉덩이 기준 바깥 0.15·앞 0.15m·위 0.05m 배 앞으로 내려 장갑이 배 밖으로 보이게 한다.
+  const kneeHand=(i)=>{const sign=i===0?-1:1,k=legs[i].knee.getWorldPosition(new Vector3()),belly=link?hips.getWorldPosition(new Vector3()).add(offset(sign*.15,.05,-.15)):null;return {position:belly??k.add(dir(sign*.01,0,.07).multiplyScalar(.07)).add(new Vector3(0,.075,0)),quaternion:handBasis(dir(sign*.08,-.55,-.83),dir(0,-1,-.25),sign)};};
   let cupPose=null;
   if(v>0&&tea.focus){
    // 상체·고개: 컵을 집을 때 오른쪽으로 기울고, 마실 때 상체 10°·고개 27°를 젖힌다.
