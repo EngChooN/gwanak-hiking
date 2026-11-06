@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "status": "기술 시범 패키지 — 실제 지형·현장 치수·인증 풍경 검증 대기",
+  "releaseApproved": false,
+  "units": "meter",
+  "up": "Y",
+  "anchor": {
+    "x": -5.193366890028274,
+    "y": 545.4521276595746,
+    "z": -4126.526235805828,
+    "epsg": 5186,
+    "origin": {
+      "easting": 190000,
+      "northing": 540000,
+      "elevation": 0,
+      "verified": false,
+      "label": "서울대 입구 원점 — 임시 EPSG:5186 앵커(실측 대기)"
+    },
+    "verified": false
+  },
+  "coverage": {
+    "start": 4290.087652474024,
+    "end": 4700.000000000001,
+    "length3D": 409.91234752597666,
+    "eachSideBeyondTrail": 30,
+    "terrainSource": "기존 합성 경로 기반 절차적 메쉬. DEM 원본 없음",
+    "detailMeters": [
+      1,
+      3,
+      8
+    ]
+  },
+  "lod": {
+    "distanceMeters": [
+      0,
+      45,
+      110
+    ],
+    "hysteresisMeters": 10,
+    "policy": "corridor GLB 세 개 중 하나만 로드. 캐릭터 LOD1 18m 이상, 전망 LOD1 70m 이상. 실기기 예산 미검증"
+  },
+  "files": [
+    {
+      "file": "summit-approach-lod0.glb",
+      "bytes": 5308308,
+      "triangles": 61914,
+      "meshes": 8
+    },
+    {
+      "file": "summit-approach-lod1.glb",
+      "bytes": 1661084,
+      "triangles": 18358,
+      "meshes": 8
+    },
+    {
+      "file": "summit-approach-lod2.glb",
+      "bytes": 1039136,
+      "triangles": 10960,
+      "meshes": 8
+    },
+    {
+      "file": "hiker-170-lod0.glb",
+      "bytes": 73560,
+      "triangles": 576,
+      "meshes": 15
+    },
+    {
+      "file": "hiker-170-lod1.glb",
+      "bytes": 68248,
+      "triangles": 384,
+      "meshes": 15
+    },
+    {
+      "file": "scale-kit.glb",
+      "bytes": 93264,
+      "triangles": 724,
+      "meshes": 43
+    },
+    {
+      "file": "yeonjudae-proxy-lod0.glb",
+      "bytes": 84424,
+      "triangles": 844,
+      "meshes": 3
+    },
+    {
+      "file": "yeonjudae-proxy-lod1.glb",
+      "bytes": 31480,
+      "triangles": 292,
+      "meshes": 3
+    },
+    {
+      "file": "portrait-sky.glb",
+      "bytes": 154936,
+      "triangles": 1808,
+      "meshes": 17
+    }
+  ],
+  "stepCount": 112,
+  "rights": {
+    "creator": "산풍경",
+    "externalMedia": [],
+    "note": "자체 생성 형상과 색상만 포함. 외부 DEM·정사영상·사진 미사용. Three.js 라이선스는 프로젝트 의존성 참조"
+  },
+  "blockedAcceptance": [
+    "실제 DEM보다 상세하다는 비교",
+    "주요 바위·시설의 실제 치수 일치",
+    "연주대 실경과 인증 구도 합의 일치",
+    "관악산 경험자 스케일 승인",
+    "모바일 실기기 fps·첫 로딩 기준"
+  ]
+}
