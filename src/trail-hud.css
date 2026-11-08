@@ -53,6 +53,33 @@
 .tb-lift:active{transform:translateY(2px);box-shadow:0 2px 0 var(--stamp-d)}
 @keyframes tb-hit{50%{transform:scale(.95)}}
 
+/* ───────── 2-1. 상호작용 칩(2026-11-07 모바일 피드백): 화면 폭 띠 대신 대상(고양이·벤치·산스장 기구·먼지털이기) 머리 위 작은 쪽지 ─────────
+   자리는 trail-hud.js가 매 프레임 transform으로 놓는다(기준점 = 아래 가운데 꼬리 끝). 휴대폰 폭 160px 이하, 손가락 크기 44px.
+   대상이 화면 밖이면 가장자리에 고정(.tc-edge, 꼬리 없음), 카메라 뒤면 숨김(.tc-off). 이름(산고양이 등)은 PC에서만 작게 붙인다. */
+#app #trail-chip{left:0;top:0;z-index:7;display:flex;gap:6px;pointer-events:none;will-change:transform}
+#app #trail-chip[hidden],#app #trail-chip.tb-gadget{display:none!important}
+#app #trail-chip.tc-off{visibility:hidden}
+#app #trail-chip.tc-edge{opacity:.9}
+.tc-btn{position:relative;display:inline-flex;align-items:center;gap:6px;min-height:44px;max-width:160px;padding:4px 13px 4px 5px;border-radius:22px;border:0;background:var(--paper);color:var(--ink);font:inherit;text-align:left;box-shadow:var(--lift),var(--soft);cursor:pointer;touch-action:manipulation;-webkit-user-select:none;user-select:none;pointer-events:auto}
+.tc-btn em{display:grid;place-items:center;flex:none;width:34px;height:34px;border-radius:50%;background:var(--paper2);font-style:normal;font-size:19px;line-height:1}
+.tc-btn b{min-width:0;font-size:15px;font-weight:900;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tc-btn small{display:none;font-size:11px;font-weight:700;color:var(--ink2);white-space:nowrap}
+.tc-btn::after{content:"";position:absolute;left:50%;bottom:-6px;z-index:-1;width:12px;height:12px;margin-left:-6px;background:inherit;border-radius:0 0 3px 0;transform:rotate(45deg);box-shadow:2px 2px 0 var(--edge)}
+.tc-btn:active{transform:translateY(2px);box-shadow:var(--soft)}
+#app #trail-chip.tc-edge .tc-btn::after{display:none}
+#app #trail-chip.tc-pop .tc-btn{animation:tc-in .2s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes tc-in{from{transform:translateY(8px) scale(.85);opacity:0}}
+/* 들르기(자동걷기 중 4초): 빨간 도장 칩 + 안쪽 아래에 줄어드는 형광펜 선(남은 시간) */
+.tc-offer{background:var(--stamp);color:#fff;box-shadow:0 3px 0 var(--stamp-d),0 6px 12px rgba(60,15,5,.35);padding-bottom:7px}
+.tc-offer em{background:#ffffff2e}
+.tc-offer::after{box-shadow:2px 2px 0 var(--stamp-d)}
+.tc-time{position:absolute;left:16px;right:16px;bottom:4px;height:3px;border-radius:2px;background:var(--hl);transform-origin:left;animation:tb-time var(--sec,4s) linear forwards}
+/* PC(마우스): 조금 크게, 이름을 작게 붙인다 */
+@media (hover:hover) and (pointer:fine) and (min-width:900px){
+ .tc-btn{max-width:240px;min-height:46px;padding-right:15px}.tc-btn b{font-size:16px}
+ .tc-btn small{display:inline}
+}
+
 /* ───────── 3. 휴대폰 가로: 도장 둘레 칩(달리기 180°)의 왼쪽, 출처 줄 위 ───────── */
 @media (orientation:landscape) and (max-height:540px){
  #app #trail-bar{left:calc(var(--sl) + 50% - 70px);bottom:calc(var(--sb) + 36px);max-width:400px}
@@ -98,6 +125,6 @@ html body #trail-bubble.tag::after{display:none}
 
 /* 움직임 줄이기: 들썩·튀어나옴은 끄고 남은 시간 막대만 둔다 */
 @media (prefers-reduced-motion:reduce){
- .nb-snack-chip.boost,.tb-cramp em,html body #trail-bubble.on,html body #trail-bubble.sfx.on,.tb-btn,.tb-offer{animation:none}
- .tb-time{animation:tb-time var(--sec,4s) linear forwards}
+ .nb-snack-chip.boost,.tb-cramp em,html body #trail-bubble.on,html body #trail-bubble.sfx.on,.tb-btn,.tb-offer,#app #trail-chip.tc-pop .tc-btn{animation:none}
+ .tb-time,.tc-time{animation:tb-time var(--sec,4s) linear forwards}
 }

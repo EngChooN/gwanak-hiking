@@ -6,7 +6,7 @@ const browser=await chromium.launch({channel:'chrome',headless:true,args:['--ena
 const ctx=await browser.newContext({viewport:{width:844,height:390},isMobile:true,hasTouch:true,deviceScaleFactor:2});
 await ctx.addInitScript(()=>{localStorage.clear();localStorage.setItem('gwanak-sound-enabled','false');});
 const page=await ctx.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text().slice(0,300));});
-await page.goto('http://127.0.0.1:5310/?start=entrance&time=11:00&weather=clear');
+await page.goto('http://127.0.0.1:5310/hiking/?start=entrance&time=11:00&weather=clear');
 await page.waitForFunction(()=>window.hiking?.started&&window.hiking.landscape().natureReady,null,{timeout:300000});
 await page.evaluate(()=>document.querySelectorAll('dialog[open]').forEach(d=>d.close()));
 const r=await page.evaluate(async()=>{const log=[],T=window.hiking.trail;let played=null;

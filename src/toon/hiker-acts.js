@@ -85,6 +85,8 @@ export function createHikerActs(hiker,{toonify,world}){
  world.add(hat.grp,pack.grp);
  // 머리 뼈에 붙은 모자의 월드 행렬(squash: 모자 높이 배율)
  const hatOnHead=(sy=1)=>new M4().multiplyMatrices(bones.Head.matrixWorld,boneInv('Head')).multiply(m1.makeTranslation(hat.c.x,hat.c.y,hat.c.z)).multiply(m2.makeScale(1,sy,1));
+ // 모자 정수리: 모자 형상에서 가장 높은 꼭짓점(모자 원점 = 밑면 가운데 기준). 머리 뼈를 따라 걷기·뛰기·앉기 때도 같이 움직인다.
+ const hatCrown=(()=>{const p=hat.mesh.geometry.attributes.position,t=new V3(0,-Infinity,0),q=new V3();for(let i=0;i<p.count;i++){q.fromBufferAttribute(p,i);if(q.y>t.y)t.copy(q);}return t.sub(hat.c);})();
  const packOnBack=()=>new M4().multiplyMatrices(bones.Spine2.matrixWorld,boneInv('Spine2')).multiply(m1.makeTranslation(pack.c.x,pack.c.y,pack.c.z));
  // ── 얼굴 덧붙임(머리 뼈 자식, 바인드 모델 공간 형상): 실눈·빨간 볼·입가 초콜릿
  const hc=new V3().fromArray(face.hc),hr=new V3().fromArray(face.hr);
@@ -310,8 +312,9 @@ export function createHikerActs(hiker,{toonify,world}){
    if(at==='hat'&&hat.grp.visible)return new V3().setFromMatrixPosition(hat.grp.matrix).add(v(0,.22,0));if(at==='feet')return toWorld(0,.32,.25);if(at==='hands')return P.hand(1).add(v(0,.15,0));if(at==='calf')return model.localToWorld(P.calf(-1)).add(v(0,.3,0));
    // 머리 가운데 위 0.42m. 거꾸로 매달리면(몸 위쪽이 아래를 보면) 발 위에 띄운다.
    if(offset(0,1,0).y<0)return toWorld(-.42,.5,0);return headPoint(face.hc).add(v(0,.42,0));},
-  // 다람쥐가 앉는 모자 꼭대기, 까치가 앉는 배낭 위(월드 행렬)
+  // 다람쥐가 앉는 모자 꼭대기, 까치가 앉는 모자 정수리(형상의 가장 높은 점, 2026-11-07), 배낭 위(월드 행렬)
   hatTop(){return hatOnHead().multiply(m1.makeTranslation(0,.15,0));},
+  crownTop(){return hatOnHead().multiply(m1.makeTranslation(hatCrown.x,hatCrown.y,hatCrown.z));},
   packTop(){return packOnBack().multiply(m1.makeTranslation(0,pack.size.y/2+.04,.02));},
   // 모자 위 다람쥐가 무거워 고개를 숙인다(0~1)
   headLoad(k){if(k>0&&!active){P.head(.12*k,0,0);model.updateMatrixWorld(true);}},

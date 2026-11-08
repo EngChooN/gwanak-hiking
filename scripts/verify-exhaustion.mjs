@@ -17,13 +17,13 @@ const open=async(save)=>{const ctx=await browser.newContext(mobile?{viewport:{wi
 const ready=page=>page.waitForFunction(()=>window.hiking?.started&&window.hiking.trail&&window.hiking.landscape().natureReady&&!window.hiking.rendering().compiling,null,{timeout:300000});
 // 1) 오르막(경사 15% 이상이 30m 넘게 이어지는 곳)을 찾고, 스테미너 6에서 3인칭으로 시작한다
 let {ctx,page}=await open(null);
-await page.goto(`${base}/?quality=low`);await ready(page);
+await page.goto(`${base}/hiking/?quality=low`);await ready(page);
 const save=await page.evaluate(async()=>{const {route,sample}=await import('/src/route.js');const {initialState}=await import('/src/movement.js');
  let s0=null;for(let s=300;s<route.length-200;s+=2){let ok=true;for(let k=0;k<=30;k+=2){const p=sample(s+k);if(!(p.slope>=.15)||p.material==='stairs'||/stair/.test(p.material)){ok=false;break;}}if(ok){s0=s;break;}}
  return JSON.stringify({...initialState({start:'demo'}),s:s0,lateral:0,zone:'route',view:'third',stamina:6});});
 await ctx.close();({ctx,page}=await open(save));
 const q=new URLSearchParams({time:'11:00',weather:'clear',season:'summer'});if(!mobile)q.set('quality','high');
-await page.goto(`${base}/?${q}`);await ready(page);
+await page.goto(`${base}/hiking/?${q}`);await ready(page);
 const setView=v=>page.evaluate(v=>{if(window.hiking.snapshot().view!==v)window.dispatchEvent(new CustomEvent('hiking:command',{detail:{id:'view'}}));},v);await setView('third');
 await page.evaluate(()=>{document.querySelectorAll('dialog[open]').forEach(d=>d.close());window.dispatchEvent(new CustomEvent('hiking:hud-toggle'));});
 await page.addStyleTag({content:'#section-jump{display:none!important}'});

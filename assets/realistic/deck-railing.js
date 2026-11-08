@@ -29,15 +29,18 @@ function bar(a,b,size){
  g.translate((a.x+b.x)/2,(a.y+b.y)/2,(a.z+b.z)/2);return g;
 }
 
-export function createDeckRailings(points){
+// gaps = [{x,z,r}]: 이 원 안의 기둥은 빼고 그 양옆 가로대도 끊는다(계단 옆 벤치 앞 출입구).
+export function createDeckRailings(points,{gaps=[]}={}){
  const root=new THREE.Group();root.name='깔딱고개 나무계단 난간 · 추정';root.userData.metricKind='계단 난간';
- const runs=railingPosts(points),chunks=new Map();let posts=0;
+ const runs=railingPosts(points),chunks=new Map();let posts=0,gapPosts=0;
  const push=(s,g)=>{const k=Math.floor(s/RAILING.chunkMetres);if(!chunks.has(k))chunks.set(k,[]);chunks.get(k).push(g);};
  for(const run of runs)for(const side of [-1,1]){
   const tops=run.map(p=>{const o=p.width/2+RAILING.offset;return new THREE.Vector3(p.x+p.nx*o*side,p.y,p.z+p.nz*o*side);});
+  const open=tops.map(t=>gaps.some(g=>Math.hypot(t.x-g.x,t.z-g.z)<g.r));gapPosts+=open.filter(Boolean).length;
   tops.forEach((base,i)=>{
+   if(open[i])return;
    const g=new THREE.BoxGeometry(RAILING.post,RAILING.height+.25,RAILING.post);g.translate(base.x,base.y+(RAILING.height+.25)/2-.25,base.z);push(run[i].s,g);posts++;
-   if(i===0)return;
+   if(i===0||open[i-1])return;
    const prev=tops[i-1];
    for(const h of [RAILING.height,RAILING.midHeight])push(run[i].s,bar(new THREE.Vector3(prev.x,prev.y+h,prev.z),new THREE.Vector3(base.x,base.y+h,base.z),h===RAILING.height?RAILING.rail:RAILING.rail*.7));
   });
@@ -60,6 +63,6 @@ export function createDeckRailings(points){
   sign.rotation.y=Math.atan2(first.x-second.x,first.z-second.z);
   root.add(sign);
  }
- root.userData.counts={runs:runs.length,posts};
+ root.userData.counts={runs:runs.length,posts,gapPosts};
  return root;
 }

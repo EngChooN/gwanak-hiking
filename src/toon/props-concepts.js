@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import {createToonStyle} from './index.js';
 import {composeEnvironment} from '../daytime.js';
 import {v,ell,capsule,noodle,sweep,at,part,surf,decal,eye,smile,grp,dongdong} from './concept-kit.js';
-import {rod,boxAt,textPlane,speedLines,heart,drop,puff,chocolate,bench,squirrel,acorn,cat,magpie,soul,gym,runLate,zap} from './trail-props.js';
+import {rod,boxAt,textPlane,speedLines,heart,drop,puff,chocolate,bench,squirrel,hare,acorn,cat,magpie,soul,gym,runLate,zap} from './trail-props.js';
 
 const q=new URLSearchParams(location.search);
 const {Quaternion}=THREE;
@@ -62,6 +62,17 @@ scene('animals','④ 동물 — 다람쥐·산고양이·까치','길가·바위
  const m=magpie({fly:true});m.scale.setScalar(1.5);m.position.set(.2,1.15,-.6);m.rotation.set(.15,-1.1,0);g.add(m);
  rod(g,v(.55,0,-.3),v(.62,.55,-.3),.035,'#7a5233');rod(g,v(.62,.5,-.3),v(.95,.55,-.25),.02,'#7a5233');const p=magpie();p.scale.setScalar(1.3);p.position.set(.86,.68,-.27);p.rotation.y=-1.2;g.add(p);
  return {cam:{p:v(.1,.75,3.1),t:v(0,.42,0),fov:30},bubbles:[{p:v(-.75,.6,.1),t:'다람쥐',k:'tag'},{p:v(0,.62,0),t:'산고양이(치즈)',k:'tag'},{p:v(.2,1.42,-.6),t:'까치',k:'tag'}]};});
+scene('hare','④-2 멧토끼 — 상태 5가지','idle 풀뜯기 · alert 귀 쫑긋 · hop 깡충 · flee 달아남 · return 다시 다가옴 (게임 속 배치)',g=>{
+ const L=({x=0,z=0,yaw=0,s=1.5}={})=>{const o=hare();o.scale.setScalar(s);o.position.set(x,0,z);o.rotation.y=yaw;g.add(o);return o;};
+ const P=o=>{const r={};o.traverse(n=>{if(n.name)r[n.name]=n;});return r;};
+ const grass=(x,z)=>{for(let i=0;i<5;i++)rod(g,v(x+(i-2)*.018,0,z),v(x+(i-2)*.04,.1+.02*(i%2),z+.01),.006,'#5f8f45',{line:0});};
+ const a=L({x:-1.25,yaw:.5}),pa=P(a);pa.head.rotation.x=.75;pa.head.position.set(0,.22,.19);pa.ears.rotation.x=.5;pa.body.rotation.x=.18;grass(-1.05,.3);grass(-1.15,.38);
+ const b=L({x:-.65,yaw:-.35}),pb=P(b);pb.body.rotation.x=-.28;pb.body.position.y=.21;pb.head.position.y=.34;pb.head.rotation.x=-.2;pb['ear-L'].rotation.x=-.05;pb['ear-R'].rotation.x=-.05;pb.tail.position.y=.23;
+ const c=L({x:.3,yaw:-.9}),pc=P(c);c.position.y=.28;pc.body.rotation.x=-.32;pc['leg-H'].rotation.x=.9;pc['leg-F'].rotation.x=-.9;pc.ears.rotation.x=.8;pc.head.rotation.x=-.1;
+ puff(g,v(.62,.02,.2),.05);puff(g,v(.74,.02,.2),.05);
+ const d=L({x:1.1,z:-.4,yaw:2.2}),pd=P(d);d.position.y=.12;pd.body.rotation.x=-.2;pd['leg-H'].rotation.x=1.1;pd['leg-F'].rotation.x=-1;pd.ears.rotation.x=1.0;speedLines(g,v(1.35,.35,-.7),1,7,.5,.5);
+ const e=L({x:2.35,z:.2,yaw:-2.5}),pe=P(e);pe.head.rotation.x=.3;pe.ears.rotation.x=.2;pe.body.rotation.x=.08;
+ return {cam:{p:v(.55,.7,5.1),t:v(.55,.28,0),fov:38},bubbles:[{p:v(-1.25,.62,0),t:'idle 풀뜯기',k:'tag'},{p:v(-.65,.9,-.1),t:'alert 쫑긋!',k:'sfx'},{p:v(.3,.8,0),t:'hop 깡충',k:'tag'},{p:v(1.1,.75,-.4),t:'flee 휙!',k:'sfx'},{p:v(2.35,.85,.2),t:'return 다시 다가옴',k:'tag'}]};});
 scene('animals-pet','④ 동물 — 상호작용','고양이: 쓰다듬으면 배를 보이다 냥펀치 · 다람쥐: 모자 위 점령 · 까치: 배낭에 착지',g=>{
  const d=hiker(g,{p:v(-.25,0,-.05),yaw:.95}),{legs,arms,body,eyes}=d.parts;
  body.position.y=-.04;legs[0].rotation.x=-.5;legs[1].rotation.x=.25;arms[0].rotation.x=-1.0;arms[1].rotation.x=-.7;body.rotation.x=.2;

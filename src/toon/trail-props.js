@@ -71,6 +71,24 @@ export function squirrel(){const g=new THREE.Group(),fur='#b9733b',belly='#f4e1c
  const tail=grp(g,v(0,.04,-.05));tail.name='tail';
  part(tail,sweep([v(0,0,0),v(0,.04,-.08),v(0,.16,-.1),v(0,.25,-.04),v(0,.24,.02)],u=>.022+.03*Math.sin(Math.PI*Math.min(1,u*1.15)),{rings:24,radial:10}),'#a8642f');
  return g;}
+// 멧토끼(2026-11-07 시안). 앞 +Z, 발바닥 0, 몸길이 약 0.38m·귀 끝 높이 약 0.42m(고양이보다 조금 작고 다람쥐보다 큼).
+// 움직이는 부위 이름: head(고개) · ears(Group, 'ear-L'·'ear-R' — 쫑긋은 rotation.x/z) · tail(솜뭉치) ·
+// legs(Group, 'leg-F' 앞다리 둘·'leg-H' 뒷다리 둘 — 깡충은 leg-H rotation.x와 몸 전체 y로) · 'body'(웅크림은 scale.y).
+export function hare(){const g=new THREE.Group(),fur='#a9875a',belly='#f6ead4',dark='#3b2c20',inner='#f2b3a6',back='#8d6c44';g.name='hare';
+ const body=grp(g,v(0,.17,0));body.name='body';const bc=v(0,0,0),br=v(.085,.105,.17);
+ part(body,at(ell(br),bc),fur);decal(body,bc,br,Math.PI,-.1,v(.05,.07,.01),belly);decal(body,bc,br,0,.3,v(.06,.03,.01),back);
+ part(body,at(ell(v(.08,.09,.1)),v(0,-.01,-.09)),fur);
+ const head=grp(g,v(0,.285,.15));head.name='head';const hc=v(),hr=v(.062,.06,.075);part(head,at(ell(hr),hc),fur);
+ for(const s of [-1,1]){eye(head,hc,hr,s*.62,.1,v(.014,.018,.006),{color:'#2a1f18'});decal(head,hc,hr,s*.4,-.45,v(.022,.016,.006),belly);}
+ surf(head,hc,hr,0,-.12,ell(v(.01,.008,.006)),'#d98a8a',{lift:.002});surf(head,hc,hr,0,-.38,smile(.012,.003),dark,{lift:.001});
+ const ears=grp(head,v(0,.04,-.015));ears.name='ears';
+ for(const s of [-1,1]){const e=grp(ears,v(s*.034,.0,0));e.name=s<0?'ear-R':'ear-L';e.rotation.set(-.35,0,s*.14);
+  part(e,at(ell(v(.026,.1,.012)),v(0,.095,0)),fur);part(e,at(ell(v(.015,.07,.006)),v(0,.09,.008)),inner,{line:0});part(e,at(ell(v(.02,.025,.011)),v(0,.185,0)),dark,{line:.4});}
+ const legs=grp(g);legs.name='legs';const F=grp(legs,v(0,0,0)),H=grp(legs,v(0,0,0));F.name='leg-F';H.name='leg-H';
+ for(const s of [-1,1]){part(F,capsule(v(s*.04,.12,.09),v(s*.04,.02,.12),.022),fur);part(F,at(ell(v(.022,.012,.032)),v(s*.04,.012,.14)),belly);
+  part(H,at(ell(v(.03,.05,.085)),v(s*.06,.065,-.07)),fur);part(H,at(ell(v(.027,.014,.07)),v(s*.06,.014,-.0)),fur);}
+ const tail=grp(g,v(0,.2,-.18));tail.name='tail';part(tail,at(ell(v(.04,.04,.04)),v(0,0,-.02)),'#fff7ea');
+ return g;}
 export function acorn(){const g=new THREE.Group();g.name='acorn';part(g,at(ell(v(.016,.02,.016),{w:10,h:8}),v(0,-.008,0)),'#b5813f',{line:.4});part(g,at(ell(v(.018,.01,.018),{w:10,h:6}),v(0,.01,0)),'#6e4a2a',{line:.4});return g;}
 export function cat({belly=false}={}){const g=new THREE.Group(),fur='#f0a24a',str='#cf7a2a',white='#fff4e4';g.name=belly?'cat-belly':'cat';
  if(!belly){const bc=v(0,.13,0),br=v(.105,.13,.115);part(g,at(ell(br),bc),fur);decal(g,bc,br,0,.05,v(.06,.08,.015),white);
@@ -165,13 +183,13 @@ export function finishTrailModel(g,toonify,{shadow=true,lineScale=1}={}){
  g.traverse(o=>{if(o.isMesh&&!o.userData.outline){o.castShadow=shadow&&o.userData.line>0;o.receiveShadow=true;}});runLate();return g;}
 
 // ── 게임 원형(종류마다 한 번 만들고 clone(true)로 나눠 쓴다). 형상·재질은 공유되므로 인스턴스를 지울 때 dispose하지 않는다.
-export const TRAIL_PROP_KINDS=Object.freeze(['gym','bench','airgun','squirrel','cat','cat-belly','magpie','magpie-fly','acorn','chocolate','barbell','air-gun','soul','heart','puff','breath','drop','sparkle','zap','footing']);
+export const TRAIL_PROP_KINDS=Object.freeze(['gym','bench','airgun','squirrel','hare','cat','cat-belly','magpie','magpie-fly','acorn','chocolate','barbell','air-gun','soul','heart','puff','breath','drop','sparkle','zap','footing']);
 const templates=new Map();
 export function trailPropTemplate(kind,toonify){
  if(templates.has(kind))return templates.get(kind);
  let g=new THREE.Group();
  if(kind==='gym')gym(g);else if(kind==='bench')g=bench();else if(kind==='airgun')g=airgunStation();
- else if(kind==='squirrel')g=squirrel();else if(kind==='cat')g=cat();else if(kind==='cat-belly')g=cat({belly:true});
+ else if(kind==='squirrel')g=squirrel();else if(kind==='hare')g=hare();else if(kind==='cat')g=cat();else if(kind==='cat-belly')g=cat({belly:true});
  else if(kind==='magpie')g=magpie();else if(kind==='magpie-fly')g=magpie({fly:true});else if(kind==='acorn')g=acorn();
  else if(kind==='chocolate')g=chocolate();else if(kind==='barbell')g=barbell();else if(kind==='air-gun')g=airGun();
  else if(kind==='footing')boxAt(g,v(.1,1,.1),v(0,-.5,0),'#8f8b82',{line:.4}); // 경사에 놓인 벤치 다리 밑 받침돌(높이는 scale.y)

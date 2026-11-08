@@ -1,4 +1,4 @@
-// 즐길거리 HUD 버튼을 휴대폰 세로(390×844)·가로(844×390)·PC(1920×1080)에서 실제로 눌러 본다(2026-11-06, verify-mobile-buttons.mjs 방식).
+// 즐길거리 HUD 버튼(2026-11-07부터 들르기·기구 버튼은 대상 위 칩 #trail-chip)을 휴대폰 세로(390×844)·가로(844×390)·PC(1920×1080)에서 실제로 눌러 본다(2026-11-06, verify-mobile-buttons.mjs 방식).
 //  ① 입구 광장: 🍫 먹기(5→4, ⚡ 칩, 겹쳐 먹기 막힘) → 에어건 옆 '💨 신발 털기'(깨끗한 신발 칸) → 자동걷기 들르기 버튼(고양이 등) → 자동걷기 복귀
 //  ② 산스장: 역기(연타 10번 → 산스장 득근 도장)·거꾸리·허리돌리기·철봉
 //  ③ 벤치(1,552m): '벤치에 앉기' → 스테미너가 땅에 앉을 때의 1.5배로 참 → '일어나기'
@@ -55,22 +55,22 @@ for(const [name,viewport,safe,mobile] of VIEWS){
  ok('말풍선 층 HUD < 말풍선 < 알림',z.hud<z.bubble&&z.bar<z.bubble&&z.bubble<z.alert,JSON.stringify(z));
  // 자동걷기 들르기: 걷기 도장을 누르고 들르기 버튼이 뜨면 누른다
  await tapSel('#auto','걷기(자동)');
- let offer=null;try{await page.waitForSelector('#trail-bar[data-mode=offer] .tb-offer',{timeout:60000});offer=await page.evaluate(()=>{const b=document.querySelector('.tb-offer');return {act:b.dataset.act,id:b.dataset.id,label:b.textContent};});}catch{}
+ let offer=null;try{await page.waitForSelector('#trail-chip[data-mode=offer] .tc-offer',{timeout:60000});offer=await page.evaluate(()=>{const b=document.querySelector('.tc-offer');return {act:b.dataset.act,id:b.dataset.id,label:b.textContent};});}catch{}
  ok('자동걷기 중 들르기 버튼(4초)',!!offer,JSON.stringify(offer));
- if(offer){await shot('5-offer');await tapSel('.tb-offer','들르기');
+ if(offer){await shot('5-offer');await tapSel('.tc-offer','들르기');
   const played=await page.waitForFunction(()=>window.hiking.trail.status().active,null,{timeout:5000}).then(()=>true).catch(()=>false);
   const t0=Date.now();let back=false;while(Date.now()-t0<40000){const s=await page.evaluate(()=>({a:window.hiking.trail.status().active,auto:window.hiking.snapshot().auto}));if(!s.a&&s.auto){back=true;break;}await sleep(300);}
   ok('들르기 → 동작 → 자동걷기 복귀',played&&back);
   // 4초 뒤 사라짐 확인: 다음 제안이 오면 누르지 않고 기다린다
-  const next=await page.waitForSelector('#trail-bar[data-mode=offer]',{timeout:40000}).then(()=>true).catch(()=>false);
-  if(next){await sleep(4600);ok('누르지 않으면 4초 뒤 사라짐',await page.evaluate(()=>document.querySelector('#trail-bar').dataset.mode!=='offer'));}}
+  const next=await page.waitForSelector('#trail-chip[data-mode=offer]',{timeout:40000}).then(()=>true).catch(()=>false);
+  if(next){await sleep(4600);ok('누르지 않으면 4초 뒤 사라짐',await page.evaluate(()=>document.querySelector('#trail-chip').dataset.mode!=='offer'));}}
  await page.evaluate(()=>{if(window.hiking.snapshot().auto)window.dispatchEvent(new CustomEvent('hiking:command',{detail:{id:'auto'}}));});
  // 에어건 옆(광장 자유 이동): 저장값으로 옮겨 다시 연다
  await page.evaluate(a=>{const st=window.hiking.snapshot();const p={...st,auto:false,zone:'plaza',plaza:{x:a.x+2.6,z:a.z+2.6,heading:Math.atan2(2.6,2.6)},view:'third'};sessionStorage.setItem('vt-save',JSON.stringify(p));},saves.air);
  await load(`${base}?time=11:00&weather=clear&season=summer`);
- await page.waitForSelector('#trail-bar[data-mode=near] [data-act=airgun]',{timeout:15000}).catch(()=>{});
+ await page.waitForSelector('#trail-chip[data-mode=near] [data-act=airgun]',{timeout:15000}).catch(()=>{});
  await shot('2-airgun-near');
- await tapSel('#trail-bar [data-act=airgun]','💨 신발 털기');
+ await tapSel('#trail-chip [data-act=airgun]','💨 신발 털기');
  await page.waitForFunction(()=>window.__trailLastSay?.text?.includes('모자'),null,{timeout:15000}).catch(()=>{});
  const bub=await page.evaluate(()=>{const b=document.querySelector('#trail-bubble'),r=b.getBoundingClientRect();return {on:b.classList.contains('on'),text:b.textContent,inside:r.left>=0&&r.right<=innerWidth&&r.top>=0&&r.bottom<=innerHeight};});
  ok('말풍선 화면 안',bub.on&&bub.inside,JSON.stringify(bub));await shot('3-airgun-bubble');
@@ -85,11 +85,11 @@ for(const [name,viewport,safe,mobile] of VIEWS){
  // ── ② 산스장
  await page.evaluate(s=>sessionStorage.setItem('vt-save',JSON.stringify(s)),saves.gym);
  await load(`${base}?time=11:00&weather=clear&season=summer`);
- const gymBar=await page.waitForSelector('#trail-bar[data-mode=near] [data-act=gym-lift]',{timeout:20000}).then(()=>true).catch(()=>false);
- ok('산스장 6m 안 기구 버튼 4개',gymBar&&await page.evaluate(()=>document.querySelectorAll('#trail-bar [data-act]').length)===4,JSON.stringify(await page.evaluate(()=>({pos:window.hiking.position(),view:document.querySelector('#trail-bar').dataset.mode}))));
+ const gymBar=await page.waitForSelector('#trail-chip[data-mode=near] [data-act=gym-lift]',{timeout:20000}).then(()=>true).catch(()=>false);
+ ok('산스장 가까이: 가장 가까운 기구 칩 하나(2026-11-07)',gymBar&&await page.evaluate(()=>document.querySelectorAll('#trail-chip [data-act]').length)===1,JSON.stringify(await page.evaluate(()=>({pos:window.hiking.position(),view:document.querySelector('#trail-bar').dataset.mode}))));
  await shot('6-gym-near');
  if(gymBar){
-  await tapSel('#trail-bar [data-act=gym-lift]','🏋 역기');
+  await tapSel('#trail-chip [data-act=gym-lift]','🏋 역기');
   await page.waitForSelector('#trail-bar[data-mode=lift] .tb-lift',{timeout:20000});await sleep(900);
   for(let i=0;i<10;i++){if(mobile)await page.tap('.tb-lift');else await page.click('.tb-lift');await sleep(160);if(i===4)await shot('7-lift');}
   const reps=await page.evaluate(()=>window.hiking.trail.status().acts.active?.reps);
@@ -97,8 +97,8 @@ for(const [name,viewport,safe,mobile] of VIEWS){
   ok("역기 연타 10번 → '산스장 득근' 도장",reps===10&&await page.evaluate(()=>!!window.hiking.interaction().progress.fun?.gym),`reps ${reps}`);
   await shot('8-lift-done');await waitIdle();
   for(const [act,label] of [['gym-hang','🙃 거꾸리'],['gym-twist','🌀 허리돌리기'],['gym-bar','🤸 철봉']]){
-   await page.waitForSelector(`#trail-bar[data-mode=near] [data-act=${act}]`,{timeout:20000});
-   await tapSel(`#trail-bar [data-act=${act}]`,label);
+   // 칩은 가장 가까운 기구 하나만 뜬다(2026-11-07). 나머지 기구는 칩과 같은 명령으로 바로 시작한다.
+   await page.evaluate(([act,id])=>window.dispatchEvent(new CustomEvent('hiking:command',{detail:{id:'trail-play',value:{act,id,manual:true}}})),[act,await page.evaluate(()=>window.hiking.trail.status().sites.find(s=>s.kind==='gym').id)]);
    const started=await page.waitForFunction(a=>window.hiking.trail.status().acts.active?.name===a,act,{timeout:15000}).then(()=>true).catch(()=>false);
    if(act==='gym-hang'){await sleep(2600);await shot('9-hang');}
    ok(`${label} 동작`,started&&await waitIdle(30000));}
@@ -107,12 +107,12 @@ for(const [name,viewport,safe,mobile] of VIEWS){
  // ── ③ 벤치
  await page.evaluate(s=>sessionStorage.setItem('vt-save',JSON.stringify(s)),saves.bench);
  await load(`${base}?time=11:00&weather=clear&season=summer`);
- const benchBar=await page.waitForSelector('#trail-bar[data-mode=near] [data-act=bench-sit]',{timeout:20000}).then(()=>true).catch(()=>false);
+ const benchBar=await page.waitForSelector('#trail-chip[data-mode=near] [data-act=bench-sit]',{timeout:20000}).then(()=>true).catch(()=>false);
  ok('벤치 6m 안 앉기 버튼',benchBar);
  // 스테미너: 헤드리스는 프레임이 느려(한 프레임 0.1초 상한) 벽시계로 재면 낮게 나온다. 같은 조건에서 서 있을 때(초당 8)와 비율로 본다.
  const rateOf=async ms=>{const a=await page.evaluate(()=>window.hiking.snapshot().stamina);await sleep(ms);return (await page.evaluate(()=>window.hiking.snapshot().stamina)-a)/(ms/1000);};
  const idleRate=benchBar?await rateOf(1500):0;
- if(benchBar){await tapSel('#trail-bar [data-act=bench-sit]','🪑 벤치에 앉기');
+ if(benchBar){await tapSel('#trail-chip [data-act=bench-sit]','🪑 벤치에 앉기');
   await page.waitForFunction(()=>window.hiking.trail.status().acts.active?.state==='hold',null,{timeout:20000}).catch(()=>{});
   const rate=await rateOf(1500),ratio=rate/idleRate;ok('벤치 스테미너 = 서 있을 때의 22.5/8≈2.8배(땅에 앉기 15의 1.5배)',ratio>2.5&&ratio<3.1,`서 있음 ${idleRate.toFixed(1)} · 벤치 ${rate.toFixed(1)} · ${ratio.toFixed(2)}배`);
   await shot('10-bench');

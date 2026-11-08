@@ -6,7 +6,7 @@
     "pass": true,
     "info": {
      "played": 0,
-     "muted": 2,
+     "muted": 4,
      "context": "입력 대기"
     }
    },
@@ -37,9 +37,9 @@
     "info": ""
    }
   ],
-  "squirrel": false,
+  "squirrel": true,
   "squirrel2": true,
-  "magpie": true,
+  "magpie": false,
   "snapshot": {
    "enabled": false,
    "on": null,
@@ -49,7 +49,7 @@
    "radio": 0,
    "loaded": [],
    "played": 0,
-   "muted": 2,
+   "muted": 4,
    "locked": 0,
    "late": 0,
    "errors": [],
@@ -99,7 +99,7 @@
     "what": "켜짐: meow 파일 재생",
     "pass": true,
     "info": {
-     "n": 1
+     "n": 3
     }
    },
    {
@@ -134,14 +134,14 @@
     "what": "켜짐: squeak 파일 재생",
     "pass": true,
     "info": {
-     "n": 1
+     "n": 2
     }
    },
    {
     "what": "켜짐: caw 파일 재생",
     "pass": true,
     "info": {
-     "n": 3
+     "n": 2
     }
    },
    {
@@ -159,9 +159,34 @@
     }
    },
    {
-    "what": "켜짐: 소리 파일 11개 받음(라디오 포함)",
+    "what": "켜짐: munch 파일 재생",
     "pass": true,
-    "info": "airgun-hiss.wav,squirrel-squeak.wav,cat-meow.wav,magpie-caw.wav,choco-crunch.wav,soul-whoo.wav,pant-huff.wav,cramp-zap.wav,cramp-scream.wav,cramp-roll.wav,radio-ppongjjak-loop.wav"
+    "info": {
+     "n": 2
+    }
+   },
+   {
+    "what": "켜짐: rustle 파일 재생",
+    "pass": true,
+    "info": {
+     "n": 1
+    }
+   },
+   {
+    "what": "켜짐: 소리 파일 14개 받음(라디오 포함)",
+    "pass": true,
+    "info": "airgun-hiss.wav,squirrel-squeak.wav,cat-meow.wav,magpie-caw.wav,choco-crunch.wav,soul-whoo.wav,pant-huff.wav,cramp-zap.wav,cramp-scream.wav,cramp-roll.wav,hare-munch.wav,hare-thump.wav,hare-rustle.wav,radio-ppongjjak-loop.wav"
+   },
+   {
+    "what": "토끼: 12m 안 풀 뜯기 사각사각 → 가까이 가면 풀잎 스침",
+    "pass": true,
+    "info": {
+     "munch": [
+      2,
+      2
+     ],
+     "rustle": 1
+    }
    },
    {
     "what": "켜짐: 오류 없음",
@@ -214,12 +239,12 @@
      ],
      "ctx": "running",
      "played": [
-      1,
-      1
+      4,
+      4
      ],
      "buffer": [
-      6,
-      6
+      8,
+      8
      ]
     }
    },
@@ -229,9 +254,9 @@
     "info": ""
    }
   ],
-  "squirrel": false,
+  "squirrel": true,
   "squirrel2": true,
-  "magpie": true,
+  "magpie": false,
   "snapshot": {
    "enabled": true,
    "on": true,
@@ -240,38 +265,44 @@
    "playing": [],
    "radio": 0,
    "loaded": [
-    "zap",
-    "crunch",
     "squeak",
-    "pant",
-    "scream",
     "caw",
-    "meow",
-    "airgun",
+    "zap",
+    "pant",
     "whoo",
+    "thump",
+    "airgun",
+    "rustle",
+    "meow",
+    "scream",
+    "munch",
+    "crunch",
     "roll"
    ],
-   "played": 20,
+   "played": 26,
    "muted": 0,
    "locked": 1,
    "late": 0,
    "errors": [],
    "byName": {
     "crunch": 1,
-    "caw": 3,
+    "caw": 2,
     "airgun": 1,
-    "meow": 1,
+    "meow": 3,
     "pant": 2,
     "scream": 1,
     "zap": 6,
     "roll": 2,
+    "squeak": 2,
     "radio": 1,
-    "squeak": 1,
-    "whoo": 1
+    "whoo": 1,
+    "munch": 2,
+    "thump": 1,
+    "rustle": 1
    }
   },
   "watch": {
-   "buffer": 47,
+   "buffer": 57,
    "osc": 3,
    "trailFetch": [
     "airgun-hiss.wav",
@@ -284,6 +315,9 @@
     "cramp-zap.wav",
     "cramp-scream.wav",
     "cramp-roll.wav",
+    "hare-munch.wav",
+    "hare-thump.wav",
+    "hare-rustle.wav",
     "radio-ppongjjak-loop.wav"
    ]
   },

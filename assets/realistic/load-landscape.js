@@ -195,7 +195,6 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
   const path=ribbon(pathPoints,pathMaterials,manifest.materials.soil.metres);path.name='등산로 노면';group.add(path);
   path.traverse(mesh=>{if(mesh.isMesh)indexStaticRaycast(mesh);});
   path.userData.metricKind='등산로';
-  const deckRailings=createDeckRailings(pathPoints);group.add(deckRailings);status.deckRailings=deckRailings.userData.counts;
   const chunks=new Map();let far,farGroup,farPromise,waterGroup,disposed=false;
   const rawHeight=(x,z)=>gridHeight(within(near,x,z)?near:far||near,x,z);
   const nearest=indexRoute(route);
@@ -233,6 +232,8 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
   // 자동걷기 즐길거리(산스장·벤치·먼지털이기) 자리. 모형은 가까이 갈 때 src/trail-world.js가 만들고, 나무·풀은 여기서 미리 비운다.
   const trailProps=resolveTrailSites(route,surfaceHeight,{frames:{gate:entrance.frame},avoid:[...summitSites,...sectionSites,...interactionProps.sites]});
   status.trailProps=trailProps;
+  // 나무계단 난간은 즐길거리 벤치 앞만 터 둔다(벤치에 앉으러 난간을 뚫고 지나가지 않게, deck-railing.js gaps).
+  const deckRailings=createDeckRailings(pathPoints,{gaps:trailProps.sites.filter(s=>s.kind==='bench').map(s=>({x:s.x,z:s.z,r:2.2}))});group.add(deckRailings);status.deckRailings=deckRailings.userData.counts;
   group.add(interactionProps.group);const natureClearSites=[...sectionSites,...interactionProps.clearSites,...trailProps.clearSites];
   status.interactionProps={sites:interactionProps.sites,spawns:interactionProps.spawns,clearSites:interactionProps.clearSites,stats:interactionProps.stats()};
   status.entrance={frame:entrance.frame,counts:facilityTriangleCounts(entrance.items),status:'입구 설정의 일주문 가설 위치 · 현장 실측 전 · 치수·현판 색 미확인'};
@@ -549,7 +550,7 @@ export async function loadLandscape({base='/assets/realistic/generated/',maxCont
     return ()=>{sun.removeFromParent();ambient.removeFromParent();if(scene.background===sky)scene.background=old.background;if(scene.environment===sky)scene.environment=old.environment;scene.fog=old.fog;renderer.toneMapping=old.toneMapping;renderer.toneMappingExposure=old.exposure;renderer.outputColorSpace=old.colorSpace;};
   }
   freezeStatic(group);
-  return {group,get manifest(){return manifest;},status,route,interactionProps,entranceReady:()=>plazaReady,materials,sky,rawHeight,floorHeight,surfaceHeight,update,streamFar,streamRoads,streamCity,finalizeCities:()=>city.finalize(),streamWater,applyEnvironment,
+  return {group,get manifest(){return manifest;},status,route,interactionProps,entranceReady:()=>plazaReady,materials,sky,rawHeight,floorHeight,surfaceHeight,treeNear:(x,z,r)=>nearTrees.nearest(x,z,r),update,streamFar,streamRoads,streamCity,finalizeCities:()=>city.finalize(),streamWater,applyEnvironment,
     collisionObjects:()=>[path,...chunks.values()],
     cameraCollisionObjects(a,b){
       // 붐과 근평면 폭을 포함한 XZ 상자. 정적 월드 좌표 지형만 대상으로 한다.

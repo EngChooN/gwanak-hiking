@@ -20,9 +20,9 @@ function setup(on=true){const ctx=fakeContext(),master={kind:'master'},state={on
  const sound=createTrailSound({context:()=>ctx,destination:()=>master,enabled:()=>state.on,base:'B/',load:async url=>{loads.push(url);return url;},random:()=>.5});
  return {ctx,sound,state,loads};}
 
-test('효과음: 표의 11개를 모두 파일로 연결하고 경로는 BASE_URL/sounds/trail/', async()=>{
+test('효과음: 표의 14개를 모두 파일로 연결하고 경로는 BASE_URL/sounds/trail/', async()=>{
  const {sound,loads}=setup();sound.sync();await flush();
- const names=Object.keys(TRAIL_SFX);assert.equal(names.length,11);
+ const names=Object.keys(TRAIL_SFX);assert.equal(names.length,14);
  for(const n of names.filter(n=>n!=='radio'))assert.ok(loads.includes('B/'+TRAIL_SFX[n].file),n);
  assert.ok(!loads.includes('B/'+TRAIL_SFX.radio.file),'라디오는 산스장 모형을 만들 때 받는다');
  sound.prepareRadio();await flush();assert.ok(loads.includes('B/'+TRAIL_SFX.radio.file));

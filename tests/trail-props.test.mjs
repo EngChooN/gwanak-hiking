@@ -7,7 +7,7 @@ import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {assignSurfaceRoute} from '../src/route-surfaces.js';
 import {routeMeasure} from '../assets/realistic/interaction-sites.js';
 import {entranceFrame} from '../assets/realistic/entrance-scenery.js';
-import {TRAIL_PROPS,CAT_SPOTS,TRAIL_RULES} from '../src/interaction-data.js';
+import {TRAIL_PROPS,ANIMAL_ZONES,TRAIL_RULES} from '../src/interaction-data.js';
 import {MOBILE_LIMITS,DESKTOP_LIMITS} from '../src/device-profile.js';
 import {resolveTrailSites,resolveTrailSite,TRAIL_FOOTPRINT} from '../src/trail-sites.js';
 import {nearestOffer,pickAnimals,OFFER_ACT} from '../src/trail-world.js';
@@ -52,15 +52,15 @@ test('동물은 동시에 3마리까지, 가까운 순, 나와 있던 것은 떠
 
 // 지형: 길 쪽으로 기울고 굴곡이 있는 면(평평한 자리를 고르는지 본다)
 const height=(x,z)=>50+x*.02+z*.03+.25*Math.sin(x*.7)*Math.cos(z*.5);
-const {sites,cats,clearSites}=resolveTrailSites(route,height,{frames});
+const {sites,zones,clearSites}=resolveTrailSites(route,height,{frames});
 const measure=routeMeasure(route);
-test('즐길거리 자리: 산스장 1·벤치 5·먼지털이기 1이 모두 놓이고 길 밖에 있다',()=>{
+test('즐길거리 자리: 산스장 1·벤치 13·먼지털이기 1이 모두 놓이고 길 밖에 있다',()=>{
  const count=k=>sites.filter(s=>s.kind===k).length;
- assert.equal(count('gym'),1);assert.equal(count('bench'),5);assert.equal(count('airgun'),1);assert.equal(cats.length,CAT_SPOTS.length);
+ assert.equal(count('gym'),1);assert.equal(count('bench'),13);assert.equal(count('airgun'),1);assert.equal(zones.length,ANIMAL_ZONES.length,'동물 구역(일주문 기준 구역 포함)');
  for(const s of sites.filter(x=>x.kind!=='airgun')){const near=measure.nearest(s.x,s.z),w=measure.at(near.m).width/2;
   const reach=s.kind==='gym'?GYM.radius:.35;assert.ok(near.d-reach>=w-.05,`${s.id}: 길 가운데선 ${near.d.toFixed(2)}m, 소품 끝이 노면(${w.toFixed(2)}m) 안`);}
- // 벤치는 1,540·1,710·2,156m 부근(±25m)과 깔딱고개 전후
- for(const [id,m,tol] of [['bench-1540',1540,25],['bench-1710',1710,25],['bench-2156',2156,25],['bench-kkal-before',3640,45],['bench-kkal-after',4425,110]]){const s=sites.find(x=>x.id===id);assert.ok(Math.abs(s.routeMetres-m)<=tol,`${id} ${s.routeMetres}m`);}
+ // 벤치는 1,540·1,710·2,156m 부근(±25m)과 깔딱고개 전후, 빈 구간 640·2,600·3,224m와 880·1,863·2,830·3,440·3,875m(2026-11-07)
+ for(const [id,m,tol] of [['bench-640',640,60],['bench-2600',2600,45],['bench-3224',3224,70],['bench-3875',3875,20],['bench-880',850,70],['bench-1863',1863,40],['bench-2830',2830,45],['bench-3440',3440,50],['bench-1540',1540,25],['bench-1710',1710,25],['bench-2156',2156,25],['bench-kkal-before',3640,45],['bench-kkal-after',4425,110]]){const s=sites.find(x=>x.id===id);assert.ok(Math.abs(s.routeMetres-m)<=tol,`${id} ${s.routeMetres}m`);}
  // 산스장은 계곡 쉼터(팔각정 2,392m) 근처
  const gym=sites.find(s=>s.kind==='gym');assert.ok(Math.abs(gym.routeMetres-2392)<=90,`산스장 ${gym.routeMetres}m`);
  // 먼지털이기는 일주문 곁(광장 안 15m 이내)
@@ -132,4 +132,36 @@ test('동작 세부: 에어건 모자 2초 비행·툭, 거꾸리 거꾸로, 벤
  const gym=makeTrailProp('gym');acts.start('gym-lift',{frame:M,groundY:flat,target:gym});run(1);assert.equal(gym.getObjectByName('barbell').visible,false,'받침의 역기를 머리에 인다');run(6);assert.equal(acts.active,null);assert.equal(gym.getObjectByName('barbell').visible,true);
  acts.start('gym-lift',{frame:M,groundY:flat,target:gym,auto:false});run(.7);for(let i=0;i<LIFT_REPS;i++)assert.equal(acts.press(),i+1);assert.equal(acts.press(),0,'다 채우면 더 세지 않는다');acts.cancel();
  assert.ok(acts.eatChocolate(30));assert.equal(acts.boost,30);run(5);assert.ok(Math.abs(acts.boost-25)<.2,`남은 효과 ${acts.boost}`);
+});
+
+// 빈 구간 채우기 2차(2026-11-07 산풍경): 동물 구역을 빼고 '멈춰 서는 자리'만으로도 간격이 고르게.
+// 자리 = 즐길거리(TRAIL_PROPS) + 약수터·돌탑·스탬프(INTERACTION_SITES) + 구간 시설(호수공원·제1광장 쉼터·깔딱고개 중간 벤치·연주암) + 계곡 물가(STREAM_SPOTS), 정상(4,960m)까지.
+test('멈춰 서는 자리 간격: 0.1~1.0km·2.5~3.6km에 새 자리가 있고, 이웃 자리 사이가 440m를 넘지 않는다',async()=>{
+ const {INTERACTION_SITES}=await import('../assets/realistic/interaction-sites.js'),{SCENERY_SITES}=await import('../assets/realistic/section-scenery.js'),{STREAM_SPOTS}=await import('../src/interaction-data.js');
+ const placed=sites.filter(s=>s.routeMetres!=null).map(s=>s.routeMetres);
+ const stops=[0,...placed,...INTERACTION_SITES.filter(s=>['spring','cairnField','stampBox'].includes(s.kind)&&s.s!=null).map(s=>s.s),...SCENERY_SITES.map(s=>s.metres),...STREAM_SPOTS.map(s=>s.m),measure.length].sort((a,b)=>a-b);
+ const gaps=stops.slice(1).map((m,i)=>[stops[i],m]).filter(([a,b])=>b-a>440);
+ assert.deepEqual(gaps,[],'440m 넘게 비는 곳');
+ for(const [a,b] of [[100,1000],[2500,3600]])assert.ok(placed.filter(m=>m>=a&&m<=b).length>=2,`${a}~${b}m 즐길거리 ${placed.filter(m=>m>=a&&m<=b).join(',')}`);
+});
+test('계단 옆 벤치는 측벽 발·난간 바깥(가장자리에서 1.3m), 계곡 벤치는 물줄기 띠 밖',async()=>{
+ const {STAIR_SIDE_CLEAR}=await import('../src/trail-sites.js'),{waterClearance}=await import('../assets/realistic/water-clearance.js'),water=waterClearance(route);
+ for(const s of sites.filter(x=>x.kind==='bench')){const near=measure.nearest(s.x,s.z),p=measure.at(near.m),stairs=[near.m-4,near.m,near.m+4].some(q=>['stairs','deck_stairs'].includes(measure.at(q).material));
+  if(stairs)assert.ok(near.d-p.width/2>=STAIR_SIDE_CLEAR-.06,`${s.id} 계단 가장자리에서 ${(near.d-p.width/2).toFixed(2)}m`);
+  assert.equal(water.blocked(s.x,s.z,TRAIL_FOOTPRINT.bench.vegetation),false,`${s.id} 물에 걸침`);}
+ // 물 자리를 주면 물줄기 위 후보는 고르지 않는다(물줄기 쪽으로만 찾게 한 가짜 자료)
+ const spec={id:'t',kind:'bench',m:1863,side:-1,search:{from:1850,to:1870,step:2,offsets:[6.2]}};
+ assert.ok(resolveTrailSite(spec,{measure,height,frames}),'물 자료 없으면 놓임');
+ assert.equal(resolveTrailSite(spec,{measure,height,frames,water}),null,'물줄기 위에는 놓지 않음');
+});
+test('나무계단 난간: 벤치 앞(gaps 원 안) 기둥을 빼고 그 양옆 가로대도 끊는다',async()=>{
+ const {createDeckRailings,RAILING}=await import('../assets/realistic/deck-railing.js');
+ const pts=[...Array(41)].map((_,i)=>({s:i,x:0,z:-i,y:i*.3,nx:1,nz:0,width:1.8,material:'deck_stairs'}));
+ const full=createDeckRailings(pts),cut=createDeckRailings(pts,{gaps:[{x:.9+1.5,z:-20,r:2.2}]});
+ assert.equal(full.userData.counts.gapPosts,0);assert.ok(cut.userData.counts.gapPosts>=1&&cut.userData.counts.gapPosts<=2,`뺀 기둥 ${cut.userData.counts.gapPosts}`);
+ assert.equal(cut.userData.counts.posts,full.userData.counts.posts-cut.userData.counts.gapPosts,'반대쪽 난간은 그대로');
+ // 벤치 앞(z −20)에서 위 가로대 높이(디딤판 + 0.95m)로 옆으로 쏜 선이 막는 쪽 난간에 닿지 않는다(빼기 전에는 닿는다)
+ const {Raycaster}=await import('three'),hits=g=>{g.updateMatrixWorld(true);const r=new Raycaster(new Vector3(.3,21*.3+.015+RAILING.height,-20),new Vector3(1,0,0),0,2);return r.intersectObject(g,true).length;};
+ assert.ok(hits(full)>0,'빼기 전 난간에 닿음');assert.equal(hits(cut),0,'벤치 앞 난간이 터져 있다');
+ const back=new (await import('three')).Raycaster(new Vector3(-.3,21*.3+.015+RAILING.height,-20),new Vector3(-1,0,0),0,2);cut.updateMatrixWorld(true);assert.ok(back.intersectObject(cut,true).length>0,'반대쪽 난간은 그대로');
 });

@@ -12,6 +12,9 @@
 //  cramp-zap             ⑥ 쥐 '찌릿'(전기 지직 + 위로 튀는 띵)
 //  cramp-scream          ⑥ 쥐 비명 '으아아!'(만화풍, 높게 꺾였다 떨며 내려옴)
 //  cramp-roll            ⑥ 뒹구는 소리(흙·풀 위 몸 구르는 쓸림 두 번 + 둔탁한 툭)
+//  hare-munch            ⑦ 토끼 풀 뜯기 '사각사각'(작은 잎 끊는 소리 세 번)
+//  hare-thump            ⑦ 토끼 뒷발 구르기 '툭'(낮고 짧게 한 번)
+//  hare-rustle           ⑦ 토끼 달아날 때 풀잎 스침
 import {mkdirSync,writeFileSync} from 'node:fs';
 
 const OUT='public/sounds/trail/';
@@ -168,6 +171,24 @@ function roll(){const sr=44100,L=Math.floor(1.5*sr),b=new Float32Array(L),r=rng(
    b[j]+=amp*thud.run(n)*4*Math.exp(-Math.max(0,t-.04)/.05)*(t>.04?1:0);}}
  return finish('cramp-roll',b,sr,{peakDb:-6,fade:.01});}
 
-const stats=[radio(),airgun(),squeak(),meow(),caw(),crunch(),whoo(),pant(),zap(),scream(),roll()];
+// ── ⑦ 토끼 풀 뜯기 '사각사각': 잎을 끊는 짧고 마른 잡음 세 번(앞니로 끊는 높은 딱 + 잎이 스치는 짧은 쉿)
+function munch(){const sr=44100,L=Math.floor(.8*sr),b=new Float32Array(L),r=rng(113);
+ for(const [t0,amp] of [[.02,1],[.27,.85],[.52,.95]]){const bp=new BQ('bp',sr,3600,1.6),hp=new BQ('hp',sr,1500,.7);
+  for(let c=0;c<9;c++){const ct=t0+(r()**1.4)*.12,len=.002+r()*.004,f=2400+r()*3800,cb=new BQ('bp',sr,f,2+r()*2),a=amp*(.4+r()*.6);
+   for(let i=0;i<len*sr;i++){const j=Math.floor(ct*sr)+i;if(j>=L)break;b[j]+=a*cb.run(r()*2-1)*Math.exp(-i/sr/(len*.4));}}
+  for(let i=0;i<.13*sr;i++){const j=Math.floor(t0*sr)+i;if(j>=L)break;const u=i/(.13*sr);b[j]+=amp*.35*hp.run(bp.run(r()*2-1))*Math.sin(Math.PI*u);}}
+ return finish('hare-munch',b,sr,{peakDb:-6});}
+// ── ⑦ 토끼 뒷발 '툭': 땅을 한 번 치는 낮은 울림(70→45Hz) + 흙 튀는 짧은 잡음
+function thump(){const sr=44100,L=Math.floor(.22*sr),b=new Float32Array(L),r=rng(127);const lp=new BQ('lp',sr,900,.8);let ph=0;
+ for(let i=0;i<L;i++){const t=i/sr,f=lerp(72,45,smooth(t/.12));ph+=TAU*f/sr;
+  b[i]=Math.sin(ph)*Math.exp(-t/.045)*smooth(t/.003)+lp.run(r()*2-1)*.5*Math.exp(-t/.012);}
+ return finish('hare-thump',b,sr,{peakDb:-4,fade:.006});}
+// ── ⑦ 토끼 풀잎 스침: 0.4초 동안 풀이 쓸리는 바스락(띠 잡음, 가운데가 가장 큼)
+function rustle(){const sr=44100,L=Math.floor(.42*sr),b=new Float32Array(L),r=rng(131);const sw=new BQ('bp',sr,2200,.8),hp=new BQ('hp',sr,600,.7);let crack=0;
+ for(let i=0;i<L;i++){const t=i/sr,u=t/.42;if(i%60===0){sw.set(lerp(1500,3200,Math.sin(Math.PI*u)));crack=r()<.12?1:crack*.4;}
+  const n=r()*2-1,env=Math.sin(Math.PI*Math.min(1,u))**1.2*(.7+.3*Math.sin(TAU*14*t));b[i]=(hp.run(sw.run(n))*1.3+n*.2*crack)*env;}
+ return finish('hare-rustle',b,sr,{peakDb:-6,fade:.01});}
+
+const stats=[radio(),airgun(),squeak(),meow(),caw(),crunch(),whoo(),pant(),zap(),scream(),roll(),munch(),thump(),rustle()];
 writeFileSync(OUT+'sfx-stats.json',JSON.stringify({made:'scripts/make-trail-sfx.mjs',license:'CC0 1.0 (산디자인 자체 합성, 외부 녹음·샘플 없음)',files:stats},null,1)+'\n');
 for(const s of stats)console.log(`${s.file.padEnd(28)} ${String(s.seconds).padStart(6)}s ${String(Math.round(s.bytes/1024)).padStart(4)}KB rms ${s.rmsDb}dB${s.loop?` 이음매 ${s.seam}`:''}`);

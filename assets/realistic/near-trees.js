@@ -127,5 +127,9 @@ export function createNearTrees({loadParts}){
   status.full=full;status.mid=mid;
   status.triangles=[...next].reduce((n,[r,t])=>n+(pools.get(records[r].id)?.triangles[t]??0),0);
  }
- return {group,register,unregister,update,status,get selected(){return selected;}};
+ // (x,z)에서 r m 안의 가장 가까운 나무 밑동(즐길거리 다람쥐 나무 타기, src/trail-world.js). 없으면 null.
+ function nearest(x,z,r=6){let best=null;const cx=Math.floor(x/cell),cz=Math.floor(z/cell),reach=Math.ceil(r/cell);
+  for(let i=cx-reach;i<=cx+reach;i++)for(let j=cz-reach;j<=cz+reach;j++)for(const k of grid.get(`${i},${j}`)??[]){const rec=records[k],d=Math.hypot(rec.x-x,rec.z-z);if(d<=r&&(!best||d<best.d))best={x:rec.x,z:rec.z,d};}
+  return best;}
+ return {group,register,unregister,update,nearest,status,get selected(){return selected;}};
 }

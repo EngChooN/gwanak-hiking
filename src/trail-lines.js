@@ -38,7 +38,14 @@ export const TRAIL_LINES={
  // 까치
  'magpie.fly':{kind:'sfx',at:'animal',seconds:1,lines:['깍깍!','푸드덕']},
  'magpie.ride':{kind:'sfx',at:'animal',seconds:1.8,lines:['깍! (같이 감)']},
- 'magpie.rider':{kind:'tag',at:'head',seconds:2,lines:['…무임승차?','…배낭 무거워졌다']},
+ 'magpie.rider':{kind:'tag',at:'head',seconds:2,lines:['…무임승차?','…모자가 무거워졌다']},
+ // 멧토끼(2026-11-07 산디자인 시안, docs/동물배회-토끼-분포-디자인.md §1-3). hare.look은 귀가 쫑긋한 순간 동동이 머리 위에 한 번
+ 'hare.alert':{kind:'sfx',at:'animal',seconds:1,lines:['쫑긋!','…!','(귀가 먼저!)']},
+ 'hare.thump':{kind:'sfx',at:'animal',seconds:1,lines:['탁!','탁탁!']},
+ 'hare.flee':{kind:'sfx',at:'animal',seconds:1.1,lines:['휙!','깡충깡충!','후다닥!']},
+ 'hare.munch':{kind:'tag',at:'animal',seconds:2.2,lines:['냠냠…','(풀이 맛있다)','아삭아삭…']},
+ 'hare.return':{kind:'tag',at:'animal',seconds:2.2,lines:['…(슬금슬금)','…다시 와 봄','(안 무서운 사람?)']},
+ 'hare.look':{kind:'',at:'head',seconds:1.8,lines:['귀가… 나보다 길다','저 귀… 안테나인가?']},
  // ⑤ 에어건
  'airgun.blast':{kind:'sfx',at:'feet',seconds:1.6,lines:['치이이익—!!!']},
  'airgun.hat':{kind:'',at:'head',seconds:1.8,lines:['내 모자!!']},
@@ -75,4 +82,8 @@ export const TRAIL_SFX={
  zap:{file:'cramp-zap.wav',db:-9,rate:[.95,1.05],on:"'cramp-zap'(0.5초에 한 번까지)"},
  scream:{file:'cramp-scream.wav',db:-9,on:"'exhaust' phase가 'cramp'로 바뀌는 순간 한 번(동동이 '으아아 쥐났다!!' 말풍선과 함께)"},
  roll:{file:'cramp-roll.wav',db:-12,rate:[.95,1.05],on:'쥐 동안 1.5초마다(뒹굴뒹굴 좌우 한 번 = 쓸림 한 번), 발끝 당기기로 풀리면 멈춤'},
+ // ⑦ 멧토끼 — 울음소리는 없다(토끼는 거의 울지 않음). near = 이 거리(m) 안에서만 낸다(trail-world.js가 거리를 보고 부름)
+ munch:{file:'hare-munch.wav',db:-14,rate:[.94,1.08],near:12,on:'토끼 풀 뜯기 시작 때와 4초마다(12m 안)'},
+ thump:{file:'hare-thump.wav',db:-9,rate:[.92,1.06],on:'토끼 귀 쫑긋(alert) 시작 때 절반만'},
+ rustle:{file:'hare-rustle.wav',db:-12,rate:[.9,1.1],on:'토끼 달아나기(flee) 시작 때'},
 };

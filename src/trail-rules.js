@@ -31,7 +31,7 @@ export const TRAIL_BUTTONS=Object.freeze({
  cat:[{act:'pet-cat',ic:'🐱',label:'쓰다듬기',sub:'산고양이'}],
 });
 // 즐길거리 줄에 띄울 것 하나를 고른다(우선순위: 쥐 발끝 당기기 → 역기 연타 → 벤치 일어나기 → 들르기 → 옆 버튼).
-// view = {act:{name,state,reps,of}|null, near:{id,kind}|null, offer:{…}|null, auto, busy, exhaust:{phase,release}|null(⑥ src/exhaustion.js)}
+// view = {act:{name,state,reps,of}|null, near:{id,kind,act?}|null, offer:{…}|null, auto, busy, exhaust:{phase,release}|null(⑥ src/exhaustion.js)}
 export function trailBarView({act=null,near=null,offer=null,auto=false,busy=false,now=0,exhaust=null}={}){
  if(exhaust?.release)return {mode:'cramp'};
  if(exhaust&&exhaust.phase&&exhaust.phase!=='none')return {mode:'none'};
@@ -39,6 +39,7 @@ export function trailBarView({act=null,near=null,offer=null,auto=false,busy=fals
  if(act?.name==='bench-sit'&&act.state!=='out')return {mode:'stand-up'};
  if(busy||act)return {mode:'none'};
  if(offerVisible(offer,{now,auto}))return {mode:'offer',offer};
- if(!auto&&near&&TRAIL_BUTTONS[near.kind])return {mode:'near',id:near.id,kind:near.kind,buttons:TRAIL_BUTTONS[near.kind]};
+ // near.act가 있으면(산스장: 가장 가까운 기구) 그 버튼 하나만. 화면에서는 대상 위 칩(src/trail-chip.js)으로 뜬다.
+ if(!auto&&near&&TRAIL_BUTTONS[near.kind]){const all=TRAIL_BUTTONS[near.kind],one=near.act&&all.filter(b=>b.act===near.act);return {mode:'near',id:near.id,kind:near.kind,buttons:one?.length?one:all};}
  return {mode:'none'};
 }

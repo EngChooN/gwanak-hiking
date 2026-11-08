@@ -61,7 +61,7 @@ export function routeMeasure(route){
  const cum=[0];for(let i=1;i<route.length;i++)cum.push(cum[i-1]+Math.hypot(route[i].x-route[i-1].x,route[i].z-route[i-1].z));
  const at=m=>{m=Math.max(0,Math.min(cum.at(-1),m));let lo=0,hi=cum.length-1;while(hi-lo>1){const mid=(lo+hi)>>1;if(cum[mid]<=m)lo=mid;else hi=mid;}
   const a=route[lo],b=route[hi],t=(m-cum[lo])/((cum[hi]-cum[lo])||1),dx=b.x-a.x,dz=b.z-a.z,n=Math.hypot(dx,dz)||1;
-  return {x:a.x+dx*t,z:a.z+dz*t,width:(a.width??2.2)+((b.width??2.2)-(a.width??2.2))*t,tx:dx/n,tz:dz/n,m};};
+  return {x:a.x+dx*t,z:a.z+dz*t,width:(a.width??2.2)+((b.width??2.2)-(a.width??2.2))*t,tx:dx/n,tz:dz/n,m,material:a.material};};
  const nearest=(x,z)=>{let best={d:Infinity,m:0};for(let i=0;i<route.length-1;i++){const a=route[i],b=route[i+1],dx=b.x-a.x,dz=b.z-a.z,t=Math.max(0,Math.min(1,((x-a.x)*dx+(z-a.z)*dz)/(dx*dx+dz*dz||1))),d=Math.hypot(x-a.x-dx*t,z-a.z-dz*t);if(d<best.d)best={d,m:cum[i]+t*(cum[i+1]-cum[i])};}return best;};
  return {length:cum.at(-1),at,nearest};
 }

@@ -91,6 +91,30 @@
    "bytes": 132344,
    "peakDb": -6,
    "rmsDb": -22.9
+  },
+  {
+   "file": "hare-munch.wav",
+   "seconds": 0.8,
+   "sampleRate": 44100,
+   "bytes": 70604,
+   "peakDb": -6,
+   "rmsDb": -25.5
+  },
+  {
+   "file": "hare-thump.wav",
+   "seconds": 0.22,
+   "sampleRate": 44100,
+   "bytes": 19448,
+   "peakDb": -4,
+   "rmsDb": -16.1
+  },
+  {
+   "file": "hare-rustle.wav",
+   "seconds": 0.42,
+   "sampleRate": 44100,
+   "bytes": 37088,
+   "peakDb": -6,
+   "rmsDb": -21
   }
  ]
 }

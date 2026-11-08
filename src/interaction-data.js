@@ -104,15 +104,56 @@ export const TRAIL_PROPS=Object.freeze([
  {id:'bench-2156',kind:'bench',m:2156,side:1,est:true,note:'계곡 물가 쉼터'},
  {id:'bench-kkal-before',kind:'bench',m:3640,sides:[1,-1],search:{from:3600,to:3666,step:3},est:true,note:'깔딱고개 나무계단 앞'},
  {id:'bench-kkal-after',kind:'bench',m:4425,sides:[1,-1],search:{from:4405,to:4530,step:3},est:true,note:'깔딱고개 계단을 다 오른 뒤(연주암 갈림길 근처 평지)'},
+ // 빈 구간 벤치(2026-11-07, 산디자인 분포안 §3·산리서치 GPX 지점 근처). 모두 게임 속 배치
+ {id:'bench-640',kind:'bench',m:640,side:1,search:{from:600,to:700,step:4},est:true,note:'평탄한 길가 쉼 자리 · 게임 속 배치'},
+ {id:'bench-2600',kind:'bench',m:2600,sides:[1,-1],search:{from:2570,to:2640,step:3},est:true,note:'야영장 입구 · 게임 속 배치'},
+ {id:'bench-3224',kind:'bench',m:3224,sides:[1,-1],search:{from:3190,to:3290,step:3},est:true,note:'오르막 숲 바위 쉼 자리 · 게임 속 배치'},
+ // 4,106m(GPX '작은 공터', 고도가 앞뒤와 맞지 않음)는 나무계단 한가운데라 길 방향 경사가 1m에 0.33m다. 벤치 다리 높이 차가 0.4m(받침돌 0.38m)라
+ // 2026-11-07 산풍경이 나무계단 중간 평탄참(3,870~3,885m, 다리 높이 차 0.1m)으로 옮겼다. 3,880→4,312m(깔딱고개 중간 벤치) 사이는 동물 구역 z09가 채운다.
+ {id:'bench-3875',kind:'bench',m:3875,sides:[1,-1],search:{from:3862,to:3890,step:2,offsets:[0,2.4,3.2]},est:true,note:'깔딱고개 나무계단 중간 평탄참 · 게임 속 배치'},
+ // 빈 구간 채우기 2차(2026-11-07 산풍경): 남은 400m 넘는 틈(호수공원 740→제1광장 1,070 앞, 계곡 1,710→2,156, 2,600→3,224, 3,224→3,640)에 하나씩.
+ // 자리는 search 범위에서 평평하고 물줄기·다른 시설에서 떨어진 곳을 고르고, 실제 지형에서 숲·바위·계단과 겹침을 따로 쟀다(scripts/probe-trail-prop-sites.mjs).
+ {id:'bench-880',kind:'bench',m:850,sides:[1,-1],search:{from:790,to:910,step:4},est:true,note:'나들이숲 테이블벤치(GPX 783m) 지나 길가 · 게임 속 배치'},
+ {id:'bench-1863',kind:'bench',m:1863,side:1,search:{from:1830,to:1900,step:3},est:true,note:'계곡 평상(GPX 1,863m) 근처 물가 쉼터 · 게임 속 배치'},
+ {id:'bench-2830',kind:'bench',m:2830,sides:[1,-1],search:{from:2795,to:2875,step:3},est:true,note:'나무다리(GPX 2,829m) 지나 숲길 쉼 자리 · 게임 속 배치'},
+ {id:'bench-3440',kind:'bench',m:3440,sides:[1,-1],search:{from:3400,to:3490,step:3},est:true,note:'오르막 숲길 바위 쉼 자리 · 게임 속 배치'},
  {id:'airgun',kind:'airgun',anchor:'gate',local:[-5,9.8],localYaw:Math.PI/2,est:true,note:'일주문 안쪽 광장 왼편 · 실제 먼지털이기가 있는지 확인 전(산리서치)'},
 ]);
-// 산고양이 나오는 자리(입구 광장·쉼터). 벤치에서는 앉았을 때 30% 확률로 옆자리에 온다. 먹이 주기 동작은 만들지 않는다.
-// 계곡 안 두 곳은 est(게임 속 배치) 표시를 붙였다(산리서치 제안, 2026-11-06).
-export const CAT_SPOTS=Object.freeze([
- {id:'cat-plaza',kind:'cat',anchor:'gate',local:[3.3,13.5],localYaw:-2.2,note:'입구 광장'},
- {id:'cat-junction',kind:'cat',m:1078,side:1,offset:3.2,est:true,note:'계곡 갈림길 · 게임 속 배치'},
- {id:'cat-pavilion',kind:'cat',m:2404,side:1,offset:3.4,est:true,note:'팔각정 쉼터 · 게임 속 배치'},
+// ⑧ 동물 출현 구역(2026-11-07). 고정 자리(예전 CAT_SPOTS·interactionProps.spawns) 대신 구역 안 무작위 자리에 나타나 돌아다닌다.
+// 구역 표는 산리서치 docs/동물출현-즐길거리분포-자료.md §1-2, 행동 수치는 산디자인 docs/동물배회-토끼-분포-디자인.md §2. 모두 게임 속 출현(est).
+// from·to = GPX 수평거리(m, 위 TRAIL_PROPS m과 같은 기준). w = 종류별 출현 가중(높음 3·보통 2·낮음 1·없음 0).
+// maxOffset = 길 가장자리에서 떨어질 수 있는 폭의 상한(계단처럼 숲이 좁은 곳). anchor 'gate' 구역은 일주문 기준 상자(box = [x0,x1,z0,z1]).
+// 자리·종류는 src/animal-zones.js가 구역 id + 5분 시간 칸으로 정하는 결정적 난수로 뽑는다(같은 방 사람이 같은 동물을 본다, 서버 동기화 없음).
+export const ANIMAL_ZONES=Object.freeze([
+ {id:'z00-plaza',anchor:'gate',box:[-4.5,4.5,10,16],w:{magpie:3,cat:3},count:2,note:'입구 광장(예전 광장 고양이·까치 자리 둘레)'},
+ {id:'z01-gate',from:0,to:250,w:{squirrel:1,magpie:3,cat:3},note:'일주문·폭포쉼터·육각정'},
+ {id:'z02-park',from:250,to:900,w:{hare:2,squirrel:2,magpie:2,cat:1},note:'평탄한 길·나들이숲 풀밭 가장자리'},
+ {id:'z03-lake',from:900,to:1350,w:{hare:1,squirrel:2,magpie:1,cat:2},note:'갈림길·호수공원·인공폭포'},
+ {id:'z04-valley-low',from:1350,to:2100,w:{hare:1,squirrel:3},maxOffset:{hare:3},note:'계곡 평상·벤치·나무다리'},
+ {id:'z05-valley-mid',from:2100,to:2550,w:{hare:1,squirrel:3,cat:2},note:'정자·팔각정 쉼터'},
+ {id:'z06-camp',from:2550,to:2850,w:{hare:2,squirrel:2,magpie:1,cat:1},note:'야영장 입구 풀밭·정돈 숲'},
+ {id:'z07-climb-forest',from:2850,to:3550,w:{hare:2,squirrel:3},note:'계곡 위 오르막 숲·조망터'},
+ {id:'z08-stone',from:3550,to:4050,w:{hare:1,squirrel:3,magpie:1},note:'무명폭포·돌탑 공터'},
+ {id:'z09-stairs',from:4050,to:4400,w:{hare:1,squirrel:2},maxOffset:{squirrel:5,hare:3},note:'깔딱고개 나무계단(양옆 숲이 좁음)'},
+ {id:'z10-ridge',from:4400,to:4800,w:{hare:2,squirrel:2,magpie:3,cat:2},note:'연주암 갈림길 능선·매점 둘레'},
+ {id:'z11-summit',from:4800,to:5200,w:{squirrel:1,magpie:2},note:'연주대 아래 바위(노출 바위라 토끼 없음)'},
 ]);
+// 동물별 배회 방식(산디자인 §2 표의 제안 시작값). 거리 m·속도 m/s·시간 초. 확률은 '한 번 옮기고 멈춘 뒤' 뽑는다.
+// offset = 길 가장자리에서 떨어진 폭(화면 확인 뒤 줄임: 시안 값 다람쥐 4~14·토끼 2~10·까치 0~8·고양이 2~6m는 풀·숲에 묻혀 거의 안 보였다), roam = 처음 나타난 자리에서 길 방향으로 돌아다니는 반경, cross = 등산로를 가로지를 확률.
+export const ANIMAL_STYLE=Object.freeze({
+ squirrel:{offset:[1.5,8],roam:8,speed:[2.8,3.6],step:[1.5,4],pause:[1.5,4],cross:.06,climb:.15,climbTime:2.5,hidden:[6,10],look:3},
+ hare:{offset:[.8,5],roam:10,speed:[2.2,2.2],step:[2,5],hops:[4,7],hopTime:.35,graze:[4,9],look:[2,3],cross:.1,alert:8,flee:3,fleeSpeed:5,fleeTime:3.5,alertTime:1.2,gone:40,returnStill:20,returnTo:5},
+ magpie:{offset:[0,6],roam:12,speed:[.9,.9],step:[2,5],pause:[2,5],cross:.05,fly:.25,flyCross:.2,flyStep:[6,15],flyTime:3,flyArc:[2,4]},
+ cat:{offset:[1,5],roam:8,speed:[.5,.5],step:[3,8],pause:[8,25],cross:.04,crossPause:[0,3]},
+});
+// 시간대·계절 가중(est). 시간대: 새벽 5~8시 · 낮 8~17시(한낮 11~15시) · 해질녘 17~20시 · 밤 그 밖.
+export const ANIMAL_TIME=Object.freeze({
+ squirrel:{dawn:.6,day:1,noon:1,dusk:.6,night:.1},
+ hare:{dawn:2,day:.4,noon:.4,dusk:2,night:.8},
+ magpie:{dawn:.8,day:1,noon:1,dusk:.8,night:.1},
+ cat:{dawn:1.5,day:1,noon:.5,dusk:1.5,night:1},
+});
+export const ANIMAL_SEASON=Object.freeze({squirrel:{spring:1,summer:1,autumn:1.4,winter:.1}});
 // 즐길거리 규칙(단위: m·초). dropIn = 들르기 버튼을 띄우는 거리, offer = 버튼을 띄우는 시간, reoffer = 이만큼 멀어져야 다시 띄움.
-export const TRAIL_RULES=Object.freeze({dropIn:6,offer:4,reoffer:12,benchSit:2,benchCat:.3,animalRadius:45,animalLeave:60,propLoad:260,propUnload:340,
+export const TRAIL_RULES=Object.freeze({dropIn:6,offer:4,reoffer:12,benchSit:2,benchCat:.3,animalRadius:45,animalLeave:60,animalSlot:300,propLoad:260,propUnload:340,
  squirrelLook:3,squirrelHatAfter:5,magpieFlee:4,magpieRide:20,catPunch:3,walkSpeed:1.3,chocolates:5,chocoSeconds:30,chocoSpeed:1.2});

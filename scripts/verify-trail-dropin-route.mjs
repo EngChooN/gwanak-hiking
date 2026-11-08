@@ -23,9 +23,9 @@ for(const site of sites){
  const row={id:site.id,kind:site.kind,m:site.m,s:+site.routeS.toFixed(1),fromPath:site.fromPath,offers:[]};
  const t0=Date.now();let tapped=false;
  while(Date.now()-t0<90000){
-  const o=await page.evaluate(()=>{const b=document.querySelector('#trail-bar[data-mode=offer] .tb-offer');return b&&{id:b.dataset.id,act:b.dataset.act};});
+  const o=await page.evaluate(()=>{const b=document.querySelector('#trail-chip[data-mode=offer] .tc-offer');return b&&{id:b.dataset.id,act:b.dataset.act};});
   if(o&&!row.offers.some(x=>x.id===o.id))row.offers.push(o);
-  if(o?.id===site.id&&!tapped){tapped=true;row.offerAt=+((Date.now()-t0)/1000).toFixed(1);await page.tap('.tb-offer');await page.waitForTimeout(400);row.played=await page.evaluate(()=>!!window.hiking.trail.status().active);}
+  if(o?.id===site.id&&!tapped){tapped=true;row.offerAt=+((Date.now()-t0)/1000).toFixed(1);await page.tap('.tc-offer');await page.waitForTimeout(400);row.played=await page.evaluate(()=>!!window.hiking.trail.status().active);}
   if(tapped){const s=await page.evaluate(()=>({a:window.hiking.trail.status().active,auto:window.hiking.snapshot().auto,s:window.hiking.snapshot().s}));if(!s.a&&s.auto){row.backToAuto=true;row.doneAt=+((Date.now()-t0)/1000).toFixed(1);await page.waitForTimeout(2500);row.movedOn=(await page.evaluate(()=>window.hiking.snapshot().s))>s.s;break;}}
   await page.waitForTimeout(250);
  }
