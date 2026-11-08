@@ -68,6 +68,14 @@ export function installNotebookHud(doc=document,win=window){
  const send=(id,value)=>win.dispatchEvent(new CustomEvent('hiking:command',{detail:{id,value}}));
  const stamp=doc.getElementById('auto'),ctx=$('.nb-ctx'),tabs=$('.nb-tabs'),sheets=$('.nb-sheets');
  if(new URLSearchParams(win.location?.search??'').has('multi'))body.classList.add('nb-multi');
+ // ── 진행 카드 접기: 휴대폰 세로에서는 카드가 풍경을 많이 가려 처음엔 접고(상태·속도·스테미너만), 고른 상태는 기억한다 ──
+ const card=$('.nb-card'),fold=doc.getElementById('card-fold');
+ if(card&&fold){
+  const KEY='gwanak:card-folded';let saved=null;try{saved=win.localStorage?.getItem(KEY);}catch{}
+  const setFold=on=>{card.classList.toggle('folded',on);fold.setAttribute('aria-expanded',String(!on));fold.setAttribute('aria-label',on?'등반 정보 펼치기':'등반 정보 접기');fold.firstElementChild.textContent=on?'▾':'▴';};
+  setFold(saved!=null?saved==='1':!!win.matchMedia?.('(orientation:portrait) and (max-width:600px)').matches);
+  fold.addEventListener('click',()=>{const on=!card.classList.contains('folded');setFold(on);try{win.localStorage?.setItem(KEY,on?'1':'0');}catch{}});
+ }
  // ── 시간대 색 ──
  const setTime=t=>{if(root.dataset.hudTime!==t)root.dataset.hudTime=t;};
  setTime('day');

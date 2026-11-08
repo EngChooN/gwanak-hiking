@@ -167,15 +167,22 @@ body.touch .key-hint,body.nb-sheet-open .key-hint{display:none}
 
 /* ───────── 9. 상호작용·알림·기구 화면을 같은 종이 톤으로 ───────── */
 #interaction-ui,#ix-bino,#ix-frame{--gold:var(--paper2);--gold2:var(--accent);--red:var(--stamp)}
+/* 종이 칩(--paper2) 바탕 글씨는 이 안에서도 수첩 톤 잉크(낮 어두운 갈색·밤 밝은 크림)를 쓴다. 상호작용 화면은 --ink를 짙은 초록으로 따로 정해 놓아 밤에 어두운 바탕 위 어두운 글씨가 됐다(2026-11-07). */
+:root{--chip-ink:var(--ink);--chip-ink2:var(--ink2)}
 .ix-action{background:none!important;border:0!important;box-shadow:none!important;padding:0!important;bottom:auto!important;top:50%!important;transform:translate(-50%,-50%)!important}
 .ix-action>b,.ix-action>small,.ix-action>.bar{display:none!important}
-.ix-marker{width:28px!important;height:28px!important;margin:-14px 0 0 -14px!important;background:var(--paper2)!important;color:var(--ink)!important;border:0!important;box-shadow:var(--lift),var(--soft)!important;font-size:14px!important}
+.ix-marker{width:28px!important;height:28px!important;margin:-14px 0 0 -14px!important;background:var(--paper2)!important;color:var(--chip-ink)!important;border:0!important;box-shadow:var(--lift),var(--soft)!important;font-size:14px!important}
 .ix-marker.far{width:12px!important;height:12px!important;margin:-6px 0 0 -6px!important;background:var(--paper)!important}
-.ix-toast{background:var(--paper2)!important;color:var(--ink)!important;border:0!important;border-radius:8px!important;box-shadow:var(--lift),var(--soft),var(--hi)!important;top:calc(var(--st) + 12px)!important}
-.ix-toast .tx small{color:var(--ink2)!important}
+.ix-toast{background:var(--paper2)!important;color:var(--chip-ink)!important;border:0!important;border-radius:8px!important;box-shadow:var(--lift),var(--soft),var(--hi)!important;top:calc(var(--st) + 12px)!important}
+.ix-toast .tx small{color:var(--chip-ink2)!important}
 .ix-toast .tx .bar{background:var(--track)!important}.ix-toast .tx .bar i{background:var(--stamp)!important}
-.ix-pill-wrap[data-where=phone] .ix-pill{background:var(--paper2)!important;color:var(--ink)!important;border:0!important;border-radius:8px!important;box-shadow:var(--lift),var(--soft)!important}
-.ix-pill-wrap[data-where=phone] .ix-pill small{color:var(--ink2)!important}
+.ix-pill-wrap[data-where=phone] .ix-pill{background:var(--paper2)!important;color:var(--chip-ink)!important;border:0!important;border-radius:8px!important;box-shadow:var(--lift),var(--soft)!important}
+.ix-pill-wrap[data-where=phone] .ix-pill small{color:var(--chip-ink2)!important}
+body.touch .ix-pill:not(.done):not(.lock){color:var(--chip-ink)!important}/* 터치 둥근 알약: 바탕은 그대로(--gold=종이), 글씨만 수첩 잉크로 */
+/* 휴대폰 화면 안의 안내 알약(인증샷 틀): 둥근 84px 원 대신 한 줄 알약. 원 안에서는 글자가 두 줄로 끊겼고 낮은 틀에서는 위 단추를 가렸다(2026-11-07) */
+body.touch .ix-pill-wrap[data-where=phone] .ix-pill{width:auto;height:auto;min-height:44px;padding:6px 16px;flex-direction:row;gap:8px;border-radius:999px!important}
+body.touch .ix-pill-wrap[data-where=phone] .ix-pill::before{font-size:20px}
+body.touch .ix-pill-wrap[data-where=phone] .ix-pill b{white-space:nowrap;max-width:none;font-size:14px}
 .ix-pill-wrap[data-where=phone] .ix-pill .key{background:var(--stamp)!important;color:#fff!important;border-bottom-color:var(--stamp-d)!important}
 /* 안내판·수첩·완등 카드: 종이 대화창 */
 .ix-scrim{background:var(--scrim)!important}
@@ -189,7 +196,7 @@ body.touch .key-hint,body.nb-sheet-open .key-hint{display:none}
 .ix-signrow{border-bottom:1px dashed var(--rule)!important}
 .ix-signrow .arr{background:var(--paper2)!important;box-shadow:1px 2px 0 var(--edge)}
 .ix-signrow small{color:var(--ink2)!important}
-.ix-chip{background:var(--paper2)!important;color:var(--ink)!important;box-shadow:1px 2px 0 var(--edge)}
+.ix-chip{background:var(--paper2)!important;color:var(--chip-ink)!important;box-shadow:1px 2px 0 var(--edge)}
 .ix-chip.est{color:var(--accent)!important}
 .ix-dots i{background:var(--rule)!important}.ix-dots i.on{background:var(--stamp)!important}
 .ix-board .foot button,.ix-book button.btn,.ix-card button{background:var(--paper2)!important;color:var(--ink)!important;border:0!important;border-radius:9px!important;box-shadow:1px 2px 0 var(--edge)!important;font-weight:800;min-height:44px}
@@ -211,13 +218,13 @@ body.touch .key-hint,body.nb-sheet-open .key-hint{display:none}
 .ix-tape .tk{background:var(--ink2)!important}.ix-tape .tn{color:var(--ink2)!important}
 .ix-tape .mk{color:var(--accent)!important}.ix-tape .mk::after{border-top-color:var(--accent)!important}
 .ix-tape .cur{background:var(--stamp)!important}
-.ix-lm .tag{position:relative;background:var(--paper2)!important;color:var(--ink)!important;border:0!important;border-radius:6px!important;padding:4px 12px 5px 20px!important;box-shadow:var(--lift),var(--soft)!important;font-weight:800!important}
+.ix-lm .tag{position:relative;background:var(--paper2)!important;color:var(--chip-ink)!important;border:0!important;border-radius:6px!important;padding:4px 12px 5px 20px!important;box-shadow:var(--lift),var(--soft)!important;font-weight:800!important}
 .ix-lm .tag::before{content:"";position:absolute;left:7px;top:50%;width:6px;height:6px;margin-top:-3px;border-radius:50%;background:var(--pin)}
-.ix-lm .tag small{color:var(--ink2)!important}
+.ix-lm .tag small{color:var(--chip-ink2)!important}
 .ix-lm .ln{background:var(--paper2)!important;box-shadow:1px 0 0 var(--edge)}
 .ix-lm .dot{background:var(--stamp)!important;box-shadow:0 0 0 2px var(--paper2)!important}
 .ix-lm.focus .tag{background:var(--stamp)!important;color:#fff!important}.ix-lm.focus .tag small{color:#fff!important}
-.ix-edge,.ix-bino-note{background:var(--paper2)!important;color:var(--ink)!important;border:0!important;border-radius:6px!important;box-shadow:var(--lift)!important;font-weight:800}
+.ix-edge,.ix-bino-note{background:var(--paper2)!important;color:var(--chip-ink)!important;border:0!important;border-radius:6px!important;box-shadow:var(--lift)!important;font-weight:800}
 .ix-focus{background:var(--stamp)!important;color:#fff!important;border:2px dashed var(--stamp-dash)!important;border-radius:14px!important;box-shadow:0 4px 0 var(--stamp-d),0 8px 16px rgba(60,15,5,.35)!important;min-height:56px}
 .ix-focus small{color:#fff!important;opacity:.9}
 .ix-focus .key{background:#fff!important;color:var(--stamp)!important;border-bottom-color:var(--stamp-d)!important}
@@ -349,3 +356,11 @@ body.nb-multi:not(.nb-multi-open) .multi-panel{display:none}
  .nb-summit{width:auto;bottom:auto!important}
  .hud-restore{right:calc(var(--sr) + 12px)}
 }
+
+/* ───────── 진행 카드 접기 (휴대폰 세로는 처음부터 접힘) ───────── */
+.nb-row1 #speed{margin-left:auto}
+#app .nb-fold{display:inline-flex;align-items:center;justify-content:center;width:30px;height:24px;margin:-4px -6px -4px 2px;padding:0;border:0;border-radius:6px;background:var(--paper2,transparent);box-shadow:inset 0 0 0 1.5px var(--rule,#0002);color:var(--ink);font:inherit;font-size:13px;font-weight:900;cursor:pointer;touch-action:manipulation}
+.nb-fold i{font-style:normal;line-height:1}
+@media (hover:none),(pointer:coarse){#app .nb-fold{width:40px;height:30px;min-height:0;min-width:0}}
+#app .nb-card.folded{width:auto;min-width:200px}
+.nb-card.folded .nb-title,.nb-card.folded .nb-trail,.nb-card.folded .nb-meta,.nb-card.folded .nb-foot,.nb-card.folded .nb-snack{display:none!important}
