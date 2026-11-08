@@ -80,8 +80,10 @@ audio.setVolume(userVolume);
 const ambient=new AmbientAudio({base:`${import.meta.env.BASE_URL}sounds/ambient/`,enabled:soundEnabled,volume:userVolume});
 const ambientCredits=document.createElement('p');ambientCredits.textContent='환경음은 실제 관악산 녹음이 아닌 CC0 임시음입니다. 구간·거리·고도·음량은 추정이며 현장·귀 검수 전입니다. 물·숲 바람·능선 바람·새: Thimras (Park Ambiences), 까마귀: fvcalderan (Crow)·zeroisnotnull (Crow Caw), 정상 웅성임: StarNinjas (Crowd Shouting/Speaking Ambience), 먼 도시: IgnasD (High Traffic Road Sounds). 목탁: 산디자인 자체 합성 임시음. 모노 32kHz 변환·크로스페이드·음량 정규화.';
 const sourceLink=document.createElement('a');sourceLink.href=`${import.meta.env.BASE_URL}environment/출처-이용조건.md`;sourceLink.textContent='환경음 원본·제작자·작품 URL·CC0 이용 조건 전체 표';sourceLink.target='_blank';sourceLink.rel='noopener';document.querySelector('.sound-credits').append(ambientCredits,sourceLink);
+// 라디오가 켜져 있으면 환경음을 ×0.7(아래 hiking:radio). 소리 이벤트보다 먼저 선언해 둔다
+let radioOn=false;const ambientVolume=()=>audio.volume*(radioOn?.7:1);
 const unlockSound=()=>{void audio.unlock();if(audio.context)ambient.attach(audio.context,audio.master);};window.addEventListener('pointerdown',unlockSound,{capture:true,passive:true});window.addEventListener('keydown',unlockSound,{capture:true});
-window.addEventListener('hiking:sound',e=>{const {enabled,volume}=e.detail||{};if(typeof enabled==='boolean'){audio.setEnabled(enabled);ambient.setEnabled(enabled);if(enabled)unlockSound();try{localStorage.setItem(SOUND_SAVE_KEY,String(enabled));}catch{}}if(Number.isFinite(volume)){audio.setVolume(volume);ambient.setVolume(audio.volume);try{localStorage.setItem(VOLUME_SAVE_KEY,String(audio.volume));}catch{}}});
+window.addEventListener('hiking:sound',e=>{const {enabled,volume}=e.detail||{};if(typeof enabled==='boolean'){audio.setEnabled(enabled);ambient.setEnabled(enabled);if(enabled)unlockSound();try{localStorage.setItem(SOUND_SAVE_KEY,String(enabled));}catch{}}if(Number.isFinite(volume)){audio.setVolume(volume);ambient.setVolume(ambientVolume());try{localStorage.setItem(VOLUME_SAVE_KEY,String(audio.volume));}catch{}}});
 const QUALITY_SAVE_KEY='gwanak-quality-mode';let qualityMode=(()=>{const q=new URLSearchParams(location.search).get('quality');const m={auto:'auto',high:'2',balanced:'1',low:'0'}[q];if(m)return m;try{return localStorage.getItem(QUALITY_SAVE_KEY)||'auto';}catch{return'auto';}})();function setQualityMode(mode){qualityMode=mode;try{localStorage.setItem(QUALITY_SAVE_KEY,qualityMode);}catch{}$('quality').textContent=`화질 ${{auto:'자동','2':'높음','1':'균형','0':'낮음'}[qualityMode]}`;try{quality=qualityMode==='auto'?(mobile?0:2):Number(qualityMode);goodWindows=0;resize();updateUI();}catch{}}
 $('quality').onclick=()=>{const order=['auto','2','1','0'];setQualityMode(order[(order.indexOf(qualityMode)+1)%order.length]);$('quality').blur();};
 // 설정 탭의 화질 분절 단추(등산 수첩 HUD)는 모드를 바로 고른다.
@@ -377,6 +379,10 @@ for(const load of Object.values(import.meta.glob('./multi-entry-ui.js')))load().
 // 등산 채팅 HUD(산디자인 src/hiking-chat-ui.js: 💬 버튼·채팅 창·머리 위 말풍선). 서버 연결은 multi-client.js가 hiking:chat* 이벤트로 맡는다.
 // ?multi로 이미 참가했으면 상태를 한 번 더 보내 준다(HUD가 늦게 붙어 '연결됨'을 놓치면 💬가 안 보였음).
 for(const load of Object.values(import.meta.glob('./hiking-chat-ui.js')))load().then(m=>{m.installHikingChat?.();multi?.statusNow();}).catch(err=>console.warn('등산 채팅 HUD를 불러오지 못했습니다',err));
+// 관악산 FM 라디오(src/radio-ui.js: 📻 태그·휴대용 라디오·소리 출처 창). 발소리와 같은 AudioContext·마스터를 거쳐 '소리 꺼짐'·음량을 따른다.
+// 켜져 있으면 바람 같은 환경음을 조금(×0.7) 줄인다. 소리 파일은 같은 출처 assets/radio/만(외부 접속 없음).
+window.addEventListener('hiking:radio',e=>{radioOn=!!e.detail?.on;ambient.setVolume(ambientVolume());});
+for(const load of Object.values(import.meta.glob('./radio-ui.js')))load().then(m=>{window.hiking.radio=m.installRadio?.({context:()=>audio.context,destination:()=>audio.master,enabled:()=>audio.enabled,unlock:unlockSound})??null;}).catch(err=>console.warn('라디오를 불러오지 못했습니다',err));
 // 상호작용(안내판·스탬프·산길 행동·쌍안경 이름표). 소품 자리는 풍경이 정한 landscape.interactionProps.sites를 그대로 쓴다.
 let envInfo={};window.addEventListener('hiking:environment',e=>{envInfo=e.detail||{};});
 {

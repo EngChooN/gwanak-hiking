@@ -17,5 +17,6 @@ for(const name of readdirSync(generated)){
  if(!statSync(`${generated}/${name}`).isFile()||!sharedData(name))continue;
  cpSync(`${generated}/${name}`,`dist/${generated}/${name}`);copied++;
 }
-for(const dir of ['assets/shared','assets/toon'])if(existsSync(dir))cpSync(dir,`dist/${dir}`,{recursive:true});
+// assets/radio: 관악산 FM 곡·소리와 manifest.json(2026-11-08). 원본 그대로 복사(약 88MB — 압축안은 docs/변경기록-2026-11-08-동행-라디오.md)
+for(const dir of ['assets/shared','assets/toon','assets/radio'])if(existsSync(dir))cpSync(dir,`dist/${dir}`,{recursive:true});
 console.log(`카툰 에셋·공용 지형 자료 ${copied}개 복사 완료(실사 텍스처·HDR·식생·등산객 제외)`);
