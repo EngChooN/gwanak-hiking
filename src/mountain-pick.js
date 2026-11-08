@@ -11,6 +11,9 @@ import {summitOf} from './summit-records.js';
 import {SAVE_KEY} from './movement.js';
 import {seoulClock,sunPosition} from './daytime.js';
 import {START_EVENT} from './loading.js';
+import {hikingServerPick,hikingPickMode} from './hiking-server-pick.js';
+import {loadPickName,savePickName,PICK_LABELS} from './server-pick.js';
+import {NET} from './multi-protocol.js';
 
 const q=new URLSearchParams(location.search);
 export const pickEnabled=(search=location.search,webdriver=!!navigator.webdriver)=>{const p=new URLSearchParams(search).get('pick');return p==='on'||(p!=='off'&&!webdriver);};
@@ -40,6 +43,25 @@ export function mountainArt(m,{season='autumn',time='day',w=362,h=150,gray=false
 ${time==='night'?`<rect width="${w}" height="${h}" fill="#0a1030" opacity=".28"/>`:''}</svg>`;
 }
 
+// 닉네임 칸(흡연장 로비 '입장하기'의 닉네임처럼). 저장값은 서버 고르기 창과 같은 NAME_KEY 'gwanak-multi-name'.
+// 비우면 서버가 등산객XXXX를 붙인다. 고치는 대로 저장 → 다음 서버 고르기 창·👋 함께 걷기·다음 방문에 그대로 채워진다.
+export function nickFieldHTML(name=''){
+ return `<label class="pk-nick"><span class="pk-nick-k">✎ 닉네임 <small>${NET.nameMax}자까지 · 비우면 ${esc(PICK_LABELS.hiking.anon)}</small></span><input name="pk-nick" type="text" maxlength="${NET.nameMax}" placeholder="${esc(PICK_LABELS.hiking.anon)}" value="${esc(name)}" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" aria-label="닉네임"></label>`;
+}
+// 글자를 치는 동안 걷기 단축키(R·C·F·WASD·Space…)가 먹히지 않게. Esc는 통과, Enter는 입력을 마친다(휴대폰 키보드 닫기).
+export function bindNickInput(input,{storage=globalThis.localStorage,win=globalThis.window}={}){
+ for(const ev of ['keydown','keyup','keypress'])input.addEventListener(ev,e=>{if(e.key==='Escape')return;e.stopPropagation();if(ev==='keydown'&&e.key==='Enter'){e.preventDefault();input.blur();}});
+ input.addEventListener('input',()=>{savePickName(input.value,storage);fit();});
+ input.addEventListener('change',()=>{input.value=savePickName(input.value,storage);});
+ // 휴대폰 키보드가 올라오면 보이는 높이(visualViewport)에 맞춰 칸이 가려지지 않게 화면 안으로 끌어올린다
+ const vv=win?.visualViewport,root=input.closest('#mountain-pick');
+ function fit(){if(input.ownerDocument.activeElement!==input)return;const kb=vv?Math.max(0,win.innerHeight-vv.height-vv.offsetTop):0;root?.style.setProperty('--kb',`${Math.round(kb)}px`);input.scrollIntoView({block:'center',inline:'nearest'});}
+ input.addEventListener('focus',()=>{root?.classList.add('pk-typing');setTimeout(fit,60);setTimeout(fit,350);});
+ input.addEventListener('blur',()=>{root?.classList.remove('pk-typing');root?.style.removeProperty('--kb');});
+ vv?.addEventListener('resize',fit);
+ return input;
+}
+
 function hasResume(){try{const v=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');return !!v&&(v.zone!=='plaza'||(v.elapsed||0)>5);}catch{return false;}}
 function headSub(){
  const c=seoulClock(Date.now()),a=freeState.actual,time=freeState.free.time??a.time,season=freeState.free.season??a.season;
@@ -50,9 +72,9 @@ function headSub(){
 
 export function mountMountainPick(doc=document,win=window){
  const root=doc.createElement('div');root.id='mountain-pick';root.setAttribute('role','dialog');root.setAttribute('aria-modal','true');root.setAttribute('aria-label','산 고르기');
- root.innerHTML=`<div class="pk-dim"></div><header class="pk-head"><p class="pk-brand"><b>산길</b>등산 수첩${freeState.dev?'<span class="pk-devtag">🛠 개발 버전 · 자유 설정 열림</span>':''}</p><h1 class="pk-title">어느 산에 오를까요?</h1><p class="pk-sub" data-pk-now></p><p class="pk-sub">${MOUNTAINS.length===1?'지금은 1곳 · 산은 계속 늘어나요':`산 ${MOUNTAINS.length}곳 · 넘겨 보세요`}</p></header><div class="pk-list" role="list"></div><div class="pk-free" hidden><section class="fs-panel fs-pick" role="dialog" aria-label="자유 설정"></section></div><p class="pk-toast" role="status" hidden></p>`;
+ root.innerHTML=`<div class="pk-dim"></div><header class="pk-head"><p class="pk-brand"><b>산길</b>등산 수첩${freeState.dev?'<span class="pk-devtag">🛠 개발 버전 · 자유 설정 열림</span>':''}</p><h1 class="pk-title">어느 산에 오를까요?</h1><p class="pk-sub" data-pk-now></p><p class="pk-sub pk-sub2">${MOUNTAINS.length===1?'지금은 1곳 · 산은 계속 늘어나요':`산 ${MOUNTAINS.length}곳 · 넘겨 보세요`}</p>${nickFieldHTML(loadPickName())}</header><div class="pk-list" role="list"></div><div class="pk-free" hidden><section class="fs-panel fs-pick" role="dialog" aria-label="자유 설정"></section></div><p class="pk-toast" role="status" hidden></p>`;
  doc.body.append(root);doc.documentElement.classList.add('pk-open');
- const list=root.querySelector('.pk-list'),freeBox=root.querySelector('.pk-free'),panel=freeBox.firstElementChild,toast=root.querySelector('.pk-toast'),now=root.querySelector('[data-pk-now]');
+ const nick=bindNickInput(root.querySelector('.pk-nick input'),{win}),list=root.querySelector('.pk-list'),freeBox=root.querySelector('.pk-free'),panel=freeBox.firstElementChild,toast=root.querySelector('.pk-toast'),now=root.querySelector('[data-pk-now]');
  let toastTimer=0;const say=t=>{toast.textContent=t;toast.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{toast.hidden=true;},2600);};
  const size=()=>{const land=matchMedia('(orientation:landscape) and (max-height:540px)').matches,port=matchMedia('(orientation:portrait)').matches;return land?{w:300,art:112,seal:70}:port?{w:Math.min(362,innerWidth-28),art:150,seal:84}:{w:400,art:220,seal:104};};
  let animateSeal=MOUNTAINS.map(m=>sealSeenOnce(m.id)),sizeSig='';
@@ -71,9 +93,13 @@ export function mountMountainPick(doc=document,win=window){
   animateSeal=animateSeal.map(()=>false);
  }
  function render(){now.textContent=headSub();cards();if(!freeBox.hidden)panel.innerHTML=panelHTML({context:'pick'});applyHudTime();}
+ // 산 고르기 → 서버 고르기(함께 걷기 서버 or 혼자 걷기) → 출발. 서버 창을 건너뛰면 바로 출발.
  function go(){
   if(root.classList.contains('leaving'))return;
-  root.classList.add('leaving');doc.documentElement.classList.remove('pk-open');window.__hikingStartRequested=true;win.dispatchEvent(new CustomEvent(START_EVENT));
+  root.classList.add('leaving');doc.documentElement.classList.remove('pk-open');
+  nick.value=savePickName(nick.value); // '혼자 걷기'를 골라도 이름은 남는다(나중에 👋 함께 걷기에서 씀)
+  if(hikingPickMode()==='show')hikingServerPick().open({closable:false});
+  else{window.__hikingStartRequested=true;win.dispatchEvent(new CustomEvent(START_EVENT));}
   setTimeout(()=>root.remove(),450);
  }
  root.addEventListener('click',e=>{
@@ -94,5 +120,7 @@ export function mountMountainPick(doc=document,win=window){
 if(typeof document!=='undefined'){
  mountFreeSettingsHud();
  if(pickEnabled()){document.documentElement.dataset.startMode='manual';mountMountainPick();}
+ // 산 고르기를 건너뛰어도(?pick=off, 점검 스크립트 + ?serverpick=on) 서버 고르기 창이 출발 문이 된다
+ else if(hikingPickMode()==='show'){document.documentElement.dataset.startMode='manual';hikingServerPick().open({closable:false});}
  applyHudTime();
 }

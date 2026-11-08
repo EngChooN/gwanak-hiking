@@ -1,0 +1,65 @@
+/* 서버 고르기 창(server-pick.js, 등산·흡연장 공용). 「등산 수첩」 종이 톤 토큰(낮·노을·밤: 등산 hud-notebook.css, 흡연장 lounge/hud.css)을 그대로 쓰고,
+   토큰이 아직 없을 때(첫 화면)를 위해 낮 값을 대체값으로 둔다. 단추·줄·입력은 44px 이상, 안전 영역 안. */
+.sp-wrap{position:fixed;inset:0;z-index:130;display:grid;place-items:center;box-sizing:border-box;padding:calc(env(safe-area-inset-top,0px) + 12px) calc(env(safe-area-inset-right,0px) + 12px) calc(env(safe-area-inset-bottom,0px) + 12px) calc(env(safe-area-inset-left,0px) + 12px);font-family:var(--nb-font,"Apple SD Gothic Neo","Pretendard",-apple-system,sans-serif);color:var(--ink,#4a3618)}
+.sp-wrap[hidden]{display:none}
+.sp-scrim{position:absolute;inset:0;background:var(--scrim,rgba(40,28,10,.32));-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.sp-card{position:relative;box-sizing:border-box;width:min(420px,100%);max-height:100%;overflow:auto;overscroll-behavior:contain;padding:14px 16px 16px;border-radius:6px 16px 16px 6px;background:var(--paper,#fbf3df);box-shadow:var(--lift,2px 3px 0 #b49563),0 12px 34px rgba(30,20,5,.4);display:grid;gap:10px;border-left:6px solid var(--stamp,#b9472f)}
+.sp-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.sp-head h2{margin:0;font-size:18px;font-weight:900;letter-spacing:-.02em;display:flex;align-items:center;gap:6px}
+.sp-head h2 em{font-style:normal}
+.sp-x{flex:none;display:grid;place-items:center;width:44px;height:44px;border:0;border-radius:50%;background:var(--paper2,#f4e7c8);color:var(--ink,#4a3618);box-shadow:1px 2px 0 var(--edge,#b49563);font-weight:900;font-size:16px;cursor:pointer}
+.sp-x[hidden]{display:none}
+.sp-sum{display:flex;gap:8px;margin:0;font-size:13px;font-weight:800;color:var(--ink2,#7a5f3a)}
+.sp-sum[hidden]{display:none}
+.sp-sum span{flex:1;padding:6px 10px;border-radius:10px;background:var(--paper2,#f4e7c8);box-shadow:inset 0 0 0 1.5px var(--rule,#d9c79d)}
+.sp-sum b{font-size:17px;color:var(--ink,#4a3618)}
+.sp-note{margin:0;padding:8px 10px;border-radius:10px;font-size:13px;font-weight:800;line-height:1.4;background:var(--paper2,#f4e7c8);border:2px dashed var(--rule,#d9c79d)}
+.sp-note[hidden]{display:none}
+.sp-note[data-tone=bad]{border-color:var(--low,#c8553d);color:var(--low,#c8553d)}
+.sp-note[data-tone=warn]{border-color:var(--mid,#d39a2e)}
+.sp-list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.sp-row{box-sizing:border-box;width:100%;min-height:56px;display:grid;grid-template-columns:1fr auto;grid-template-areas:"name n" "name tag";align-items:center;gap:2px 10px;padding:8px 14px;border:0;border-radius:12px;background:var(--paper2,#f4e7c8);color:var(--ink,#4a3618);box-shadow:1px 2px 0 var(--edge,#b49563),inset 0 0 0 2px var(--go,#5f8f3e);font:inherit;text-align:left;cursor:pointer}
+.sp-row:not([disabled]):hover{filter:brightness(1.03)}
+.sp-row:focus-visible,.sp-solo:focus-visible,.sp-x:focus-visible{outline:3px solid var(--accent,#b9472f);outline-offset:2px}
+.sp-row-name{grid-area:name;display:grid;gap:5px}.sp-row-name b{font-size:16px;font-weight:900}
+.sp-bar{display:block;height:6px;border-radius:3px;background:var(--rule,#d9c79d);overflow:hidden}
+.sp-bar i{display:block;height:100%;background:var(--go,#5f8f3e);border-radius:3px}
+.sp-row-n{grid-area:n;font-size:14px;font-weight:900;white-space:nowrap}
+.sp-tag{grid-area:tag;justify-self:end;padding:1px 8px;border-radius:8px;font-size:12px;font-weight:900;background:var(--paper,#fbf3df)}
+.sp-row[data-state=full]{box-shadow:1px 2px 0 var(--edge,#b49563),inset 0 0 0 2px var(--low,#c8553d)}
+.sp-row[data-state=full] .sp-bar i{background:var(--low,#c8553d)}
+.sp-row[data-state=full] .sp-tag{color:#fff;background:var(--low,#c8553d)}
+.sp-row[data-state=here]{box-shadow:1px 2px 0 var(--edge,#b49563),inset 0 0 0 3px var(--stamp,#b9472f)}
+.sp-row[data-state=here] .sp-tag{color:#fff;background:var(--stamp,#b9472f)}
+.sp-row[data-state=wait],.sp-row[data-state=off]{box-shadow:1px 2px 0 var(--edge,#b49563),inset 0 0 0 2px var(--rule,#d9c79d)}
+.sp-row[data-state=local]{box-shadow:1px 2px 0 var(--edge,#b49563),inset 0 0 0 2px var(--ink2,#7a5f3a)}
+.sp-row[data-state=local] .sp-row-n{font-size:12px;color:var(--ink2,#7a5f3a)}
+.sp-row[disabled]{cursor:default}
+.sp-row[data-state=full],.sp-row[data-state=off],.sp-row[data-state=wait]{opacity:.62}
+.sp-name{display:grid;gap:4px;font-size:12px;font-weight:800;color:var(--ink2,#7a5f3a)}.sp-name small{font-weight:600}
+/* 16px 미만이면 iOS가 입력창을 확대한다 */
+.sp-name input{box-sizing:border-box;width:100%;min-height:44px;padding:0 12px;border:0;border-radius:10px;background:var(--paper2,#f4e7c8);color:var(--ink,#4a3618);box-shadow:inset 0 0 0 1.5px var(--rule,#d9c79d);font:700 16px var(--nb-font,system-ui);outline:0}
+.sp-name input:focus{box-shadow:inset 0 0 0 2px var(--accent,#b9472f)}
+.sp-solo{min-height:48px;display:flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:12px;background:var(--paper2,#f4e7c8);color:var(--ink,#4a3618);box-shadow:1px 2px 0 var(--edge,#b49563);font:900 15px var(--nb-font,system-ui);cursor:pointer}
+.sp-solo em{font-style:normal}
+.sp-wrap[data-net=error] .sp-solo{background:var(--stamp,#b9472f);color:#fff;box-shadow:1px 2px 0 var(--stamp-d,#7f2f20)}
+/* PC(1920×1080): 창이 너무 작아 보이지 않게 조금 키움 */
+@media (min-width:900px) and (min-height:541px){.sp-card{width:min(460px,100%);padding:18px 20px 20px;gap:12px}.sp-head h2{font-size:20px}.sp-row{min-height:60px}}
+/* 휴대폰 가로(844×390): 서버 목록 왼쪽, 닉네임·혼자 단추 오른쪽 */
+@media (orientation:landscape) and (max-height:540px){
+ .sp-wrap{padding:calc(env(safe-area-inset-top,0px) + 8px) calc(env(safe-area-inset-right,0px) + 12px) calc(env(safe-area-inset-bottom,0px) + 8px) calc(env(safe-area-inset-left,0px) + 12px)}
+ .sp-card{width:min(640px,100%);grid-template-columns:1.25fr 1fr;grid-template-areas:"head head" "sum sum" "note note" "list name" "list solo";align-content:start;gap:8px 12px;padding:10px 14px 12px}
+ .sp-head{grid-area:head}.sp-sum{grid-area:sum}.sp-note{grid-area:note}.sp-list{grid-area:list;align-content:start}.sp-name{grid-area:name;align-self:end}.sp-solo{grid-area:solo;align-self:start}
+ .sp-head h2{font-size:16px}
+}
+/* 가로 휴대폰에 키보드가 올라온 높이(약 260px 이하): 합계를 제목 줄로 올리고, 닉네임 설명 글을 접어 닉네임 칸·혼자 단추가 키보드 위에 같이 보이게 한다 */
+@media (orientation:landscape) and (max-height:260px){
+ .sp-wrap{padding:calc(env(safe-area-inset-top,0px) + 4px) calc(env(safe-area-inset-right,0px) + 12px) calc(env(safe-area-inset-bottom,0px) + 4px) calc(env(safe-area-inset-left,0px) + 12px)}
+ .sp-card{grid-template-areas:"head sum" "note note" "list name" "list solo";gap:6px 12px;padding:8px 14px 10px}
+ .sp-head h2{font-size:15px}
+ .sp-sum span{padding:4px 8px}.sp-sum b{font-size:15px}
+ .sp-name small{display:none}
+ .sp-row{min-height:48px;padding:6px 12px}.sp-bar{height:5px}
+ .sp-solo{min-height:44px}
+}
+@media (prefers-reduced-motion:no-preference){.sp-card{animation:sp-in .22s ease-out}@keyframes sp-in{from{transform:translateY(8px);opacity:0}}}

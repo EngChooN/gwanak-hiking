@@ -3,12 +3,24 @@
 새 대화·새 에이전트는 이전 맥락을 모릅니다. 작업 전에 이 문서를 먼저 읽으세요.
 이 문서는 **현재 상태와 이미 내린 결정**을 모아 둔 곳입니다. 결정이 바뀌면 아래 「결정 기록」에 한 줄을 추가하고, 낡은 내용은 고쳐 두세요.
 
-- 마지막 정리: 2026-11-06 (산기획)
+- 마지막 정리: 2026-11-08 (산풍경, 흡연장 같이 피우기 연결)
 - `README.md`는 11-02~03 실사 모드 시절의 설명이 많이 남아 있어 **현재 상태와 다릅니다**. 이 문서와 최신 `docs/변경기록-*`을 우선하세요.
 
 ---
 
-## 1. 무엇을 만드는가
+## 0. 저장소 구성 — 「온라인 메타버스」 (2026-11-08 통합)
+
+- 이 저장소 하나에 체험 여러 개가 들어 있습니다. Vite 다중 페이지입니다(`vite.config.js`의 `PAGES`).
+  - `/` = **허브**(체험 고르기). `index.html` → `src/hub/main.js`. 정식 화면은 `src/hub/hub.js`(카드 그리기·시간대)·`hub.css`·`experiences.js`(체험 목록: 배열에 한 줄 더하면 카드가 늘어남). three.js 없음, 카드 그림은 인라인 SVG. 시험용 `/?hubtime=day|dusk|night`.
+  - `/hiking/` = **온라인 등산**(아래 §1~§9). `hiking/index.html` → `src/mountain-pick.js`·`src/main.js`.
+  - `/smoking/` = **온라인 흡연장**(아래 §10). `smoking/index.html` → `src/lounge/main.js`.
+- **옛 주소 유지:** 루트 `/`에 등산 옵션(`multi`·`server`·`start`·`season`·`time`·`weather`·`pick`·`dev` 등, 목록은 `src/hub/legacy-redirect.js`의 `HIKING_PARAMS`)이 붙어 오면 쿼리·해시 그대로 `/hiking/`로 `location.replace` 합니다. 공유했던 `/?multi=방&server=…` 주소가 계속 됩니다.
+- **에셋은 한 벌:** `public/`·`assets/`를 세 페이지가 같이 씁니다. 코드에서 에셋 주소는 늘 `${import.meta.env.BASE_URL}assets/…`처럼 BASE_URL 기준으로 씁니다(페이지가 하위 폴더라 상대 경로 `assets/…`는 깨집니다).
+- **공용 코드도 한 벌:** `src/lounge/` 밖의 파일(`src/toon/**`·`hiker-*`·`daytime`·`device-profile` 등)은 등산 원본이고 흡연장이 그대로 import 합니다. 공용 파일을 고치면 **등산과 흡연장 둘 다** 테스트·캡처로 확인하세요.
+- 배포는 지금처럼 GitHub Pages 하나(`…/gwanak-hiking/` 허브, `…/hiking/`, `…/smoking/`). 저장소 이름 변경(예: `online-metaverse`)은 주소가 바뀌므로 대표 결정 뒤로 미뤘습니다.
+- 원래 흡연장 폴더 `~/online-smoking`은 지우지 않고 남겨 두었습니다(대표가 정리). 앞으로 흡연장 작업은 이 저장소에서 합니다.
+
+## 1. 무엇을 만드는가 (온라인 등산)
 
 - **관악산 온라인 등반 체험**입니다. 실제 관악산공원 입구(서울대 옆 광장·일주문)에서 계곡길·깔딱고개를 지나 연주대 정상까지 걷습니다.
 - 웹 3D로 만듭니다. Three.js + Vite이고 서버는 없습니다(정적 사이트).
@@ -58,20 +70,21 @@
 ## 5. 실행·검증·배포
 
 ```sh
-cd /Users/pc-2311001/gwanak-hiking
-export PATH=/Users/pc-2311001/.nvm/versions/node/v22.17.1/bin:$PATH   # 기본 PATH에 npm이 없음
-npm run dev            # 개발 서버 (127.0.0.1)
-npm test               # 단위 테스트 (node --test tests/*.test.mjs, 2026-11-06 기준 493개)
+cd ~/gwanak-hiking
+. ~/.nvm/nvm.sh && nvm use 24   # 기본 PATH에 npm이 없음
+npm run dev            # 개발 서버 (127.0.0.1:5173) — / 허브 · /hiking/ · /smoking/
+npm test               # 단위 테스트 (node --test tests/*.test.mjs, 2026-11-08 기준 704개 = 등산 + 흡연장 lounge-*·smoke-* + 허브 metaverse-hub)
 npm run test:e2e       # Playwright, toon 프로젝트 하나
 npm run build          # vite build + scripts/copy-assets.mjs
+npm run server         # 함께 걷기 서버(기본 8787, 환경 변수는 docs/멀티-서버-운영안내.md)
 npm run deploy -- --dry  # 빌드·크기 점검만
 npm run deploy         # gh-pages 브랜치에 강제 push (대표 지시가 있을 때만)
 ```
 
-- 주소 옵션: `?start=entrance`(입구 광장 출발), `?start=summit`(정상 10m 앞), `?multi=방이름`(함께 걷기 시제품), `?pick=off|on`(산 고르기 화면 끄기·자동화 브라우저에서 켜기), `?dev=off`(개발 버전 끄기 = 자유 설정 잠김·구간 이동 숨김), `?season=`·`?time=`·`?weather=`.
+- 등산 주소 옵션(모두 `/hiking/` 뒤에 붙임, 루트에 붙이면 `/hiking/`로 넘어감): `?start=entrance`(입구 광장 출발), `?start=summit`(정상 10m 앞), `?multi=방이름`(함께 걷기), `?server=wss://…`(함께 걷기 서버 주소, `off`면 BroadcastChannel), `?pick=off|on`(산 고르기 화면 끄기·자동화 브라우저에서 켜기), `?serverpick=on|off`(서버 고르기 창: 자동화 브라우저에서 켜기·끄기, `?multi=`가 있으면 늘 건너뜀), `?dev=off`(개발 버전 끄기 = 자유 설정 잠김·구간 이동 숨김), `?season=`·`?time=`·`?weather=`.
 - **점검 스크립트(Playwright)에서는 산 고르기 화면이 자동으로 빠집니다**(navigator.webdriver). 산 고르기를 찍으려면 `?pick=on`을 붙입니다. `scripts/verify-free-settings.mjs`가 산 고르기·도장·자유 설정을 검사합니다.
 - 브라우저 콘솔의 `window.hiking`에 진단 함수가 있습니다. `hiking.memory()`, `hiking.loadTiming()` 등을 쓸 수 있습니다.
-- 화면 확인 스크립트는 `scripts/capture-*.mjs`, `scripts/verify-mobile-buttons.mjs`, `scripts/measure-mobile-memory.mjs`, `scripts/measure-first-load.mjs`에 있습니다. 결과는 `artifacts/`에 둡니다.
+- 화면 확인 스크립트는 `scripts/capture-*.mjs`(등산 주소는 `/hiking/…`; 허브·등산·흡연장을 한 번에 찍는 `scripts/capture-metaverse.mjs`, 흡연장 `scripts/capture-smoking.mjs`), `scripts/verify-mobile-buttons.mjs`, `scripts/measure-mobile-memory.mjs`, `scripts/measure-first-load.mjs`에 있습니다. 결과는 `artifacts/`에 둡니다.
 - GitHub 원격은 `git@github-personal:EngChooN/gwanak-hiking.git`입니다(개인 계정 SSH 별칭). 저장소 생성 같은 계정 작업은 대표가 웹에서 합니다.
 - 런타임에 외부 지도·CDN·사진 서비스에 접속하지 않습니다.
 
@@ -79,7 +92,9 @@ npm run deploy         # gh-pages 브랜치에 강제 push (대표 지시가 있
 
 | 영역 | 파일 |
 |---|---|
-| 시작·메인 루프 | `index.html` → `src/mountain-pick.js`(산 고르기, 수동 시작을 건다) → `src/main.js` (`<html data-style="toon">` 고정) |
+| 허브(체험 고르기) | `index.html` → `src/hub/main.js`, 화면 `src/hub/hub.js/.css`·`experiences.js`, 옛 주소 넘기기 `src/hub/legacy-redirect.js`. 검사 `tests/hub.test.mjs`·`tests/metaverse-hub.test.mjs`·`scripts/capture-hub.mjs` |
+| 온라인 흡연장 | `smoking/index.html` → `src/lounge/**` (§10) |
+| 시작·메인 루프 | `hiking/index.html` → `src/mountain-pick.js`(산 고르기, 수동 시작을 건다) → `src/main.js` (`<html data-style="toon">` 고정) |
 | 산 목록·완등·자유 설정 | `src/mountains.js`(산 배열), `src/summit-records.js`(localStorage `gwanak-summits`), `src/free-settings.js`(개발 버전 `DEV_BUILD`·값·시각 계산), `src/free-settings-ui.js`(판·도장·HUD 연결), `src/free-settings.css` |
 | 경로·좌표 | `src/gpx-data.js`(GPX 337점, CSV와 테스트로 대조), `src/route.js`, `src/route-surfaces.js` |
 | 입구 광장 | `src/entrance-config.js`(가설 B 좌표), `src/plaza.js` |
@@ -95,15 +110,18 @@ npm run deploy         # gh-pages 브랜치에 강제 push (대표 지시가 있
 | 계절 | `src/season.js`(날짜·바꾸기), `src/toon/season.js`(색·눈 셰이더), `src/toon/season-particles.js`(꽃잎·낙엽) |
 | 즐길거리 | `src/toon/trail-props.js`(산스장·벤치·먼지털이기·동물 형상, 시안과 공유), `src/trail-sites.js`(자리), `src/trail-world.js`(가까이서만 만들기·동물 3마리·들르기·말풍선), `src/toon/hiker-acts.js`(동동이 동작), `src/exhaustion.js`(⑥ 헥헥·쥐 규칙), `src/trail-rules.js`(초콜릿·벤치·들르기 버튼 규칙), `src/trail-hud.js/.css`(간식 줄·즐길거리 줄·말풍선 모양), `src/trail-lines.js`(말풍선 문구 `pickLine`·효과음 표 `TRAIL_SFX`), `src/trail-sound.js`(효과음 재생: 발소리 마스터·켜기/끄기를 따름, 라디오 18m), 소리 `public/sounds/trail/`(`scripts/make-trail-sfx.mjs`로 합성). 검사 `verify-trail-sound.mjs`(소리 꺼짐 0건)·`verify-full-autowalk.mjs`(입구~정상 이어 걷기, 시계 6배) |
 | 시간·날씨·소리 | `src/environment.js`, `src/daytime.js`, `src/weather.js`, `src/footstep-audio.js`, `src/ambient-audio.js` |
-| 함께 걷기 | `src/multi-*.js` (BroadcastChannel 시제품, 서버 없음) |
-| 기기별 상한 | `src/device-profile.js` |
+| 함께 걷기 | `src/multi-protocol.js`(규격·이름·보간·인사/셀카), `src/multi-transport.js`(BroadcastChannel·가짜 방·**WebSocket** `createWebSocketTransport`·`multiServerUrl`), `src/multi-client.js`(화면·상태 이벤트·동물 중계·`dispose`), main.js의 `hiking:multi-join`/`multi-leave` 처리, HUD 입구 `src/multi-entry-ui.js/.css`(설정 시트 `👋 함께 걷기` 버튼·상태 칩 → 서버 고르기 창, 연결 상태 칩 6종, main.js가 자동으로 불러옴, 이벤트만 주고받음). **서버 고르기 창** `src/server-pick.js/.css`(등산·흡연장 공용, 서버 목록 `SERVERS`·`/health` `servers`, 등산은 `src/hiking-server-pick.js`가 산 고르기 다음·HUD에 같이 씀, 검사 `tests/server-pick.test.mjs`·`scripts/verify-server-pick.mjs`). 서버 `server/multi-server.mjs`(http·upgrade·/health·환경 변수), `server/ws.mjs`(최소 WebSocket), `server/rooms.mjs`(방 로직 순수 모듈, 방 키 `체험:방이름`), `server/Dockerfile`(맨 위 `.dockerignore`도 같은 파일만: 서버 5개 + 채팅 금칙어 목록). 체험 구분은 `multi-protocol.js`의 `EXPERIENCES`·`parseExperience`·`EXPERIENCE_MESSAGES`(hello `exp`, 없으면 `hiking`). **채팅**은 공통 `c`(`CHAT`·`sanitizeChat`·`createChatLimiter`, 서버 금칙어 `server/chat-banned-words.txt`+`BANNED_CHAT_WORDS`), 등산 화면과는 `hiking:chat-send`/`hiking:chat`/`hiking:chat-limit` 이벤트만. 흡연장 `s`·`lounge:smoke`(`SMOKE_STATES`)도 서버가 받음. 흡연장 연결 인터페이스는 운영안내 §3-2. 운영은 `docs/멀티-서버-운영안내.md`. 등산 채팅 HUD `src/hiking-chat-ui.js/.css`(💬 버튼·채팅 창·머리 위 말풍선 4초·빠른 말 칩, `multi-client.js`의 `screenPos(id)`로 머리 위 위치 조회, main.js가 자동으로 불러옴; 검사 `tests/hiking-chat-ui.test.mjs`·`scripts/capture-hiking-chat.mjs`). 검사 `tests/multi-rooms.test.mjs`·`tests/multi-chat.test.mjs`·`tests/multi-server.test.mjs`·`tests/multi-entry-ui.test.mjs`·`scripts/verify-multi-server.mjs`·`scripts/verify-multi-chat.mjs`(두 브라우저 등산·흡연장 채팅·격리). 호스팅 비교 `docs/멀티-서버-호스팅-비교.md` |
+| 기기별 상한 | `src/device-profile.js` (등산·흡연장 공용. 흡연장 사본과 다른 점은 등산 쪽에만 있는 `multiFullCap` 하나였고 흡연장은 이 값을 읽지 않으므로 그대로 씀) |
 
-## 7. 지금 상태와 다음 일 (2026-11-06)
+## 7. 지금 상태와 다음 일 (2026-11-08)
+
+- **멀티 채팅(11-08, 커밋 안 함):** 서버·프로토콜에 공통 채팅 `c`와 흡연장(위치·담배 상태)을 열고 등산 클라이언트에 채팅 이벤트를 붙였습니다. 등산 채팅 HUD는 붙었습니다(산디자인, `docs/변경기록-2026-11-08-등산채팅-HUD.md`). 흡연장 화면도 붙었습니다(산풍경, `docs/변경기록-2026-11-08-흡연장-멀티.md`, `verify-multi-chat.mjs` 흡연장 칸 통과). 금칙어 기본 목록 127개와 운영 정책·처리방침 초안도 나왔습니다(산리서치, `docs/채팅-운영정책.md`·`docs/개인정보-처리방침-초안.md`). 남은 일: 실제 휴대폰 키보드·인터넷 시험, 정책 §E 대표 결정 6개, 그 결정에 따른 서버 보강(허용 단어 줄·전화번호/URL 가림·숨김 중 채팅 막기·채팅 신고 사유), 법무 검토. `docs/변경기록-2026-11-08-멀티채팅-서버.md`.
+- **메타버스 통합(11-08, 커밋 안 함):** 흡연장을 `/smoking/`, 등산을 `/hiking/`으로 옮기고 허브 정식 화면을 붙였습니다. 멀티 서버는 방 키를 `체험:방이름`으로 나눕니다(옛 클라이언트는 등산, 흡연장 실시간 접속은 자리만 설계 — `docs/멀티-서버-운영안내.md` §3-1). 다음: Render 배포. `docs/변경기록-2026-11-08-메타버스-통합.md`·`…-멀티서버-체험구분.md`.
 
 - 11-06 저녁에 그동안 커밋하지 않았던 변경을 커밋하고 GitHub Pages에 다시 배포했습니다(대표 지시: 즐길거리가 끝나면 함께). 커밋 목록은 `git log`를 보세요.
   - 담은 것: 망원경 랜드마크 설명·도심 건물 시야 우선·알림 겹침, 계절 모습(봄 벚꽃·여름·가을 단풍·겨울 눈), 산 고르기·완등 도장·자유 설정, 즐길거리 6종(산스장·초콜릿·벤치·동물·먼지털이기·헥헥/쥐)과 HUD·소리·말풍선 문구.
   - 커밋에서 뺀 것: 참고 이미지(§9), `artifacts/probe/` 같은 임시 파일, 큰 캡처 묶음(`artifacts/ui-concepts/shots*`·`seasons`·`dongdong`·`toon-face`·`trail-hud`·`trail-props` 등). 로컬에만 있습니다.
-- **함께 걷기 서버**는 대표 결정 대기입니다. 추천은 직접 만드는 WebSocket 서버 1대(방 20명)이고, 자세한 내용은 `docs/멀티-설계.md`에 있습니다.
+- **함께 걷기 서버**는 로컬 완성·배포 준비까지 했습니다(11-08, 커밋·배포 안 함). `npm run server`로 뜨고, 게임은 `?multi=방&server=wss://…`로 붙습니다. 1차 시험은 대표 결정대로 내 맥 + Cloudflare Quick Tunnel입니다(`docs/멀티-서버-운영안내.md` §5). HUD 입구(설정 시트 `👋 함께 걷기` 버튼·참가 카드·연결 상태 칩)도 붙었습니다. 남은 일: 실제 휴대폰·인터넷 시험(키보드가 카드를 가리는지 포함), 호스팅 결정(추천 Fly.io 도쿄, `docs/멀티-서버-호스팅-비교.md`), 처리방침·법무 확인(IP는 디스크에 저장하지 않는 구현 기준으로 쓸 것), 광장 스냅샷 기준 갱신 여부.
 - **실사 에셋 파일**은 저장소에 남아 있지만 배포에서는 뺐습니다. 지우려면 되돌릴 수 있게 커밋 하나에 담습니다.
 - **아직 확인하지 못한 것:** 숲 밀도·단풍 비율·일주문 치수는 근거가 약한 제안값입니다. 관악산을 아는 사람의 확인과 현장 사진 대조가 필요합니다.
 
@@ -111,6 +129,18 @@ npm run deploy         # gh-pages 브랜치에 강제 push (대표 지시가 있
 
 | 날짜 | 결정 | 근거 문서 |
 |---|---|---|
+| 11-08 | 등산 첫 화면(산 고르기)에 닉네임 칸: 12자·비우면 `등산객XXXX`, 저장값은 서버 고르기 창과 같은 `gwanak-multi-name`(치는 대로 저장, 서버 창은 열 때 다시 읽어 미리 채움, 혼자 걷기도 저장), 입력 중 단축키 막음, 키보드가 올라오면 `pk-typing`으로 스크롤 | 변경기록-2026-11-08-서버고르기.md |
+| 11-08 | 서버 고르기 창(등산·흡연장 공용 `src/server-pick.js`): 서버 목록은 `multi-protocol.js` `SERVERS`(관악산 1서버 `관악산-1`→`hiking:관악산`, 옥상 1서버 `옥상-1`→`smoking:옥상`, 줄 하나 = 서버 하나), 정원 20·서버 방은 꽉 차면 `-2` 대신 `full` 거절(목록 밖 방은 옛 규칙), `/health`에 `servers`·`total`, 창은 5초마다 갱신·`방금 꽉 찼어요`·연결 실패면 혼자만. 등산 산 고르기 → 서버 고르기 → 출발, 흡연장 로딩 뒤. 방 이름 칸 없앰, `?multi=` 옛 주소·webdriver는 건너뜀(`?serverpick=on`) | 변경기록-2026-11-08-서버고르기.md |
+| 11-08 | 등산 채팅 PC 단축: 함께 걷기 중 Enter = 채팅 열고 입력, 글 있으면 보내고 입력 유지, 빈 Enter·Esc = 접기. `?multi`로 바로 참가해도 💬가 보이게 채팅 HUD 설치 뒤 `statusNow()` | 변경기록-2026-11-08-채팅-엔터.md |
+| 11-08 | 자동 걷기는 다른 창·탭으로 가도 계속(blur·숨김에 끄지 않음). 숨은 탭은 워커 타이머로 0.1초씩 보충 걸음(그리기 생략, 최대 60초 따라잡기), 소리는 숨은 동안 없음 | 변경기록-2026-11-08-자동걷기-백그라운드.md |
+| 11-08 | 멀티 채팅·흡연장 열기: 채팅은 두 체험 공통 `c`(`lounge:chat` 예약 대체), 80자·제어/방향 문자 제거·금칙어 `***`, 2초 1번·10초 4번(넘으면 `c-limit`), 보낸 사람 포함 중계, 디스크 저장 없음(신고 기록에만 대상 최근 3줄). 흡연장 = 공통 + `s` + `lounge:smoke {state,lit}`(smoke.js 상태 허용 목록). 익명 `등산객`/`손님`. BroadcastChannel `gwanak-multi:체험:방`(등산은 옛 이름) | 변경기록-2026-11-08-멀티채팅-서버.md, 멀티-서버-운영안내.md §3-1·§3-2 |
+| 11-08 | 멀티 서버 체험 구분: hello에 `exp`(`hiking`\|`smoking` 허용 목록, 없으면 `hiking`, 목록 밖은 `reject`로 거절), 방 키 `체험:방이름`(끝 번호는 원래대로 떼서 `?multi=관악산-1` → `hiking:관악산`), -2 규칙·속도 제한·신고는 체험별 방 안에서, 신고·resume은 체험을 넘지 않음, 체험별 받는 메시지 종류(흡연장은 공통만, `s`·`lounge:chat`·`lounge:smoke` 예약) | 변경기록-2026-11-08-멀티서버-체험구분.md, 멀티-서버-운영안내.md §3-1 |
+| 11-08 | **온라인 메타버스 통합**: 저장소는 `gwanak-hiking` 하나, Vite 다중 페이지 `/` 허브·`/hiking/`·`/smoking/`, 공용 코드 한 벌(흡연장 사본 없앰), 루트의 등산 옵션 주소는 `/hiking/`로 replace, `~/online-smoking`은 남겨 둠. 저장소 이름 변경은 대표 결정 뒤 | 기획(산기획 11-08), 변경기록-2026-11-08-메타버스-통합.md |
+| 11-08 | 함께 걷기 HUD 입구: 새 탭 대신 설정 시트에 `👋 함께 걷기` 버튼, 방 이름(기본 `관악산-1`)·닉네임(12자, 비우면 `등산객XXXX`) 카드, 연결 상태 칩 6종(연결 중·연결됨·다시 연결 중·끊김·방 꽉 참·내 컴퓨터 모드), 입력 중 단축키 막음. 호스팅 추천 1안 Fly.io 도쿄(미결정, 2안 Vultr 서울) | 변경기록-2026-11-08-함께걷기-HUD입구.md, 멀티-서버-호스팅-비교.md |
+| 11-08 | 함께 걷기 서버 1차: 직접 만든 WebSocket(Node 내장 http·crypto, 새 패키지 없음). 방 20명(차면 방이름-2), 위치 초당 15회, 순간이동 거부(FLAG.jump 1초 1번, 3초 고집하면 다시 맞춤), 10Hz 묶음, 인사·셀카·동물 놀람 중계, 신고 서로 다른 3명 → 24시간 이름표 숨김·재배정, IP는 메모리 해시만, 신고 JSONL 90일. 서버는 ws://만, wss는 앞단. 설정은 환경 변수(PORT·DATA_DIR·ALLOWED_ORIGINS 등), `/health`. 주소는 `?server=` → `VITE_MULTI_SERVER_URL` → 없으면 BroadcastChannel. 휴대폰 모델 2명. 1차 시험은 내 맥 + Quick Tunnel(대표) | 변경기록-2026-11-08-멀티서버.md, 멀티-서버-운영안내.md |
+| 11-07 | 빈 구간 벤치 5곳 더(850·1,863·2,858·3,445·3,870m, est), 4,106m 벤치는 나무계단 경사(다리 차 0.4m) 때문에 3,870m 평탄참으로 옮김. 즐길거리 자리는 물줄기 띠를 피하고 계단 옆은 가장자리에서 1.3m, 나무계단 난간은 벤치 앞만 틈. 동물 허용 폭·금지 영역 자료 `src/animal-lanes.js`(자동 생성, 연결은 산개발) | 변경기록-2026-11-07-빈구간소품-지형검증.md |
+| 11-07 | 동물은 고정 자리 대신 출현 구역(`ANIMAL_ZONES`) + 5분 시간 칸 결정적 난수(`src/animal-zones.js`)로 나오고 시간의 함수로 배회(같은 방 = 같은 동물, 서버 없음, 반응은 각자 화면). 멧토끼 추가, `CAT_SPOTS` 삭제, 빈 구간 벤치 4곳(640·2,600·3,224·4,106m) | 변경기록-2026-11-07-동물배회-토끼.md |
+| 11-07 | 동물 출현·배회가 `src/animal-lanes.js` 허용 폭(절벽·물·다른 구간 노면)과 금지 원(바위·시설)을 지킴: offset 상한 = min(종류 상한, zone.maxOffset, laneLimit), 막히면 반대쪽 → 같은 씨앗 난수열로 다시 뽑기(결정성 유지), 걷는 다리는 0.05m 간격 검사 | 변경기록-2026-11-07-동물허용폭연결.md |
 | 11-06 | 즐길거리 소리·문구 연결: 효과음은 `src/trail-sound.js` 하나로, 발소리와 같은 AudioContext·마스터를 거치고 '소리 꺼짐'이면 재생 0(즐길거리 쪽 합성음·자체 AudioContext 없앰). 파일 11개 `TRAIL_SFX`대로, 라디오는 산스장 18m 안 반복·거리 감쇠. 말풍선은 모두 `pickLine`(⑥ 문구 5개도 표로 옮김), 자주 생기는 장면은 다른 말풍선이 있으면 건너뜀. 계곡 고양이 2곳 est | 변경기록-2026-11-06-즐길거리-소리문구연결.md |
 | 11-06 | 즐길거리 HUD 디자인: 수첩 토큰에 형광펜·말풍선 낮/노을/밤 색 추가, 말풍선은 trail-hud.css가 덮음. 문구 `src/trail-lines.js`(첫 문구 = 시안), 효과음 7개는 `scripts/make-trail-sfx.mjs`로 직접 합성(CC0, `public/sounds/trail/`). 소리 연결은 산개발 | 변경기록-2026-11-06-즐길거리-디자인-효과음.md |
 | 11-06 | 즐길거리 HUD 연결: 진행 카드 간식 줄(🍫 n/5·먹기·⚡ 빨라짐), 화면 아래 즐길거리 줄(들르기 4초·기구 버튼·역기 연타·일어나기·발끝 당기기). 초콜릿 개수는 이어하기 저장, +20%는 계단 제외. 들르기는 자동걷기 중에만, 거리는 소품 가장자리부터. 수첩에 즐길거리 칸 2개(득근·깨끗한 신발, 완등 조건 아님). 검사 `verify-trail-buttons.mjs`·`verify-trail-dropin-route.mjs` | 변경기록-2026-11-06-즐길거리-HUD.md |
@@ -141,3 +171,37 @@ npm run deploy         # gh-pages 브랜치에 강제 push (대표 지시가 있
 - 다음은 커밋·배포하면 안 됩니다: 게임·영화 참고 이미지(`design/ref-cartoon/`, `artifacts/cartoon-compare/`), 재배포 조건을 확인하지 못한 모델(Mixamo 유래 `Soldier.glb`).
 - 지도·도심 건물은 OSM 자료입니다. 화면 아래 출처 줄(`#source-line`)을 유지하세요.
 - 설명글은 위키 글을 옮기지 않고 사실만 확인해서 새로 씁니다. 나무위키는 자동 접속이 막혀 있으니 한국어 위키백과와 공공 자료를 씁니다.
+
+## 10. 온라인 흡연장 (`/smoking/`, 온라인 시리즈 ②)
+
+기획서 `docs/흡연장/기획서-온라인흡연장-v1.md`, 맛·상호작용 v2 `docs/흡연장/기획서-맛과상호작용-v2.md`, 결과보고·점검표도 같은 폴더에 있습니다.
+
+### 무엇을 만드는가
+- 금연 중이거나 원래 안 피우는 사람이 **옥상 흡연장 메타버스**에서 채팅으로 떠들며 **가상 담배**를 피우는 웹 3D 체험입니다. 장소는 서울 도심 빌딩 옥상입니다.
+- NPC 동동이 4명(미나·지훈·보미·대호)이 함께 있습니다. 사람이 들어와도 NPC는 그대로 4명입니다.
+- **같이 피우기(실시간 멀티, 11-08):** 같은 방 사람의 동동이(회사원 옷, ID로 정해짐)·위치·채팅·담배(불씨·연기)를 서버(`smoking:방`) 또는 같은 브라우저 창끼리(BroadcastChannel `gwanak-multi:smoking:방`)로 주고받습니다. HUD 위 오른쪽 `👥 같이 피우기` 단추(참가하면 연결 상태 칩) → 방 이름(기본 `옥상-1`)·닉네임 카드. 주소 `?multi=옥상-1&server=ws://…`(`&name=`)로 바로 참가. 규격은 `docs/멀티-서버-운영안내.md` §3-1·§3-2, 기록은 `docs/변경기록-2026-11-08-흡연장-멀티.md`.
+
+### 브랜드 기준 — 가장 중요
+- **온라인 등산이 브랜드입니다.** 캐릭터 「동동이」(1.0m·2.1등신·큰 머리)와 카툰 그래픽(3단 툰 명암·얇은 외곽선·낮 야생의 숨결/노을·밤 너의 이름은)을 그대로 씁니다. 이제 사본이 아니라 등산 원본 파일을 직접 import 합니다.
+- **흡연장에서 바꾸는 것은 옷뿐입니다**(`src/lounge/outfit.js`). 대표 지시로 등산복이 아니라 **회사원 옷**(셔츠·넥타이(기본)·정장 재킷·카디건·롱패딩)을 입히고 벙거지·배낭·쌍안경은 숨기며 장갑은 맨손(피부색)입니다. 형상·비율·얼굴·동작 속도는 그대로입니다. 예전 저장값(hiker·hoodie)은 셔츠로 읽습니다.
+- 흡연장 때문에 공용 파일(동동이·카툰·`device-profile` 등)을 바꿔야 하면 등산 쪽도 같이 확인하고 대표 확인을 받습니다. 흡연장만 다르게 해야 하면 공용 파일에 옵션을 더합니다(사본을 만들지 않음).
+- HUD는 등산 「등산 수첩」 종이 톤 계열입니다(`src/lounge/hud.css`). 일하는 방식(§4)·일시정지 없음·HUD 버튼·떠다니는 조이스틱 규칙은 등산과 같습니다.
+
+### 실행·점검
+- `npm run dev` 뒤 `http://127.0.0.1:5173/smoking/`. 주소 옵션 `?time=day|dusk|night|auto`.
+- 콘솔 `window.lounge`: `status()`, `setTime()`, `teleport()`, `setCam()`, `goTo()`, `smoker`(start·light·puff·flick…), `npcs`, `multi`(join·leave·status·people).
+- 같이 피우기 확인: `node scripts/capture-smoking-multi.mjs`(서버 8789·vite 5199를 직접 띄움, 두 브라우저 → `artifacts/multi-chat-2026-11-08/smoking-*.png`), `node scripts/verify-multi-chat.mjs`(등산·흡연장·격리).
+- 캡처 `node scripts/capture-smoking.mjs <이름> <w> <h> "<query>" "<js>" <ms>` → `artifacts/smoking/`.
+- 테스트 `tests/lounge-*.test.mjs`(흡연장 core·moment-record·npc-social·spots-scene·multi, 원래 이름에 `lounge-`를 붙임), `tests/smoke-feel.test.mjs`·`tests/smoke-run.test.mjs`.
+
+### 코드 지도 (`src/lounge/`)
+- 모듈끼리는 `ctx` 객체와 window 이벤트(`lounge:chat`·`lounge:smoke`·`lounge:phase`·`lounge:ready`·`lounge:emote`·`lounge:spot` 등)로만 주고받습니다.
+- `main.js`(시작·루프·`window.lounge`), `scene.js`·`rooftop.js`(옥상), `avatar.js`·`outfit.js`(동동이 + 회사원 옷), `smoke.js`·`smoke-feel.js`(담배 상태·연기·맛), `npc.js`·`lines.js`(NPC·대화), `hud.js/.css`(수첩·흡연 버튼·채팅), `spots.js/.css`(자리), `moment.js`·`profile.js`(기록·금연 수첩), `audio.js`, `input.js`, `multi.js`(같이 피우기 연결: 전송·보간·상대 몸·상대 담배 `smokePlan`·채팅 중계, 이벤트 `lounge:multi-status`·`lounge:multi-note`), `multi-ui.js/.css`(👥 단추=상태 칩·참가 카드·이름표). HUD 말풍선은 `ctx.multi.avatarOf(id)`로 다른 사람도 찾고, NPC는 사람 채팅에 가끔 대답(`npc.js` `REMOTE_REACT`).
+
+### 흡연장 결정 기록
+| 날짜 | 결정 |
+|---|---|
+| 11-08 | 같이 피우기(실시간 멀티) 연결: 흡연장 쪽 코드는 `src/lounge/multi.js`·`multi-ui.js`에 모음. 상대 옷은 ID로 결정적 선택(옷은 아직 안 보냄), 받는 쪽이 같은 smoke.js로 담배를 그림, 내 글은 서버 되돌림을 다시 그리지 않음, NPC 각본 대사는 안 보냄, NPC는 그대로 4명·사람 채팅에 가끔(0.3·12초) 대답, 상태 칩은 👥 단추가 겸함 |
+| 11-08 | 메타버스 통합으로 `~/gwanak-hiking`의 `/smoking/`으로 옮김. 공용 코드 사본을 없애고 등산 원본을 import |
+| 11-08 | **대표 지시: 옷은 등산복을 따라 하지 말고 회사원 옷.** 캐릭터(몸·비율·얼굴·동작)만 동동이 그대로. 옷 4종 = 셔츠·넥타이(기본)·정장 재킷·카디건·롱패딩 |
+| 11-08 | 프로젝트 시작. 장소 = 서울 도심 빌딩 옥상 흡연장. 멀티는 미룸(NPC 4명). 시간대는 지금 서울 시각 기본 + 낮/노을/밤 고르기 |

@@ -15,3 +15,11 @@ design/ref-cartoon/
 
 # 참고 사진이 들어간 비교·목록 이미지(로컬 전용)
 artifacts/cartoon-compare/
+
+# 함께 걷기 서버 신고 기록(임시 ID·닉네임이 들어 있어 커밋하지 않음)
+data-multi/
+artifacts/multi-server/data/
+
+# 서버 고르기 캡처가 띄운 서버의 신고 기록(임시)
+artifacts/server-pick/data/
+artifacts/server-pick/data-s/
