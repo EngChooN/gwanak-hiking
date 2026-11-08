@@ -22,3 +22,9 @@
 .multi-request{position:fixed;left:50%;bottom:calc(120px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:40;display:flex;gap:8px;align-items:center;padding:10px 14px;border-radius:9px;background:var(--paper,#fbf3df);color:var(--ink,#4a3618);font:700 13px var(--nb-font,system-ui);box-shadow:2px 3px 0 var(--edge,#b49563),0 4px 10px rgba(52,34,8,.2)}
 .multi-request[hidden]{display:none}
 @media (max-width:700px){.multi-panel{width:auto;max-width:calc(100vw - 24px)}}
+/* 같이 등산하기(11-08): 이름표를 눌러 고르기. 보이는 모양은 그대로 두고 누름 칸만 44px 가까이 넓힌다. 동행 상대 이름표에는 🤝 */
+.multi-tag[data-kind=name] .multi-tag-name{pointer-events:auto;cursor:pointer}
+.multi-tag-hit{position:absolute;left:-10px;right:-10px;top:-11px;bottom:-11px}
+.multi-tag[data-pair="1"] .multi-tag-name{box-shadow:2px 3px 0 var(--edge,#b49563),inset 0 0 0 2px var(--accent,#b9472f)}
+.multi-tag[data-pair="1"] .multi-tag-name::before{content:'🤝';width:auto;height:auto;margin-top:-.62em;left:2px;background:none;font-size:10px;line-height:1.2}
+.multi-tag[data-pair="1"] .multi-tag-name{padding-left:20px}

@@ -64,12 +64,13 @@ test('난간 자리: 가까운 둘레 안쪽에 서서 바깥을 본다, 막힌 
  assert.ok(SPOT_RANGE.rail>=1&&SPOT_RANGE.bench>=1);
 });
 
-test('기대기: 난간까지 걸어가 상체를 숙이고 두 팔을 턱 위로 올린다, 움직이면 풀린다',()=>{
+test('기대기: 걸어가지 않고 가장 가까운 난간 지점에 붙어 상체를 숙이고 두 팔을 턱 위로 올린다, 움직이면 풀린다',()=>{
  const T=setup(0,-5.1);T.run(.2);
  const head0=W(B(T.player,'Head')),hand0=W(B(T.player,'LeftHand'));
  assert.equal(T.spots.status().primary,'lean');
- assert.ok(T.spots.lean());T.arrive();
+ assert.ok(T.spots.lean());assert.equal(T.walk,null,'난간은 걸어가지 않고 바로 시작');
  assert.equal(T.spots.pose,'lean');assert.deepEqual(last('lounge:spot'),{type:'lounge:spot',id:'me',spot:'rail',state:'enter'});
+ T.run(.8);assert.ok(Math.abs(T.player.z-(-6+.22))<1e-6,'자세가 들어가는 동안 난간 지점으로 붙는다');assert.equal(T.spots.pose,'lean','붙는 움직임으로는 풀리지 않는다');
  const P=[T.player.x,T.player.z];T.run(1);
  const head=W(B(T.player,'Head')),hl=W(B(T.player,'LeftHand')),hr=W(B(T.player,'RightHand'));
  assert.ok(head.z-P[1]<head0.z-(-5.1)-.03,`머리가 난간(-Z) 쪽으로 숙여진다 ${head.z.toFixed(3)}`);
@@ -115,11 +116,38 @@ test('캔커피: 자판기 앞에서 누르면 캔이 떨어지고(use) 왼손�
  assert.ok(T.spots.dropCan());assert.equal(T.spots.status().can.held,false);T.run(.1);assert.equal(can.visible,false);
 });
 
-test('멀리 있으면 할 일 단추를 눌러도 아무 일 없다',()=>{
- const T=setup(0,0);T.run(.2);const n=events.length;
+test('멀리서 E(기대기·앉기)를 누르면 걸어가지 않고 「없어요」 알림만',()=>{
+ const T=setup(0,0);T.run(.2);
  assert.equal(T.spots.status().primary,null);
- assert.equal(T.spots.sit(),false);assert.equal(T.spots.coffee(),false);assert.equal(T.spots.lean(),false);
- assert.equal(events.length,n);assert.equal(T.walk,null);
+ assert.equal(T.spots.sit(),false);assert.equal(last('lounge:spot').state,'fail');assert.match(T.spots.status().notice,/벤치/);
+ assert.equal(T.spots.lean(),false);assert.equal(last('lounge:spot').spot,'rail');assert.match(T.spots.status().notice,/난간/);
+ assert.equal(T.walk,null);assert.equal(T.spots.pose,'stand');
+});
+
+test('캔커피는 멀리서도: 자판기까지 걸어가 뽑고, 뽑는 중엔 다시 안 눌린다, 한 모금은 원할 때',()=>{
+ const T=setup(0,0);T.run(.2);
+ assert.equal(T.spots.sip(),false,'캔이 없으면 한 모금 안 됨');
+ assert.ok(T.spots.coffee(),'멀리서도 누를 수 있다');
+ assert.equal(T.walk.x,6.2);assert.equal(T.walk.z,-1.39);
+ assert.equal(T.spots.coffee(),false,'걸어가는 중엔 한 번만');
+ T.arrive();assert.equal(last('lounge:spot').spot,'vending');assert.equal(last('lounge:spot').state,'use');
+ assert.equal(T.spots.coffee(),false,'떨어지는 중엔 한 번만');
+ T.run(1.3);assert.equal(T.spots.status().can.held,true);
+ T.run(SIP.first+.2);assert.equal(T.spots.status().can.sipping,true,'쥐자마자 한 모금(뽑은 게 보이게)');
+ T.run(SIP.secs+.1);const n=T.spots.status().can.sips;
+ T.smoker.st='inhale';assert.equal(T.spots.sip(),false,'담배를 빠는 중엔 못 마신다');
+ T.smoker.st='smoking';assert.ok(T.spots.sip());assert.equal(T.spots.status().can.sipping,true);
+ assert.equal(T.spots.sip(),false,'마시는 중엔 겹치지 않는다');
+ T.run(SIP.secs+.1);assert.equal(T.spots.status().can.sips,n+1);
+});
+
+test('캔커피 가는 길에 직접 움직이면 그만둔다',()=>{
+ const T=setup(0,0);T.run(.2);
+ assert.ok(T.spots.coffee());T.player.x=1;T.player.z=-.3;T.run(.1);
+ assert.equal(T.spots.status().pending?.to,'vending','자판기 쪽으로 가는 중');
+ T.player.x=-1;T.player.z=1;T.run(.1);
+ assert.equal(T.spots.status().pending,null,'멀어지면 그만둠');
+ assert.ok(T.spots.coffee(),'다시 누를 수 있다');
 });
 
 test('상황 고르기: 네 상황이 시간대와 lounge:scene을 바꾸고 저장한다',()=>{

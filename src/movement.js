@@ -146,7 +146,9 @@ export function advance(state,input,dt,onStep=()=>{},ground){
  const plaza=state.zone==='plaza',p=sample(plaza?ROUTE_MIN_S:state.s),off=!plaza&&isOffTrail(state.s,state.lateral),running=!!input.run&&!state.runExhausted&&state.stamina>0;
  // 초콜릿(30초 +20%)은 걷기·뛰기·자동걷기 모두에 곱한다. 계단 노면은 한 칸 한 걸음 리듬을 지키려고 그대로 둔다.
  const boost=chocoSpeed(state,{stairs:onStairs({plaza,seg:p,off})});
- const speed=(plaza?speedFor(0,'paved',1):speedFor(p.slope,p.material,along<0?-1:1))*(running?runMultiplierFor(input.runMultiplier):1)*(off?OFF_TRAIL_MULTIPLIER:1)*(backward?BACKWARD_MULTIPLIER:1)*boost,budget=speed*dt;
+ // 같이 등산하기(동행) 속도 배율 input.pace(0.1~1): 자동 걷기에서 앞선 쪽이 늦추기·앞뒤 줄 뒷사람 간격(src/pair-walk.js). 없으면 1.
+ const pace=Number.isFinite(input.pace)?clamp(input.pace,.1,1):1;
+ const speed=(plaza?speedFor(0,'paved',1):speedFor(p.slope,p.material,along<0?-1:1))*(running?runMultiplierFor(input.runMultiplier):1)*(off?OFF_TRAIL_MULTIPLIER:1)*(backward?BACKWARD_MULTIPLIER:1)*boost*pace,budget=speed*dt;
  const motionPosition=(s,l)=>{const pos=positionAt(s,l,ground);if(!isOffTrail(s,l))pos[1]=sample(s).y;return pos;};
  const plazaPosition=(x,z)=>[x,ground?.height(x,z,false)??route.points[0].y,z];
  let a,b,distance,allowedBudget=budget,entersOff=false,next;
@@ -161,7 +163,8 @@ export function advance(state,input,dt,onStep=()=>{},ground){
  }else{
   const normal=Math.hypot(along,right)||1,rawS=state.s+budget*along/normal;
   let ds=clamp(rawS,ROUTE_MIN_S,route.length)-state.s,dl=budget*right/normal;
-  if(state.auto)dl=-Math.sign(state.lateral)*Math.min(Math.abs(state.lateral),budget*.6);
+  // 자동 걷기는 길 중심선(동행 나란히 모드면 input.laneTarget 자리)으로 천천히 옮겨 간다.
+  if(state.auto){const lane=Number.isFinite(input.laneTarget)?input.laneTarget:0;dl=Math.sign(lane-state.lateral)*Math.min(Math.abs(lane-state.lateral),budget*.6);}
   a=motionPosition(state.s,state.lateral);
   // 일주문 아래에서 뒤로 가면 문 선분 좌표계를 그대로 연장해 광장으로 돌아간다.
   if(rawS<ROUTE_MIN_S){

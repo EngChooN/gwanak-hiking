@@ -68,17 +68,42 @@
 .lg-sheet .actions{display:flex;gap:8px;margin-top:16px}.lg-sheet .actions .lg-btn{flex:1;min-height:48px;font-size:16px}
 .lg-close{float:right}
 
-/* 짧은 화면(휴대폰 가로)·세로·PC */
+/* 휴대폰(가로 = 짧은 화면, 세로 = 좁은 화면) 공통: 가운데(동동이·연기)는 비우고 가장자리에만 단추를 둔다. 조이스틱은 왼쪽 절반(손가락 댄 자리) → 흡연 단추는 아래 오른쪽.
+   수첩은 처음부터 접힘(hud.js), 채팅은 💬 하나로 접힘(새 말은 말풍선), 재떨이로·인사는 「⋯」 안. 할 일 단추는 대상 위 표시(spots.css), 「상황」 하나만 오른쪽 가장자리. */
+.lg-more{display:none!important}
+@media (max-height:540px),(max-width:600px){
+ .lg-note,.lg-log{background:color-mix(in srgb,var(--paper) 88%,transparent)}
+ .lg-note.folded{padding:0;border-radius:12px}
+ .lg-bottom{flex-direction:row;flex-wrap:wrap;align-items:flex-end;justify-content:space-between}
+ .lg-chat{width:auto;flex:0 0 auto;max-width:none;align-self:flex-end}
+ .lg-chat.open{flex:1 1 260px;max-width:380px}
+ .lg-chat:not(.open) .lg-log,.lg-chat:not(.open) .lg-form>:not(.lg-chat-toggle){display:none}
+ .lg-chat-toggle{display:inline-flex}
+ .lg-dock{flex-direction:column;align-items:flex-end;gap:6px;margin-left:auto;max-width:100%}
+ .lg-dock .grp{flex-wrap:nowrap}
+ .lg-dock .chips{order:1}.lg-dock .social{order:2}.lg-dock .tools{order:3}.lg-dock .sp-hand{order:4}.lg-dock .smoke{order:5}
+ .lg-dock .sp-hand .sec{padding:0;width:44px}.lg-dock .sp-hand .sec .sp-t{display:none} /* 캔: 「☕ 한 모금」은 글까지, 캔 버리기는 그림만 */
+ /* 대답 칩: 한 줄 가로 스크롤 */
+ .lg-dock .grp.chips{flex-wrap:nowrap!important;max-width:calc(100vw - var(--sl) - var(--sr) - 2*var(--gap) - 52px);overflow-x:auto;justify-content:flex-start;scrollbar-width:none;padding:0 3px 3px 0;pointer-events:auto;overscroll-behavior:contain}
+ .lg-dock .grp.chips::-webkit-scrollbar{display:none}
+ .lg-dock .grp.chips .lg-btn{flex:0 0 auto}
+ /* 흡연: 피우는 중이면 곁 단추(그림만 44px) 한 줄 위, 그 아래 오른쪽 구석에 엄지 크기 꾹 단추 */
+ .lg-dock .smoke{flex-wrap:wrap;max-width:min(100%,300px)}
+ .lg-dock .smoke[data-stage=lit]{max-width:156px;gap:6px}
+ .lg-dock .smoke .sec{padding:0;width:44px}.lg-dock .smoke .sec .t{display:none}
+ .lg-dock .smoke .lg-draw{order:9;flex:1 0 156px;min-height:64px;border-radius:18px;font-size:15px}
+ /* 도구: 「⋯」만, 누르면 그림 단추로 펼침 */
+ .lg-more{display:inline-flex!important}
+ .lg-dock .tools:not(.open)>:not(.lg-more){display:none}
+ .lg-dock .tools .t{display:none}
+}
 @media (max-height:540px){
  :root{--gap:8px}
+ /* 가로: 오른쪽 가장자리의 할 일 세로 줄(44px)과 겹치지 않게 아래 묶음을 그 왼쪽에 둔다 */
+ .lg-bottom{right:calc(var(--sr) + var(--gap) + 52px)}
  .lg-note{width:190px;padding:6px 10px}.lg-note .big{font-size:18px}
  .lg-log{max-height:52px}
- .lg-bottom{flex-direction:row;align-items:flex-end;justify-content:space-between}
- .lg-chat{width:auto;flex:0 1 300px;align-self:flex-end}
- .lg-chat:not(.open) .lg-form,.lg-chat:not(.open) .lg-log{display:none}
- .lg-chat-toggle{display:inline-flex}
- .lg-dock{flex-direction:column;align-items:flex-end;gap:6px}
- .lg-dock .grp{flex-wrap:nowrap}
+ .lg-chat.open{flex:0 1 300px}
  .lg-sheet h1{font-size:22px}.lg-sheet h2{margin-top:8px}.lg-sheet .actions{margin-top:10px}
 }
 @media (min-width:900px) and (min-height:541px){

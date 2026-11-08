@@ -1,9 +1,24 @@
-/* 옥상에서 할 일 단추(spots.js)·상황 고르기 패널·상황 분위기. 단추 모양은 hud.css .lg-btn(「등산 수첩」 종이 톤, 44px 이상) 그대로.
-   자리: 위 오른쪽 소리·설정 단추(44px) 바로 아래 세로 한 줄 → 수첩 카드(왼쪽 위)·아래 단추 줄과 겹치지 않는다. 휴대폰 가로는 설정 단추 왼쪽에 가로 한 줄. */
+/* 옥상에서 할 일(spots.js)·상황 고르기 패널·상황 분위기. 단추 모양은 hud.css .lg-btn(「등산 수첩」 종이 톤, 44px 이상) 그대로.
+   할 일은 온라인 등산(interaction-ui .ix-marker)처럼 대상(자판기·벤치·난간·재떨이) 위에 뜬다: 7~15m 작은 점, 7m 안 그림 동그라미(44px), 닿을 거리면 「그림+글」 단추.
+   색은 등산 초록·금색이 아니라 수첩 종이(--paper·--edge), 누를 수 있는 단추는 빨간 도장 테두리(--stamp).
+   .sp-dock = 「상황」 단추 하나: 위 오른쪽 소리·설정 아래(휴대폰은 오른쪽 가장자리 가운데). 캔 단추(.sp-hand)는 아래 흡연 단추 옆. */
 .sp-dock{position:absolute;right:calc(var(--sr) + var(--gap));top:calc(var(--st) + var(--gap) + 52px);display:flex;flex-direction:column;align-items:flex-end;gap:8px;pointer-events:none}
-.sp-dock:empty{display:none}
+.sp-dock:empty,.lg-dock .sp-hand:empty{display:none}
 .sp-btn .sp-i{font-size:17px;line-height:1}
 .sp-btn{max-width:200px}
+
+.sp-marks{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.sp-mark{position:absolute;left:0;top:0;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:44px;min-height:44px;padding:0;border-radius:22px;
+ border:2px solid var(--edge);background:color-mix(in srgb,var(--paper) 90%,transparent);color:var(--ink);box-shadow:var(--lift);font-weight:800;font-size:14px;white-space:nowrap;
+ pointer-events:auto;touch-action:manipulation;will-change:transform}
+.sp-mark .sp-i{font-size:20px;line-height:1}
+.sp-mark.mid{width:44px;opacity:.9}
+.sp-mark.act{padding:0 14px 0 10px;border-color:var(--stamp);box-shadow:2px 3px 0 var(--stamp-d)}
+.sp-mark.act::after{content:"";position:absolute;left:50%;bottom:-8px;margin-left:-6px;border:6px solid transparent;border-top-color:var(--stamp);border-bottom:0}
+.sp-mark.far{min-width:0;min-height:0;width:14px;height:14px;font-size:0;opacity:.75;background:var(--paper2);box-shadow:none}
+.sp-mark.far .sp-i{display:none}
+.sp-mark.far::before{content:"";position:absolute;inset:-15px} /* 점은 작아도 누르는 자리는 44px */
+.sp-mark[disabled]{opacity:.65;pointer-events:none}
 
 /* 상황 고르기 패널(입장 뒤·상황 단추). 가운데 종이 카드, 2×2 단추 */
 .sp-panel{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(380px,calc(100% - 24px));max-height:calc(100% - 24px);overflow:auto;padding:12px 14px 14px;box-sizing:border-box}
@@ -14,6 +29,7 @@
 .sp-scenes b{font-size:14px}
 .sp-scenes small{font-size:11px;font-weight:600;color:var(--ink2)}
 .sp-keep{width:100%;margin-top:10px;font-size:13px}
+.sp-fb{width:100%;margin-top:6px;font-size:13px} /* 💌 의견 보내기(공용 feedback.js 카드) */
 .lg-sheet .sp-set .opts .lg-btn{font-size:13px}
 
 /* 상황 분위기: 화면 가장자리에 아주 옅은 색(아침 = 쌀쌀한 하늘색, 회식 후 = 발그레한 분홍). 불투명도 0.16 이하 */
@@ -21,11 +37,12 @@
 :root[data-scene=morning] .sp-mood{opacity:1;background:radial-gradient(ellipse at center,transparent 58%,rgba(150,196,236,.16) 100%)}
 :root[data-scene=afterparty] .sp-mood{opacity:1;background:radial-gradient(ellipse at center,transparent 62%,rgba(244,140,160,.10) 100%)}
 
+@media (max-height:540px),(max-width:600px){
+ .sp-dock{top:50%;transform:translateY(-50%);gap:6px}
+ .sp-dock .sp-t{display:none}.sp-dock .sp-btn{padding:0;width:44px}
+}
 @media (max-height:540px){
- .sp-dock{flex-direction:row;top:calc(var(--st) + var(--gap));right:calc(var(--sr) + var(--gap) + 104px)}
  .sp-scenes .lg-btn{min-height:58px}
  .sp-panel h3{margin-bottom:6px}.sp-keep{margin-top:6px}
 }
-/* 좁은 휴대폰 세로: 글자는 숨기고 그림 단추(44×44)만 */
-@media (max-width:420px){.sp-dock .sp-t{display:none}.sp-dock .sp-btn{padding:0}}
 @media (prefers-reduced-motion:reduce){.sp-mood{transition:none}}

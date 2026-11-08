@@ -7,8 +7,10 @@ import {mountRestUI} from './rest-ui.js';
 import {installHudToggle} from './hud-toggle.js';
 import {installGadgetUI,viewfinderCrop} from './gadget-ui.js';
 import {route,sample,MATERIALS,isStairs,checkpoints,DEMO_START,durationBetween,geographicToLocal,floorHeight as routeFloorHeight} from './route.js';
-import {initialState,restore,SAVE_KEY,advance,setPose,positionAt,isOffTrail,playerPosition,setPlayerPosition,courseDistance,COURSE_LENGTH,strideAt,strideScaleFor,onStairs,lateralLimit} from './movement.js';
+import {initialState,restore,SAVE_KEY,advance,setPose,positionAt,isOffTrail,playerPosition,setPlayerPosition,courseDistance,COURSE_LENGTH,strideAt,strideScaleFor,onStairs,lateralLimit,ROUTE_MIN_S} from './movement.js';
 import {summitWalkMap,ROUTE_END,projectToRoute,SUMMIT_CENTER} from './summit.js';
+import {routeNudge} from './pair-walk.js';
+import {inForbid} from './animal-lanes.js';
 import {sectionJumpEnabled,jumpTargets,summitSpot,mountSectionJump} from './section-jump.js';
 import {createLoadingTracker,createStabilityCounter,LOADING_EVENT,START_EVENT} from './loading.js';
 import {insidePlaza,fromGate} from './plaza.js';
@@ -236,7 +238,7 @@ function frame(now,background=false){
  if(freeZone()&&(cmd.forward||cmd.side)&&!look.reset){const free=state.zone==='plaza'?state.plaza:state.summit;free.heading=wrapAngle(free.heading+look.yaw);look.yaw=0;}
  if(started)tickChocolate(state,dt); // 초콜릿 효과 30초는 상호작용 중에도 흐른다(일시정지 없음)
  const zoneBefore=state.zone,cameraHeadingBefore=baseHeading()+look.yaw;
- speed=started?frameMetrics.stage('movement',()=>advance(state,{...cmd,yaw:look.yaw,strideScale:hiker.strideScale,runMultiplier:hiker.profile?.runSpeed,benchRest:trail?.acts.active?.name==='bench-sit'&&trail.acts.active.state==='hold'},dt,detail=>{if(!(hiker.profile?.stairHop&&isStairs(detail.material)))window.dispatchEvent(new CustomEvent('hiking:step',{detail}));},walkingGround)):0;moving=speed>0;
+ speed=started?frameMetrics.stage('movement',()=>advance(state,{...cmd,...pairStep(cmd),yaw:look.yaw,strideScale:hiker.strideScale,runMultiplier:hiker.profile?.runSpeed,benchRest:trail?.acts.active?.name==='bench-sit'&&trail.acts.active.state==='hold'},dt,detail=>{if(!(hiker.profile?.stairHop&&isStairs(detail.material)))window.dispatchEvent(new CustomEvent('hiking:step',{detail}));},walkingGround)):0;moving=speed>0;
  if(state.zone!==zoneBefore){look.yaw=wrapAngle(cameraHeadingBefore-baseHeading());look.reset=null;}
  // 자동 걷기 중에는 GPX 선분 방향에 바로 붙이지 않고 몇 m 앞까지 평활한 길 방향을 스프링·최대 회전 속도로 따라 돈다.
  if(started&&state.auto&&autoView.active)look.yaw=stepAutoView(autoView,{target:state.zone==='route'?pathHeading(state.s,sample):baseHeading(),base:baseHeading(),dt});
@@ -347,6 +349,7 @@ const facilityPoints=FACILITY_LAMPS.map(f=>{const anchor=f.anchor&&landscape.sta
 const night=createNightLighting({scene,renderer,place:(s,l)=>positionAt(s,l,walkingGround),groundHeight:(x,z)=>walkingGround.height(x,z,false),gatePoint:fromGate,facilityPoints,routeLength:route.length});
 if(toon)toon.styleNightLighting(night.root);
 let multi=null;
+let pairSteer=false,pairPace=1; // 같이 등산하기: 이번 프레임 옆 키 입력·넘긴 속도 배율(아래 pairStep). 프레임이 await 사이에 돌 수 있어 multi 옆에 둔다
 // 함께 걷기(?multi 또는 HUD 참가). 켜지 않으면 코드를 불러오지도 않는다.
 // 서버 주소: ?server=wss://… → 빌드 변수 VITE_MULTI_SERVER_URL → 없으면 이 브라우저 창끼리(BroadcastChannel).
 // 화면 약속: hiking:multi-join {room,name}(참가) · hiking:multi-leave(나가기)를 받고, hiking:multi-status {state,room,count,transport}를 보낸다.
@@ -355,8 +358,28 @@ const {hikingServerPick}=await import('./hiking-server-pick.js');
 const multiServer=multiServerUrl(location.search,import.meta.env.VITE_MULTI_SERVER_URL??'');
 let multiBusy=Promise.resolve();
 const multiStatus=detail=>window.dispatchEvent(new CustomEvent('hiking:multi-status',{detail}));
+// 같이 등산하기(동행): 걷기 직전에 multi-client의 안내(자동 걷기 옆 자리 laneTarget·속도 배율 pace)를 advance에 넘긴다.
+// 걷기 뒤의 살짝 옮기기(좌우 자리로 옮겨 가기·0.8m 밀어내기)는 multi-client가 local.nudge로 한다. 규칙은 src/pair-walk.js.
+function pairStep(cmd){pairSteer=!!cmd.side;const g=multi?.pairInput?.()??null;pairPace=g?.pace??1;return g?{laneTarget:g.laneTarget??undefined,pace:g.pace}:{};}
+// 길 위는 노면 반폭(route-surfaces 폭) − 0.3m 안에서만, 바위·시설 금지 원(animal-lanes)에 새로 들어가지 않게. 광장·정상은 그 구역 경계 검사(setPlayerPosition)를 거친다.
+function pairNudge({ds=0,dl=0,x=0,z=0}={}){
+ if(state.pose!=='stand'||!started)return false;
+ if(state.zone==='route'){
+  const next=routeNudge({s:state.s,lateral:state.lateral},{ds,dl},{halfWidth:s=>sample(s).width/2,minS:ROUTE_MIN_S,maxS:route.length,blocked:(s,l)=>{const [px,,pz]=positionAt(s,l);return inForbid(px,pz);}});
+  if(!next)return false;state.s=next.s;state.lateral=next.lateral;return true;
+ }
+ const free=state.zone==='plaza'?state.plaza:state.summit;if(!free)return false;
+ const nx=free.x+x,nz=free.z+z;if(inForbid(nx,nz)&&!inForbid(free.x,free.z))return false;
+ return setPlayerPosition(state,{zone:state.zone,x:nx,z:nz,heading:free.heading},walkingGround);
+}
+function pairHere(){
+ if(state.zone!=='route')return null;
+ const p=sample(state.s),a=sample(state.s-2),b=sample(state.s+2),len=Math.hypot(b.x-a.x,b.z-a.z)||1;
+ return {width:p.width,stairs:isStairs(p.material),forward:{x:(b.x-a.x)/len,z:(b.z-a.z)/len},normal:{x:-(b.z-a.z)/len,z:(b.x-a.x)/len}};
+}
 function multiLocal(){
- return {position:()=>playerPosition(state,walkingGround),setPosition:pos=>{state.auto=false;state.running=false;if(pos.zone==='route'){const r=Number.isFinite(pos.s)?{s:pos.s,lateral:pos.lateral??0}:projectToRoute(pos.x,pos.z,0);return setPlayerPosition(state,{zone:'route',s:r.s,lateral:r.lateral},walkingGround);}return setPlayerPosition(state,pos,walkingGround);},speed:()=>speed,sit:()=>state.pose!=='stand',run:()=>!!state.running,gadget:()=>state.gadget??'none',selfie:()=>selfieActive(state),place:(s,l)=>positionAt(s,l,walkingGround)};
+ return {nudge:pairNudge,here:pairHere,sample,minS:ROUTE_MIN_S,maxS:route.length,walk:()=>({auto:!!state.auto,moving,steering:pairSteer,base:pairPace>0?speed/pairPace:speed}),
+  position:()=>playerPosition(state,walkingGround),setPosition:pos=>{state.auto=false;state.running=false;if(pos.zone==='route'){const r=Number.isFinite(pos.s)?{s:pos.s,lateral:pos.lateral??0}:projectToRoute(pos.x,pos.z,0);return setPlayerPosition(state,{zone:'route',s:r.s,lateral:r.lateral},walkingGround);}return setPlayerPosition(state,pos,walkingGround);},speed:()=>speed,sit:()=>state.pose!=='stand',run:()=>!!state.running,gadget:()=>state.gadget??'none',selfie:()=>selfieActive(state),place:(s,l)=>positionAt(s,l,walkingGround)};
 }
 async function joinMulti({room=null,name=null}={}){
  if(multi&&(!room||room===multi.room))return multi;
@@ -379,6 +402,8 @@ for(const load of Object.values(import.meta.glob('./multi-entry-ui.js')))load().
 // 등산 채팅 HUD(산디자인 src/hiking-chat-ui.js: 💬 버튼·채팅 창·머리 위 말풍선). 서버 연결은 multi-client.js가 hiking:chat* 이벤트로 맡는다.
 // ?multi로 이미 참가했으면 상태를 한 번 더 보내 준다(HUD가 늦게 붙어 '연결됨'을 놓치면 💬가 안 보였음).
 for(const load of Object.values(import.meta.glob('./hiking-chat-ui.js')))load().then(m=>{m.installHikingChat?.();multi?.statusNow();}).catch(err=>console.warn('등산 채팅 HUD를 불러오지 못했습니다',err));
+// 같이 등산하기 HUD(src/pair-ui.js: 👥 함께 있는 사람·제안 카드·동행 칩). multi-client.js와 hiking:pair-* 이벤트로만 주고받는다.
+for(const load of Object.values(import.meta.glob('./pair-ui.js')))load().then(m=>{m.installPairUI?.();multi?.statusNow();}).catch(err=>console.warn('같이 등산하기 HUD를 불러오지 못했습니다',err));
 // 관악산 FM 라디오(src/radio-ui.js: 📻 태그·휴대용 라디오·소리 출처 창). 발소리와 같은 AudioContext·마스터를 거쳐 '소리 꺼짐'·음량을 따른다.
 // 켜져 있으면 바람 같은 환경음을 조금(×0.7) 줄인다. 소리 파일은 같은 출처 assets/radio/만(외부 접속 없음).
 window.addEventListener('hiking:radio',e=>{radioOn=!!e.detail?.on;ambient.setVolume(ambientVolume());});

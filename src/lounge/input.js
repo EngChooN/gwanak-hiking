@@ -1,6 +1,7 @@
 // 입력: PC는 WASD·방향키(Shift 뛰기)·마우스 드래그(시점)·휠(거리), 휴대폰은 떠다니는 조이스틱(왼쪽 절반, 손가락 댄 자리에 생김)·오른쪽 드래그(시점)·핀치.
 // 조이스틱 방향 계산은 온라인 등산 src/joystick.js(8방향·데드존·기준점 따라오기)를 그대로 쓴다.
 import {stickDirection,stickFollow,clampStickBase,STICK} from '../joystick.js';
+import {feedbackOpen} from '../feedback.js';
 
 // 담배 키(PC): Space·F 꾹 = 들이마시기(누르는 동안), R 링·N 코로·T 프렌치, 1~4 담배 고르기(꺼낼 때),
 // B 불 빌리기, G 한 대 권하기·받기. onAction(f(name,down))로 받는다.
@@ -36,6 +37,7 @@ export function createInput({canvas,mobile}){
  canvas.addEventListener('contextmenu',e=>e.preventDefault());
  return {
   move(){
+   if(feedbackOpen())return {forward:0,side:0,run:false}; // 의견 보내기 카드가 열린 동안은 걷지 않는다(공용 src/feedback.js)
    if(stick?.dir)return {forward:stick.dir.forward,side:stick.dir.side,run:runToggle||Math.hypot(stick.dx,stick.dy)>STICK.radius*.98&&false};
    const k=c=>keys.has(c);
    const forward=(k('KeyW')||k('ArrowUp')?1:0)-(k('KeyS')||k('ArrowDown')?1:0),side=(k('KeyD')||k('ArrowRight')?1:0)-(k('KeyA')||k('ArrowLeft')?1:0);

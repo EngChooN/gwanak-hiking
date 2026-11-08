@@ -7,10 +7,10 @@
 export const SOUND_NAMES=Object.freeze(['lighter','click','cap','wheel','flame','inhale','exhale','ash','drop','stamp','chat','pop','cough','ring','can']);
 const HEAR_RADIUS=9; // NPC 소리가 들리는 거리(m)
 // 내쉬는 숨 길이(초): quality가 sweet·deep이면 길게 "하아…". light는 짧게.
-export const EXHALE_LEN=Object.freeze({light:{hold:.25,release:.7},sweet:{hold:.7,release:1.5},deep:{hold:1.1,release:2.1},cough:{hold:.2,release:.5}});
+export const EXHALE_LEN=Object.freeze({light:{hold:.3,release:.8},sweet:{hold:.8,release:1.7},deep:{hold:1.3,release:2.3},cough:{hold:.2,release:.5}});
 export const exhaleLen=q=>EXHALE_LEN[q]??EXHALE_LEN.light;
-// 치이익 크기(0~.16): 많이 들이마실수록(draw 0~1) 커진다. 안 들이마시면 0.
-export const sizzleGain=draw=>draw>.02?Math.min(.16,.025+.135*Math.min(1,draw)):0;
+// 치이익 크기(0~.06, 배경에 깔리는 정도): 많이 들이마실수록(draw 0~1) 커진다. 안 들이마시면 0.
+export const sizzleGain=draw=>draw>.02?Math.min(.06,.012+.048*Math.min(1,draw)):0;
 
 // 거리 → 크기(0~1). 1m 안은 그대로, 반경 밖은 0, 사이는 제곱으로 줄인다.
 export function distanceGain(d,radius=HEAR_RADIUS){if(!Number.isFinite(d))return 1;if(d<=1)return 1;if(d>=radius)return 0;const k=1-(d-1)/(radius-1);return k*k;}
@@ -22,7 +22,7 @@ export function createLoungeAudio({muted=false}={}){
  const amb$={nodes:null,nextCar:4,nextWind:2,level:0,duck:1,duckTo:1,duckLeft:0,sizzle:null,tick:0};
  let lastQuality=null; // 가장 최근 lounge:smoke의 quality(내쉬는 숨 길이를 정한다)
  // 이벤트로 받는 소리: 담배 내뿜기 quality, 자판기 캔 따기(lounge:spot {spot:'vending',state:'use'})
- const onSmoke=e=>{const d=e.detail??{};if(d.state==='exhale'&&d.quality)lastQuality=d.quality;};
+ const onSmoke=e=>{const d=e.detail??{};if(d.isPlayer!==false&&d.state==='exhale'&&d.quality)lastQuality=d.quality;}; // NPC(isPlayer:false)는 무시. play에 quality를 직접 주면 그 값이 먼저
  const onSpot=e=>{const d=e.detail??{};if(d.spot==='vending'&&d.state==='use')play('can');};
  window.addEventListener('lounge:smoke',onSmoke);window.addEventListener('lounge:spot',onSpot);
 
@@ -63,18 +63,22 @@ export function createLoungeAudio({muted=false}={}){
  const SFX={
   click(d,t){hiss(d,t,{type:'highpass',freq:2500,q:.8,a:.001,peak:.55,release:.025});tone(d,t,{type:'square',freq:2200,to:1400,peak:.06,release:.02});
    hiss(d,t+.05,{type:'bandpass',freq:4200,q:2,a:.001,peak:.35,release:.03});}, // 부싯돌 휠 딸깍 + 스파크
-  flame(d,t){const h=hiss(d,t,{type:'bandpass',freq:700,q:.6,a:.04,peak:.22,hold:.75,release:.25});
-   const lfo=ctx.createOscillator(),lg=ctx.createGain();lfo.frequency.value=9;lg.gain.value=180;lfo.connect(lg).connect(h.f.frequency);lfo.start(t);lfo.stop(h.end);
-   tone(d,t,{type:'sine',freq:90,peak:.05,a:.05,hold:.6,release:.3});}, // 훅 하고 붙는 불꽃
-  cap(d,t){tone(d,t,{type:'square',freq:3100,to:2300,peak:.07,a:.001,release:.03});hiss(d,t,{type:'highpass',freq:3000,q:.9,a:.001,peak:.5,release:.03});
-   tone(d,t+.012,{type:'triangle',freq:1500,to:900,peak:.1,a:.001,release:.05});}, // 지포 뚜껑 철컥(금속 짧은 두 번 울림)
-  wheel(d,t){for(let i=0;i<7;i++)hiss(d,t+i*.022,{type:'bandpass',freq:3300+i*160,q:2.2,a:.001,peak:.28,release:.02});
-   hiss(d,t,{type:'bandpass',freq:2600,q:1.4,a:.01,peak:.18,hold:.12,release:.04});hiss(d,t+.15,{type:'highpass',freq:4200,q:.7,a:.001,peak:.3,release:.03});}, // 휠 드르륵 + 스파크
-  lighter(d,t){SFX.cap(d,t);SFX.wheel(d,t+.1);SFX.flame(d,t+.28);},
-  inhale(d,t){hiss(d,t,{type:'bandpass',freq:700,to:1700,q:1.2,a:.35,peak:.2,hold:.45,release:.25});crackle(d,t+.15,.8,22,.07);},
-  exhale(d,t){const L=exhaleLen(lastQuality);
-   hiss(d,t,{type:'lowpass',freq:1800,to:380,q:.5,a:.1,peak:.26,hold:L.hold,release:L.release});hiss(d,t,{type:'bandpass',freq:350,q:.8,a:.12,peak:.1,hold:L.hold*.9,release:L.release*.8});
-   if(lastQuality==='sweet'||lastQuality==='deep')tone(d,t+.05,{type:'sine',freq:210,to:150,peak:.025,a:.12,hold:L.hold,release:L.release*.7});}, // 길게 내쉬는 "하아…"
+  flame(d,t){hiss(d,t,{type:'bandpass',freq:1000,q:.5,a:.012,peak:.3,hold:.02,release:.2}); // "화악" 노이즈 버스트(빠른 어택, 떨림 없음)
+   hiss(d,t+.04,{type:'lowpass',freq:520,q:.4,a:.06,peak:.09,hold:.3,release:.55}); // 낮은 "쉬이" 꼬리
+   tone(d,t,{type:'sine',freq:110,to:70,peak:.07,a:.01,hold:.05,release:.3});}, // 훅 하고 붙는 낮은 울림
+  cap(d,t){for(const [f,pk,rel] of [[2900,.07,.12],[4100,.05,.09],[5400,.03,.06]])tone(d,t,{type:'sine',freq:f,peak:pk,a:.001,release:rel}); // 지포 뚜껑 금속 "칭"
+   hiss(d,t,{type:'highpass',freq:3500,q:.8,a:.001,peak:.12,release:.015});},
+  wheel(d,t){hiss(d,t,{type:'bandpass',freq:2300,to:4200,q:1.2,a:.02,peak:.17,hold:.06,release:.1}); // 휠 "츠륵"
+   for(let i=0;i<3;i++)hiss(d,t+.03+i*.04,{type:'bandpass',freq:3000+i*500,q:1.6,a:.001,peak:.1,release:.015});},
+  lighter(d,t){SFX.cap(d,t);SFX.wheel(d,t+.14);SFX.flame(d,t+.32);},
+  inhale(d,t){hiss(d,t,{type:'bandpass',freq:300,to:900,q:.9,a:.4,peak:.3,hold:.4,release:.28}); // 입으로 들이마시는 "스으읍"
+   hiss(d,t+.05,{type:'lowpass',freq:700,q:.4,a:.35,peak:.1,hold:.4,release:.25});crackle(d,t+.2,.7,10,.025);},
+  exhale(d,t,o={}){const q=o.quality??lastQuality,L=exhaleLen(q);
+   hiss(d,t,{type:'bandpass',freq:1200,to:800,q:.7,a:.12,peak:.34,hold:L.hold,release:L.release}); // 중음 "후우~"
+   hiss(d,t,{type:'bandpass',freq:2000,to:1300,q:.9,a:.15,peak:.1,hold:L.hold*.8,release:L.release*.7});
+   hiss(d,t,{type:'bandpass',freq:600,q:.8,a:.12,peak:.1,hold:L.hold*.9,release:L.release*.8});
+   if(q==='sweet'||q==='deep')tone(d,t+.05,{type:'sine',freq:520,to:380,peak:.02,a:.12,hold:L.hold,release:L.release*.7});
+   if(!o.far)duck(.35,L.hold+L.release*.6);}, // 내쉬는 동안 배경 소리를 줄인다(내 담배만)
   cough(d,t){for(const [dt,f] of [[0,1],[.17,.9],[.34,.8]]){tone(d,t+dt,{type:'sawtooth',freq:170*f,to:110*f,peak:.07,a:.004,release:.1});
    hiss(d,t+dt,{type:'bandpass',freq:1100*f,to:500,q:.9,a:.004,peak:.3,release:.12});}},
   ring(d,t){hiss(d,t,{type:'bandpass',freq:900,to:500,q:1.4,a:.04,peak:.12,hold:.06,release:.25});tone(d,t,{freq:420,to:300,peak:.03,a:.03,release:.2});}, // 링 "후~"
@@ -88,14 +92,14 @@ export function createLoungeAudio({muted=false}={}){
   pop(d,t){tone(d,t,{freq:660,to:990,peak:.08,release:.06});},
  };
 
- function play(name,{at=null,gain=1}={}){
+ function play(name,{at=null,gain=1,quality=null}={}){
   const f=SFX[name];if(!f)return false;
   if(!unlocked||!ctx||ctx.state!=='running'||muted){stats.skipped++;return false;}
   let g=gain,pan=0;
   if(at){const dx=at.x-listener.x,dz=at.z-listener.z;g*=distanceGain(Math.hypot(dx,dz));if(g<.01){stats.skipped++;return false;}
    // 듣는 사람(카메라는 몸 뒤) 기준 좌우: 오른쪽 벡터 = (cos yaw, -sin yaw)
    const d=Math.hypot(dx,dz)||1;pan=Math.max(-.8,Math.min(.8,(dx*Math.cos(listener.yaw)-dz*Math.sin(listener.yaw))/d*.8));}
-  const bus=ctx.createGain();bus.gain.value=g;bus.connect(sfx);f(out(bus,pan),now()+.005);setTimeout(()=>bus.disconnect(),4000);
+  const bus=ctx.createGain();bus.gain.value=g;bus.connect(sfx);f(out(bus,pan),now()+.005,{quality,far:!!at});setTimeout(()=>bus.disconnect(),4000);
   stats.played++;stats.byName[name]=(stats.byName[name]??0)+1;return true;
  }
 
@@ -105,7 +109,7 @@ export function createLoungeAudio({muted=false}={}){
   const wind=noiseSrc(noise,{rate:.5}),wf=filt('bandpass',500,.5),wg=ctx.createGain();wg.gain.value=.02;wind.connect(wf).connect(wg).connect(amb);
   amb$.nodes={rumble,rf,rg,wind,wf,wg};
   // 종이 타는 치이익: 늘 돌아가지만 소리는 0, 들이마시는 동안(update의 draw)만 커진다. 주변 소리를 줄여도(duck) 안 줄어든다.
-  const sz=noiseSrc(noise,{rate:1.3}),sf=filt('bandpass',4200,.9),sg=ctx.createGain();sg.gain.value=0;sz.connect(sf).connect(sg).connect(sfx);
+  const sz=noiseSrc(noise,{rate:1.3}),sf=filt('bandpass',3000,.8),sg=ctx.createGain();sg.gain.value=0;sz.connect(sf).connect(sg).connect(sfx);
   amb$.sizzle={sf,sg};
  }
  // 주변 소리 작게: 처음 모금 연출 등. k=0~1 배율, sec초 동안 유지한 뒤 천천히 돌아온다.
@@ -123,8 +127,8 @@ export function createLoungeAudio({muted=false}={}){
   amb$.duck+=(amb$.duckTo-amb$.duck)*Math.min(1,dt*(amb$.duckTo<amb$.duck?6:1.2)); // 빨리 작아지고 천천히 돌아온다
   if(!ctx||!amb$.nodes||ctx.state!=='running')return;
   const night=env?.night??0;
-  if(amb$.sizzle){const g=muted?0:sizzleGain(draw);amb$.sizzle.sg.gain.setTargetAtTime(g,now(),.06);amb$.sizzle.sf.frequency.setTargetAtTime(3600+draw*2400,now(),.1);
-   if(g>0&&draw>.15){amb$.tick-=dt;if(amb$.tick<=0){amb$.tick=.06+Math.random()*.1;crackle(sfx,now(),.05,20,.05+.05*draw);}}}
+  if(amb$.sizzle){const g=muted?0:sizzleGain(draw);amb$.sizzle.sg.gain.setTargetAtTime(g,now(),.06);amb$.sizzle.sf.frequency.setTargetAtTime(2800+draw*1000,now(),.1);
+   if(g>0&&draw>.15){amb$.tick-=dt;if(amb$.tick<=0){amb$.tick=.06+Math.random()*.1;crackle(sfx,now(),.05,20,.02+.02*draw);}}}
   // 밤에는 차 소리가 줄고 바람이 조금 커진다
   const want=muted?0:.55*amb$.duck;amb$.level+=(want-amb$.level)*Math.min(1,dt*(amb$.duck<1?6:.8)); // 처음에는 천천히 들어온다
   amb.gain.setTargetAtTime(amb$.level,now(),.3);

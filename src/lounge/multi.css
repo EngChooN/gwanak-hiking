@@ -24,9 +24,8 @@
  .lg-mp-btn .lg-mp-t{display:none}
  .lg-mp-btn .lg-mp-n:not([hidden]){display:inline-block}
 }
-/* 휴대폰 가로: spots 단추 줄이 위 오른쪽 단추(이제 3개) 왼쪽에 오도록 */
+/* 휴대폰 가로: 알림을 위 단추 줄 바로 아래로. (「상황」 단추는 휴대폰에서 오른쪽 가장자리 가운데라 👥 줄과 겹치지 않는다 — spots.css) */
 @media (max-height:540px){
- body.lg-mp .sp-dock{right:calc(var(--sr) + var(--gap) + 160px)}
  .lg-mp-toast{top:calc(var(--st) + 64px)}
 }
 @media (prefers-reduced-motion:reduce){.lg-mp-toast{transition:none}}

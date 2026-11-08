@@ -58,8 +58,8 @@ export function decodeState(m){
  if(!m||m.t!=='s'||!Number.isFinite(m.x)||!Number.isFinite(m.y)||!Number.isFinite(m.h))return null;
  return {id:m.id,seq:m.q,zone:ZONE_NAME[m.z]??'route',x:m.x,z:m.y,heading:m.h,speed:Number.isFinite(m.v)?m.v:0,flags:m.f|0};
 }
-// flags 비트: 1 앉음, 2 달리는 중, 4 순간이동(구간 이동·같이 셀카 자리 옮김 — 서버가 순간이동 거부에서 1초에 한 번 봐준다)
-export const FLAG={sit:1,run:2,jump:4};
+// flags 비트: 1 앉음, 2 달리는 중, 4 순간이동(구간 이동·같이 셀카 자리 옮김 — 서버가 순간이동 거부에서 1초에 한 번 봐준다), 8 자동 걷기 중(동행 속도 맞추기에 씀)
+export const FLAG={sit:1,run:2,jump:4,auto:8};
 // 압축 전송 크기(바이트) 추정. 서버 비용 계산에 쓴다: seq u16, zone·flags u8, x·z float32, heading u16, speed u8.
 export const BINARY_STATE_BYTES=2+1+1+4+4+2+1;
 const wrap=a=>Math.atan2(Math.sin(a),Math.cos(a));
@@ -189,7 +189,7 @@ export function parseExperience(raw){
 // 공통 = 이름 묻기 j·신고·나가기 b·채팅 c. 등산은 위치·인사·동물·같이 셀카, 흡연장은 위치 s·담배 상태 lounge:smoke(docs/멀티-서버-운영안내.md §3-1).
 const COMMON_MESSAGES=['j','report','b','c'];
 export const EXPERIENCE_MESSAGES=Object.freeze({
- hiking:Object.freeze([...COMMON_MESSAGES,'s','g','a','sr','sa','sd','se']),
+ hiking:Object.freeze([...COMMON_MESSAGES,'s','g','a','sr','sa','sd','se','pair:offer','pair:accept','pair:decline','pair:cancel','pair:end']),
  smoking:Object.freeze([...COMMON_MESSAGES,'s','lounge:smoke'])
 });
 export const messageAllowed=(exp,type)=>EXPERIENCE_MESSAGES[exp]?.includes(type)??false;
@@ -220,4 +220,128 @@ export function createModeration({storage=null,key='gwanak-multi-moderation'}={}
   report({id,name,reason},at=0){if(!REPORT_REASONS.includes(reason))return false;data.reports.push({id,name,reason,at});save();this.block(id,name);return true;},
   get data(){return JSON.parse(JSON.stringify(data));}
  };
+}
+// ── 같이 등산하기(동행, 2026-11-08 기획서 A). 등산만 받는다(흡연장은 EXPERIENCE_MESSAGES에 없음). 쌍 상태와 제한 시간은 서버가 지킨다(server/rooms.mjs), 디스크에는 쓰지 않는다.
+// 보냄(클라이언트 → 서버, 같은 방 안의 to에게만): pair:offer{to} · pair:accept{to} · pair:decline{to} · pair:cancel{to} · pair:end
+// 받음(서버 → 클라이언트, id = 상대): pair:offer{id,ms}(제안 받음) · pair:sent{id,ms}(제안 보냄) · pair:no{id,reason,wait?}(제안 못 함)
+//  · pair:declined{id,reason:'decline'|'timeout'|'left'} · pair:canceled{id,reason:'cancel'|'timeout'|'left'} · pair:on{id}(동행 시작·다시 이어짐)
+//  · pair:wait{id}(상대가 끊김, 60초 기다림) · pair:off{id,reason:'end'|'left'|'gone'|'moved'|'hidden'}
+// 서버 없는 내 컴퓨터 모드(BroadcastChannel)는 같은 이름의 메시지를 상대 창에 직접 보내고, createPairClient가 서버 몫(바쁨 거절·시간 끝)을 대신 한다.
+export const PAIR=Object.freeze({
+ offerMs:30000,        // 제안 유효 시간(답이 없으면 저절로 거절)
+ declineBlockMs:60000, // 거절(시간 끝 포함)당한 같은 사람에게 다시 제안 못 하는 시간
+ offerGapMs:10000,     // 제안은 10초에 한 번
+ graceMs:60000,        // 끊긴 뒤 기다리는 시간(resume으로 다시 붙으면 이어짐)
+ near:8,               // 이 거리 안이면 나란히 모드(m)
+ gap:1.0,              // 좌우 간격(m, 길 중심선에서 ±0.5)
+ narrow:1.6,           // 길 폭이 이보다 좁으면 앞뒤 한 줄
+ fileGap:1.5,          // 앞뒤 간격(m)
+ push:.8,              // 두 몸 중심이 이보다 가까우면 밀어냄(동동이 반지름 0.35 ×2 + 여유)
+ radius:.35,
+ autoLead:8,           // 자동 걷기에서 이만큼 앞서면 천천히
+ autoWait:15           // 이만큼 앞서면 '○○님 기다리는 중'
+});
+export const PAIR_SEND=Object.freeze(['pair:offer','pair:accept','pair:decline','pair:cancel','pair:end']);
+// 화면 문구(산디자인이 다듬을 수 있게 한곳에). name = 상대 이름
+export const PAIR_TEXT=Object.freeze({
+ offer:n=>`${n}님이 같이 등산하자고 해요`,
+ waiting:n=>`${n}님에게 제안했어요 · 기다리는 중…`,
+ paired:n=>`${n}님과 동행 중`,
+ declined:n=>`${n}님이 지금은 어렵대요`,
+ timeout:n=>`${n}님이 답이 없어요`,
+ left:n=>`${n}님이 나갔어요`,
+ canceled:n=>`${n}님이 제안을 거뒀어요`,
+ on:n=>`${n}님과 같이 걸어요 🤝`,
+ off:n=>`${n}님과의 동행을 마쳤어요`,
+ offPeer:n=>`${n}님이 동행을 마쳤어요`,
+ gone:n=>`${n}님 연결이 끊겨 동행을 마쳤어요`,
+ wait:n=>`${n}님 연결을 기다리는 중…`,
+ back:n=>`${n}님이 다시 이어졌어요`,
+ lag:n=>`${n}님 기다리는 중`,
+ no:Object.freeze({busy:'지금은 다른 분과 함께예요',blocked:'조금 뒤에 다시 제안할 수 있어요',gap:'제안은 10초에 한 번만 보낼 수 있어요',hidden:'지금은 제안할 수 없어요',
+  gone:'그분이 보이지 않아요','self-busy':'이미 동행 중이에요',pending:'먼저 받은 제안에 답해 주세요',expired:'제안 시간이 지났어요',offline:'연결이 끊겨서 지금은 제안할 수 없어요'})
+});
+// 동행 상태기계(클라이언트 한 사람 몫). 서버 메시지를 따라가며 화면에 보일 상태를 갖고, 서버보다 먼저 막을 수 있는 것(10초·60초·숨김·바쁨)은 바로 막는다.
+// local:true(내 컴퓨터 모드)면 서버 몫도 한다: 바쁠 때 받은 제안은 pair:no busy로 돌려주고, 30초 시간 끝·상대 사라짐을 스스로 처리한다.
+// ctx: {me()->내 id, send(msg), local, blocked(id)->차단(받은 제안을 조용히 거절)}. 시간은 ms(서버와 같은 단위).
+// 반환 이벤트(handle·tick·명령이 돌려주는 배열): {code:'offer'|'sent'|'no'|'declined'|'canceled'|'on'|'off'|'wait'|'back', id, reason?}
+export function createPairClient({me,send,local=false,blocked=()=>false}){
+ const st={phase:'idle',partner:null,offer:null,away:false,lastOfferAt:-Infinity,blocks:new Map()};
+ const idle=()=>{st.phase='idle';st.offer=null;st.partner=null;st.away=false;};
+ const sendTo=(t,to)=>send(local?{t,id:me(),to}:{t,to});
+ function offer(to,now,{hidden=false,online=true}={}){
+  const no=reason=>({ok:false,reason,events:[{code:'no',id:to,reason}]});
+  if(!online)return no('offline');
+  if(hidden)return no('hidden');
+  if(!to||to===me())return no('gone');
+  if(st.phase==='paired')return no('self-busy');
+  if(st.phase!=='idle')return no('pending');
+  if(now<(st.blocks.get(to)??-Infinity))return no('blocked');
+  if(now-st.lastOfferAt<PAIR.offerGapMs)return no('gap');
+  st.lastOfferAt=now;st.phase='outgoing';st.offer={id:to,dir:'out',until:now+PAIR.offerMs};sendTo('pair:offer',to);
+  return {ok:true,events:[{code:'sent',id:to}]};
+ }
+ function accept(now){
+  if(st.phase!=='incoming')return [];
+  const from=st.offer.id;sendTo('pair:accept',from);
+  if(local){st.phase='paired';st.partner=from;st.offer=null;st.away=false;return [{code:'on',id:from}];}
+  st.offer.accepting=true;return [];
+ }
+ function decline(){if(st.phase!=='incoming')return [];const from=st.offer.id;sendTo('pair:decline',from);idle();return [];}
+ function cancel(){if(st.phase!=='outgoing')return [];const to=st.offer.id;sendTo('pair:cancel',to);idle();return [];}
+ function end(){if(st.phase!=='paired')return [];const p=st.partner;send(local?{t:'pair:end',id:me(),to:p}:{t:'pair:end'});idle();return [{code:'off',id:p,reason:'self'}];}
+ function block(id,now){st.blocks.set(id,now+PAIR.declineBlockMs);}
+ // 받은 메시지 하나. 내 메시지·남에게 간 메시지는 무시한다.
+ function handle(m,now){
+  if(!m||typeof m.t!=='string'||!m.t.startsWith('pair:'))return [];
+  const id=m.id;if(local&&(id===me()||(m.to&&m.to!==me())))return [];
+  const outTo=x=>st.phase==='outgoing'&&st.offer.id===x,inFrom=x=>st.phase==='incoming'&&st.offer.id===x;
+  switch(m.t){
+   case 'pair:offer':
+    if(local&&st.phase!=='idle'){send({t:'pair:no',id:me(),to:id,reason:'busy'});return [];}
+    if(blocked(id)){sendTo('pair:decline',id);return [];}
+    if(st.phase!=='idle')return [];
+    st.phase='incoming';st.offer={id,dir:'in',until:now+(Number.isFinite(m.ms)?m.ms:PAIR.offerMs)};return [{code:'offer',id}];
+   case 'pair:sent':if(outTo(id)&&Number.isFinite(m.ms))st.offer.until=now+m.ms;return [];
+   case 'pair:no':
+    if(outTo(id)){idle();return [{code:'no',id,reason:m.reason}];}
+    if(inFrom(id)&&m.reason==='expired'){idle();return [{code:'no',id,reason:'expired'}];}
+    return [];
+   case 'pair:declined':case 'pair:decline':
+    if(!outTo(id))return [];idle();block(id,now);return [{code:'declined',id,reason:m.reason??'decline'}];
+   case 'pair:canceled':case 'pair:cancel':
+    if(!inFrom(id))return [];idle();return [{code:'canceled',id,reason:m.reason??'cancel'}];
+   case 'pair:accept':
+    if(!local||!outTo(id))return [];st.phase='paired';st.partner=id;st.offer=null;st.away=false;return [{code:'on',id}];
+   case 'pair:on':{
+    const again=st.phase==='paired'&&st.partner===id;st.phase='paired';st.partner=id;st.offer=null;const wasAway=st.away;st.away=false;
+    return [{code:again?(wasAway?'back':'resume'):'on',id}];}
+   case 'pair:wait':if(st.phase==='paired'&&st.partner===id&&!st.away){st.away=true;return [{code:'wait',id}];}return [];
+   case 'pair:off':case 'pair:end':
+    if(st.phase!=='paired'||st.partner!==id)return [];idle();return [{code:'off',id,reason:m.reason??'end'}];
+  }
+  return [];
+ }
+ // 시간 정리. 서버 모드는 서버가 알려 주지만, 소식이 끊겨도 화면이 멈춰 있지 않게 5초 여유 뒤 스스로 푼다.
+ function tick(now){
+  if(st.phase==='outgoing'&&now>st.offer.until+(local?0:5000)){const id=st.offer.id;idle();block(id,now);return [{code:'declined',id,reason:'timeout'}];}
+  if(st.phase==='incoming'&&now>st.offer.until+(local?0:5000)){const id=st.offer.id;idle();return [{code:'canceled',id,reason:'timeout'}];}
+  if(local&&st.phase==='paired'&&st.away&&now>st.awayUntil){const id=st.partner;idle();return [{code:'off',id,reason:'gone'}];}
+  return [];
+ }
+ // 내 컴퓨터 모드에서 상대가 목록에서 사라짐: explicit(나가기 b)면 바로 끝, 아니면 60초 기다림. 다시 보이면 이어짐.
+ function peerGone(id,now,{explicit=false}={}){
+  const ev=[];
+  if((st.phase==='outgoing'||st.phase==='incoming')&&st.offer.id===id){const dir=st.phase;idle();ev.push(dir==='outgoing'?{code:'declined',id,reason:'left'}:{code:'canceled',id,reason:'left'});}
+  if(st.phase==='paired'&&st.partner===id){
+   if(explicit){idle();ev.push({code:'off',id,reason:'left'});}
+   else if(local&&!st.away){st.away=true;st.awayUntil=now+PAIR.graceMs;ev.push({code:'wait',id});}
+  }
+  return ev;
+ }
+ function peerSeen(id){if(local&&st.phase==='paired'&&st.partner===id&&st.away){st.away=false;return [{code:'back',id}];}return [];}
+ // 연결이 새로 열림(서버가 쌍을 기억하면 pair:on을 다시 보낸다). 제안 중이던 것은 서버에서 이미 지워졌으므로 푼다.
+ function reset(){const ev=[];if(st.phase==='outgoing'||st.phase==='incoming'){const {id,dir}=st.offer;idle();ev.push(dir==='out'?{code:'declined',id,reason:'left'}:{code:'canceled',id,reason:'left'});}return ev;}
+ return {state:st,offer,accept,decline,cancel,end,handle,tick,peerGone,peerSeen,reset,
+  view:()=>({phase:st.phase,partner:st.partner,away:st.away,offer:st.offer&&{id:st.offer.id,dir:st.offer.dir,until:st.offer.until},blockedUntil:Object.fromEntries(st.blocks),lastOfferAt:st.lastOfferAt})};
 }

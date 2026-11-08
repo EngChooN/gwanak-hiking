@@ -55,3 +55,10 @@ test('시가는 연기 양 2.0(꿀모금), 내 담배 연기는 상한을 넘지
  for(let i=0;i<4;i++){run(sm,3.5);sm.drawStart();run(sm,1.5);sm.drawEnd();}
  const st=sm.status();assert.ok(st.smoke<=st.smokeCap,`${st.smoke}/${st.smokeCap}`);assert.equal(st.kind,'cigar');
 });
+test('한 대 길이: 꿀모금(1.4초)으로 피워도 8모금 넘게, 짧게 빨면 11모금 넘게 간다',()=>{
+ const count=hold=>{const {sm}=lit('mild');let n=0;
+  while(sm.state!=='finished'&&n<40){sm.drawStart();run(sm,hold);sm.drawEnd();run(sm,3.5);n++;}
+  return n;};
+ const sweet=count(1.4),tap=count(.1);
+ assert.ok(sweet>=8,`꿀모금 ${sweet}모금`);assert.ok(tap>=11,`짧게 ${tap}모금`);
+});

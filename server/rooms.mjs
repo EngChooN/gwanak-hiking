@@ -9,7 +9,10 @@
 // IP는 받지 않는다. 서버가 메모리에서만 만든 열쇠(ipKey, 프로세스마다 바뀌는 비밀로 만든 해시)만 받아 접속 수 제한·숨김 유지에 쓴다.
 // 서버 목록(11-08 서버 고르기): SERVERS 표에 있는 방(관악산-1 → hiking:관악산, 옥상-1 → smoking:옥상)은 꽉 차면 -2로 넘기지 않고 'full'로 거절한다.
 //  신고로 숨겨진 사람도 서버 방에서는 다른 방으로 옮기지 않고 이름만 숨긴다(넘길 서버가 없음). 다른 방 이름은 기존 규칙 그대로.
-import {sanitizeName,anonymousName,REPORT_REASONS,GESTURES,FLAG,parseExperience,messageAllowed,CHAT,sanitizeChat,createChatLimiter,sanitizeSmoke,SERVERS,EXPERIENCES,findServer,serverRoomName} from '../src/multi-protocol.js';
+// 같이 등산하기(11-08 동행, 등산만): 쌍 상태를 메모리에만 둔다. 한 사람은 제안 하나(보냄·받음) 또는 쌍 하나만, 제안 30초 만료(=저절로 거절),
+//  거절·만료 뒤 같은 사람에게 60초 재제안 금지, 제안은 10초에 1번, 숨김 상태는 제안 불가, 끊기면(소켓) 60초 유예 → resume으로 같은 ID가 돌아오면 이어 붙임,
+//  나가기(b)·다른 방 이동·숨김은 바로 끝. 규격은 src/multi-protocol.js PAIR·createPairClient 위 주석.
+import {sanitizeName,anonymousName,REPORT_REASONS,GESTURES,FLAG,parseExperience,messageAllowed,CHAT,sanitizeChat,createChatLimiter,sanitizeSmoke,SERVERS,EXPERIENCES,findServer,serverRoomName,PAIR} from '../src/multi-protocol.js';
 
 export const ROOM_DEFAULTS=Object.freeze({
  maxPerRoom:20,           // 한 방 최대 인원
@@ -28,7 +31,8 @@ export const ROOM_DEFAULTS=Object.freeze({
  animalDedupMs:30000,     // 같은 동물 놀람은 방마다 한 번(먼저 온 것)
  namesEvery:30,           // 스냅샷 30번(3초)마다 이름 목록도 싣는다
  banned:[],               // 이름 금칙어(운영 결정, 환경 변수 BANNED_WORDS)
- chatBanned:[]            // 채팅 금칙어(BANNED_CHAT_WORDS + server/chat-banned-words.txt). 맞으면 ***로 가림
+ chatBanned:[],           // 채팅 금칙어(BANNED_CHAT_WORDS + server/chat-banned-words.txt). 맞으면 ***로 가림
+ pairOfferMs:PAIR.offerMs,pairBlockMs:PAIR.declineBlockMs,pairGapMs:PAIR.offerGapMs,pairGraceMs:PAIR.graceMs // 동행 제한 시간(시험에서 줄일 수 있음)
 });
 export const ANIMAL_KINDS=Object.freeze(['squirrel','cat','magpie','hare']);
 const RELAY_TO=new Set(['sr','sa','sd','se']);
@@ -56,13 +60,16 @@ export function pruneReports(lines,now,days=90){
 export function createRooms(opts={}){
  const o={...ROOM_DEFAULTS,...opts},now=opts.now??(()=>Date.now()),idGen=opts.idGen??(()=>Math.random().toString(36).slice(2,10)),tokenGen=opts.tokenGen??(()=>Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2));
  const reports=opts.reports??{append(){}},servers=opts.servers??SERVERS;
+ const o_=o; // 동행 도우미 안에서 제안 객체 이름(o)과 겹치지 않게 쓰는 옵션 별칭
  const rooms=new Map();            // 방 키(체험:방이름) → {key, name, experience, members:Map(id→client), tick, animals:Map(id→at)}
  const clients=new Map();          // id → client
  const ghosts=new Map();           // resume 토큰 → {id, experience, room(방 이름), hiddenUntil, avoid, at}
  const hiddenByIp=new Map();       // ipKey → until (메모리만)
  const reportLog=[...(opts.initialReports??[])];
- const stats={joined:0,chats:0,chatLimited:0,smokes:0,badExperience:0,wrongExperience:0,full:0,stateAccepted:0,rateDropped:0,teleportRejected:0,resynced:0,jumps:0,relayed:0,animals:0,animalDup:0,reports:0,hidden:0,invalid:0,snapshots:0};
+ const stats={pairOffers:0,pairDenied:0,pairs:0,pairEnds:0,joined:0,chats:0,chatLimited:0,smokes:0,badExperience:0,wrongExperience:0,full:0,stateAccepted:0,rateDropped:0,teleportRejected:0,resynced:0,jumps:0,relayed:0,animals:0,animalDup:0,reports:0,hidden:0,invalid:0,snapshots:0};
 
+ // 동행: pairs id→상대 id(양쪽), offers id→제안(보낸 쪽·받는 쪽 둘 다 같은 객체), declines '보낸>받은'→재제안 가능 시각, lastOffer id→마지막 제안 시각, away id→유예 끝 시각
+ const pairs=new Map(),offers=new Map(),declines=new Map(),lastOffer=new Map(),away=new Map();
  const roomOf=(experience,name)=>{const key=roomKey(experience,name);let r=rooms.get(key);if(!r){r={key,name,experience,members:new Map(),tick:0,animals:new Map()};rooms.set(key,r);}return r;};
  const sizeOf=(experience,name)=>rooms.get(roomKey(experience,name))?.members.size??0;
  const send=(c,obj)=>{try{c.send(typeof obj==='string'?obj:JSON.stringify(obj));}catch{}};
@@ -84,6 +91,67 @@ export function createRooms(opts={}){
  const countIp=k=>{let n=0;for(const c of clients.values())if(c.ipKey===k)n++;return n;};
  const bucket=(arr,t,limit)=>{while(arr.length&&t-arr[0]>=1000)arr.shift();if(arr.length>=limit)return false;arr.push(t);return true;};
 
+ // ── 동행 도우미
+ const sendId=(id,obj)=>{const c=clients.get(id);if(c)send(c,obj);};
+ function dropOffer(o,{toFrom=null,toTo=null}={}){
+  if(offers.get(o.from)===o)offers.delete(o.from);if(offers.get(o.to)===o)offers.delete(o.to);
+  if(toFrom)sendId(o.from,{t:'pair:declined',id:o.to,...toFrom});if(toTo)sendId(o.to,{t:'pair:canceled',id:o.from,...toTo});
+ }
+ function unpair(id,reason){
+  const p=pairs.get(id);if(p===undefined)return false;
+  pairs.delete(id);pairs.delete(p);away.delete(id);away.delete(p);stats.pairEnds++;
+  sendId(id,{t:'pair:off',id:p,reason});sendId(p,{t:'pair:off',id,reason});return true;
+ }
+ // 사람이 빠질 때(keep=소켓 끊김, resume 기다림): 제안은 바로 지우고, 쌍은 유예 또는 바로 끝.
+ function pairLeave(c,keep,t){
+  const o=offers.get(c.id);if(o)dropOffer(o,o.from===c.id?{toTo:{reason:'left'}}:{toFrom:{reason:'left'}});
+  if(!pairs.has(c.id))return;
+  if(keep){away.set(c.id,t+o_.pairGraceMs);sendId(pairs.get(c.id),{t:'pair:wait',id:c.id});}
+  else unpair(c.id,'left');
+ }
+ // 다시 붙음: 쌍이 남아 있으면 상대가 있을 때 둘 다 pair:on, 상대도 끊겨 있으면 pair:wait.
+ function pairResume(c){
+  if(!pairs.has(c.id))return;
+  away.delete(c.id);const p=clients.get(pairs.get(c.id));
+  if(p&&p.room===c.room&&!away.has(p.id)){send(c,{t:'pair:on',id:p.id});send(p,{t:'pair:on',id:c.id});}
+  else if(p&&p.room!==c.room)unpair(c.id,'moved');
+  else send(c,{t:'pair:wait',id:pairs.get(c.id)});
+ }
+ function pairMessage(c,m,t,room){
+  const to=typeof m.to==='string'?m.to:'',no=(reason,extra={})=>{stats.pairDenied++;send(c,{t:'pair:no',id:to,reason,...extra});};
+  switch(m.t){
+   case 'pair:offer':{
+    const target=room.members.get(to);
+    if(!target||target===c)return no('gone');
+    if(c.hidden())return no('hidden');
+    if(pairs.has(c.id))return no('self-busy');
+    if(offers.has(c.id))return no('pending');
+    if(pairs.has(target.id)||offers.has(target.id))return no('busy');
+    const blk=declines.get(`${c.id}>${target.id}`);if(blk!==undefined&&t<blk)return no('blocked',{wait:Math.ceil((blk-t)/1000)});
+    const last=lastOffer.get(c.id)??-Infinity;if(t-last<o_.pairGapMs)return no('gap',{wait:Math.ceil((last+o_.pairGapMs-t)/1000)});
+    lastOffer.set(c.id,t);const o={from:c.id,to:target.id,at:t,until:t+o_.pairOfferMs};offers.set(c.id,o);offers.set(target.id,o);stats.pairOffers++;
+    send(target,{t:'pair:offer',id:c.id,ms:o_.pairOfferMs});send(c,{t:'pair:sent',id:target.id,ms:o_.pairOfferMs});return;}
+   case 'pair:accept':{
+    const o=offers.get(c.id),from=o&&clients.get(o.from);
+    if(!o||o.to!==c.id||o.from!==to||!from||from.room!==room)return no('expired');
+    dropOffer(o);pairs.set(c.id,from.id);pairs.set(from.id,c.id);stats.pairs++;
+    send(c,{t:'pair:on',id:from.id});send(from,{t:'pair:on',id:c.id});return;}
+   case 'pair:decline':{
+    const o=offers.get(c.id);if(!o||o.to!==c.id||o.from!==to)return;
+    declines.set(`${o.from}>${o.to}`,t+o_.pairBlockMs);dropOffer(o,{toFrom:{reason:'decline'}});return;}
+   case 'pair:cancel':{
+    const o=offers.get(c.id);if(!o||o.from!==c.id||o.to!==to)return;
+    dropOffer(o,{toTo:{reason:'cancel'}});return;}
+   case 'pair:end':unpair(c.id,'end');return;
+  }
+ }
+ // 시간 정리(tick에서): 30초 지난 제안은 저절로 거절(재제안 금지도 같이), 유예가 끝난 쌍은 해제. 오래된 금지 기록도 지운다.
+ function pairTick(t){
+  for(const o of new Set(offers.values()))if(t>=o.until){declines.set(`${o.from}>${o.to}`,t+o_.pairBlockMs);dropOffer(o,{toFrom:{reason:'timeout'},toTo:{reason:'timeout'}});}
+  for(const [id,until] of away)if(t>=until)unpair(id,'gone');
+  for(const [k,until] of declines)if(t>=until)declines.delete(k);
+  for(const [id,at] of lastOffer)if(t-at>=o_.pairGapMs)lastOffer.delete(id);
+ }
  // 접속: {experience,room,name,resume,ipKey,send} → {ok:true,client} | {ok:false,reason:'full'|'ip'|'experience'}
  // experience가 없으면(옛 클라이언트) 'hiking', 허용 목록 밖이면 'experience'로 거절.
  function join({experience,room,name,resume=null,ipKey='',send:out}){
@@ -108,12 +176,14 @@ export function createRooms(opts={}){
   clients.set(id,c);stats.joined++;
   send(c,{t:'welcome',id,exp,room:target,name:c.name,resume:token,max:o.maxPerRoom,count:sizeOf(exp,target)+1,...(srv?{server:srv.id}:{}),...(c.hidden()?{h:1}:{})});
   enter(c,target);
+  if(ghost&&id===ghost.id)pairResume(c);
   return {ok:true,client:c};
  }
  function leave(c,{keep=true}={}){
   if(!clients.has(c.id))return;
   clients.delete(c.id);
   if(keep&&c.room)ghosts.set(c.token,{id:c.id,experience:c.experience,room:c.room.name,hiddenUntil:c.hiddenUntil,avoid:c.avoid,at:now()});
+  pairLeave(c,keep&&!!c.room,now());
   exit(c);
  }
  // 위치 메시지 검사: 모양·속도 제한·순간이동. 받으면 true.
@@ -138,6 +208,7 @@ export function createRooms(opts={}){
   const from=new Set(reportLog.filter(r=>r.target===target.id&&t-r.at<=o.reportWindowMs).map(r=>r.reporter));
   if(from.size<o.reportThreshold||target.hidden())return false;
   target.hiddenUntil=t+o.hideMs;if(target.ipKey)hiddenByIp.set(target.ipKey,target.hiddenUntil);stats.hidden++;
+  {const of=offers.get(target.id);if(of)dropOffer(of,of.from===target.id?{toTo:{reason:'left'}}:{toFrom:{reason:'left'}});unpair(target.id,'hidden');}
   const old=target.room,next=target.server?null:pickRoom(target.experience,roomBase(old.name),{avoid:old.name});
   target.avoid=old.name;
   if(next){exit(target);send(target,{t:'moved',room:next,h:1});enter(target,next);}
@@ -177,6 +248,7 @@ export function createRooms(opts={}){
     send(c,{t:'report-ok',to:target.id});
     maybeHide(target,t);return;}
    case 'b':leave(c,{keep:false});return;
+   case 'pair:offer':case 'pair:accept':case 'pair:decline':case 'pair:cancel':case 'pair:end':pairMessage(c,m,t,room);return;
    default:
     if(RELAY_TO.has(m.t)){const to=room.members.get(m.to);if(to&&to!==c){stats.relayed++;send(to,{t:m.t,id:c.id,to:to.id});}return;}
     stats.invalid++;
@@ -184,6 +256,7 @@ export function createRooms(opts={}){
  }
  // 10Hz: 방마다 바뀐 위치를 하나로 묶어 모든 사람에게(JSON 한 번만 만든다). 3초마다 이름 목록도.
  function tick(){
+  pairTick(now());
   for(const room of rooms.values()){
    room.tick++;const p=[];for(const m of room.members.values())if(m.dirty){p.push(m.state);m.dirty=false;}
    const names=room.tick%o.namesEvery===0?[...room.members.values()].map(nameRow):null;
@@ -194,8 +267,9 @@ export function createRooms(opts={}){
  }
  // 오래된 신고 기록을 메모리에서도 뺀다(파일 정리는 서버가 시작할 때)
  function prune(days=90){const cut=now()-days*86400e3;for(let i=reportLog.length-1;i>=0;i--)if(reportLog[i].at<cut)reportLog.splice(i,1);for(const [k,u] of hiddenByIp)if(u<now())hiddenByIp.delete(k);}
- const info=()=>({clients:clients.size,rooms:[...rooms.values()].map(r=>({key:r.key,experience:r.experience,name:r.name,count:r.members.size})),ghosts:ghosts.size,stats:{...stats}});
+ const info=()=>({pairs:pairs.size/2,offers:new Set(offers.values()).size,clients:clients.size,rooms:[...rooms.values()].map(r=>({key:r.key,experience:r.experience,name:r.name,count:r.members.size})),ghosts:ghosts.size,stats:{...stats}});
  // 서버 고르기 창용 인원: {hiking:[{id,name,count,max}],smoking:[…]} (SERVERS 표 순서)
  const serverCounts=()=>Object.fromEntries(EXPERIENCES.map(x=>[x,(servers[x]??[]).map(s=>({id:s.id,name:s.name,count:sizeOf(x,serverRoomName(s.room)),max:o.maxPerRoom}))]));
- return {join,leave,message,tick,prune,info,serverCounts,stats,rooms,clients,get reportLog(){return reportLog;},options:o};
+ const pairOf=id=>pairs.get(id)??null;
+ return {join,leave,message,tick,prune,info,serverCounts,pairOf,stats,rooms,clients,get reportLog(){return reportLog;},options:o};
 }

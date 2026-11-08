@@ -2,8 +2,10 @@
 // main.js와는 window 이벤트로만 만난다. 버튼 id와 단축키는 그대로이고, 이 모듈은 배치·상태 표시만 맡는다.
 //  - 읽기: 'hiking:state'(자세·자동 걷기·기구·스테미너), 'hiking:environment'(해 높이 → 낮·노을·밤),
 //          'hiking:interact-view'(상호작용 줄, interaction-ui.js), 'hiking:action-view'(행동 진행)
-//  - 쓰기: 'hiking:command'(interact·choice-2·choice-3·sit·auto·stretch·labels-toggle·card-open), 'hiking:quality'
+//  - 쓰기: 'hiking:command'(interact·choice-2·choice-3·sit·auto·stretch·labels-toggle·card-open), 'hiking:quality', 'hiking:feedback-open'(💌 의견 보내기)
 import {staminaView} from './hud.js';
+import {installFeedback} from './feedback.js';
+import {DONATE_URL} from './donate.js';
 import {checkpoints} from './route.js';
 import {GATE_S} from './plaza.js';
 import {COURSE_LENGTH} from './movement.js';
@@ -98,6 +100,24 @@ export function installNotebookHud(doc=document,win=window){
   if(!t.hasAttribute('aria-expanded')){setSheet(null);return;}
   setSheet(openSheet===t.dataset.tab?null:t.dataset.tab);t.blur();
  });
+ // 설정 시트에 「💌 의견 보내기」 줄(공용 src/feedback.js 카드를 'hiking:feedback-open' 이벤트로 연다)
+ const fbSlot=$('#nb-sheet-settings .nb-grid');
+ if(fbSlot&&!fbSlot.querySelector('[data-act=feedback]')){
+  const fb=doc.createElement('button');fb.type='button';fb.className='nb-it';fb.dataset.act='feedback';
+  fb.innerHTML='<em aria-hidden="true">💌</em><span>의견 보내기</span><small>고장·바라는 점</small>';
+  fbSlot.insertBefore(fb,fbSlot.querySelector('[data-dev-slot]'));
+ }
+ // 그 옆에 「💗 후원하기」 링크(새 탭). <a>라 아래 시트 click 처리(button만 봄)를 타지 않는다
+ if(fbSlot&&!fbSlot.querySelector('[data-act=donate]')){
+  const dn=doc.createElement('a');dn.className='nb-it';dn.dataset.act='donate';dn.href=DONATE_URL;dn.target='_blank';dn.rel='noopener noreferrer';dn.style.textDecoration='none';
+  dn.innerHTML='<em aria-hidden="true">💗</em><span>후원하기</span><small>새 탭에서 열려요</small>';
+  fbSlot.insertBefore(dn,fbSlot.querySelector('[data-dev-slot]'));
+ }
+ let envView={};
+ win.addEventListener('hiking:environment',e=>{const d=e.detail||{};envView={time:d.timeLabel,day:timeOfDay(d.sunElevation),weather:d.weatherLabel};});
+ const DAY_KO={day:'낮',dusk:'노을',night:'밤'};
+ installFeedback({exp:'hiking',openEvent:'hiking:feedback-open',doc,win,
+  state:()=>({시간대:envView.day?`${DAY_KO[envView.day]}${envView.time?` · ${envView.time}`:''}`:'',날씨:envView.weather||''})});
  sheets.addEventListener('click',e=>{
   if(e.target.closest('[data-sheet-close]')){setSheet(null);return;}
   const b=e.target.closest('button');if(!b)return;
@@ -106,6 +126,7 @@ export function installNotebookHud(doc=document,win=window){
   else if(b.dataset.act==='multi'){body.classList.toggle('nb-multi-open');}
   else if(b.dataset.act==='city-labels'){win.dispatchEvent(new CustomEvent('hiking:city-labels'));b.blur();}
   else if(b.dataset.quality){win.dispatchEvent(new CustomEvent('hiking:quality',{detail:{mode:b.dataset.quality}}));b.blur();}
+  else if(b.dataset.act==='feedback'){setSheet(null);b.blur();win.dispatchEvent(new CustomEvent('hiking:feedback-open'));return;}
   // 다른 화면을 여는 항목은 시트를 접는다.
   if(b.id==='help-toggle'||b.id==='hud-hide'||b.dataset.proxy==='lock'||b.dataset.cmd==='stretch'&&openSheet==='rest')setSheet(null);
   else syncSheets();

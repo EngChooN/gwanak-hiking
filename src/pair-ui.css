@@ -1,0 +1,68 @@
+/* 같이 등산하기 HUD(👥 버튼·목록·고르기 카드·제안 카드·동행 칩·알림). 색은 hud-notebook.css 수첩 토큰(낮·노을·밤). 산디자인이 다듬을 자리. */
+.pw-btn{position:fixed;z-index:45;left:calc(50% + 172px);top:calc(env(safe-area-inset-top,0px) + var(--top,20px));display:grid;place-items:center;width:44px;height:44px;padding:0;border:0;border-radius:50%;background:var(--paper2,#f4e7c8);color:var(--ink,#4a3618);box-shadow:var(--lift,1px 2px 0 #b49563),var(--soft,0 4px 12px rgba(52,34,8,.25));font-size:19px;cursor:pointer}
+.pw-btn.on{background:var(--paper,#fbf3df);box-shadow:var(--lift,1px 2px 0 #b49563),var(--soft,0 4px 12px rgba(52,34,8,.25)),inset 0 0 0 2px var(--accent,#b9472f)}
+.pw-count{position:absolute;right:-3px;top:-3px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border-radius:9px;background:var(--ink,#4a3618);color:var(--paper,#fbf3df);font:900 11px/18px var(--nb-font,system-ui);text-align:center}
+.pw-btn[hidden],.pw-sheet[hidden],.pw-pick[hidden],.pw-offer[hidden],.pw-chip[hidden],.pw-count[hidden]{display:none}
+/* 종이 카드 공통: 왼쪽 철끈 자리(점선)와 수첩 그림자 */
+.pw-sheet,.pw-pick,.pw-offer,.pw-chip{position:fixed;z-index:46;box-sizing:border-box;background:var(--paper,#fbf3df);color:var(--ink,#4a3618);font:700 14px/1.4 var(--nb-font,system-ui);box-shadow:var(--lift,1px 2px 0 #b49563),var(--soft,0 4px 12px rgba(52,34,8,.25));background-image:linear-gradient(90deg,transparent 13px,var(--rule,#d9c79d) 13px,var(--rule,#d9c79d) 14.5px,transparent 14.5px)}
+.pw-row{display:flex;gap:8px}
+.pw-row button,.pw-go,.pw-chip-act,.pw-x{min-height:44px;border:0;border-radius:9px;font:900 14px var(--nb-font,system-ui);cursor:pointer}
+.pw-row button:disabled,.pw-go:disabled{opacity:.5;cursor:default}
+/* 목록 시트: 오른쪽 위(PC·가로), 세로 휴대폰은 아래에 가득 */
+.pw-sheet{right:calc(env(safe-area-inset-right,0px) + 16px);top:calc(env(safe-area-inset-top,0px) + var(--top,20px) + 56px);width:320px;max-height:calc(100dvh - env(safe-area-inset-top,0px) - var(--ui-bottom,0px) - 110px);display:flex;flex-direction:column;gap:6px;padding:10px 12px 12px 24px;border-radius:4px 14px 14px 4px}
+.pw-sheet h4{display:flex;justify-content:space-between;align-items:center;margin:0;font-size:15px;font-weight:900}
+.pw-x{display:grid;place-items:center;width:44px;margin:-6px -6px -6px 0;border-radius:50%;background:var(--paper2,#f4e7c8);color:var(--ink,#4a3618);box-shadow:1px 2px 0 var(--edge,#b49563)}
+.pw-help{margin:0;font-size:12.5px;font-weight:700;color:var(--ink2,#7a5f3a)}
+.pw-list{list-style:none;margin:0;padding:0;overflow:auto;overscroll-behavior:contain}
+.pw-list li{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1.5px dashed var(--rule,#d9c79d)}
+.pw-list li:last-child{border-bottom:0}
+.pw-name{display:flex;flex-direction:column;min-width:0}.pw-name b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pw-name small{font-size:11.5px;color:var(--ink2,#7a5f3a)}
+.pw-go{flex:none;padding:0 12px;background:var(--stamp,#b9472f);color:#fff;box-shadow:1px 2px 0 var(--stamp-d,#7f2f20)}
+.pw-go:disabled{background:var(--paper2,#f4e7c8);color:var(--ink2,#7a5f3a);box-shadow:inset 0 0 0 1.5px var(--rule,#d9c79d)}
+.pw-empty{color:var(--ink2,#7a5f3a);justify-content:center!important}
+/* 고르기 카드·받은 제안 카드: 화면 아래 가운데(즐길거리 줄 위) */
+.pw-pick,.pw-offer{left:50%;bottom:calc(var(--ui-bottom,0px) + 96px);transform:translateX(-50%) rotate(-.6deg);width:min(360px,calc(100vw - 24px));padding:12px 14px 12px 26px;border-radius:4px 14px 14px 4px}
+.pw-pick p,.pw-offer p{margin:0 0 10px}
+.pw-pick small{color:var(--ink2,#7a5f3a)}
+.pw-yes,.pw-accept{flex:1;background:var(--stamp,#b9472f);color:#fff;border:2px dashed var(--stamp-dash,#fbe3d6)!important;box-shadow:0 3px 0 var(--stamp-d,#7f2f20)}
+.pw-accept{flex:1.3;font-size:15px}
+.pw-no,.pw-decline{flex:1;background:var(--paper2,#f4e7c8);color:var(--ink,#4a3618);box-shadow:1px 2px 0 var(--edge,#b49563)}
+.pw-decline small{font-weight:800;opacity:.7}
+.pw-offer{animation:pw-in .35s ease-out}
+.pw-offer-text{display:flex;gap:10px;align-items:center;font-size:15.5px}
+.pw-stamp{display:grid;place-items:center;flex:none;width:40px;height:40px;border-radius:50%;background:var(--paper2,#f4e7c8);box-shadow:inset 0 0 0 2px var(--accent,#b9472f);font-size:20px;transform:rotate(-8deg)}
+.pw-bar{height:5px;margin:0 0 10px;border-radius:3px;background:var(--paper2,#f4e7c8);overflow:hidden}
+.pw-bar{box-shadow:inset 0 0 0 1.5px var(--rule,#d9c79d)}
+.pw-bar i{display:block;height:100%;background:var(--mid,#d39a2e);transform-origin:left;transition:transform .25s linear}
+@keyframes pw-in{from{opacity:0;transform:translateX(-50%) translateY(14px) rotate(-.6deg)}to{opacity:1;transform:translateX(-50%) rotate(-.6deg)}}
+/* 위쪽 칩: 보낸 제안(기다리는 중)·동행 중 */
+.pw-chip{left:50%;top:calc(env(safe-area-inset-top,0px) + var(--top,20px) + 54px);transform:translateX(-50%);display:flex;align-items:center;gap:10px;max-width:calc(100vw - 24px);padding:5px 6px 5px 24px;border-radius:4px 24px 24px 4px}
+.pw-chip-text{display:flex;flex-direction:column;min-width:0}
+.pw-chip-text b{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pw-chip-text small{font-size:12px;font-weight:800;color:var(--ink2,#7a5f3a)}
+.pw-chip.lag .pw-chip-text small{color:var(--accent,#b9472f)}
+.pw-chip-act{flex:none;padding:0 14px;border-radius:22px;background:var(--paper2,#f4e7c8);color:var(--ink,#4a3618);box-shadow:1px 2px 0 var(--edge,#b49563)}
+/* 동행 중 = 도장 점선 테두리, 기다리는 중 = 점선 테두리가 천천히 깜빡 */
+.pw-chip[data-kind=pair]{border:2px dashed var(--stamp,#b9472f);padding-top:3px;padding-bottom:3px}
+.pw-chip:not([data-kind=pair]){border:2px dashed var(--rule,#d9c79d);animation:pw-wait 1.8s ease-in-out infinite}
+.pw-chip.lag .pw-chip-text small::before{content:'⏳ '}
+@keyframes pw-wait{50%{border-color:var(--mid,#d39a2e)}}
+.pw-chip[data-kind=pair]{box-shadow:var(--lift,1px 2px 0 #b49563),var(--soft,0 4px 12px rgba(52,34,8,.25)),inset 0 0 0 2px var(--accent,#b9472f)}
+/* 알림: 위쪽 칩 아래 */
+.pw-note{position:fixed;z-index:46;left:50%;top:calc(env(safe-area-inset-top,0px) + var(--top,20px) + 112px);transform:translate(-50%,-6px);max-width:calc(100vw - 24px);padding:9px 14px 9px 20px;border-radius:6px;background:var(--paper2,#f4e7c8);color:var(--ink,#4a3618);font:800 13.5px var(--nb-font,system-ui);box-shadow:var(--lift,1px 2px 0 #b49563),var(--soft,0 4px 12px rgba(52,34,8,.25));opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;text-align:center}
+.pw-note.on{opacity:1;transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){.pw-offer,.pw-chip{animation:none}.pw-note,.pw-bar i{transition:none}}
+/* 휴대폰 가로: 높이가 낮으니 칩·카드를 붙여 올린다 */
+@media (orientation:landscape) and (max-height:540px){
+ .pw-chip{left:auto;right:calc(env(safe-area-inset-right,0px) + 12px);transform:none;top:calc(env(safe-area-inset-top,0px) + 62px);max-width:min(340px,calc(100vw - 340px));padding:3px 4px 3px 22px}
+ .pw-chip-text small{display:none}
+ .pw-pick,.pw-offer{bottom:calc(var(--ui-bottom,0px) + 64px);padding:8px 12px 8px 24px}
+ .pw-pick p,.pw-offer p{margin-bottom:6px}
+ .pw-sheet{top:calc(env(safe-area-inset-top,0px) + 8px);max-height:calc(100dvh - env(safe-area-inset-top,0px) - 16px);width:300px}
+ .pw-note{left:auto;right:calc(env(safe-area-inset-right,0px) + 12px);transform:none;top:calc(env(safe-area-inset-top,0px) + 118px)}
+ .pw-note.on{transform:none}
+}
+@media (orientation:portrait){
+ .pw-sheet{left:calc(env(safe-area-inset-left,0px) + 8px);right:calc(env(safe-area-inset-right,0px) + 8px);top:auto;bottom:calc(var(--ui-bottom,0px) + 8px);width:auto;max-height:60dvh;border-radius:14px 14px 6px 6px}
+ .pw-btn{left:calc(50% + 80px)}
+}

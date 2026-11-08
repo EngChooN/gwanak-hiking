@@ -1,0 +1,79 @@
+/* 의견 보내기 카드 — 초안 (연디자인 → 연개발)
+   색·글꼴은 hud-notebook.css / lounge/hud.css 의 기존 토큰만 쓴다. 새 색·새 글꼴 없음.
+   쓰는 토큰: --paper --paper2 --tab --ink --ink2 --edge --rule --stamp --stamp-d --accent
+              --scrim --soft --lift --nb-font --sl --sr --st --sb
+   (--stamp-d 는 등산·흡연장 둘 다 정의됨. 밤 모드는 토큰이 알아서 바뀜.)
+   마크업 약속: .fb-modal > .fb-card (role=dialog aria-modal=true) */
+
+.fb-modal{position:fixed;inset:0;z-index:40;display:grid;place-items:center;background:var(--scrim);pointer-events:auto;
+ padding:calc(var(--st) + 12px) calc(var(--sr) + 12px) calc(var(--sb) + 12px) calc(var(--sl) + 12px);
+ overflow:auto;overscroll-behavior:contain;font-family:var(--nb-font);color:var(--ink)}
+.fb-card{position:relative;box-sizing:border-box;width:min(440px,100%);max-height:100%;overflow:auto;overscroll-behavior:contain;
+ padding:16px 16px 14px;background:var(--paper);border:2px solid var(--edge);border-radius:4px 14px 14px 4px;
+ box-shadow:var(--lift),var(--soft)}
+/* 빨간 도장 테두리: 카드 안쪽에 점선 한 줄 */
+.fb-card::before{content:"";position:absolute;inset:5px;border:2px dashed var(--stamp);border-radius:2px 10px 10px 2px;opacity:.55;pointer-events:none}
+.fb-card>*{position:relative}
+.fb-main{min-width:0} /* 종류 칩·내용 칸 묶음(가로에서는 왼쪽 칸) */
+
+.fb-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}
+.fb-title{margin:0;font-size:20px;font-weight:900;letter-spacing:-.02em;color:var(--ink)}
+.fb-seal{display:inline-block;border:2px solid var(--stamp);color:var(--stamp);border-radius:6px;padding:1px 6px;font-size:11px;font-weight:900;transform:rotate(-6deg);opacity:.85;white-space:nowrap}
+.fb-guide{margin:0 0 10px;font-size:12px;line-height:1.5;color:var(--ink2);word-break:keep-all}
+.fb-guide b{color:var(--ink)}
+
+/* 종류 칩 3개 */
+.fb-kinds{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 10px;padding:0;border:0}
+.fb-kind{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:56px;padding:6px 4px;
+ border-radius:10px;background:var(--paper2);color:var(--ink);border:0;box-shadow:1px 2px 0 var(--edge);
+ font:inherit;font-size:13px;font-weight:800;line-height:1.2;text-align:center;word-break:keep-all;touch-action:manipulation}
+.fb-kind i{font-style:normal;font-size:20px;line-height:1}
+.fb-kind small{font-size:11px;font-weight:600;color:var(--ink2)}
+.fb-kind[aria-pressed=true]{background:var(--stamp);color:#fff;box-shadow:0 2px 0 var(--stamp-d)}
+.fb-kind[aria-pressed=true] small{color:#fff}
+
+/* 내용 칸 — 글자 16px (iOS 확대 방지) */
+.fb-text{display:block;box-sizing:border-box;width:100%;min-height:96px;max-height:40dvh;resize:none;padding:10px 12px;
+ border-radius:10px;border:2px solid var(--edge);background:var(--paper2);color:var(--ink);font:inherit;font-size:16px;line-height:1.45}
+.fb-count{display:block;margin:2px 2px 8px;text-align:right;font-size:11px;font-weight:700;color:var(--ink2);font-variant-numeric:tabular-nums}
+.fb-count.over{color:var(--accent)}
+
+/* 붙는 정보 펼쳐 보기 */
+.fb-info{margin:0 0 10px;border-top:1px dashed var(--rule)}
+.fb-info summary{display:flex;align-items:center;gap:6px;min-height:44px;cursor:pointer;list-style:none;font-size:13px;font-weight:800;color:var(--ink2)}
+.fb-info summary::-webkit-details-marker{display:none}
+.fb-info summary::after{content:"▾";margin-left:auto;transition:transform .15s}
+.fb-info[open] summary::after{transform:rotate(180deg)}
+.fb-rows{margin:0 0 4px;padding:6px 10px;background:var(--paper2);border-radius:8px;font-size:12px;line-height:1.5}
+.fb-rows div{display:flex;gap:8px;padding:3px 0;border-top:1px dashed var(--rule)}
+.fb-rows div:first-child{border-top:0}
+.fb-rows dt{flex:0 0 5.5em;color:var(--ink2);font-weight:700}
+.fb-rows dd{margin:0;min-width:0;color:var(--ink);word-break:break-all}
+.fb-safe{margin:4px 0 0;font-size:11px;color:var(--ink2)}
+
+/* 단추 줄 */
+.fb-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.fb-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:48px;min-width:44px;padding:0 12px;border-radius:12px;
+ border:2px solid var(--edge);background:var(--paper2);color:var(--ink);box-shadow:var(--lift);font:inherit;font-size:14px;font-weight:800;
+ white-space:nowrap;touch-action:manipulation}
+.fb-btn:active{transform:translate(1px,2px);box-shadow:0 0 0 var(--edge)}
+.fb-btn.primary{grid-column:1/-1;background:var(--stamp);color:#fff;border-color:var(--stamp-d);box-shadow:2px 3px 0 var(--stamp-d)}
+.fb-btn[disabled]{opacity:.5}
+.fb-modal button:focus-visible,.fb-modal textarea:focus-visible,.fb-modal summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* 복사 실패 시: 글을 선택해 보여 주는 칸 */
+.fb-fallback{display:block;box-sizing:border-box;width:100%;height:96px;margin:0 0 8px;padding:8px 10px;border-radius:10px;border:2px dashed var(--stamp);background:var(--paper);color:var(--ink);font:inherit;font-size:16px}
+.fb-status{min-height:1.4em;margin:6px 0 0;text-align:center;font-size:12px;font-weight:800;color:var(--accent)}
+
+/* 휴대폰 가로: 낮은 화면에서는 왼쪽(종류·내용) / 오른쪽(정보·단추) 두 칸 */
+@media (orientation:landscape) and (max-height:520px){
+ .fb-card{width:min(760px,100%);display:grid;grid-template-columns:1fr 1fr;column-gap:16px;padding:12px 16px}
+ .fb-head,.fb-guide{grid-column:1/-1}
+ .fb-guide{margin-bottom:6px}
+ .fb-text{min-height:64px;max-height:30dvh}
+ .fb-side{display:flex;flex-direction:column;justify-content:space-between}
+ .fb-kind{min-height:48px}
+ .fb-kind i{font-size:17px}
+}
+@media (max-width:360px){.fb-kind small{display:none}}
+@media (prefers-reduced-motion:reduce){.fb-info summary::after,.fb-btn{transition:none}}

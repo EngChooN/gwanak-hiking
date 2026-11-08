@@ -22,8 +22,9 @@ const bump=(a,b,c,d,x)=>smooth(a,b,x)*(1-smooth(c,d,x)); // a~b 올라 c~d 내�
 
 // 동작 길이(초)
 export const SMOKE_SECONDS=Object.freeze({out:.9,lighting:2.3,inhale:1.5,exhale:1.8,flick:.8,dispose:1.1});
-export const PUFFS_PER_CIG=8;            // 한 대에 대략 몇 모금
-const PASSIVE_BURN=1/300;                // 불 붙여 두기만 해도 5분이면 다 탄다
+export const PUFFS_PER_CIG=12;           // 한 대에 대략 몇 모금(짧게 빨 때. 꿀모금·진한 모금은 조금 더 탄다)
+const PASSIVE_BURN=1/420;                // 불 붙여 두기만 해도 7분이면 다 탄다
+const DRAW_FULL=.75,DRAW_TAIL=.3;        // 한 모금에서 처음 0.75초만 제대로 타고, 그 뒤로 길게 빨면 30% 속도로만 더 탄다(꾹 누르기가 담배를 다 태우지 않게)
 const BUSY=new Set(['lighting','inhale','exhale','flick']); // 이 동작 중에 온 단추는 끝난 뒤에 한다
 const LIGHTER_UP=.05;                    // 라이터를 장갑 위로 내놓는 높이(장갑 반지름 0.056에 묻히지 않게)
 const BUTT_FLIGHT=.45;                  // 꽁초가 재떨이까지 날아가는 시간(초)
@@ -142,7 +143,7 @@ export function createSmoker(avatar,{toon,world,audio,isPlayer=true,profile=null
   const list=(typeof ashtrays==='function'?ashtrays():ashtrays)??globalThis.lounge?.rooftop?.spots?.ashtrays??[];
   let best=null,bd=1.6;for(const a of list){const d=Math.hypot(a.x-avatar.x,a.z-avatar.z);if(d<bd){bd=d;best=a;}}
   return best?(best.at??true):null;}
- const sound=(name,flag=name)=>{if(S.soundFlags[flag])return;S.soundFlags[flag]=true;audio?.play?.(name,isPlayer?{}:{at:root.position});};
+ const sound=(name,flag=name)=>{if(S.soundFlags[flag])return;S.soundFlags[flag]=true;audio?.play?.(name,isPlayer?{quality:S.quality}:{at:root.position,quality:S.quality});};
  const burn=amount=>{amount*=CIG_KINDS[S.kind].burn;const before=S.left;S.left=Math.max(0,S.left-amount);S.ash=Math.min(CIG.ashMax,S.ash+(before-S.left)*CIG.paper*.55);};
  // 내뿜기 시작: 누른 시간으로 맛을 정하고 이번 연기 양·뭉게 수·길이를 정한다
  function beginExhale(){
@@ -229,7 +230,7 @@ export function createSmoker(avatar,{toon,world,audio,isPlayer=true,profile=null
       S.held+=dt;toMouth=smooth(0,.45,t);inhaling=smooth(.35,.5,t);if(t>.35)sound('inhale');
       if(S.held>DRAW.cough){S.puffs++;go('exhale');sound('cough');break;}}
      else{toMouth=bump(0,.45,1.15,1.5,t);inhaling=bump(.4,.55,1.1,1.25,t);if(t>.4)sound('inhale');}
-     if(inhaling>0){burn(dt*(1/PUFFS_PER_CIG)*.85/.75);S.drew+=dt;}
+     if(inhaling>0){burn(dt*(1/PUFFS_PER_CIG)/DRAW_FULL*(S.drew<DRAW_FULL?1:DRAW_TAIL));S.drew+=dt;}
      S.draw=S.hold?drawLevel(S.held):drawLevel(S.drew);
      if(!S.hold&&t>=T.inhale){S.puffs++;go('exhale');}break;
     case 'exhale':{const L2=S.exLen;exhaling=bump(.05,.2,L2-.75,L2-.4,t);if(t>.05)sound(S.quality==='cough'?'cough':'exhale');
