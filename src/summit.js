@@ -20,8 +20,9 @@ export const SUMMIT_CENTER=(()=>{let best=sample(route.length),bs=route.length;f
 export const ROUTE_END=(()=>{const p=sample(route.length);return {x:p.x,z:p.z};})();
 export function insideSummit(x,z,radius=SUMMIT_BODY){return Math.hypot(x-SUMMIT_CENTER.x,z-SUMMIT_CENTER.z)<=SUMMIT_RADIUS-radius;}
 // 월드 좌표를 코스(s, lateral)로 옮긴다. 법선은 movement.positionAt과 같은 규칙(sample(s±2))이다. 길 끝을 넘으면 s는 끝에 붙는다.
-export function projectToRoute(x,z){
- const lo=Math.max(0,route.length-SEARCH_BACK);let s=route.length,best=Infinity;
+// from = 찾기 시작할 s(기본: 정상 앞 130m). 코스 전체에서 찾으려면 0(함께 걷기 같이 셀카 자리 옮김).
+export function projectToRoute(x,z,from=route.length-SEARCH_BACK){
+ const lo=Math.max(0,from);let s=route.length,best=Infinity;
  for(let t=lo;t<=route.length+1e-9;t+=1){const q=sample(Math.min(t,route.length)),d=(q.x-x)**2+(q.z-z)**2;if(d<best){best=d;s=Math.min(t,route.length);}}
  for(let i=0;i<4;i++){const q=sample(s),a=sample(s-2),b=sample(s+2),len=Math.hypot(b.x-a.x,b.z-a.z)||1;s=Math.max(lo,Math.min(route.length,s+((x-q.x)*(b.x-a.x)+(z-q.z)*(b.z-a.z))/len));}
  const q=sample(s),a=sample(s-2),b=sample(s+2),len=Math.hypot(b.x-a.x,b.z-a.z)||1;

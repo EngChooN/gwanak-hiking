@@ -5,7 +5,7 @@ import './gadget-ui.css';
 import './section-jump.css';
 import {mountRestUI} from './rest-ui.js';
 import {installHudToggle} from './hud-toggle.js';
-import {installGadgetUI} from './gadget-ui.js';
+import {installGadgetUI,viewfinderCrop} from './gadget-ui.js';
 import {route,sample,MATERIALS,isStairs,checkpoints,DEMO_START,durationBetween,geographicToLocal,floorHeight as routeFloorHeight} from './route.js';
 import {initialState,restore,SAVE_KEY,advance,setPose,positionAt,isOffTrail,playerPosition,setPlayerPosition,courseDistance,COURSE_LENGTH,strideAt,strideScaleFor,onStairs,lateralLimit} from './movement.js';
 import {summitWalkMap,ROUTE_END,projectToRoute,SUMMIT_CENTER} from './summit.js';
@@ -152,7 +152,7 @@ const aoDiagnosticMode=['off','normal','full'].includes(new URLSearchParams(loca
 avatar.userData.metricKind='등산객';
 // 리사이즈·자동 화질 전환은 이미 준비된 경로만 선택한다.
 function resize(){const width=innerWidth,height=innerHeight;camera.aspect=width/height;camera.far=30000;camera.fov=inspectionMode?inspectionFov:height>width?78:65;camera.updateProjectionMatrix();renderer.setSize(width,height);adaptiveQuality.setViewport(`${width}x${height}@${devicePixelRatio}`);if(adaptiveQuality.cap!==quality)adaptiveQuality.setCap(quality);const settings=adaptiveQuality.settings,dpr=Math.min(devicePixelRatio,Math.max(settings.dpr,LIMITS.minDpr)); /* 휴대폰은 화질 '낮음'이 기본(2026-11-06 메모리)이라 배율 하한 1을 둔다 */renderer.setPixelRatio(dpr);lighting.resize(quality,width,height,dpr,settings);}window.addEventListener('resize',resize);resize();
-function suspend(){if(!started)return;audio.stop();ambient.setPaused(true);state.auto=false;input.clear();save();}
+function suspend(){if(!started)return;audio.stop();ambient.setPaused(true);input.clear();save();} // 자동 걷기는 끄지 않는다: 다른 창·탭으로 가도 계속 걷는다(2026-11-08 대표 피드백)
 const teaReady=()=>state.pose==='sit'&&hiker.interaction?.sitLinear>=.999;
 mountRestUI();installHudToggle();installGadgetUI();installNotebookHud();
 const interactionUI=mountInteractionUI();
@@ -176,7 +176,7 @@ function gadgetCommand(id,value){
 let photoRequested=false,shotCallback=null;
 // 촬영: 방금 그린 3D 캔버스만 PNG로 받는다(HUD·휴대폰 테두리는 DOM이라 빠진다). 렌더 직후 같은 프레임에서 읽어야 버퍼가 남아 있다.
 function takePhoto(){
- let url=null;try{const src=renderer.domElement;if(interaction?.frameActive()){const c=document.createElement('canvas');c.width=src.width;c.height=src.height;const g=c.getContext('2d');g.drawImage(src,0,0);interaction.bakeFrame(g,c.width,c.height,drawPhotoFrame);url=c.toDataURL('image/png');}else url=src.toDataURL('image/png');}catch(e){landscape.status.errors.push(`촬영: ${e.message}`);}
+ let url=null;try{const src=renderer.domElement,crop=viewfinderCrop(src),framed=interaction?.frameActive();if(crop||framed){const c=document.createElement('canvas');c.width=crop?.sw??src.width;c.height=crop?.sh??src.height;const g=c.getContext('2d');g.drawImage(src,crop?.sx??0,crop?.sy??0,c.width,c.height,0,0,c.width,c.height);if(framed)interaction.bakeFrame(g,c.width,c.height,drawPhotoFrame);url=c.toDataURL('image/png');}else url=src.toDataURL('image/png');}catch(e){landscape.status.errors.push(`촬영: ${e.message}`);}
  if(url)interaction?.notePhoto(url);
  const filename=photoFilename();if(url){const a=document.createElement('a');a.href=url;a.download=filename;document.body.append(a);a.click();a.remove();}
  playShutter();const flash=document.createElement('div');flash.className='shutter-flash';document.body.append(flash);setTimeout(()=>flash.remove(),260);
@@ -218,9 +218,9 @@ const forward=new THREE.Vector3(),shadowAhead=new THREE.Vector3();
 const cameraHeight=createHeightFollow();let walkPhase=null,lastTravelled=null,stairLandings=0;
 const stability=createStabilityCounter({count:12,limitMs:100});let stabilizingSince=null;
 const wrapAngle=a=>Math.atan2(Math.sin(a),Math.cos(a));
-function frame(now){
+function frame(now,background=false){
  const workStarted=performance.now();
- requestAnimationFrame(frame);
+ if(!background)requestAnimationFrame(frame); // 숨은 탭 보충 걸음(backgroundTick)은 rAF를 더 걸지 않는다
  const frameSeconds=(now-last)/1000,dt=Math.min(frameSeconds,.1);last=now;
  const before=worldPosition(),beforeY=offTrailNow()||freeZone()?before[1]:sample(state.s).y;
  // 출발 전(로딩 중)에는 입력을 읽어 버리고 이동·시간·자동 걷기를 진행하지 않는다.
@@ -282,6 +282,8 @@ function frame(now){
  frameMetrics.stage('terrain',()=>terrain.update(state.s,quality));
  night.update(dt,{camera,avatar,view:state.view,selfie:selfieActive(state),zone:state.zone==='summit'?'route':state.zone,s:state.s,hiker});
  if(multi)frameMetrics.stage('multi',()=>multi.update(dt,now/1000));
+ trail?.afterCamera(); // 말풍선·상호작용 칩은 이번 프레임 카메라로 자리를 잡는다
+ if(background)return finishBackgroundFrame(now); // 숨은 탭에서는 그리지 않고 진행·저장·완등만 처리한다
  if(!contextLost)frameMetrics.stage('render',()=>lighting.render(avatar.position));
  if(photoRequested){photoRequested=false;takePhoto();}
  if(shotCallback){const cb=shotCallback;shotCallback=null;try{const img=new Image();img.onload=()=>cb(img);img.onerror=()=>cb(null);img.src=renderer.domElement.toDataURL('image/jpeg',.9);}catch{cb(null);}}
@@ -302,6 +304,20 @@ $('summit').showModal();save();}
  if(!aoDiagnosticMode&&adaptiveQuality.sample(frameSeconds*1000,!document.hidden&&cameraReady,performance.now()-workStarted,lighting.status.ao)){resize();}
  if(window.__hikingMetrics)window.__hikingMetrics.adaptiveQuality={...adaptiveQuality.settings,dpr:renderer.getPixelRatio()};
 }
+function finishBackgroundFrame(now){
+ if(now-uiAt>150){updateUI();uiAt=now;}
+ if(started&&now-saveAt>700){save();saveAt=now;}
+ if((state.summitArrived||(state.zone==='route'&&state.s>=route.length))&&!summitShown){state.auto=false;} // 완등 카드·기록은 돌아왔을 때 첫 프레임이 띄운다
+}
+// 탭을 숨기면 브라우저가 requestAnimationFrame을 멈춘다. 자동 걷기 중이면 숨은 동안에도 0.1초씩 몸을 옮기고(그리기 생략) 멀티 위치도 보낸다.
+// 숨은 탭의 일반 타이머는 1초~1분 간격으로 늦춰지므로 워커 타이머를 먼저 쓰고, 실제로 흐른 시간만큼 나눠 따라잡는다(한 번에 최대 60초).
+{const STEP=100,CATCHUP=60000;
+ const tick=()=>{if(!document.hidden||!started||!state.auto||contextLost)return;const now=performance.now();let gap=now-last;if(gap<STEP)return;if(gap>CATCHUP){last=now-CATCHUP;gap=CATCHUP;}
+  while(gap>=STEP&&state.auto&&document.hidden){frame(last+STEP,true);gap-=STEP;}};
+ let worker=null;try{const url=URL.createObjectURL(new Blob(['setInterval(()=>postMessage(0),250)'],{type:'text/javascript'}));worker=new Worker(url);URL.revokeObjectURL(url);worker.onmessage=tick;worker.onerror=()=>{worker?.terminate();worker=null;setInterval(tick,250);};}catch{worker=null;}
+ if(!worker)setInterval(tick,250);
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)return;last=performance.now();}); // 숨는 순간부터 잰다(마지막 rAF와 사이 간격은 버린다)
+ window.hiking.backgroundTick=tick;}
 updateUI();save();
 await guard(Promise.all([environmentReady.then(()=>loading.done('environment')),initialNatureReady.then(()=>{markLoad('nature');loading.done('nature');})]));markLoad('environment');
 walkingGround.refreshObstacles();
@@ -329,11 +345,38 @@ const facilityPoints=FACILITY_LAMPS.map(f=>{const anchor=f.anchor&&landscape.sta
 const night=createNightLighting({scene,renderer,place:(s,l)=>positionAt(s,l,walkingGround),groundHeight:(x,z)=>walkingGround.height(x,z,false),gatePoint:fromGate,facilityPoints,routeLength:route.length});
 if(toon)toon.styleNightLighting(night.root);
 let multi=null;
-// 함께 걷기 시제품(?multi). 켜지 않으면 코드를 불러오지도 않는다. 실제 서버 없이 이 컴퓨터의 창끼리만 연결한다.
-if(multiMode){const {mountMultiplayer}=await import('./multi-client.js');
- multi=await mountMultiplayer({scene,camera,night,hikerUrl,prepareGltf:prepareToonHikerGltf,groundHeight:(x,z)=>walkingGround.height(x,z,false),command,
-  local:{position:()=>playerPosition(state,walkingGround),setPosition:pos=>{state.auto=false;state.running=false;if(pos.zone==='route'){const r=projectToRoute(pos.x,pos.z);return setPlayerPosition(state,{zone:'route',s:r.s,lateral:r.lateral},walkingGround);}return setPlayerPosition(state,pos,walkingGround);},speed:()=>speed,sit:()=>state.pose!=='stand',run:()=>!!state.running,gadget:()=>state.gadget??'none',selfie:()=>selfieActive(state),place:(s,l)=>positionAt(s,l,walkingGround)}});
- window.hiking.multi=()=>multi.info();window.hiking.multiApi=multi;}
+// 함께 걷기(?multi 또는 HUD 참가). 켜지 않으면 코드를 불러오지도 않는다.
+// 서버 주소: ?server=wss://… → 빌드 변수 VITE_MULTI_SERVER_URL → 없으면 이 브라우저 창끼리(BroadcastChannel).
+// 화면 약속: hiking:multi-join {room,name}(참가) · hiking:multi-leave(나가기)를 받고, hiking:multi-status {state,room,count,transport}를 보낸다.
+const {multiServerUrl}=await import('./multi-transport.js');
+const {hikingServerPick}=await import('./hiking-server-pick.js');
+const multiServer=multiServerUrl(location.search,import.meta.env.VITE_MULTI_SERVER_URL??'');
+let multiBusy=Promise.resolve();
+const multiStatus=detail=>window.dispatchEvent(new CustomEvent('hiking:multi-status',{detail}));
+function multiLocal(){
+ return {position:()=>playerPosition(state,walkingGround),setPosition:pos=>{state.auto=false;state.running=false;if(pos.zone==='route'){const r=Number.isFinite(pos.s)?{s:pos.s,lateral:pos.lateral??0}:projectToRoute(pos.x,pos.z,0);return setPlayerPosition(state,{zone:'route',s:r.s,lateral:r.lateral},walkingGround);}return setPlayerPosition(state,pos,walkingGround);},speed:()=>speed,sit:()=>state.pose!=='stand',run:()=>!!state.running,gadget:()=>state.gadget??'none',selfie:()=>selfieActive(state),place:(s,l)=>positionAt(s,l,walkingGround)};
+}
+async function joinMulti({room=null,name=null}={}){
+ if(multi&&(!room||room===multi.room))return multi;
+ if(multi)leaveMulti();
+ multiStatus({state:'connecting',room:room||'',count:0,transport:multiServer?'server':'local'});
+ const {mountMultiplayer}=await import('./multi-client.js');
+ multi=await mountMultiplayer({scene,camera,night,hikerUrl,prepareGltf:prepareToonHikerGltf,groundHeight:(x,z)=>walkingGround.height(x,z,false),command,room,name,serverUrl:multiServer,local:multiLocal()});
+ window.hiking.multi=()=>multi?.info()??null;window.hiking.multiApi=multi;return multi;
+}
+function leaveMulti(){if(!multi)return;multi.dispose();multi=null;window.hiking.multiApi=null;}
+// 차례대로 처리한다(참가를 두 번 빨리 눌러도 연결이 둘 생기지 않게)
+// 서버 고르기 창(src/hiking-server-pick.js)은 main.js가 듣기 전에 고를 수 있어 window.__hikingMultiJoin에도 남긴다. 받으면 지운다.
+window.addEventListener('hiking:multi-join',e=>{const d=e.detail??{};window.__hikingMultiJoin=null;multiBusy=multiBusy.then(()=>joinMulti({room:d.room||null,name:d.name||null})).catch(err=>{console.warn('함께 걷기 참가 실패',err);multiStatus({state:'offline',room:d.room||'',count:0,transport:multiServer?'server':'local'});});});
+window.addEventListener('hiking:multi-leave',()=>{multiBusy=multiBusy.then(()=>leaveMulti());});
+window.hiking.multi=()=>null;window.hiking.multiServer=multiServer;
+if(multiMode)await joinMulti();
+else if(window.__hikingMultiJoin){const d=window.__hikingMultiJoin;window.dispatchEvent(new CustomEvent('hiking:multi-join',{detail:d}));}
+// 함께 걷기 HUD(산디자인 src/multi-entry-ui.js: 버튼·방 이름·닉네임·상태 표시). 파일이 생기면 자동으로 불러온다(없으면 빈 목록).
+for(const load of Object.values(import.meta.glob('./multi-entry-ui.js')))load().then(m=>{document.body.dataset.multiEntry='1';m.installMultiEntry?.({serverUrl:multiServer,serverPick:hikingServerPick()});multi?.statusNow();}).catch(err=>console.warn('함께 걷기 HUD를 불러오지 못했습니다',err));
+// 등산 채팅 HUD(산디자인 src/hiking-chat-ui.js: 💬 버튼·채팅 창·머리 위 말풍선). 서버 연결은 multi-client.js가 hiking:chat* 이벤트로 맡는다.
+// ?multi로 이미 참가했으면 상태를 한 번 더 보내 준다(HUD가 늦게 붙어 '연결됨'을 놓치면 💬가 안 보였음).
+for(const load of Object.values(import.meta.glob('./hiking-chat-ui.js')))load().then(m=>{m.installHikingChat?.();multi?.statusNow();}).catch(err=>console.warn('등산 채팅 HUD를 불러오지 못했습니다',err));
 // 상호작용(안내판·스탬프·산길 행동·쌍안경 이름표). 소품 자리는 풍경이 정한 landscape.interactionProps.sites를 그대로 쓴다.
 let envInfo={};window.addEventListener('hiking:environment',e=>{envInfo=e.detail||{};});
 {
@@ -351,7 +394,7 @@ let envInfo={};window.addEventListener('hiking:environment',e=>{envInfo=e.detail
  // 자동걷기 즐길거리(산스장·벤치·먼지털이기·동물). 자리는 풍경이 정한 landscape.status.trailProps, 동작은 src/toon/hiker-acts.js.
  // 즐길거리 효과음: 발소리와 같은 AudioContext·마스터(음량)·켜기/끄기를 따른다. 화면이 가려지면 멈춘다.
  const trailSound=createTrailSound({context:()=>audio.context,destination:()=>audio.master,enabled:()=>audio.enabled&&!document.hidden,base:`${import.meta.env.BASE_URL}sounds/trail/`});
- trail=createTrailWorld({scene,camera,hiker,landscape,toonify:toon?.toonify,sound:trailSound,auto:{get:()=>state.auto,set:v=>{state.auto=v;}}});window.hiking.trailSound=()=>trailSound.snapshot();window.hiking.trail=trail;installTrailHud();
+ trail=createTrailWorld({scene,camera,hiker,landscape,toonify:toon?.toonify,sound:trailSound,auto:{get:()=>state.auto,set:v=>{state.auto=v;}},env:()=>({season:seasons.season,hour:parseInt(lighting.environment?.info?.timeLabel??envInfo.timeLabel??'',10)})});window.hiking.trailSound=()=>trailSound.snapshot();window.hiking.trail=trail;installTrailHud();
  // 즐길거리 도장: 역기 10회 → '산스장 득근', 에어건 → '깨끗한 신발'(수첩)
  window.addEventListener('hiking:trail',e=>{const t=e.detail?.type;if(t==='gym-lift-done')interaction.award?.('gym');else if(t==='airgun-done')interaction.award?.('shoes');});
  window.hiking.interaction=()=>({view:interaction.view,action:interaction.action,progress:JSON.parse(JSON.stringify(interaction.progress)),tagsOn:interaction.tagsOn,frameOn:interaction.frameOn,bino:interaction.bino,cooldowns:interaction.cooldowns(),sites:interaction.cands.map(c=>({id:c.id,action:c.action,x:c.x,z:c.z,y:c.y}))});window.hiking.interactionApi=interaction;

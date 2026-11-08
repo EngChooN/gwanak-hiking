@@ -1,0 +1,8 @@
+# BuildKit은 Dockerfile 옆의 <이름>.dockerignore를 쓴다: 이미지에 필요한 파일만(서버 5개 + 채팅 금칙어 목록) 보낸다(node_modules·에셋 수백 MB 제외)
+*
+!package.json
+!src/multi-protocol.js
+!server/ws.mjs
+!server/rooms.mjs
+!server/multi-server.mjs
+!server/chat-banned-words.txt

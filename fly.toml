@@ -1,0 +1,36 @@
+# 함께 걷기 서버 Fly.io 설정(2026-11-08, 아직 배포 안 함). 순서는 docs/멀티-서버-운영안내.md "Fly.io에 올리기".
+# 앱 이름은 Fly 전체에서 겹치면 안 된다. fly launch가 다른 이름을 제안하면 여기 app과 게임 주소의 ?server= 를 함께 바꾼다.
+app = "gwanak-multi"
+primary_region = "nrt"   # 도쿄
+
+[build]
+  dockerfile = "server/Dockerfile"
+
+[env]
+  PORT = "8787"
+  HOST = "0.0.0.0"
+  DATA_DIR = "/data"
+  TRUST_PROXY = "1"
+  ALLOWED_ORIGINS = "https://engchoon.github.io"
+
+[[mounts]]
+  source = "gwanak_multi_data"   # 신고 기록(JSONL)
+  destination = "/data"
+
+[http_service]
+  internal_port = 8787
+  force_https = true             # wss:// 는 Fly 앞단이 맡는다
+  auto_stop_machines = "off"     # 접속이 없어도 꺼지지 않게(방 상태가 메모리에 있음)
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    interval = "30s"
+    timeout = "3s"
+    grace_period = "10s"
+    method = "GET"
+    path = "/health"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"

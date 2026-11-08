@@ -1,0 +1,8 @@
+# 저장소 맨 위 빌드 맥락(Render dockerContext: . · fly deploy)용. server/Dockerfile.dockerignore와 같은 내용을 유지한다: 서버 이미지에 필요한 파일만(5개 + 채팅 금칙어 목록) 보낸다
+*
+!package.json
+!src/multi-protocol.js
+!server/ws.mjs
+!server/rooms.mjs
+!server/multi-server.mjs
+!server/chat-banned-words.txt

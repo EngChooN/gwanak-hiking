@@ -1,0 +1,20 @@
+# 함께 걷기 서버 Render 무료 설정(2026-11-08, 아직 배포 안 함). 순서는 docs/멀티-서버-운영안내.md "Render 무료로 올리기".
+# 무료 한계: 15분 동안 접속·메시지가 없으면 잠들고, 다음 사람이 오면 깨는 데 약 1분. 디스크가 없어 재시작하면 신고 기록이 사라진다.
+services:
+  - type: web
+    name: gwanak-multi
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./server/Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: "8787"
+      - key: HOST
+        value: 0.0.0.0
+      - key: TRUST_PROXY
+        value: "1"
+      - key: ALLOWED_ORIGINS
+        value: https://engchoon.github.io

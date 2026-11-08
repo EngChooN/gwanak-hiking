@@ -1,0 +1,21 @@
+/* 함께 걷기 HUD 입구(연결 상태 칩. 참가는 서버 고르기 창 server-pick.css). 색은 hud-notebook.css의 수첩 토큰(낮·노을·밤)을 그대로 쓴다. */
+.me-entry.on{background:var(--paper);color:var(--accent)}
+/* 상태 칩: 위 가운데(PC·가로). 세로는 진행 카드·시점 칩 아래 왼쪽. 알림(multi-toast 40)·진행 카드보다 위. */
+.me-chip{position:fixed;z-index:45;left:50%;top:calc(env(safe-area-inset-top,0px) + var(--top,20px));transform:translateX(-50%);display:flex;align-items:center;gap:8px;max-width:min(60vw,420px);min-height:44px;padding:0 16px 0 14px;border:0;border-radius:22px;background:var(--paper2);color:var(--ink);box-shadow:var(--lift),var(--soft);font:800 13px var(--nb-font,system-ui);cursor:pointer;white-space:nowrap}
+.me-chip[hidden]{display:none}
+.me-chip i{font-style:normal;font-size:15px}.me-chip .me-chip-t{overflow:hidden;text-overflow:ellipsis}
+.me-chip small{font-weight:600;font-size:11.5px;color:var(--ink2);overflow:hidden;text-overflow:ellipsis}
+.me-chip[data-tone=ok]{box-shadow:var(--lift),var(--soft),inset 0 0 0 2px var(--go)}
+.me-chip[data-tone=warn]{box-shadow:var(--lift),var(--soft),inset 0 0 0 2px var(--mid)}
+.me-chip[data-tone=bad]{box-shadow:var(--lift),var(--soft),inset 0 0 0 2px var(--low)}
+.me-chip[data-tone=wait] i,.me-chip[data-state=reconnecting] i{animation:me-spin 1.4s linear infinite;display:inline-block}
+@keyframes me-spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.me-chip i{animation:none!important}}
+@media (orientation:landscape) and (max-height:540px){
+ /* 가로 휴대폰은 위가 진행 카드·시점 칩·태그로 가득하다. 아래 가운데(출처 줄과 도장·칩 사이)에 둔다. */
+ .me-chip{top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);left:calc(50% + 70px);max-width:240px}
+ .me-chip small{display:none}
+}
+@media (orientation:portrait){
+ .me-chip{left:calc(env(safe-area-inset-left,0px) + 14px);top:calc(env(safe-area-inset-top,0px) + 254px);transform:none;max-width:calc(100vw - 28px);min-width:44px;padding:0 14px 0 12px}
+}

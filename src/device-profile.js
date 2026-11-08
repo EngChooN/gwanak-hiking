@@ -12,6 +12,7 @@ export const MOBILE_LIMITS={
  trailPropRadius:260,  // 산스장·벤치·먼지털이기를 만드는 거리(200m 청크 바로 옆까지). 멀어지면(+80m) 뗀다.
  trailEffects:24,      // 동시에 떠 있는 즐길거리 효과(흙먼지·하트·땀·반짝이) 수. 넘으면 가장 오래된 것부터 뗀다.
  trailBubbles:1,       // 말풍선은 한 번에 하나(기획 공통 규칙). 휴대폰·PC 같다.
+ multiFullCap:2,       // 함께 걷기: 모델(뼈대 캐릭터)로 그리는 다른 사람 수. 나머지는 캡슐. 모델 1명 ≈ draw call 60~75개·삼각형 4.7만(멀티-설계 ④)
 };
-export const DESKTOP_LIMITS={cityCells:40,cityDetailed:true,forestGrass:1,cityChunkGapMs:0,minDpr:0,trailAnimals:3,trailPropRadius:260,trailEffects:60,trailBubbles:1};
+export const DESKTOP_LIMITS={cityCells:40,cityDetailed:true,forestGrass:1,cityChunkGapMs:0,minDpr:0,trailAnimals:3,trailPropRadius:260,trailEffects:60,trailBubbles:1,multiFullCap:4};
 export const LIMITS=MOBILE?MOBILE_LIMITS:DESKTOP_LIMITS;
