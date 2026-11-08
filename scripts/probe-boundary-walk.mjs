@@ -12,7 +12,7 @@ mkdirSync(out,{recursive:true});
 const browser=await chromium.launch({channel:'chrome',headless:true,args:['--enable-webgl','--ignore-gpu-blocklist','--use-angle=metal']});
 const page=await (await browser.newContext({viewport:{width:800,height:600},deviceScaleFactor:1})).newPage();
 page.on('pageerror',e=>console.error('pageerror',e.message));
-await page.goto(`${base}/?outfit=1&start=gate&time=12:00&weather=clear`);
+await page.goto(`${base}/hiking/?outfit=1&start=gate&time=12:00&weather=clear`);
 await page.waitForFunction(()=>!!window.hiking?.ready,null,{timeout:180000});
 await page.evaluate(()=>window.hiking.ready());
 await page.waitForFunction(()=>window.hiking.started===true,null,{timeout:300000});

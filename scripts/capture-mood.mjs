@@ -13,7 +13,7 @@ try{
   const context=await browser.newContext({viewport:{width:1280,height:720},deviceScaleFactor:1});
   await context.addInitScript(({state,key})=>{localStorage.setItem(key,JSON.stringify(state));localStorage.setItem('gwanak-sound-enabled','false');localStorage.setItem('gwanak-hud-hidden','1');},{state:{...initialState(),s,view:'third',paused:true},key:SAVE_KEY});
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
-  await page.goto(`${base}/?quality=${quality}&time=${look.time}&weather=${look.weather}`);
+  await page.goto(`${base}/hiking/?quality=${quality}&time=${look.time}&weather=${look.weather}`);
   await page.waitForFunction(()=>window.hiking?.started&&window.hiking?.landscape().ready&&!hiking.rendering().compiling,null,{timeout:240000});
   await page.addStyleTag({content:'#pause-overlay{display:none!important}'});
   await page.waitForTimeout(6000);

@@ -22,7 +22,7 @@ try{for(const [vid,bearing,pitch,bino] of views)for(const [tid,clock] of times){
  const context=await browser.newContext({viewport,deviceScaleFactor:mobile?3:1,isMobile:mobile,hasTouch:mobile});
  await context.addInitScript(()=>{localStorage.clear();localStorage.setItem('gwanak-sound-enabled','false');});
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
- await page.goto(`${base}/?start=summit&time=${clock}&weather=clear&quality=${quality}`);
+ await page.goto(`${base}/hiking/?start=summit&time=${clock}&weather=clear&quality=${quality}`);
  await page.waitForFunction(()=>window.hiking?.started&&hiking.landscape().ready&&hiking.landscape().natureReady&&!hiking.rendering().compiling,null,{timeout:300000});
  const closeDialogs=()=>page.evaluate(()=>document.querySelectorAll('dialog[open]').forEach(d=>d.close()));
  await page.waitForTimeout(1500);await closeDialogs();

@@ -67,7 +67,7 @@ for(const fov of [55,70]){
  for(const tone of ['neutral','aces']){
   const c=await browser.newContext({viewport:{width:1366,height:768}});const p=await c.newPage();p.on('pageerror',e=>results.errors.push(e.message));
   await c.addInitScript(seed=>localStorage.setItem('gwanak-hiking:v1',JSON.stringify(seed)),{...initialState(),view:'third',paused:true});
-  await p.goto(base+'/?tone='+tone+'&fov='+fov);await p.waitForFunction(()=>window.hiking?.started);await p.waitForTimeout(4500);
+  await p.goto(base+'/hiking/?tone='+tone+'&fov='+fov);await p.waitForFunction(()=>window.hiking?.started);await p.waitForTimeout(4500);
   const rendering=await p.evaluate(()=>window.hiking.rendering()),orientation=await p.evaluate(()=>window.hiking.orientation());
   assert.equal(rendering.shaderErrors.length,0);assert.equal(rendering.fov,fov);assert.equal(rendering.toneMapping,tone==='neutral'?'Neutral':'ACES Filmic (비교용)');
   if(reference){assert.deepEqual(orientation.camera,reference.orientation.camera);assert.equal(rendering.exposure,reference.rendering.exposure);}

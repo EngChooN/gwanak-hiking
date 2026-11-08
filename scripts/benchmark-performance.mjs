@@ -16,7 +16,7 @@ try{
   const context=await browser.newContext({viewport:{width:1440,height:900},deviceScaleFactor:1});
   await context.addInitScript(({state,key})=>{localStorage.setItem(key,JSON.stringify(state));localStorage.setItem('gwanak-sound-enabled','false');},{state:{...initialState(),s:startSegment.start,view,paused:true},key:SAVE_KEY});
   const page=await context.newPage();let navigations=0;page.on('framenavigated',frame=>{if(frame===page.mainFrame())navigations++;});page.on('pageerror',e=>results.errors.push(e.message));
-  await page.goto(`${base}/?quality=${quality}${process.env.QUERY??""}`);
+  await page.goto(`${base}/hiking/?quality=${quality}${process.env.QUERY??""}`);
   await page.waitForFunction(()=>window.hiking?.started&&window.hiking?.landscape().ready&&window.hiking?.landscape().natureReady&&!window.hiking.rendering().compiling,null,{timeout:240000});
   await page.waitForTimeout(15000);
   const cdp=await context.newCDPSession(page);

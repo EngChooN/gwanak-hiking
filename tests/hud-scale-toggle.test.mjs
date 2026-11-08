@@ -14,7 +14,7 @@ test('H 키는 input·main의 이벤트로만 오고 HUD 모듈은 keydown을 �
  const src=read('src/hud-toggle.js');
  assert.ok(!/keydown|KeyH/.test(src.replace(/\/\/.*/g,'')));
  assert.match(read('src/input.js'),/KeyH:'hud-toggle'/);
- assert.match(read('index.html'),/id="hud-hide"/);
+ assert.match(read('hiking/index.html'),/id="hud-hide"/);
  assert.match(read('src/style.css'),/#app\.hud-hidden>\*:not\(#joystick\):not\(#look-zone\):not\(dialog\)/);
 });
 test('이벤트 한 번에 한 번만 바뀌고 저장된다',()=>{

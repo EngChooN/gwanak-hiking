@@ -31,14 +31,14 @@ try{
   try{
   // 코스 위 자리는 저장 상태를 심어 그 지점에서 시작한다(cartoon-compare.mjs와 같은 방식).
   let save=null;
-  if(scene.s!==undefined){const probe=await context.newPage();await probe.goto(`${base}/?style=toon&startMode=manual`,{waitUntil:'domcontentloaded'});
+  if(scene.s!==undefined){const probe=await context.newPage();await probe.goto(`${base}/hiking/?style=toon&startMode=manual`,{waitUntil:'domcontentloaded'});
    save=await probe.evaluate(async ({s,lateral})=>{const {initialState}=await import('/src/movement.js');return JSON.stringify({...initialState({start:'demo'}),s,lateral:lateral??0,zone:'route'});},scene);await probe.close();}
   await context.addInitScript(save=>{localStorage.clear();localStorage.setItem('gwanak-sound-enabled','false');if(save)localStorage.setItem('gwanak-hiking:v1',save);},save);
   const page=await context.newPage(),errors=[];
   page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error'||/THREE\.WebGLProgram/.test(m.text()))errors.push(m.text().slice(0,200));});
   const q=new URLSearchParams({style:'toon',outfit:'1',time:'11:00',weather:'clear',quality});
   if(scene.start)q.set('start',scene.start);if(opt.season)q.set('season',opt.season);
-  await page.goto(`${base}/?${q}`);
+  await page.goto(`${base}/hiking/?${q}`);
   for(let i=0;;i++){try{await page.waitForFunction(()=>window.hiking?.started&&window.hiking.landscape().natureReady&&!window.hiking.rendering().compiling,null,{timeout:300000});break;}catch(e){if(i>=3||!/destroyed|navigation/.test(e.message))throw e;await page.waitForLoadState('load');}}
   await page.evaluate(()=>document.querySelectorAll('dialog[open]').forEach(x=>x.close()));
   if(await page.evaluate(()=>window.hiking.snapshot().paused))await page.evaluate(()=>window.dispatchEvent(new CustomEvent('hiking:command',{detail:{id:'pause'}})));

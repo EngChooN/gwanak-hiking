@@ -9,7 +9,7 @@ const browser=await chromium.launch({channel:'chrome',headless:true,args:['--ena
 const ctx=await browser.newContext({viewport:{width:1440,height:900},deviceScaleFactor:1,acceptDownloads:true});
 await ctx.addInitScript(({state,key})=>{if(!sessionStorage.getItem('seeded')){localStorage.setItem(key,JSON.stringify(state));sessionStorage.setItem('seeded','1');}localStorage.setItem('gwanak-hud-hidden','true');},{state:{...initialState(),s:route.length-.02,view:'first',paused:true},key:SAVE_KEY});
 const page=await ctx.newPage(),errors=[],log=[];page.on('pageerror',e=>errors.push(e.message));
-await page.goto(`${base}/?outfit=1&quality=high&time=12:00&weather=clear&bearing=${process.env.BEARING??0}`);
+await page.goto(`${base}/hiking/?outfit=1&quality=high&time=12:00&weather=clear&bearing=${process.env.BEARING??0}`);
 await page.waitForFunction(()=>window.hiking?.started&&window.hiking?.landscape?.().ready&&hiking.landscape().natureReady&&!hiking.rendering().compiling,null,{timeout:300000});
 await page.keyboard.press('Space');await page.waitForTimeout(6000);
 const gv=()=>page.evaluate(()=>window.hiking.gadgetView());

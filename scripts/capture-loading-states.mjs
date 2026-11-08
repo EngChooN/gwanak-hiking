@@ -9,7 +9,7 @@ try{
  const ctx=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:2,isMobile:true,hasTouch:true});
  await ctx.addInitScript(()=>{localStorage.clear();localStorage.setItem('gwanak-sound-enabled','false');});
  const pg=await ctx.newPage(),errors=[];pg.on('pageerror',e=>errors.push(e.message));pg.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
- const t0=Date.now();await pg.goto(`${base}/?start=entrance&outfit=1&quality=low&time=15:00&weather=clear&startMode=manual`);
+ const t0=Date.now();await pg.goto(`${base}/hiking/?start=entrance&outfit=1&quality=low&time=15:00&weather=clear&startMode=manual`);
  await pg.waitForTimeout(9000);await (await waitChunks(pg)).screenshot({path:`${dir}/loading-mobile-progress.png`});
  out.mobileProgress=await pg.evaluate(()=>({pct:document.querySelector('.ls-percent').textContent,overflowX:document.documentElement.scrollWidth>innerWidth,card:document.querySelector('.ls-card').getBoundingClientRect().toJSON()}));
  await pg.waitForFunction(()=>document.querySelector('#loading-screen')?.dataset.phase==='ready',null,{timeout:240000});
@@ -23,7 +23,7 @@ try{
  // 2) 실패: hiking:loading error 이벤트(실제 신호 형식) 주입 → 다시 시도 버튼
  const c2=await browser.newContext({viewport:{width:1440,height:900}});const p2=await c2.newPage();
  await p2.route('**/assets/realistic/generated/**',r=>r.abort());
- await p2.goto(`${base}/?start=entrance&outfit=1&quality=low`);
+ await p2.goto(`${base}/hiking/?start=entrance&outfit=1&quality=low`);
  const ok=await p2.waitForFunction(()=>document.querySelector('#loading-screen')?.dataset.phase==='error',null,{timeout:90000}).then(()=>true).catch(()=>false);
  out.failure={reached:ok,message:await p2.evaluate(()=>document.querySelector('.ls-message')?.textContent),button:await p2.evaluate(()=>{const b=document.querySelector('.ls-action');return b&&!b.hidden?b.textContent:null;})};
  await (await waitChunks(p2)).screenshot({path:`${dir}/loading-error.png`});await c2.close();

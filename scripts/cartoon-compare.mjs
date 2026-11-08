@@ -34,14 +34,14 @@ async function capture(browser,job){
  const onRoute=job.s!==undefined;
  // 코스 위 자리는 저장 상태를 심어 바로 그 지점에서 시작한다(initialState는 첫 페이지에서 받아 온다).
  let save=null;
- if(onRoute){const probe=await context.newPage();await probe.goto(`${base}/?style=${style}&startMode=manual`,{waitUntil:'domcontentloaded'});
+ if(onRoute){const probe=await context.newPage();await probe.goto(`${base}/hiking/?style=${style}&startMode=manual`,{waitUntil:'domcontentloaded'});
   save=await probe.evaluate(async ({s,lateral})=>{const {initialState}=await import('/src/movement.js');return JSON.stringify({...initialState({start:'demo'}),s,lateral:lateral??0,zone:'route'});},job);await probe.close();}
  await context.addInitScript(save=>{localStorage.clear();localStorage.setItem('gwanak-sound-enabled','false');if(save)localStorage.setItem('gwanak-hiking:v1',save);},save);
  const page=await context.newPage(),errors=[];
  page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error'||/THREE\.WebGLProgram/.test(m.text()))errors.push(m.text().slice(0,300));});
  const q=new URLSearchParams({style,outfit:'1',time:job.time??'11:00',weather:job.weather??'clear',quality:'high'});
  if(!onRoute)q.set('start',job.start??'demo');if(job.bearing!==undefined)q.set('bearing',String(job.bearing));
- await page.goto(`${base}/?${q}`);
+ await page.goto(`${base}/hiking/?${q}`);
  await page.waitForFunction(()=>window.hiking?.started&&window.hiking.landscape().natureReady&&!window.hiking.rendering().compiling,null,{timeout:300000});
  const closeDialogs=()=>page.evaluate(()=>document.querySelectorAll('dialog[open]').forEach(d=>d.close()));
  await page.waitForTimeout(1500);await closeDialogs();

@@ -105,7 +105,7 @@ if(pass.includes('mobile')){await mobile('iphone-portrait','iPhone 13');await mo
 if(pass.includes('multi')){
  const ctx=await browser.newContext({viewport:{width:1100,height:680},deviceScaleFactor:1});
  const open2=async name=>{const p=await ctx.newPage();p.on('pageerror',e=>errors.push(name+': '+e.message));p.on('console',m=>{if(m.type()==='error')errors.push(name+': '+m.text());});
-  await p.goto(`http://127.0.0.1:${port}/?multi=ix&name=${encodeURIComponent(name)}&start=entrance&time=13:00&weather=clear&quality=balanced&outfit=${name==='하늘'?2:4}`);await p.waitForFunction(()=>window.hiking?.started&&window.hiking?.multi,null,{timeout:180000});return p;};
+  await p.goto(`http://127.0.0.1:${port}/hiking/?multi=ix&name=${encodeURIComponent(name)}&start=entrance&time=13:00&weather=clear&quality=balanced&outfit=${name==='하늘'?2:4}`);await p.waitForFunction(()=>window.hiking?.started&&window.hiking?.multi,null,{timeout:180000});return p;};
  const A=await open2('하늘'),B=await open2('바다');await A.bringToFront();await A.waitForTimeout(1200);
  const pb=await B.evaluate(()=>hiking.position());await A.evaluate(({x,z,h})=>hiking.multiApi.teleport({zone:'plaza',x,z,heading:h}),{x:pb.x-Math.sin(pb.heading)*3,z:pb.z-Math.cos(pb.heading)*3,h:pb.heading+Math.PI});await A.waitForTimeout(2200);
  const v=await A.evaluate(()=>hiking.interaction().view);log('멀티 알약',{label:v?.rows?.[0]?.label});await (await waitChunks(A)).screenshot({path:`${dir}/28-multi-greet-pill.jpg`,type:'jpeg',quality:80});

@@ -1,0 +1,32 @@
+/* 흡연장 멀티(multi-ui.js): 위 오른쪽 '👥 같이 피우기' 단추 = 연결 상태 칩(누르면 서버 고르기 창 ../server-pick.css), 이름표, 알림.
+   단추·카드는 hud.css .lg-btn/.lg-card(「등산 수첩」 종이 톤, 44px 이상) 그대로. 상태 색은 등산 함께 걷기 칩과 같은 뜻(초록 연결·주황 기다림·빨강 끊김). */
+.lg-mp-btn i{font-style:normal;font-size:17px;line-height:1}
+.lg-mp-btn .lg-mp-n{display:none;min-width:18px;height:18px;padding:0 4px;border-radius:9px;background:var(--go);color:#fff;font-size:11px;line-height:18px;text-align:center;box-sizing:border-box}
+.lg-mp-btn[data-tone=ok]{border-color:var(--go);box-shadow:2px 3px 0 var(--go)}
+.lg-mp-btn[data-tone=local]{border-color:var(--ink2)}
+.lg-mp-btn[data-tone=wait],.lg-mp-btn[data-tone=warn]{border-color:#c98a2b;box-shadow:2px 3px 0 #c98a2b}
+.lg-mp-btn[data-tone=bad]{border-color:var(--stamp);color:var(--stamp);box-shadow:2px 3px 0 var(--stamp-d)}
+.lg-mp-btn[data-tone=warn] .lg-mp-n,.lg-mp-btn[data-tone=wait] .lg-mp-n{background:#c98a2b}
+.lg-mp-btn[data-tone=bad] .lg-mp-n{background:var(--stamp)}
+
+
+/* 이름표(머리 위) */
+.lg-mp-tags{position:absolute;inset:0;overflow:hidden}
+.lg-mp-tag{position:absolute;left:0;top:0;padding:2px 8px;border-radius:10px;background:color-mix(in srgb,var(--paper) 88%,transparent);border:1.5px solid var(--edge);color:var(--ink);font-size:12px;font-weight:800;white-space:nowrap;will-change:transform}
+
+/* 알림: HUD 토스트(위 74px) 아래 */
+.lg-mp-toast{position:absolute;left:50%;top:calc(var(--st) + 120px);transform:translateX(-50%);max-width:calc(100% - 24px);box-sizing:border-box;background:var(--paper);border:2px solid var(--go);color:var(--ink);padding:7px 14px;border-radius:12px;font-weight:800;font-size:13px;box-shadow:var(--soft);transition:opacity .4s;text-align:center}
+.lg-mp-toast.out{opacity:0}
+
+/* PC·넓은 화면: 상태 글자 보임. 좁은 휴대폰 세로·휴대폰 가로: 그림 + 사람 수만(44×44) */
+@media (max-width:420px),(max-height:540px){
+ .lg-mp-btn{padding:0 8px}
+ .lg-mp-btn .lg-mp-t{display:none}
+ .lg-mp-btn .lg-mp-n:not([hidden]){display:inline-block}
+}
+/* 휴대폰 가로: spots 단추 줄이 위 오른쪽 단추(이제 3개) 왼쪽에 오도록 */
+@media (max-height:540px){
+ body.lg-mp .sp-dock{right:calc(var(--sr) + var(--gap) + 160px)}
+ .lg-mp-toast{top:calc(var(--st) + 64px)}
+}
+@media (prefers-reduced-motion:reduce){.lg-mp-toast{transition:none}}

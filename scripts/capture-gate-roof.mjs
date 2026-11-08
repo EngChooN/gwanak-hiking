@@ -6,7 +6,7 @@ const browser=await chromium.launch({channel:'chrome',headless:true,args:['--ena
 for(const [name,q,walk] of [['near','time=12:00',9000],['close','time=12:00',14500],['dusk','time=17:20',12000]]){
  for(let attempt=0;attempt<5;attempt++)try{
  const page=await (await browser.newContext({viewport:{width:1280,height:800}})).newPage();
- await page.goto(`${base}/?outfit=1&start=entrance&weather=clear&${q}`);
+ await page.goto(`${base}/hiking/?outfit=1&start=entrance&weather=clear&${q}`);
  await page.waitForFunction(()=>!!window.hiking?.ready,null,{timeout:120000});
  await page.evaluate(()=>window.hiking.ready());
  await page.waitForFunction(()=>window.hiking.started===true,null,{timeout:300000});

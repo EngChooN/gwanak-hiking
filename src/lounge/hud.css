@@ -1,0 +1,90 @@
+/* 온라인 흡연장 HUD — 온라인 등산 「등산 수첩」 종이 톤(크라프트 종이·빨간 도장·책갈피 탭). 토큰은 hud-notebook.css와 같은 값.
+   낮·노을·밤은 main.js가 <html data-hud-time>에 넣는다. 버튼은 44px 이상, 안전 영역 안쪽. */
+:root{--paper:#fbf3df;--paper2:#f4e7c8;--tab:#e9d7ae;--ink:#4a3618;--ink2:#7a5f3a;--edge:#b49563;--rule:#d9c79d;--stamp:#b9472f;--stamp-d:#7f2f20;--accent:#b9472f;--go:#5f8f3e;--scrim:rgba(40,28,10,.32);
+ --soft:0 4px 10px rgba(52,34,8,.20);--lift:2px 3px 0 var(--edge);--bub:#fff8e8;--bub-ink:#3b2814;
+ --nb-font:"Apple SD Gothic Neo","Pretendard",-apple-system,"Malgun Gothic",sans-serif;
+ --sl:env(safe-area-inset-left,0px);--sr:env(safe-area-inset-right,0px);--st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px);--gap:12px}
+:root[data-hud-time=dusk]{--paper:#f6e6c4;--paper2:#efdcb4;--tab:#e2c794;--ink:#45301a;--ink2:#76593a;--edge:#a8834f;--rule:#d4bb8a;--accent:#a8402a;--soft:0 4px 12px rgba(60,25,10,.28);--bub:#fff3dc}
+:root[data-hud-time=night]{--paper:#3b3024;--paper2:#43372a;--tab:#4a3c2c;--ink:#f1e4c4;--ink2:#c9b48c;--edge:#17110a;--rule:#5a4a35;--stamp:#b0442f;--accent:#f3a48c;--go:#9cc27a;--scrim:rgba(5,8,16,.5);--soft:0 5px 14px rgba(0,0,0,.5);--bub:#43372a;--bub-ink:#f6ead0}
+
+#app{position:fixed;inset:0;pointer-events:none;z-index:6;font-family:var(--nb-font);color:var(--ink)}
+#app [hidden]{display:none!important}
+#app button,#app input,#app select{font:inherit;color:inherit}
+#app button{-webkit-tap-highlight-color:transparent;cursor:pointer}
+#app button:focus-visible,#app input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.lg-card{pointer-events:auto;background:var(--paper);border:2px solid var(--edge);border-radius:12px;box-shadow:var(--soft),var(--lift)}
+.lg-btn{min-height:44px;min-width:44px;padding:0 12px;border-radius:12px;border:2px solid var(--edge);background:var(--paper2);box-shadow:var(--lift);font-weight:700;font-size:14px;display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;pointer-events:auto;touch-action:manipulation}
+.lg-btn:active{transform:translate(1px,2px);box-shadow:0 0 0 var(--edge)}
+.lg-btn.primary{background:var(--stamp);color:#fff;border-color:var(--stamp-d);box-shadow:2px 3px 0 var(--stamp-d)}
+.lg-btn.on{background:var(--tab);outline:2px solid var(--accent);outline-offset:-5px}
+.lg-btn[disabled]{opacity:.45;pointer-events:none}
+
+/* 위쪽: 수첩 카드(왼쪽) · 설정 단추(오른쪽) */
+.lg-top{position:absolute;left:calc(var(--sl) + var(--gap));right:calc(var(--sr) + var(--gap));top:calc(var(--st) + var(--gap));display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.lg-note{width:218px;padding:10px 12px 12px;position:relative}
+.lg-note h3{margin:0 0 6px;font-size:13px;color:var(--ink2);display:flex;justify-content:space-between;align-items:center}
+.lg-note .big{font-size:22px;font-weight:900;letter-spacing:-.03em}
+.lg-note .row{display:flex;justify-content:space-between;font-size:13px;padding:3px 0;border-top:1px dashed var(--rule)}
+.lg-note .seal{position:absolute;right:10px;top:8px;transform:rotate(-8deg);border:2px solid var(--stamp);color:var(--stamp);border-radius:8px;padding:1px 6px;font-size:11px;font-weight:900;opacity:.85}
+.lg-note .lg-stamp{position:absolute;left:14px;right:14px;bottom:10px;transform:rotate(-6deg);border:3px solid var(--stamp);border-radius:10px;color:var(--stamp);background:rgba(255,248,238,.88);padding:4px 6px;text-align:center;font-size:13px;line-height:1.35;font-weight:900;pointer-events:none;animation:lg-stamp .35s cubic-bezier(.2,1.6,.4,1)}
+@keyframes lg-stamp{from{transform:rotate(-6deg) scale(1.9);opacity:0}to{transform:rotate(-6deg) scale(1);opacity:1}}
+.lg-note-fold{min-height:44px;min-width:44px;border:0;background:none;font-size:18px;padding:0;pointer-events:auto}
+.lg-top-r{display:flex;gap:8px}
+
+/* 아래쪽: 흡연 단추 줄 + 채팅(겹치지 않게 한 묶음 안에서 배치) */
+.lg-bottom{position:absolute;left:calc(var(--sl) + var(--gap));right:calc(var(--sr) + var(--gap));bottom:calc(var(--sb) + var(--gap));display:flex;flex-direction:column-reverse;gap:8px;align-items:stretch}
+.lg-dock{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
+.lg-dock .grp{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.lg-dock .grp:empty{display:none}
+.lg-dock .grp.chips{flex-wrap:wrap!important;max-width:min(560px,100%)}
+.lg-chat{width:100%;max-width:380px;display:flex;flex-direction:column;gap:6px;align-self:flex-start}
+.lg-log{pointer-events:auto;max-height:104px;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;gap:3px;padding:6px 8px;font-size:13px;line-height:1.35;background:color-mix(in srgb,var(--paper) 86%,transparent);border:2px solid var(--rule);border-radius:12px}
+.lg-log:empty{display:none}
+.lg-log p{margin:0;word-break:break-all}.lg-log b{color:var(--accent)}.lg-log p.me b{color:var(--go)}
+.lg-form{display:flex;gap:6px;pointer-events:auto}
+.lg-form input{flex:1;min-width:0;min-height:44px;padding:0 12px;border-radius:12px;border:2px solid var(--edge);background:var(--paper);font-size:16px}
+.lg-chat-toggle{display:none}
+
+/* 말풍선(머리 위) */
+.lg-bubbles{position:absolute;inset:0;overflow:hidden}
+.lg-bub{position:absolute;left:0;top:0;max-width:170px;padding:5px 9px;border-radius:12px;background:var(--bub);color:var(--bub-ink);border:2px solid var(--ink);font-size:13px;font-weight:700;line-height:1.3;box-shadow:2px 3px 0 rgba(80,35,12,.3);will-change:transform;transition:opacity .4s;word-break:break-all}
+.lg-bub small{display:block;font-size:10px;color:var(--ink2)}
+.lg-bub.out{opacity:0}
+
+/* 알림 */
+.lg-toast{position:absolute;left:50%;top:calc(var(--st) + 74px);transform:translateX(-50%);background:var(--paper);border:2px solid var(--stamp);color:var(--stamp);padding:8px 14px;border-radius:12px;font-weight:900;font-size:14px;box-shadow:var(--soft);transition:opacity .4s;white-space:nowrap}
+
+/* 로비·설정 */
+.lg-modal{position:absolute;inset:0;display:grid;place-items:center;background:var(--scrim);pointer-events:auto;padding:calc(var(--st) + 12px) calc(var(--sr) + 12px) calc(var(--sb) + 12px) calc(var(--sl) + 12px);overflow:auto}
+.lg-sheet{width:min(440px,100%);max-height:100%;overflow:auto;padding:16px 16px 18px;box-sizing:border-box}
+.lg-sheet h1{margin:0;font-size:28px;letter-spacing:-.04em;font-weight:900}
+.lg-sheet .sub{font-size:12px;color:var(--ink2);margin-bottom:10px}
+.lg-sheet h2{margin:14px 0 6px;font-size:13px;color:var(--ink2)}
+.lg-sheet .opts{display:flex;gap:8px;flex-wrap:wrap}
+.lg-sheet input[type=text],.lg-sheet input[type=date],.lg-sheet select{width:100%;box-sizing:border-box;min-height:44px;padding:0 10px;border-radius:12px;border:2px solid var(--edge);background:var(--paper2);font-size:16px}
+.lg-sheet .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.lg-outfits{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.lg-outfits .lg-btn{flex-direction:column;padding:4px 2px;min-height:54px;font-size:12px;white-space:normal;text-align:center;line-height:1.2}
+.lg-sheet .actions{display:flex;gap:8px;margin-top:16px}.lg-sheet .actions .lg-btn{flex:1;min-height:48px;font-size:16px}
+.lg-close{float:right}
+
+/* 짧은 화면(휴대폰 가로)·세로·PC */
+@media (max-height:540px){
+ :root{--gap:8px}
+ .lg-note{width:190px;padding:6px 10px}.lg-note .big{font-size:18px}
+ .lg-log{max-height:52px}
+ .lg-bottom{flex-direction:row;align-items:flex-end;justify-content:space-between}
+ .lg-chat{width:auto;flex:0 1 300px;align-self:flex-end}
+ .lg-chat:not(.open) .lg-form,.lg-chat:not(.open) .lg-log{display:none}
+ .lg-chat-toggle{display:inline-flex}
+ .lg-dock{flex-direction:column;align-items:flex-end;gap:6px}
+ .lg-dock .grp{flex-wrap:nowrap}
+ .lg-sheet h1{font-size:22px}.lg-sheet h2{margin-top:8px}.lg-sheet .actions{margin-top:10px}
+}
+@media (min-width:900px) and (min-height:541px){
+ .lg-bottom{flex-direction:row;align-items:flex-end;justify-content:space-between}
+ .lg-chat{max-width:420px}.lg-log{max-height:160px;font-size:14px}.lg-note{width:250px}
+ .lg-dock{flex-direction:column;align-items:flex-end}
+}
+@media (max-width:420px){.lg-note{width:176px}.lg-note .big{font-size:19px}.lg-btn{padding:0 10px;font-size:13px}.lg-dock .lg-btn{flex:0 0 auto}}
+@media (prefers-reduced-motion:reduce){.lg-bub,.lg-toast{transition:none}.lg-note .lg-stamp{animation:none}}

@@ -19,7 +19,7 @@ try{for(const [id,query,third,action] of specs){if(only&&!only.includes(id))cont
  const context=await browser.newContext({viewport:{width:1440,height:900},deviceScaleFactor:1});
  await context.addInitScript(()=>{localStorage.clear();localStorage.setItem('gwanak-sound-enabled','false');});
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
- const t0=Date.now();await page.goto(`${base}/?quality=${quality}&${query}`);
+ const t0=Date.now();await page.goto(`${base}/hiking/?quality=${quality}&${query}`);
  const progress=setInterval(async()=>{try{console.log(id,JSON.stringify(await page.evaluate(()=>hiking.loading?.())));}catch{}},30000);
  await page.waitForFunction(()=>window.hiking?.started&&!hiking.rendering().compiling,null,{timeout:240000});clearInterval(progress);
  const loadMs=Date.now()-t0,readiness=await page.evaluate(()=>hiking.readiness());

@@ -12,7 +12,7 @@ async function openGame(page,{time='12:00',start='entrance'}={}){
  const errors=[],requests=[];
  page.on('pageerror',e=>errors.push(e.message));
  page.on('request',r=>requests.push(r.url()));
- await page.goto(`/?start=${start}&time=${time}&weather=clear&quality=high`);
+ await page.goto(`/hiking/?start=${start}&time=${time}&weather=clear&season=autumn&quality=high`);
  await page.waitForFunction(()=>window.hiking?.started===true||window.hiking?.loading?.().phase==='error',null,{timeout:300000});
  expect(await page.evaluate(()=>window.hiking.started),'게임 시작').toBe(true);
  return {errors,requests};

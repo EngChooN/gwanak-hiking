@@ -25,7 +25,7 @@ try{
   await context.addInitScript(()=>{localStorage.clear();localStorage.setItem('gwanak-sound-enabled','false');localStorage.setItem('gwanak-stick-used','1');});
   const page=await context.newPage(),errors=[];
   page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text().slice(0,200));});
-  await page.goto(`${base}/?${new URLSearchParams({start:'demo',time:scene.time,weather:'clear',quality})}`);
+  await page.goto(`${base}/hiking/?${new URLSearchParams({start:'demo',time:scene.time,weather:'clear',quality})}`);
   await page.waitForFunction(()=>window.hiking?.started&&!window.hiking.rendering().compiling,null,{timeout:300000});
   await page.evaluate(()=>document.querySelectorAll('dialog[open]').forEach(x=>x.close()));
   await page.evaluate(()=>window.dispatchEvent(new CustomEvent('hiking:command',{detail:{id:'auto'}})));

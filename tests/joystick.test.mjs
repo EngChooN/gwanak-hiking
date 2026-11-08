@@ -29,6 +29,6 @@ test('기준점은 화면 안쪽으로 눌러 고정',()=>{
 test('입력 연결: 왼쪽 절반 터치는 조이스틱, 마우스·기구 사용 중은 둘러보기',()=>{
  const src=readFileSync(new URL('../src/input.js',import.meta.url),'utf8');
  assert.match(src,/e\.pointerType==='mouse'\|\|e\.clientX>=window\.innerWidth\/2\|\|mode\(\)!=='none'/);
- const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
+ const html=readFileSync(new URL('../hiking/index.html',import.meta.url),'utf8');
  for(const id of ['binoculars','phone','view','headlamp','face-forward','stamps','stretch','map-toggle','sound-toggle','hud-hide','help-toggle','auto','sit','tea','run'])assert.ok(html.includes(`id="${id}"`),id);
 });

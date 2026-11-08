@@ -10,7 +10,7 @@ try{
  const context=await browser.newContext({viewport:{width:1440,height:900},deviceScaleFactor:1});
  await context.addInitScript(()=>localStorage.setItem('gwanak-sound-enabled','false'));
  const page=await context.newPage();page.on('pageerror',e=>results.errors.push(e.message));
- await page.goto(`${base}/?outfit=1&start=entrance&time=12:00&weather=clear&quality=high`);
+ await page.goto(`${base}/hiking/?outfit=1&start=entrance&time=12:00&weather=clear&quality=high`);
  await page.waitForFunction(()=>window.hiking?.started&&window.hiking.landscape().ready&&window.hiking.landscape().natureReady,null,{timeout:300000});
  const settle=async()=>{
   await page.evaluate(()=>window.hiking.chunks.ready());

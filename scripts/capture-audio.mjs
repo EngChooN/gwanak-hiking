@@ -10,7 +10,7 @@ let browser;
 try{
  browser=await chromium.launch({channel:'chrome',headless:true});const page=await browser.newPage({viewport:{width:1366,height:768}});
  page.on('pageerror',e=>result.errors.push(e.message));page.on('console',m=>{if(m.text().startsWith('[발소리]'))result.console.push(m.text());});
- await page.goto(base+'/?audioDebug=1&start=demo');await page.waitForFunction(()=>window.hiking?.started);const snapshot=()=>page.evaluate(()=>window.hiking.audio());
+ await page.goto(base+'/hiking/?audioDebug=1&start=demo');await page.waitForFunction(()=>window.hiking?.started);const snapshot=()=>page.evaluate(()=>window.hiking.audio());
  let a=await snapshot();assert.equal(a.context,'입력 대기');assert.equal(a.logs.length,0);result.checks.push('첫 사용자 입력 전 AudioContext 미생성·무음');
  await page.keyboard.press('r');await page.waitForFunction(()=>window.hiking?.started&&window.hiking.audio().decoded===35);a=await snapshot();assert.equal(a.context,'running');assert.deepEqual(a.errors,[]);
  await page.waitForFunction(()=>window.hiking?.started&&window.hiking.audio().peak>.0001,{},{timeout:4000});result.signal=await snapshot();result.checks.push('첫 R 입력으로 AudioContext 시작·35개 디코딩·실제 출력 파형 확인');

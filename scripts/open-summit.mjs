@@ -7,6 +7,6 @@ const s=process.env.AT==='start'?1:route.length-.02;const bearing=process.env.BE
 const browser=await chromium.launch({channel:'chrome',headless:false,args:['--enable-webgl','--ignore-gpu-blocklist','--start-maximized']});
 const context=await browser.newContext({viewport:null});
 await context.addInitScript(({seed,key})=>{if(!sessionStorage.getItem('summit-seeded')){localStorage.setItem(key,JSON.stringify(seed));sessionStorage.setItem('summit-seeded','1');}},{seed:{...initialState(),s,view:'first',paused:true},key:SAVE_KEY});
-const page=await context.newPage();await page.goto(`http://127.0.0.1:${port}/`+(bearing?`?bearing=${bearing}`:''));
+const page=await context.newPage();await page.goto(`http://127.0.0.1:${port}/hiking/`+(bearing?`?bearing=${bearing}`:''));
 console.log('opened summit view');
 await new Promise(r=>browser.on('disconnected',r));

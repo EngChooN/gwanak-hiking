@@ -11,7 +11,7 @@ const result={base,route,styles:{}};
 for(const style of styles){
  const ctx=await browser.newContext({viewport:{width:1280,height:800},deviceScaleFactor:1});
  const page=await ctx.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
- await page.goto(`${base}/?style=${style}&outfit=1&start=entrance&time=12:00&weather=clear&quality=high`);
+ await page.goto(`${base}/hiking/?style=${style}&outfit=1&start=entrance&time=12:00&weather=clear&quality=high`);
  await page.waitForFunction(()=>window.hiking?.started===true,null,{timeout:300000});
  const sample=async label=>{
   await page.evaluate(()=>window.hiking.chunks.ready());await page.waitForTimeout(4000);

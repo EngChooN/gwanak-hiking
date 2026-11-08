@@ -23,7 +23,7 @@ try{
   // 시각을 낮 11시로 고정해 실시간 시각·날씨에 따라 전후 밝기가 달라지지 않게 한다.
   await context.addInitScript(({state,key})=>{localStorage.setItem(key,JSON.stringify(state));localStorage.setItem('gwanak-sound-enabled','false');},{state:{...initialState(),s,view,paused:true},key:SAVE_KEY});
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
-  await page.goto(`${base}/?quality=${quality}&time=11:00&weather=clear`);
+  await page.goto(`${base}/hiking/?quality=${quality}&time=11:00&weather=clear`);
   await page.waitForFunction(()=>window.hiking?.started&&window.hiking?.landscape().ready&&hiking.landscape().natureReady&&!hiking.rendering().compiling,null,{timeout:240000});
   await page.waitForTimeout(12000);
   await page.evaluate(()=>window.__hikingPerformance?.reset());await page.waitForTimeout(6000);

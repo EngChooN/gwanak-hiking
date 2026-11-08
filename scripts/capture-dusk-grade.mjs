@@ -14,7 +14,7 @@ try{for(const [id,where,clock,bino] of specs){if(only&&!only.includes(id))contin
  await context.addInitScript(s=>{localStorage.clear();localStorage.setItem('gwanak-sound-enabled','false');if(s)localStorage.setItem('gwanak-hiking:v1',s);},null);
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
  const start=where==='summit'?'start=summit':'start=demo';
- await page.goto(`${base}/?${start}&time=${clock}&weather=clear&outfit=1&quality=high`);
+ await page.goto(`${base}/hiking/?${start}&time=${clock}&weather=clear&outfit=1&quality=high`);
  await page.waitForFunction(()=>window.hiking?.started&&hiking.landscape().natureReady&&!hiking.rendering().compiling,null,{timeout:300000});
  const closeDialogs=()=>page.evaluate(()=>document.querySelectorAll('dialog[open]').forEach(d=>d.close()));
  await page.waitForTimeout(1500);await closeDialogs();

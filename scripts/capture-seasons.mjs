@@ -19,14 +19,14 @@ for(const name of names.length?names:['forest']){
  const job={...presets[name]};if(!presets[name])throw new Error(`프리셋 없음: ${name}`);
  // --mobile 1: 아이폰 흉내(터치·모바일 화질 상한). 크기는 --size로(예 390x844).
  const context=await browser.newContext(opt.mobile?{viewport,deviceScaleFactor:2,isMobile:true,hasTouch:true,userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1'}:{viewport,deviceScaleFactor:1}),onRoute=job.s!==undefined;let save=null;
- if(onRoute){const probe=await context.newPage();await probe.goto(`${base}/?startMode=manual`,{waitUntil:'domcontentloaded'});
+ if(onRoute){const probe=await context.newPage();await probe.goto(`${base}/hiking/?startMode=manual`,{waitUntil:'domcontentloaded'});
   save=await probe.evaluate(async ({s,lateral})=>{const {initialState}=await import('/src/movement.js');return JSON.stringify({...initialState({start:'demo'}),s,lateral:lateral??0,zone:'route'});},job);await probe.close();}
  await context.addInitScript(save=>{localStorage.clear();localStorage.setItem('gwanak-sound-enabled','false');if(save)localStorage.setItem('gwanak-hiking:v1',save);},save);
  const page=await context.newPage(),errors=[];let loads=0;
  page.on('load',()=>loads++);page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error'||/THREE\.WebGLProgram/.test(m.text()))errors.push(m.text().slice(0,300));});
  const q=new URLSearchParams({time:opt.time??job.time??'11:00',weather:opt.weather??'clear'});if(!opt.mobile)q.set('quality',opt.quality??'high');
  if(!onRoute)q.set('start',job.start??'demo');if(job.bearing!==undefined)q.set('bearing',String(job.bearing));
- await page.goto(`${base}/?${q}`);
+ await page.goto(`${base}/hiking/?${q}`);
  await page.waitForFunction(()=>window.hiking?.started&&window.hiking.landscape().natureReady&&!window.hiking.rendering().compiling,null,{timeout:300000});
  const closeDialogs=()=>page.evaluate(()=>document.querySelectorAll('dialog[open]').forEach(d=>d.close()));
  await page.waitForTimeout(1500);await closeDialogs();

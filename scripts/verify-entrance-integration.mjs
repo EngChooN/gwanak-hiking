@@ -22,7 +22,7 @@ try{for(const spec of specs){if(process.env.ONLY&&!process.env.ONLY.split(',').i
  await context.addInitScript(({key,state})=>{localStorage.setItem(key,JSON.stringify(state));localStorage.setItem('gwanak-sound-enabled','false');},{key:SAVE_KEY,state:{...spec.state,paused:true}});
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
  console.log('준비',spec.id);
- await page.goto(`${base}/?quality=${quality}${process.env.EXTRA??""}`);
+ await page.goto(`${base}/hiking/?quality=${quality}${process.env.EXTRA??""}`);
  await page.waitForFunction(()=>window.hiking?.started&&window.hiking?.landscape().ready&&hiking.landscape().natureReady&&!hiking.rendering().compiling,null,{timeout:300000});
  await page.waitForTimeout(Number(process.env.WARM??4000));await page.evaluate(()=>__hikingPerformance.reset());await page.waitForTimeout(6000);
  const idle=await page.evaluate(()=>__hikingPerformance.report());

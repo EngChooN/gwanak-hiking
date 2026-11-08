@@ -33,7 +33,7 @@ async function open(save,clock,weather){
  const context=await browser.newContext({viewport,deviceScaleFactor:mobile?3:1,isMobile:mobile,hasTouch:mobile});
  await context.addInitScript(save=>{localStorage.clear();localStorage.setItem('gwanak-sound-enabled','false');if(save)localStorage.setItem('gwanak-hiking:v1',save);},save);
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
- await page.goto(`${base}/?${[save?'':'start=demo',q(clock,weather)].filter(Boolean).join('&')}`);await ready(page);return {context,page,errors};
+ await page.goto(`${base}/hiking/?${[save?'':'start=demo',q(clock,weather)].filter(Boolean).join('&')}`);await ready(page);return {context,page,errors};
 }
 const probe=await open(null,'11:00','clear');
 const plan=await probe.page.evaluate(async specs=>{const {initialState}=await import('/src/movement.js');const out={};

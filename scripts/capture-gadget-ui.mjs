@@ -11,7 +11,7 @@ try{
  const context=await browser.newContext({viewport:{width:1280,height:720},deviceScaleFactor:1});
  await context.addInitScript(({state,key})=>{localStorage.setItem(key,JSON.stringify(state));localStorage.setItem('gwanak-sound-enabled','false');},{state:{...initialState(),s,view:'first'},key:SAVE_KEY});
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
- await page.goto(`${base}/?quality=balanced&time=11:00&weather=clear`);
+ await page.goto(`${base}/hiking/?quality=balanced&time=11:00&weather=clear`);
  await page.waitForFunction(()=>window.hiking?.started&&window.hiking?.landscape().ready&&!hiking.rendering().compiling,null,{timeout:240000});
  const cmd=(id,value)=>page.evaluate(([id,value])=>window.dispatchEvent(new CustomEvent('hiking:command',{detail:{id,value}})),[id,value]);
  const shot=async(name,wait=1500)=>{await page.waitForTimeout(wait);await (await waitChunks(page)).screenshot({path:`${folder}/${name}.png`});const m=await page.evaluate(()=>({mode:document.getElementById('gadget-ui').dataset.mode,gadget:hiking.gadgetView().gadget,view:hiking.gadgetView().view,hudHidden:document.getElementById('app').classList.contains('gadget-hud-hidden')}));rows.push({name,...m,errors:[...errors]});console.log(name,JSON.stringify(m));};

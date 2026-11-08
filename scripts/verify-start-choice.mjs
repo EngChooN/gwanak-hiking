@@ -7,7 +7,7 @@ const browser=await chromium.launch({channel:'chrome',headless:true,args:['--ena
 try{
  const page=await browser.newPage({viewport:{width:1280,height:900}});page.on('pageerror',e=>out.errors.push(e.message));
  const ready=()=>page.waitForFunction(()=>window.hiking?.started&&window.hiking?.landscape().ready,null,{timeout:300000});
- await page.goto(`${base}/?quality=low`);await ready();out.initial=await page.evaluate(()=>({s:hiking.snapshot().s,zone:hiking.snapshot().zone}));
+ await page.goto(`${base}/hiking/?quality=low`);await ready();out.initial=await page.evaluate(()=>({s:hiking.snapshot().s,zone:hiking.snapshot().zone}));
  for(const [id,expected] of [['start-entrance','plaza'],['start-demo',DEMO_START]]){
   await page.keyboard.press('m');await page.locator(`#${id}`).click();await page.waitForLoadState('load');await ready();
   const {s,zone}=await page.evaluate(()=>hiking.snapshot());out[id]={s,zone,expected,ok:expected==='plaza'?zone==='plaza':zone==='route'&&Math.abs(s-expected)<1e-6,url:page.url()};

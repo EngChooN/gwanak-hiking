@@ -8,7 +8,7 @@ const context=await browser.newContext({viewport:{width:1280,height:800},deviceS
 await context.addInitScript(()=>{localStorage.clear();localStorage.setItem('gwanak-sound-enabled','false');});
 const page=await context.newPage(),errors=[];
 page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error'||/THREE\.WebGLProgram/.test(m.text()))errors.push(m.text().slice(0,200));});
-await page.goto(`${base}/?${new URLSearchParams({style:'toon',time:'11:00',weather:'clear',quality:'2'})}`);
+await page.goto(`${base}/hiking/?${new URLSearchParams({style:'toon',time:'11:00',weather:'clear',quality:'2'})}`);
 for(let i=0;;i++){try{await page.waitForFunction(()=>window.hiking?.started&&window.hiking.landscape().natureReady&&!window.hiking.rendering().compiling,null,{timeout:300000});break;}catch(e){if(i>=3||!/destroyed|navigation/.test(e.message))throw e;await page.waitForLoadState('load');}}
 await page.evaluate(()=>document.querySelectorAll('dialog[open]').forEach(x=>x.close()));
 if(await page.evaluate(()=>window.hiking.snapshot().paused))await page.evaluate(()=>window.dispatchEvent(new CustomEvent('hiking:command',{detail:{id:'pause'}})));

@@ -5,7 +5,7 @@ const base=process.env.BASE_URL??'http://127.0.0.1:5195',dir='artifacts/distance
 const browser=await chromium.launch({channel:'chrome',headless:true,args:['--enable-webgl','--ignore-gpu-blocklist']});
 try{for(const start of ['entrance','gate','demo']){
  const ctx=await browser.newContext({viewport:{width:1440,height:900}});await ctx.addInitScript(()=>{localStorage.clear();localStorage.setItem('gwanak-sound-enabled','false');});
- const page=await ctx.newPage();await page.goto(`${base}/?quality=low&start=${start}&time=12:00&weather=clear&outfit=1`);
+ const page=await ctx.newPage();await page.goto(`${base}/hiking/?quality=low&start=${start}&time=12:00&weather=clear&outfit=1`);
  await page.waitForFunction(()=>window.hiking?.started,null,{timeout:240000});
  if(start==='demo'){await page.keyboard.down('w');await page.waitForTimeout(3000);await page.keyboard.up('w');}
  await page.waitForTimeout(1500);

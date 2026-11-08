@@ -8,11 +8,11 @@ const errors=[],report={};
 // 계단은 한 칸에 한 발: 실제로 디딘 순간(hiking:step, landing)의 수평 간격과 디딤판 높이 턱 간격을 잰다. 흙길·바위는 발소리 빈도를 잰다.
 for(const [name,s] of [['08-계단',3120],['09-나무계단',3800],['10-바위',2100],['11-흙길',4530]]){
  const context=await browser.newContext({viewport:{width:1280,height:800},deviceScaleFactor:1});
- const probe=await context.newPage();await probe.goto(`${base}/?style=toon&startMode=manual`,{waitUntil:'domcontentloaded'});
+ const probe=await context.newPage();await probe.goto(`${base}/hiking/?style=toon&startMode=manual`,{waitUntil:'domcontentloaded'});
  const save=await probe.evaluate(async s=>{const {initialState}=await import('/src/movement.js');return JSON.stringify({...initialState({start:'demo'}),s,lateral:0,zone:'route',view:'third'});},s);await probe.close();
  await context.addInitScript(save=>{localStorage.clear();localStorage.setItem('gwanak-sound-enabled','false');localStorage.setItem('gwanak-hiking:v1',save);},save);
  const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text().slice(0,200));});
- await page.goto(`${base}/?${new URLSearchParams({style:'toon',time:'11:00',weather:'clear',quality:'2'})}`);
+ await page.goto(`${base}/hiking/?${new URLSearchParams({style:'toon',time:'11:00',weather:'clear',quality:'2'})}`);
  for(let i=0;;i++){try{await page.waitForFunction(()=>window.hiking?.started&&window.hiking.landscape().natureReady&&!window.hiking.rendering().compiling,null,{timeout:300000});break;}catch(e){if(i>=3||!/destroyed|navigation/.test(e.message))throw e;await page.waitForLoadState('load');}}
  await page.evaluate(()=>document.querySelectorAll('dialog[open]').forEach(x=>x.close()));
  const cmd=id=>page.evaluate(id=>window.dispatchEvent(new CustomEvent('hiking:command',{detail:{id}})),id);

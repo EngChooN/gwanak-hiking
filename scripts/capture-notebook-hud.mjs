@@ -60,7 +60,7 @@ for(const [dev,o] of Object.entries(DEVICES)){
   const ctx=await browser.newContext({viewport:o.viewport,deviceScaleFactor:o.touch?2:1,isMobile:o.touch,hasTouch:o.touch});
   await ctx.addInitScript(()=>{localStorage.clear();localStorage.setItem('gwanak-sound-enabled','false');localStorage.setItem('gwanak-stick-used','1');});
   const page=await ctx.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
-  await page.goto(`${base}/?start=${process.env.START??'demo'}&time=${TIMES[t]}&weather=clear&quality=${process.env.QUALITY??'low'}`);
+  await page.goto(`${base}/hiking/?start=${process.env.START??'demo'}&time=${TIMES[t]}&weather=clear&quality=${process.env.QUALITY??'low'}`);
   await page.waitForFunction(()=>window.hiking?.started,null,{timeout:300000});await page.waitForTimeout(2500);
   await page.evaluate(()=>document.querySelectorAll('dialog[open]').forEach(d=>d.close()));
   await page.mouse.move(2,2);

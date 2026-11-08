@@ -29,7 +29,7 @@ try{
   await context.addInitScript(()=>{localStorage.clear();localStorage.setItem('gwanak-sound-enabled','false');});
   const page=await context.newPage(),errors=[];
   page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text().slice(0,200));});
-  await page.goto(`${base}/?${new URLSearchParams({style:'toon',outfit:'1',start:'summit',bearing:'345.6',time:scene.time,weather:'clear',quality})}`);
+  await page.goto(`${base}/hiking/?${new URLSearchParams({style:'toon',outfit:'1',start:'summit',bearing:'345.6',time:scene.time,weather:'clear',quality})}`);
   // 시작 화면이 한 번 다시 불러올 수 있어(저장 상태 정리) 준비될 때까지 몇 번 다시 기다린다.
   for(let i=0;;i++){try{await page.waitForFunction(()=>window.hiking?.started&&window.hiking.landscape().natureReady&&!window.hiking.rendering().compiling,null,{timeout:300000});break;}catch(e){if(i>=3||!/destroyed|navigation/.test(e.message))throw e;await page.waitForLoadState('load');}}
   await page.evaluate(()=>document.querySelectorAll('dialog[open]').forEach(x=>x.close()));

@@ -15,7 +15,7 @@ try{
   // 검증 탭에서 CSS 적용은 유지하고 개발 서버 자동 새로고침만 끈다.
   await context.route('**/@vite/client',r=>r.fulfill({body:`export const createHotContext=()=>({accept(){},dispose(){},prune(){},on(){},invalidate(){},data:{}});export const updateStyle=(id,css)=>{let e=document.getElementById(id);if(!e){e=document.createElement('style');e.id=id;document.head.append(e);}e.textContent=css;};export const removeStyle=id=>document.getElementById(id)?.remove();export const injectQuery=url=>url;export class ErrorOverlay extends HTMLElement {}`,contentType:'application/javascript'}));
   page=await context.newPage();page.on('pageerror',e=>{errors.push(e.message);console.log('페이지 오류',e.message);});
-  await page.goto('http://127.0.0.1:5175/?quality=balanced');await page.waitForFunction(()=>window.hiking?.started&&window.hiking?.landscape().ready&&hiking.landscape().natureReady&&!hiking.rendering().compiling,null,{timeout:240000});
+  await page.goto('http://127.0.0.1:5175/hiking/?quality=balanced');await page.waitForFunction(()=>window.hiking?.started&&window.hiking?.landscape().ready&&hiking.landscape().natureReady&&!hiking.rendering().compiling,null,{timeout:240000});
  };
  const diagnostic=setInterval(async()=>{try{console.log('준비 상태',await page?.evaluate(()=>({ready:window.hiking?.landscape().ready,nature:window.hiking?.landscape().natureReady,compiling:window.hiking?.rendering().compiling})));}catch{}},30000);diagnostic.unref();
  const selected=process.env.ONLY?.split(',');if(selected)rows.push(...JSON.parse(readFileSync(`${dir}/results.json`)).rows.filter(r=>!selected.includes(r.id)));

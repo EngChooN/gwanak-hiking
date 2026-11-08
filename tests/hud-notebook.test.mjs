@@ -36,7 +36,7 @@ test('진행 눈금·남은 거리·화질 글자',()=>{
  assert.deepEqual([...SHEETS],['backpack','rest','settings','jump','free']);
 });
 test('지킬 조건: 일시정지 없음·조이스틱·구간 이동은 설정 개발용·기능 버튼 id 유지',()=>{
- const html=read('index.html');
+ const html=read('hiking/index.html');
  assert.ok(!/id="pause|일시정지/.test(html),'일시정지 버튼 없음');
  for(const id of ['auto','run','binoculars','phone','sit','tea','view','headlamp','face-forward','stretch','map-toggle','stamps','sound-toggle','hud-hide','help-toggle','quality','joystick','look-zone','start-entrance','start-demo'])assert.match(html,new RegExp(`id="${id}"`),id);
  assert.match(html,/id="nb-sheet-settings"[^]*class="nb-dev-slot"/,'설정 탭에 개발용 칸');

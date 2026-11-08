@@ -8,7 +8,7 @@ const browser=await chromium.launch({channel:'chrome',headless:true,args:['--ena
 try{
  const context=await browser.newContext({viewport:{width:1440,height:900},deviceScaleFactor:1});
  await context.addInitScript(()=>{localStorage.clear();localStorage.setItem('gwanak-sound-enabled','false');});
- const page=await context.newPage();await page.goto(`${base}/?quality=balanced&start=${start}&outfit=1`);
+ const page=await context.newPage();await page.goto(`${base}/hiking/?quality=balanced&start=${start}&outfit=1`);
  await page.waitForFunction(()=>window.hiking?.started,null,{timeout:240000});await page.waitForTimeout(Number(process.env.WAIT??15000));
  const result=await page.evaluate(async()=>{
   const THREE=await import('/node_modules/.vite/deps/three.js').catch(()=>null);

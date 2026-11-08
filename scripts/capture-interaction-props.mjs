@@ -28,7 +28,7 @@ async function open(query,save){
  const context=await browser.newContext({viewport:{width:1440,height:900},deviceScaleFactor:1});
  await context.addInitScript(save=>{localStorage.clear();localStorage.setItem('gwanak-sound-enabled','false');if(save)localStorage.setItem('gwanak-hiking:v1',save);},save);
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
- await page.goto(`${base}/?${[query,env].filter(Boolean).join('&')}`);await ready(page);return {context,page,errors};
+ await page.goto(`${base}/hiking/?${[query,env].filter(Boolean).join('&')}`);await ready(page);return {context,page,errors};
 }
 // 1) 자리 좌표와 저장 상태 틀을 얻는다.
 const probe=await open('start=demo');

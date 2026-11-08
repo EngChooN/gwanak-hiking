@@ -16,7 +16,7 @@ for(const [name,viewport,touch] of cases){
  await ctx.addInitScript(()=>{localStorage.clear();localStorage.setItem('gwanak-sound-enabled','false');});
  const page=await ctx.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
  const r={checks:[],errors};const check=(label,ok,detail)=>{r.checks.push({label,ok:!!ok,detail});if(!ok){fail++;console.log(`  ✖ ${name}: ${label}`,detail??'');}};
- await page.goto(`${base}/?start=plaza&time=12:00&weather=clear&quality=low`);
+ await page.goto(`${base}/hiking/?start=plaza&time=12:00&weather=clear&quality=low`);
  await page.waitForFunction(()=>window.hiking?.started,null,{timeout:300000});await page.waitForTimeout(2500);
  await page.evaluate(()=>document.querySelectorAll('dialog[open]').forEach(d=>d.close()));
  const snap=()=>page.evaluate(()=>{const s=hiking.snapshot();return {zone:s.zone,s:s.s,lateral:s.lateral,auto:s.auto,pose:s.pose,view:s.view,gadget:s.gadget,running:s.running,teaReady:s.teaReady,heading:hiking.orientation().cameraHeading,pos:hiking.position(),paused:s.paused,plaza:s.plaza};});

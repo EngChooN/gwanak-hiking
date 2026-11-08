@@ -15,7 +15,7 @@ try{for(const [id,name,s,bearing,view] of views){
  await context.addInitScript(({state,key})=>{localStorage.setItem(key,JSON.stringify(state));localStorage.setItem('gwanak-sound-enabled','false');},{state:{...initialState(),s,view,paused:true},key:SAVE_KEY});
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>{errors.push(e.message);console.error('페이지 오류',e.message);});
  const diagnostic=setInterval(async()=>{try{console.log('준비 상태',id,await page.evaluate(()=>({ready:window.hiking?.landscape().ready,natureReady:window.hiking?.landscape().natureReady,errors:window.hiking?.landscape().errors})));}catch{}},45000);
- await page.goto(`http://127.0.0.1:5176/?quality=${process.env.QUALITY??'high'}${bearing===null?'':`&bearing=${bearing}&fov=55`}${extra}`);
+ await page.goto(`http://127.0.0.1:5176/hiking/?quality=${process.env.QUALITY??'high'}${bearing===null?'':`&bearing=${bearing}&fov=55`}${extra}`);
  await page.waitForFunction(()=>window.hiking?.started&&window.hiking?.landscape().ready&&hiking.landscape().natureReady&&!hiking.rendering().compiling,null,{timeout:240000});
  clearInterval(diagnostic);await page.waitForTimeout(9000);
  if(view==='third'){await page.keyboard.press('Space');await page.keyboard.down('w');await page.waitForTimeout(2000);}

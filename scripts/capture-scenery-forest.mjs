@@ -12,7 +12,7 @@ for(const [id,s,view,quality] of [['entrance',1,'first','high'],['valley',route.
  const context=await browser.newContext({viewport:{width:1440,height:900},deviceScaleFactor:1});
  await context.addInitScript(({state,key})=>localStorage.setItem(key,JSON.stringify(state)),{state:{...initialState(),s,view,paused:true},key:SAVE_KEY});
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
- await page.goto(`http://127.0.0.1:5176/?quality=${quality}`);
+ await page.goto(`http://127.0.0.1:5176/hiking/?quality=${quality}`);
  await page.waitForFunction(()=>window.hiking?.started&&window.hiking?.landscape().ready&&hiking.landscape().natureReady&&!hiking.rendering().compiling,null,{timeout:240000});
  await page.waitForTimeout(14000);
  if(view==='third'){await page.keyboard.press('Space');await page.keyboard.down('w');await page.waitForTimeout(2000);}

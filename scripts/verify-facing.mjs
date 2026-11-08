@@ -15,7 +15,7 @@ try{
   await context.addInitScript(({key,state})=>{localStorage.setItem(key,JSON.stringify(state));localStorage.setItem('gwanak-sound-enabled','false');},{key:SAVE_KEY,state:{...initialState(),s,view:'third',paused:false}});
   await context.route('**/@vite/client',r=>r.fulfill({contentType:'application/javascript',body:`export const createHotContext=()=>({accept(){},dispose(){},prune(){},on(){},invalidate(){},data:{}});export const updateStyle=(id,css)=>{let e=document.getElementById(id);if(!e){e=document.createElement('style');e.id=id;document.head.append(e);}e.textContent=css;};export const removeStyle=id=>document.getElementById(id)?.remove();export const injectQuery=url=>url;export class ErrorOverlay extends HTMLElement {}`}));
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
-  await page.goto('http://127.0.0.1:5178/?quality=balanced');await page.waitForFunction(()=>window.hiking?.started&&window.hiking?.landscape().natureReady&&!hiking.rendering().compiling,null,{timeout:240000});console.log('준비',area,s,sample(s).slope);
+  await page.goto('http://127.0.0.1:5178/hiking/?quality=balanced');await page.waitForFunction(()=>window.hiking?.started&&window.hiking?.landscape().natureReady&&!hiking.rendering().compiling,null,{timeout:240000});console.log('준비',area,s,sample(s).slope);
   await page.evaluate(()=>{const base=__hiker.ground;__hiker.ground=args=>{const result=base(args);window.__facingContacts=result;return result;};});
   if((await page.evaluate(()=>hiking.snapshot())).paused)await page.keyboard.press('Space');
   // 정상 조작으로 가까운 3인칭 시점 선택.

@@ -19,7 +19,7 @@ try{for(const [id,start,drag,wheel] of specs){if(only&&!only.includes(id))contin
  const context=await browser.newContext({viewport:{width:1440,height:900},deviceScaleFactor:1});
  await context.addInitScript(()=>{localStorage.clear();localStorage.setItem('gwanak-sound-enabled','false');});
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
- await page.goto(`${base}/?start=${start}&${env}`);
+ await page.goto(`${base}/hiking/?start=${start}&${env}`);
  await page.waitForFunction(()=>window.hiking?.started&&hiking.landscape().natureReady&&!hiking.rendering().compiling,null,{timeout:300000});
  await page.keyboard.press('v');await page.waitForTimeout(2500);
  if(drag){await page.mouse.move(720,450);await page.mouse.down();await page.mouse.move(720+drag,450,{steps:16});await page.mouse.up();}

@@ -17,7 +17,7 @@ try{for(const [id,s,time,label] of sites){if(only&&!only.includes(id))continue;
  const ctx=await browser.newContext({viewport:{width:1440,height:900},deviceScaleFactor:1}),errors=[];
  await ctx.addInitScript(({seed,key})=>{localStorage.clear();localStorage.setItem('gwanak-sound-enabled','false');localStorage.setItem(key,JSON.stringify(seed));},{seed:{...initialState(),s,view:'first',paused:true},key:SAVE_KEY});
  const page=await ctx.newPage();page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
- const t0=Date.now();await page.goto(`${base}/?outfit=2&time=${time}&weather=clear&quality=balanced`);
+ const t0=Date.now();await page.goto(`${base}/hiking/?outfit=2&time=${time}&weather=clear&quality=balanced`);
  await page.waitForFunction(()=>window.hiking?.started&&window.hiking?.landscape().ready&&!window.hiking.rendering().compiling,null,{timeout:240000});
  await page.waitForTimeout(6000); // 하늘·조명 수렴
  const rendering=await page.evaluate(()=>hiking.rendering());

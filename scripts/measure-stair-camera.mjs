@@ -9,7 +9,7 @@ page.on('pageerror',e=>console.log('ERR',e.message));
 const results={};
 for(const [name,s,view,key] of [['up-third',3720,'third','w'],['down-third',4560,'third','w'],['up-first',3720,'first','w']]){
  const seeded={...initialState(),s,view,paused:false};
- await page.goto('http://127.0.0.1:5173/?outfit=1&quality=balanced&time=12:00&weather=clear');
+ await page.goto('http://127.0.0.1:5173/hiking/?outfit=1&quality=balanced&time=12:00&weather=clear');
  await page.evaluate(v=>localStorage.setItem('gwanak-hiking:v1',v),JSON.stringify(seeded));
  await page.reload();await page.waitForFunction(()=>window.hiking?.started,null,{timeout:180000});
  if((await page.evaluate(()=>window.hiking.snapshot().paused)))await page.keyboard.press('Space');

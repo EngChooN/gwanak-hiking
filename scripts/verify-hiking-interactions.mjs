@@ -12,7 +12,7 @@ try{for(const [id,s,view,bearing] of [['entrance',10,'first',0],['valley',route.
  const context=await browser.newContext({viewport:{width:1440,height:900},deviceScaleFactor:1});
  await context.addInitScript(({state,key})=>{if(!sessionStorage.getItem('interaction-seeded')){localStorage.setItem(key,JSON.stringify(state));sessionStorage.setItem('interaction-seeded','1');}localStorage.setItem('gwanak-hiking:sound:v1','false');},{state:{...initialState(),s,view,paused:true,stamina:40},key:SAVE_KEY});
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
- await page.goto(`http://127.0.0.1:5176/?bearing=${bearing}`);
+ await page.goto(`http://127.0.0.1:5176/hiking/?bearing=${bearing}`);
  await page.waitForFunction(()=>window.hiking?.started&&window.hiking?.landscape().ready&&hiking.landscape().natureReady&&!hiking.rendering().compiling,null,{timeout:240000});
  await page.waitForTimeout(8000);await page.evaluate(()=>__hikingPerformance.reset());await page.waitForTimeout(10000);
  const metrics=await page.evaluate(()=>({performance:__hikingPerformance.report(),rendering:hiking.rendering(),landscape:hiking.landscape()}));

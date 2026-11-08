@@ -12,7 +12,7 @@ try{
  await context.route('**/*',r=>new URL(r.request().url()).origin===new URL(base).origin?r.continue():r.abort());
  await context.addInitScript(({state,key})=>{localStorage.setItem(key,JSON.stringify(state));localStorage.setItem('gwanak-sound-enabled','false');},{state:{...initialState(),s:route.length-5,view:'first',paused:true},key:SAVE_KEY});
  const page=await context.newPage();page.on('pageerror',e=>result.errors.push(e.message));
- await page.goto(`${base}/?quality=high&bearing=0&fov=55`);
+ await page.goto(`${base}/hiking/?quality=high&bearing=0&fov=55`);
  await page.waitForFunction(()=>window.hiking?.started&&window.hiking?.landscape().ready&&window.hiking?.landscape().natureReady&&!window.hiking.rendering().compiling,null,{timeout:240000});
  await page.waitForTimeout(2000);result.metrics=await page.evaluate(()=>window.__hikingMetrics??hiking.landscape());
  await (await waitChunks(page)).screenshot({path:`${folder}/city-high-north.png`});

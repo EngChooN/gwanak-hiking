@@ -12,7 +12,7 @@ try{
   const context=await browser.newContext({viewport:{width:1280,height:800},deviceScaleFactor:1});
   await context.addInitScript(({state,key})=>{localStorage.setItem(key,JSON.stringify(state));localStorage.setItem('gwanak-sound-enabled','false');},{state:{...initialState(),s,view:c.view,paused:true},key:SAVE_KEY});
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
-  await page.goto(`${base}/?quality=balanced&time=11:00&weather=clear`);
+  await page.goto(`${base}/hiking/?quality=balanced&time=11:00&weather=clear`);
   await page.waitForFunction(()=>window.hiking?.started&&window.hiking?.landscape().ready&&!hiking.rendering().compiling,null,{timeout:240000});
   await page.addStyleTag({content:'#pause-overlay{display:none!important}'});
   await page.evaluate(()=>window.dispatchEvent(new CustomEvent('hiking:command',{detail:{id:'pause'}})));await page.waitForTimeout(1500);

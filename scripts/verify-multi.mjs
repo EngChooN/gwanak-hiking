@@ -6,7 +6,7 @@ const browser=await chromium.launch({channel:'chrome',headless:true,args:['--ena
 const ctx=await browser.newContext({viewport:{width:1100,height:680},deviceScaleFactor:1,recordVideo:process.env.VIDEO?{dir:`${dir}/video`,size:{width:1100,height:680}}:undefined});
 await ctx.addInitScript(()=>{localStorage.clear();localStorage.setItem('gwanak-sound-enabled','false');});
 const errors=[];const open=async(name)=>{const p=await ctx.newPage();p.on('pageerror',e=>errors.push(name+': '+e.message));p.on('console',m=>{if(m.type()==='error')errors.push(name+': '+m.text());});
- await p.goto(`http://127.0.0.1:${port}/?multi=verify&name=${encodeURIComponent(name)}&start=entrance&time=13:00&weather=clear&quality=balanced&outfit=${name==='하늘'?2:4}`);
+ await p.goto(`http://127.0.0.1:${port}/hiking/?multi=verify&name=${encodeURIComponent(name)}&start=entrance&time=13:00&weather=clear&quality=balanced&outfit=${name==='하늘'?2:4}`);
  await p.waitForFunction(()=>window.hiking?.started&&window.hiking?.multi,null,{timeout:180000});return p;};
 const A=await open('하늘'),B=await open('바다');
 const out={steps:[]},log=(k,v)=>{out.steps.push({k,...v});console.log(k,JSON.stringify(v).slice(0,400));};

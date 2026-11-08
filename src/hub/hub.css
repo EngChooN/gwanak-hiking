@@ -1,0 +1,40 @@
+/* 허브 — 등산 수첩 종이 톤. 낮·노을·밤 변수는 hud-notebook.css와 같은 값. */
+:root{--paper:#fbf3df;--paper2:#f4e7c8;--ink:#4a3618;--ink2:#7a5f3a;--edge:#b49563;--rule:#d9c79d;--accent:#b8452e;--shadow:rgba(60,40,10,.25);
+ --sky:#bfe3ee;--sun:#ffd86b;--far:#8fb59a;--near:#5f9a73;--tree:#2f6b4a;--bld:#c9b48c;--ground:#8a6a3a;--win:#f2d27a}
+:root[data-hub-time=dusk]{--paper:#f6e6c4;--paper2:#efdcb4;--ink:#45301a;--ink2:#76593a;--edge:#a8834f;--rule:#d4bb8a;--accent:#a8402a;--shadow:rgba(60,25,10,.3);
+ --sky:#f2a97a;--sun:#ffe3a0;--far:#b0806a;--near:#7a5a52;--tree:#4a3a3a;--bld:#8a6a68;--ground:#5e463e;--win:#ffd98a}
+:root[data-hub-time=night]{--paper:#3b3024;--paper2:#43372a;--ink:#f1e4c4;--ink2:#c9b48c;--edge:#17110a;--rule:#5a4a35;--accent:#e0795d;--shadow:rgba(0,0,0,.5);
+ --sky:#1c2a4a;--sun:#e8e4c8;--far:#2f4660;--near:#223548;--tree:#142433;--bld:#33405c;--ground:#1a1f30;--win:#ffd36e}
+html,body{margin:0;min-height:100%}
+body{background:var(--paper2);color:var(--ink);font-family:"Apple SD Gothic Neo","Pretendard",-apple-system,"Malgun Gothic",sans-serif;-webkit-text-size-adjust:100%}
+#hub{max-width:960px;margin:0 auto;box-sizing:border-box;padding:max(28px,env(safe-area-inset-top)) max(20px,env(safe-area-inset-right)) max(28px,env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left))}
+.hub-head h1{margin:0 0 4px;font-size:30px;font-weight:800;letter-spacing:-.03em}
+.hub-head p{margin:0 0 22px;color:var(--ink2);font-size:15px}
+.hub-grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.hub-card{display:flex;flex-direction:column;min-height:44px;border:2px solid var(--ink);border-radius:14px;background:var(--paper);color:inherit;text-decoration:none;overflow:hidden;box-shadow:0 3px 0 var(--ink),0 8px 18px var(--shadow);transition:transform .12s}
+.hub-card:nth-child(odd){transform:rotate(-.5deg)}.hub-card:nth-child(even){transform:rotate(.5deg)}
+.hub-card:hover{transform:translateY(-2px)}
+.hub-card:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
+.hub-card:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.hub-art{position:relative;border-bottom:2px solid var(--ink);line-height:0}
+.hub-art svg{display:block;width:100%;height:auto;aspect-ratio:2/1}
+.hub-art .sky{fill:var(--sky)}.hub-art .sun{fill:var(--sun)}.hub-art .far{fill:var(--far)}.hub-art .near{fill:var(--near)}.hub-art .tree{fill:var(--tree)}.hub-art .flag{fill:var(--accent)}
+.hub-art .win rect{fill:var(--win)}.hub-art .rail{fill:var(--ink)}.hub-art .smoke{stroke:var(--sun);stroke-width:3;stroke-linecap:round;opacity:.8}
+.hub-art g.far rect{fill:var(--bld)}.hub-art .near[x]{fill:var(--ground)}
+.hub-stamp{position:absolute;right:10px;top:10px;line-height:1;padding:5px 9px;border:2px solid var(--accent);border-radius:8px;color:var(--accent);background:color-mix(in srgb,var(--paper) 88%,transparent);font-size:12px;font-weight:800;transform:rotate(6deg)}
+.hub-body{display:flex;flex-direction:column;gap:6px;padding:14px 16px 16px}
+.hub-place{font-size:12px;font-weight:700;color:var(--ink2)}
+.hub-title{font-size:23px;font-weight:800;letter-spacing:-.02em}
+.hub-desc{font-size:14px;line-height:1.45;color:var(--ink2)}
+.hub-tags{display:flex;flex-wrap:wrap;gap:6px}.hub-tags i{font-style:normal;font-size:12px;padding:3px 8px;border:1px solid var(--rule);border-radius:99px;background:var(--paper2);color:var(--ink2)}
+.hub-go{margin-top:6px;align-self:flex-start;min-height:44px;box-sizing:border-box;display:inline-flex;align-items:center;padding:0 18px;border-radius:10px;background:var(--accent);color:#fff8e8;font-weight:800;font-size:15px;border:2px solid var(--ink);box-shadow:0 2px 0 var(--ink)}
+.hub-foot{margin-top:26px;text-align:center;font-size:12px;color:var(--ink2)}
+@media (max-height:480px) and (orientation:landscape){
+ #hub{padding-top:max(12px,env(safe-area-inset-top));padding-bottom:12px}
+ .hub-head{display:flex;align-items:baseline;gap:12px}.hub-head h1{font-size:22px}.hub-head p{margin-bottom:12px;font-size:13px}
+ .hub-grid{grid-template-columns:1fr 1fr;gap:12px}
+ .hub-card{flex-direction:row}.hub-art{width:42%;flex:none;border-bottom:0;border-right:2px solid var(--ink)}.hub-art svg{height:100%;aspect-ratio:auto}
+ .hub-body{padding:10px 12px;gap:3px}.hub-title{font-size:18px}.hub-desc{font-size:12px}.hub-tags,.hub-foot{display:none}
+}
+@media (min-width:1200px){#hub{max-width:1040px;padding-top:6vh}.hub-head h1{font-size:38px}}
+@media (prefers-reduced-motion:reduce){.hub-card{transition:none}}

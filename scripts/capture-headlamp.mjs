@@ -7,7 +7,7 @@ mkdirSync(out,{recursive:true});
 const b=await chromium.launch({channel:'chrome',headless:true,args:['--enable-webgl','--ignore-gpu-blocklist','--use-angle=metal']});
 const p=await b.newPage({viewport:{width:1100,height:700}});
 p.on('pageerror',e=>console.log('ERR',e.message));
-await p.goto(`${base}/?outfit=1&start=gate&time=23:00&weather=clear`);
+await p.goto(`${base}/hiking/?outfit=1&start=gate&time=23:00&weather=clear`);
 await p.waitForFunction(()=>!!window.hiking?.ready,null,{timeout:180000});
 await p.evaluate(()=>window.hiking.ready());
 await p.waitForFunction(()=>window.hiking.started===true,null,{timeout:300000});

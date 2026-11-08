@@ -14,7 +14,7 @@ async function scene(point,query){
  const segment=route.segments.find(s=>s.a===route.points[point])??route.segments.reduce((best,s)=>Math.hypot(s.a.x-route.points[point].x,s.a.z-route.points[point].z)<Math.hypot(best.a.x-route.points[point].x,best.a.z-route.points[point].z)?s:best);
  await context.addInitScript(({key,state})=>{localStorage.setItem(key,JSON.stringify(state));localStorage.setItem('gwanak-sound-enabled','false');},{key:SAVE_KEY,state:{...initialState(),s:segment.start,view:'first',paused:true}});
  const page=await context.newPage();page.on('pageerror',error=>results.errors.push(error.message));
- await page.goto(`${base}/?quality=high&fov=55&${query}`);
+ await page.goto(`${base}/hiking/?quality=high&fov=55&${query}`);
  await page.waitForFunction(()=>window.hiking?.started&&window.hiking?.landscape().natureReady&&!window.hiking.rendering().compiling,null,{timeout:240000});
  await page.waitForTimeout(16000);return {context,page};
 }

@@ -9,7 +9,7 @@ try{for(const time of times){
  const ctx=await browser.newContext({viewport:{width:1440,height:900}}),errors=[];
  await ctx.addInitScript(({seed,key})=>{localStorage.clear();localStorage.setItem('gwanak-sound-enabled','false');localStorage.setItem(key,JSON.stringify(seed));},{seed:{...initialState(),s:route.length-120,view:'first',paused:true},key:SAVE_KEY});
  const page=await ctx.newPage();page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
- await page.goto(`${base}/?outfit=2&time=${time}&weather=${weather}&quality=balanced`);
+ await page.goto(`${base}/hiking/?outfit=2&time=${time}&weather=${weather}&quality=balanced`);
  await page.waitForFunction(()=>window.hiking?.started&&window.hiking?.landscape().ready,null,{timeout:240000});
  await page.waitForTimeout(6000); // 하늘·조명이 목표값에 수렴할 시간
  const chip=await page.evaluate(()=>document.getElementById('env-chip').innerText.replace(/\s+/g,' '));

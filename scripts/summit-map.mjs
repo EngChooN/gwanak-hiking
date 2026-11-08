@@ -4,7 +4,7 @@ import {mkdirSync,writeFileSync} from 'node:fs';
 const base=process.env.BASE_URL??'http://127.0.0.1:5190',out=process.env.OUT??'artifacts/summit-free';mkdirSync(out,{recursive:true});
 const browser=await chromium.launch({channel:'chrome',headless:true,args:['--enable-webgl','--ignore-gpu-blocklist']});
 const page=await browser.newPage({viewport:{width:1280,height:800}});const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
-await page.goto(`${base}/?start=summit&quality=low&time=11:00&weather=clear`);
+await page.goto(`${base}/hiking/?start=summit&quality=low&time=11:00&weather=clear`);
 await page.waitForFunction(()=>window.hiking?.started&&window.hiking?.landscape().ready,null,{timeout:240000});
 const result=await page.evaluate(async()=>{
  const m=hiking.summitMap(),{route,sample}=await import('/src/route.js'),S=8,W=m.n*m.cell*S,c=document.createElement('canvas');c.width=c.height=Math.round(W);const g=c.getContext('2d');

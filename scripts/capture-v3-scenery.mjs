@@ -32,7 +32,7 @@ async function open(viewport,query,state){
  const mobile=viewport===phone,context=await browser.newContext({viewport,deviceScaleFactor:mobile?3:1,isMobile:mobile,hasTouch:mobile});
  await context.addInitScript(state=>{localStorage.clear();localStorage.setItem('gwanak-sound-enabled','false');if(state)localStorage.setItem('gwanak-hiking:v1',state);},state);
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
- await page.goto(`${base}/?${query}&quality=${mobile?'low':'high'}`);await ready(page);
+ await page.goto(`${base}/hiking/?${query}&quality=${mobile?'low':'high'}`);await ready(page);
  await page.waitForTimeout(1200);await page.evaluate(()=>document.querySelectorAll('dialog[open]').forEach(d=>d.close()));
  return {context,page,errors};
 }

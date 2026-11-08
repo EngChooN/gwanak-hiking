@@ -12,7 +12,7 @@ try{for(const [id,label,s,wheel] of [['flat-walk','평지 걷기',route.length*.
  const ctx=await browser.newContext({viewport:{width:1440,height:900},deviceScaleFactor:1});
  await ctx.addInitScript(({seed,key})=>localStorage.setItem(key,JSON.stringify(seed)),{seed:{...initialState(),s,view:'third',paused:true},key:SAVE_KEY});
  const page=await ctx.newPage();page.on('pageerror',e=>out.errors.push(e.message));
- await page.goto(`http://127.0.0.1:${port}/`);await page.waitForFunction(()=>window.hiking?.started&&window.hiking?.landscape().ready&&window.hiking?.landscape().natureReady,null,{timeout:180000});await page.waitForTimeout(15000);
+ await page.goto(`http://127.0.0.1:${port}/hiking/`);await page.waitForFunction(()=>window.hiking?.started&&window.hiking?.landscape().ready&&window.hiking?.landscape().natureReady,null,{timeout:180000});await page.waitForTimeout(15000);
  await page.keyboard.press('Space');await page.keyboard.down('w');await page.waitForTimeout(1500);
  if(wheel){await page.mouse.move(720,450);await page.mouse.wheel(0,wheel);await page.waitForTimeout(600);}
  const m=await page.evaluate(()=>({fps:hiking.metrics().fps,dist:hiking.snapshot().distance,contact:hiking.metrics().footContact}));

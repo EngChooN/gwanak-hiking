@@ -21,7 +21,7 @@ try{for(const [id,query,third] of specs){if(only&&!only.includes(id))continue;
  const context=await browser.newContext({viewport:{width:1440,height:900},deviceScaleFactor:1});
  await context.addInitScript(()=>{localStorage.clear();localStorage.setItem('gwanak-sound-enabled','false');});
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
- const t0=Date.now();await page.goto(`${base}/?${query}`);
+ const t0=Date.now();await page.goto(`${base}/hiking/?${query}`);
  if(id==='entrance-first'){await page.waitForTimeout(12000);await (await waitChunks(page)).screenshot({path:`${dir}/loading-progress.png`});globalThis.row0=await page.evaluate(()=>({loading:hiking.loading?.(),text:document.querySelector('#loading-screen .ls-percent')?.textContent,label:document.querySelector('#loading-screen .ls-label')?.textContent}));}
  await page.waitForFunction(()=>window.hiking?.started&&!hiking.rendering().compiling,null,{timeout:240000});
  const loadMs=Date.now()-t0;

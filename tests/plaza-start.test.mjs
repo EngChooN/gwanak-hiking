@@ -127,7 +127,7 @@ test('main.js 연결: 로딩 전 입력·시간 차단, 광장 표시·zone 신�
  assert.match(main,/saved\?restore\(saved\):initialState\(\{start:'plaza'\}\)/);
  assert.match(main,/window\.hiking=\{started:false,ready:\(\)=>readyPromise/);
  assert.match(main,/surfaceHeight|walkingGround\.height\(state\.plaza\.x,state\.plaza\.z,false\)/);
- const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
+ const html=readFileSync(new URL('../hiking/index.html',import.meta.url),'utf8');
  assert.match(html,/<link rel="icon" href="\/favicon\.svg"/);assert.ok(existsSync(new URL('../public/favicon.svg',import.meta.url)));
  assert.equal(entranceConfig.hypothesis,'B');
 });

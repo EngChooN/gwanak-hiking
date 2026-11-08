@@ -8,7 +8,7 @@ const browser=await chromium.launch({channel:'chrome',headless:true,args:['--ena
 async function open(query,{mobile=false,state={}}={}){
  const context=await browser.newContext({viewport:mobile?{width:844,height:390}:{width:1440,height:900},deviceScaleFactor:1,hasTouch:mobile,isMobile:mobile});
  await context.addInitScript(({key,state})=>{localStorage.setItem(key,JSON.stringify(state));localStorage.setItem('gwanak-sound-enabled','false');},{key:SAVE_KEY,state:{...initialState(),s:seg.start,view:'third',paused:false,...state}});
- const page=await context.newPage();await page.goto(`${base}/?quality=balanced&${query}`);
+ const page=await context.newPage();await page.goto(`${base}/hiking/?quality=balanced&${query}`);
  await page.waitForFunction(()=>window.hiking?.started&&window.hiking?.landscape().ready&&hiking.landscape().natureReady&&!hiking.rendering().compiling,null,{timeout:240000});await page.waitForTimeout(5000);return {context,page};
 }
 let {context,page}=await open('time=15:00&weather=clear');

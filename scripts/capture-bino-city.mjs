@@ -8,7 +8,7 @@ const browser=await chromium.launch({channel:'chrome',headless:true,args:['--ena
 const context=await browser.newContext({viewport:{width:1280,height:720}});
 await context.addInitScript(({state,key})=>{localStorage.setItem(key,JSON.stringify(state));localStorage.setItem('gwanak-sound-enabled','false');},{state:{...initialState(),s:route.length-.02,view:'first'},key:SAVE_KEY});
 const page=await context.newPage();page.on('pageerror',e=>console.log('pageerror',e.message));page.on('console',m=>{if(m.type()==='error'||m.type()==='warning')console.log(m.type(),m.text().slice(0,200));});
-await page.goto(`${base}/?quality=balanced&time=13:00&weather=clear&bearing=${bearing}${extra}`);
+await page.goto(`${base}/hiking/?quality=balanced&time=13:00&weather=clear&bearing=${bearing}${extra}`);
 await page.waitForFunction(()=>window.hiking?.started&&window.hiking?.landscape().ready&&!hiking.rendering().compiling,null,{timeout:240000});
 const cmd=(id,v)=>page.evaluate(([id,v])=>window.dispatchEvent(new CustomEvent('hiking:command',{detail:{id,value:v}})),[id,v]);
 await page.waitForTimeout(4000);await page.screenshot({path:`${dir}/0-naked.png`});

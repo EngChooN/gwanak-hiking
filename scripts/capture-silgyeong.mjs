@@ -14,7 +14,7 @@ try{for(const [id,name,m,query] of specs){if(process.env.ONLY&&!process.env.ONLY
  await context.addInitScript(({key,state})=>{localStorage.setItem(key,JSON.stringify(state));localStorage.setItem('gwanak-sound-enabled','false');},{key:SAVE_KEY,state:{...initialState(),s,view:'first',paused:true}});
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
  // 1차(가을 오전 10시 기본 햇빛)와 같은 조건. 실시간 시각·날씨 기능이 생긴 뒤에는 고정해야 비교가 된다.
- await page.goto(`http://127.0.0.1:5176/?quality=high&time=${process.env.TIME??'10:00'}&weather=clear${query}`);
+ await page.goto(`http://127.0.0.1:5176/hiking/?quality=high&time=${process.env.TIME??'10:00'}&weather=clear${query}`);
  await page.waitForFunction(()=>window.hiking?.started&&window.hiking?.landscape().ready&&hiking.landscape().natureReady&&!hiking.rendering().compiling,null,{timeout:240000});
  await page.waitForTimeout(9000);await page.addStyleTag({content:'#app{visibility:hidden}'});
  await (await waitChunks(page)).screenshot({path:`${dir}/${label}-${id}.png`});

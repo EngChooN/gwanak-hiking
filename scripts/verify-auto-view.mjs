@@ -6,7 +6,7 @@ import {writeFileSync,mkdirSync} from 'node:fs';
 const seconds=Number(process.argv[2])||40,start=process.argv[3]||'demo',out='artifacts/auto-view-2026-11-06';mkdirSync(out,{recursive:true});
 const browser=await chromium.launch({channel:'chrome',headless:true,args:['--enable-webgl','--ignore-gpu-blocklist']});const page=await browser.newPage({viewport:{width:1280,height:720}});
 const errors=[];page.on('pageerror',e=>errors.push(e.message));
-await page.goto(`http://127.0.0.1:4173/?start=${start}&time=12:00&weather=clear`);
+await page.goto(`http://127.0.0.1:4173/hiking/?start=${start}&time=12:00&weather=clear`);
 await page.waitForFunction(()=>window.hiking?.started===true,null,{timeout:300000});
 const result=await page.evaluate(async seconds=>{
  window.dispatchEvent(new CustomEvent('hiking:command',{detail:{id:'auto'}}));

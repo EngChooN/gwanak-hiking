@@ -13,13 +13,13 @@ const TIMES=[['day','12:00'],['night','21:00']],viewport={width:1280,height:800}
 const browser=await chromium.launch({channel:'chrome',headless:true,args:['--enable-webgl','--ignore-gpu-blocklist','--use-angle=metal']});
 for(const fall of FALLS)for(const [label,time] of TIMES){
  const context=await browser.newContext({viewport,deviceScaleFactor:1});
- const probe=await context.newPage();await probe.goto(`${base}/?startMode=manual`,{waitUntil:'domcontentloaded'});
+ const probe=await context.newPage();await probe.goto(`${base}/hiking/?startMode=manual`,{waitUntil:'domcontentloaded'});
  const save=await probe.evaluate(async s=>{const {initialState}=await import('/src/movement.js');return JSON.stringify({...initialState({start:'demo'}),s,lateral:0,zone:'route'});},fall.s);
  await probe.close();
  await context.addInitScript(save=>{localStorage.clear();localStorage.setItem('gwanak-sound-enabled','false');localStorage.setItem('gwanak-hiking:v1',save);},save);
  const page=await context.newPage(),errors=[];
  page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error'||/THREE\.WebGLProgram/.test(m.text()))errors.push(m.text().slice(0,300));});
- await page.goto(`${base}/?${new URLSearchParams({outfit:'1',time,weather:'clear',quality:'high'})}`);
+ await page.goto(`${base}/hiking/?${new URLSearchParams({outfit:'1',time,weather:'clear',quality:'high'})}`);
  await page.waitForFunction(()=>window.hiking?.started&&window.hiking.landscape().natureReady&&!window.hiking.rendering().compiling,null,{timeout:300000});
  await page.evaluate(()=>window.hiking.chunks.ready());
  await page.waitForTimeout(1000);await page.evaluate(()=>document.querySelectorAll('dialog[open]').forEach(d=>d.close()));

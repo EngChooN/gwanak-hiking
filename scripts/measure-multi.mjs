@@ -23,7 +23,7 @@ try{for(const sc of list){
  const ctx=await browser.newContext({viewport:{width:1440,height:900},deviceScaleFactor:1}),errors=[];
  await ctx.addInitScript(()=>{localStorage.clear();localStorage.setItem('gwanak-sound-enabled','false');});
  const page=await ctx.newPage();page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
- await page.goto(`http://127.0.0.1:${port}/?start=entrance&time=13:00&weather=clear&quality=balanced&outfit=2${sc.query}`);
+ await page.goto(`http://127.0.0.1:${port}/hiking/?start=entrance&time=13:00&weather=clear&quality=balanced&outfit=2${sc.query}`);
  await page.waitForFunction(()=>window.hiking?.started&&window.hiking?.landscape().ready&&window.hiking?.landscape().natureReady,null,{timeout:180000}).catch(()=>console.log('로딩 실패',sc.id));
  if(sc.jump){await page.evaluate(id=>hiking.jumpTo(id),sc.jump);await page.waitForTimeout(1500);}
  await page.keyboard.press('Space').catch(()=>{});await page.waitForTimeout(500);

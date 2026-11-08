@@ -34,7 +34,7 @@ let sites=null;
 async function stateFor(where){
  if(where==='airgun'||where==='cat-plaza'||where.startsWith('magpie-1'))return null;
  if(!sites){const ctx=await browser.newContext({viewport:{width:640,height:400}});await ctx.addInitScript(()=>{localStorage.clear();localStorage.setItem('gwanak-sound-enabled','false');});const page=await ctx.newPage();
-  await page.goto(`${base}/?start=entrance&quality=low`);await page.waitForFunction(()=>window.hiking?.started&&window.hiking.trail,null,{timeout:300000});
+  await page.goto(`${base}/hiking/?start=entrance&quality=low`);await page.waitForFunction(()=>window.hiking?.started&&window.hiking.trail,null,{timeout:300000});
   sites=await page.evaluate(async()=>{const {route,sample}=await import('/src/route.js');const {initialState}=await import('/src/movement.js');const T=window.hiking.trail,L=window.__landscape;
    const pts=[...T.props.map(p=>({id:p.id,x:p.x,z:p.z})),...(L.status.interactionProps.spawns??[]).map(p=>({id:p.id,x:p.x,z:p.z}))];const out={};
    for(const p of pts){let best={d:Infinity,s:0};for(let q=0;q<=route.length;q+=.5){const r=sample(q),d=Math.hypot(r.x-p.x,r.z-p.z);if(d<best.d)best={d,s:q};}out[p.id]={...best,state:initialState({start:'demo'})};}return out;});await ctx.close();}
@@ -47,7 +47,7 @@ for(const g of groups){
  await ctx.addInitScript(save=>{localStorage.clear();localStorage.setItem('gwanak-sound-enabled','false');if(save)localStorage.setItem('gwanak-hiking:v1',save);},save);
  const page=await ctx.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text().slice(0,300));});
  const q=new URLSearchParams({time:'11:00',weather:'clear',season:'summer'});if(!mobile)q.set('quality','high');if(!save)q.set('start','entrance');
- await page.goto(`${base}/?${q}`);
+ await page.goto(`${base}/hiking/?${q}`);
  await page.waitForFunction(()=>window.hiking?.started&&window.hiking.landscape().natureReady&&!window.hiking.rendering().compiling,null,{timeout:300000});
  await page.evaluate(()=>{document.querySelectorAll('dialog[open]').forEach(d=>d.close());window.dispatchEvent(new CustomEvent('hiking:hud-toggle'));});
  await page.addStyleTag({content:'#section-jump{display:none!important}'});

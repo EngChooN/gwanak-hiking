@@ -8,7 +8,7 @@ try{
  const c=await b.newContext({viewport:{width:1440,height:900}});
  await c.addInitScript(({key,state})=>{localStorage.setItem(key,JSON.stringify(state));localStorage.setItem('gwanak-sound-enabled','false');},{key:SAVE_KEY,state:{...initialState(),s:1800,view:'third',paused:false}});
  await c.route('**/@vite/client',r=>r.fulfill({body:`export const createHotContext=()=>({accept(){},dispose(){},prune(){},on(){},invalidate(){},data:{}});export const updateStyle=(id,css)=>{let e=document.getElementById(id);if(!e){e=document.createElement('style');e.id=id;document.head.append(e);}e.textContent=css;};export const removeStyle=id=>document.getElementById(id)?.remove();export const injectQuery=url=>url;export class ErrorOverlay extends HTMLElement {}`,contentType:'application/javascript'}));
- const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.goto('http://127.0.0.1:5178/?quality=balanced');await p.waitForFunction(()=>window.hiking?.started&&window.hiking?.landscape().natureReady&&!hiking.rendering().compiling,null,{timeout:240000});console.log('산길 준비');
+ const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.goto('http://127.0.0.1:5178/hiking/?quality=balanced');await p.waitForFunction(()=>window.hiking?.started&&window.hiking?.landscape().natureReady&&!hiking.rendering().compiling,null,{timeout:240000});console.log('산길 준비');
  if((await p.evaluate(()=>hiking.snapshot())).paused)await p.keyboard.press('Space');
  const read=()=>p.evaluate(()=>({arms:__hiker.interaction.arms,poles:__hiker.interaction.poles,state:hiking.snapshot(),heading:__hiker.scene.rotation.y}));
  rows.push({id:'stand',...await read()});

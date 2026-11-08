@@ -18,7 +18,7 @@ try{for(const name of only)for(const p of pos){
  const context=await browser.newContext({viewport:{width:1440,height:900},deviceScaleFactor:1});
  await context.addInitScript(({key,state})=>{localStorage.setItem(key,JSON.stringify(state));localStorage.setItem('gwanak-sound-enabled','false');},{key:SAVE_KEY,state:{...initialState(),s:seg.start,view,paused:true}});
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',c=>{if(c.type()==='error')errors.push(c.text());});
- await page.goto(`${base}/?quality=high&${scenes[name]??name}`);
+ await page.goto(`${base}/hiking/?quality=high&${scenes[name]??name}`);
  await page.waitForFunction(()=>window.hiking?.started&&window.hiking?.landscape().ready&&hiking.landscape().natureReady&&!hiking.rendering().compiling,null,{timeout:240000});
  await page.waitForTimeout(9000);
  const row={name,pos:p,view,environment:await page.evaluate(()=>{const r=hiking.rendering();return r.environment;}),errors};

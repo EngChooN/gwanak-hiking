@@ -17,7 +17,9 @@
     "assets:build": "node assets/source/build-assets.mjs && node assets/source/build-chunks.mjs && node assets/source/build-toon-assets.mjs && node assets/source/build-toon-hiker-rig.mjs",
     "assets:verify": "node assets/source/verify-capture.mjs",
     "assets:report": "node assets/source/make-report.mjs",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "server": "node server/multi-server.mjs",
+    "multi:server": "node server/multi-server.mjs"
   },
   "dependencies": {
     "three": "^0.180.0"

@@ -96,7 +96,7 @@ test('ESC는 닫기 전용이고 Space는 일시정지가 아니다, H는 HUD �
  assert.match(main,/if\(id==='escape'\)\{if\(interaction\.anyPanel\(\)\)interaction\.handle\('panel-close'\);return;\}/);
 });
 test('일시정지·계속하기 화면과 버튼이 없다',()=>{
- const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
+ const html=readFileSync(new URL('../hiking/index.html',import.meta.url),'utf8');
  assert.ok(!/pause|일시정지|계속하기/.test(html.replace(/<style[\s\S]*?<\/style>/g,'')),'index.html에 일시정지 표현이 없다');
  assert.ok(!/\$\('pause[-\w]*'\)|state\.paused|id==='pause'/.test(main),'main.js에 일시정지 처리가 없다');
 });

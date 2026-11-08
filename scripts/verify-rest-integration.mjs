@@ -11,7 +11,7 @@ try{
  await context.addInitScript(({state,key})=>{if(!sessionStorage.getItem('rest-seed')){localStorage.setItem(key,JSON.stringify(state));sessionStorage.setItem('rest-seed','1');}localStorage.setItem('gwanak-sound-enabled','false');},{state:{...initialState(),s:1800,stamina:15,paused:false},key:SAVE_KEY});
  await context.route('**/@vite/client',r=>r.fulfill({body:`export const createHotContext=()=>({accept(){},dispose(){},prune(){},on(){},invalidate(){},data:{}});export const updateStyle=(id,css)=>{let e=document.getElementById(id);if(!e){e=document.createElement('style');e.id=id;document.head.append(e);}e.textContent=css;};export const removeStyle=id=>document.getElementById(id)?.remove();export const injectQuery=url=>url;export class ErrorOverlay extends HTMLElement {}`,contentType:'application/javascript'}));
  const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
- await page.goto('http://127.0.0.1:5177/?quality=balanced');
+ await page.goto('http://127.0.0.1:5177/hiking/?quality=balanced');
  const ready=()=>page.waitForFunction(()=>window.hiking?.started&&window.hiking?.landscape().natureReady&&!hiking.rendering().compiling,null,{timeout:240000});
  await ready();console.log('앱 준비');
  const snapshot=()=>page.evaluate(()=>({state:hiking.snapshot(),interaction:__hiker.interaction,eye:__hiker.eyeHeight,camera:hiking.orientation().camera,ground:hiking.coordinates().y}));

@@ -8,7 +8,7 @@ try{
  const ctx=await browser.newContext({viewport:{width:1280,height:720},deviceScaleFactor:1});
  await ctx.addInitScript(()=>{localStorage.clear();localStorage.setItem('gwanak-sound-enabled','false');localStorage.setItem('gwanak-hud-hidden','1');});
  const page=await ctx.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
- await page.goto(`http://127.0.0.1:${port}/?start=entrance&outfit=4&time=20:30&weather=clear&quality=${quality}`);
+ await page.goto(`http://127.0.0.1:${port}/hiking/?start=entrance&outfit=4&time=20:30&weather=clear&quality=${quality}`);
  await page.waitForFunction(()=>window.hiking?.started&&window.hiking?.landscape().ready&&window.hiking?.landscape().natureReady&&!hiking.rendering().compiling,null,{timeout:240000});
  const view=await page.evaluate(()=>hiking.snapshot().view);if(view!=='third')await page.keyboard.press('v');
  await page.waitForTimeout(4000);
