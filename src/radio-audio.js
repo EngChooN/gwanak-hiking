@@ -92,15 +92,30 @@ export function createRadioAudio({context=()=>null,destination=()=>null,enabled=
  function startDeck(id){
   stopDeck();const m=manifest();if(!m||!nodes)return;deckId=id;deckState='loading';trackIndex=-1;
   const chm=m.channels?.[id];if(!chm){deckState='error';emit();return;}
-  const onState=(s,i)=>{deckState=s;trackIndex=i;emit();};
+  // 받기가 끝나면(loading → playing) 방송 음량을 다시 계산한다. 예전에는 emit만 해서 볼륨을 한 번 건드려야 소리가 났다(11-08 대표 제보)
+  const onState=(s,i)=>{deckState=s;trackIndex=i;if(deckId===id)apply();else emit();};
   if(id==='calm'){const tracks=chm.tracks??[];if(!tracks.length){deckState='error';emit();return;}
    const at=playlistAt(tracks,now()/1000);deck=createDeck(ctx,nodes.bcLow,files(tracks),{start:at,xfade:chm.crossfade??1.5,onState,doc});}
   else if(id==='nature'){const layers=natureLayers(chm.tracks??[]);if(!layers.length){deckState='error';emit();return;}
    const t=now()/1000,decks=layers.map((ly,k)=>createDeck(ctx,nodes.bcLow,files(ly),{start:playlistAt(ly,t+k*37),xfade:chm.crossfade??3,level:k?.7:1,onState:k?()=>{}:onState,doc}));
    deck={get state(){return decks[0].state;},stop(){decks.forEach(d=>d.stop());},seekNearEnd(s){decks.forEach(d=>d.seekNearEnd(s));},current:()=>decks.map(d=>d.current()),layers:decks};}
-  else if(id==='guide')deck=createGuide(chm);
+  else if(id==='guide'){primeSpeech();deck=createGuide(chm);}
   emit();
  }
+ // 95.5 목소리: 녹음 파일이 없으면 기기에 깔린 한국어 목소리(speechSynthesis)로 읽는다.
+ // 외부 접속 금지(AGENTS.md §5): 기기 안에서 만드는 목소리(localService)만 쓴다. 크롬의 'Google 한국의' 같은 온라인 목소리는 쓰지 않는다.
+ // 없으면 예전처럼 자막만. 아이폰은 사용자 입력 안에서 한 번 말해 둬야 나중에 타이머로 말할 수 있어서 다이얼을 맞출 때 빈 말을 한 번 한다.
+ const speech=()=>globalThis.speechSynthesis??null;
+ const koVoice=()=>{try{return speech()?.getVoices().find(v=>/^ko/i.test(v.lang)&&v.localService)??null;}catch{return null;}};
+ let primed=false;
+ function primeSpeech(){const s=speech();if(primed||!s||!globalThis.SpeechSynthesisUtterance)return;primed=true;try{s.getVoices();const u=new SpeechSynthesisUtterance(' ');u.volume=0;s.speak(u);}catch{}}
+ function speak(text){
+  const s=speech(),v=koVoice();if(!s||!v||!soundOn)return false;
+  try{s.cancel();const u=new SpeechSynthesisUtterance(text);u.voice=v;u.lang=v.lang;u.rate=.95;
+   // 또렷한 만큼(다이얼이 덜 맞으면 작게) × 라디오 볼륨
+   u.volume=clamp01((lastMix?.broadcast??vol)*1.4);s.speak(u);return true;}catch{return false;}
+ }
+ const hush=()=>{try{speech()?.cancel();}catch{}};
  function stopDeck(){deck?.stop();deck=null;deckId=null;deckState=null;trackIndex=-1;caption=null;clearTimeout(guideTimer);}
  // 95.5: 녹음 파일이 있으면 그 파일, 없으면 자막 + 낮은 톤(배경). 멘트 사이 40~60초, 처음 맞추면 0.8초 뒤.
  function createGuide(chm){
@@ -116,11 +131,12 @@ export function createRadioAudio({context=()=>null,destination=()=>null,enabled=
    const line=(chm.lines??[]).find(l=>l.id===id)??(chm.lines??[])[0];if(!line)return;
    jingle();const secs=captionSeconds(line.text);caption={id:line.id,text:line.text,until:now()+secs*1000};emit();
    if(line.file){voice=doc.createElement('audio');voice.src=`${base}assets/radio/${line.file}`;const s=ctx.createMediaElementSource(voice);s.connect(nodes.bcLow);voice.play().catch(()=>{});}
+   else setTimeout(()=>{if(!stopped)speak(line.text);},700); // 징글 뒤
    setTimeout(()=>{if(stopped)return;caption=null;emit();},secs*1000);
    const [a,b]=chm.gapSeconds??[40,60];next(a+Math.random()*(b-a));
   }
   next(.8);
-  return {get state(){return 'playing';},stop(){stopped=true;clearTimeout(guideTimer);caption=null;try{voice?.pause();}catch{}for(const o of [...oscs,lfo])try{o.stop();}catch{}try{bed.disconnect();}catch{}}};
+  return {get state(){return 'playing';},stop(){stopped=true;clearTimeout(guideTimer);caption=null;hush();try{voice?.pause();}catch{}for(const o of [...oscs,lfo])try{o.stop();}catch{}try{bed.disconnect();}catch{}}};
  }
  // 다이얼·볼륨·소리 켜기 반영
  function apply(){
@@ -135,7 +151,7 @@ export function createRadioAudio({context=()=>null,destination=()=>null,enabled=
   if(prev&&!prev.locked&&m.locked)click();
   emit();
  }
- function syncSound(){if(!nodes)return;const want=!!enabled();if(want===soundOn)return;soundOn=want;nodes.bus.gain.setTargetAtTime(want?RADIO_MAX:0,ctx.currentTime,.05);emit();}
+ function syncSound(){if(!nodes)return;const want=!!enabled();if(want===soundOn)return;soundOn=want;if(!want)hush();nodes.bus.gain.setTargetAtTime(want?RADIO_MAX:0,ctx.currentTime,.05);emit();}
  function setOn(v){
   v=!!v;if(v===on)return on;
   if(v){if(!build())return false;on=true;click();apply();}

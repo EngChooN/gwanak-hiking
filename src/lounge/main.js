@@ -1,6 +1,7 @@
 // 온라인 흡연장 — 온라인 시리즈 2. 그래픽은 온라인 등산의 카툰 파이프라인(src/toon/**)을, 캐릭터는 동동이(src/toon/link-hiker.js)를 그대로 쓴다.
 // 이 파일: 렌더러·카툰 후처리·하늘·시간대 빛, 내 아바타 이동(키보드·떠다니는 조이스틱)·3인칭 카메라, 옥상·NPC·흡연·HUD 연결.
 // 다른 모듈과는 window 'lounge:*' 이벤트와 ctx 객체로만 주고받는다.
+import '../server-link-pin.js';   // 맨 먼저: 주소에 ?server= 붙이기(카드로 와도 링크로 와도 같은 서버)
 import * as THREE from 'three';
 import {createToonStyle} from '../toon/index.js';
 import {composeEnvironment,sunPosition,moonPosition} from '../daytime.js';

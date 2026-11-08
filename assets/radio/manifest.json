@@ -98,8 +98,8 @@
    "dir": "955-guide/",
    "jingle": null,
    "gapSeconds": [
-    40,
-    60
+    15,
+    25
    ],
    "about": "녹음 파일이 생기면 lines[].file에 '955-guide/<id>.ogg'처럼 파일 이름만 적으면 소리가 붙는다(없으면 자막 + 낮은 톤). 대본: docs/radio-design.md §5",
    "lines": [

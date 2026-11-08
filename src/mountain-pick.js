@@ -2,6 +2,7 @@
 // 로딩은 뒤에서 그대로 진행한다(메모리는 예전과 같음). '▶ 오르기'가 출발 신호('hiking:start')를 보낸다.
 // 이 모듈은 main.js보다 먼저 실행되어 수동 시작(data-start-mode=manual)을 걸어 둔다.
 // 건너뛰기: ?pick=off, 자동화 브라우저(navigator.webdriver)는 ?pick=on일 때만 보인다(기존 점검 스크립트가 그대로 돌게).
+import './server-link-pin.js';   // 맨 먼저: 주소에 ?server= 붙이기(카드로 와도 링크로 와도 같은 서버)
 import './free-settings.css';
 import {MOUNTAINS,formatEta} from './mountains.js';
 import {SEASON_LABEL,SEASON_ICON} from './season.js';
