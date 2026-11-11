@@ -3,7 +3,7 @@
 //  - 서버 줄을 누르면 바로 들어간다(onJoin {server,room,name}). 꽉 찬 줄(n ≥ 정원)은 고를 수 없다.
 //  - 위쪽에 '지금 접속 n명'(이 체험 합계)·'전체 n명'(모든 체험 합계).
 //  - 서버 주소가 없으면(?server=off·빌드 변수 없음) 내 컴퓨터 모드: 인원 대신 '이 브라우저 창끼리'로 보이고 줄은 고를 수 있다.
-//  - /health를 못 받으면 '서버에 연결할 수 없어요' + 혼자 걷기/피우기만.
+//  - /health를 못 받으면 '서버에 연결할 수 없어요' + 혼자 걷기/피우기만. 공개 파일이 '꺼짐'이면(serverOff) '서버가 꺼져 있어요'.
 //  - 들어간 뒤 다시 열면 지금 서버 줄에 '지금 여기', 아래 단추는 '나가서 혼자 걷기'(onSolo).
 //  - 서버가 full로 거절하면 호출한 쪽이 open({note:'full'})로 다시 띄운다 → '방금 꽉 찼어요'.
 // 11-08 입장 흐름 개편: 서버를 허브 체험 카드와 같은 카드(그림·이름·인원 막대·들어가기)로 보여 준다. 입장 전(current 없음·closable false)은
@@ -66,7 +66,7 @@ export function rowLabel(row,{local=false,current=null}={}){
 }
 
 // 창 만들기. 여러 번 open/close 한다. fetchImpl·timers는 시험에서 바꿔 끼운다.
-export function createServerPick({experience='hiking',serverUrl=null,onJoin=()=>{},onSolo=()=>{},onClose=null,doc=globalThis.document,win=globalThis.window,
+export function createServerPick({experience='hiking',serverUrl=null,serverOff=false,onJoin=()=>{},onSolo=()=>{},onClose=null,doc=globalThis.document,win=globalThis.window,
  fetchImpl=globalThis.fetch?.bind(globalThis),storage=globalThis.localStorage,defaultName='',servers=SERVERS,
  setTimer=setTimeout,clearTimer=clearTimeout}={}){
  const L=PICK_LABELS[experience]??PICK_LABELS.hiking,local=!serverUrl,url=healthUrl(serverUrl);
@@ -111,12 +111,12 @@ export function createServerPick({experience='hiking',serverUrl=null,onJoin=()=>
   root.querySelector('[data-sp-here]').textContent=tot.here??'…';root.querySelector('[data-sp-total]').textContent=tot.total??'…';
   const note=root.querySelector('.sp-note'),msg=st.note==='full'?{tone:'warn',text:'방금 꽉 찼어요. 다른 서버를 고르거나 잠시 뒤 다시 골라 주세요.'}
    :off?{tone:'bad',text:`서버에 연결할 수 없어요. 지금은 ${L.solo}만 할 수 있어요.`}
-   :local?{tone:'local',text:`💻 서버 주소가 없어요. 지금은 ${L.solo}만 할 수 있어요.`}:null;
+   :local?{tone:'local',text:serverOff?`🌙 지금은 서버가 꺼져 있어요. ${L.solo}만 할 수 있어요.`:`💻 서버 주소가 없어요. 지금은 ${L.solo}만 할 수 있어요.`}:null;
   note.hidden=!msg;if(msg){note.dataset.tone=msg.tone;note.textContent=msg.text;}
   const focused=doc.activeElement?.closest?.('[data-sp-server]')?.dataset.spServer??null,list=root.querySelector('.sp-list');
   // /health 실패·서버 주소 없음: 서버 카드 대신 '서버에 연결할 수 없어요' 카드 하나와 혼자 하기만(11-08 입장 흐름 개편)
   if(off||local){
-   list.innerHTML=`<li><div class="sp-row sp-down" data-state="down" role="note"><span class="sp-art" aria-hidden="true">${ART[L.art]??''}</span><span class="sp-row-body"><b class="sp-row-name">서버에 연결할 수 없어요</b><span class="sp-row-n">${local?'서버 주소가 없어요':'잠시 뒤 다시 확인해요'}</span><span class="sp-go">${esc(L.solo)}는 할 수 있어요</span></span></div></li>`;
+   list.innerHTML=`<li><div class="sp-row sp-down" data-state="down" role="note"><span class="sp-art" aria-hidden="true">${ART[L.art]??''}</span><span class="sp-row-body"><b class="sp-row-name">서버에 연결할 수 없어요</b><span class="sp-row-n">${local?(serverOff?'서버가 꺼져 있어요':'서버 주소가 없어요'):'잠시 뒤 다시 확인해요'}</span><span class="sp-go">${esc(L.solo)}는 할 수 있어요</span></span></div></li>`;
   }else list.innerHTML=rows.map(r=>{
    const v=rowLabel(r,{local,current:st.current}),dis=v.state==='here'||v.state==='full'||v.state==='wait'||off;
    const pct=r.count===null?0:Math.min(100,Math.round(r.count/r.max*100));

@@ -6,6 +6,7 @@ import './multi.css';
 import '../server-pick.css';
 import {cleanName,loungeStatusView} from './multi.js';
 import {createServerPick} from '../server-pick.js';
+import {currentChoice} from '../server-link.js';
 import {findServer} from '../multi-protocol.js';
 
 // 서버 방 이름(welcome room: 옥상) → 서버 id. 목록 밖 방(옛 주소)은 null.
@@ -25,7 +26,7 @@ export function installLoungeMultiUi({multi,ctx,hud=null,root=document.getElemen
 
  let last=null,noteT=0;
  // ── 서버 고르기 창: 고르면 그 서버 방으로 참가, 혼자 피우기(참가 중이면 나가기)
- const pick=createServerPick({experience:'smoking',serverUrl:multi.server,defaultName:cleanName(ctx.profile?.nickname),doc,win,
+ const pick=createServerPick({experience:'smoking',serverUrl:multi.server,serverOff:currentChoice().source==='file-off',defaultName:cleanName(ctx.profile?.nickname),doc,win,
   onJoin:d=>multi.join({room:d.room,name:d.name}),
   onSolo:({left})=>{if(left)multi.leave();},...pickOptions});
  const openPick=(note=null,closable=true)=>pick.open({current:last?.joined&&last.state!=='full'?loungeServerId(last.room):null,note,closable});

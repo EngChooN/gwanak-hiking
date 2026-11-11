@@ -19,7 +19,9 @@
     "assets:report": "node assets/source/make-report.mjs",
     "test:e2e": "playwright test",
     "server": "node server/multi-server.mjs",
-    "multi:server": "node server/multi-server.mjs"
+    "multi:server": "node server/multi-server.mjs",
+    "multi:up": "node scripts/multi-up.mjs",
+    "multi:publish": "node scripts/multi-publish.mjs"
   },
   "dependencies": {
     "three": "^0.180.0"

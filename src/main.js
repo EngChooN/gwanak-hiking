@@ -351,8 +351,10 @@ if(toon)toon.styleNightLighting(night.root);
 let multi=null;
 let pairSteer=false,pairPace=1; // 같이 등산하기: 이번 프레임 옆 키 입력·넘긴 속도 배율(아래 pairStep). 프레임이 await 사이에 돌 수 있어 multi 옆에 둔다
 // 함께 걷기(?multi 또는 HUD 참가). 켜지 않으면 코드를 불러오지도 않는다.
-// 서버 주소: ?server=wss://… → 빌드 변수 VITE_MULTI_SERVER_URL → 없으면 이 브라우저 창끼리(BroadcastChannel).
+// 서버 주소: ?server=wss://… → 빌드 변수 VITE_MULTI_SERVER_URL → 공개 파일 multi-server.json → 기억한 값 → 없으면 이 브라우저 창끼리(BroadcastChannel).
+// 공개 파일은 server-link-pin.js가 받으니 그 결과(serverReady)를 기다린 뒤 읽는다.
 // 화면 약속: hiking:multi-join {room,name}(참가) · hiking:multi-leave(나가기)를 받고, hiking:multi-status {state,room,count,transport}를 보낸다.
+await (await import('./server-link-pin.js')).serverReady;
 const {multiServerUrl}=await import('./multi-transport.js');
 const {hikingServerPick}=await import('./hiking-server-pick.js');
 const multiServer=multiServerUrl(location.search,import.meta.env.VITE_MULTI_SERVER_URL??'');

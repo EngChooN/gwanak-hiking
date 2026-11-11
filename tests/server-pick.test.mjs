@@ -67,6 +67,11 @@ test('서버 주소 없음: /health를 받지 않고(화면은 연결할 수 없
  const f=okFetch(HEALTH());const p=createServerPick({experience:'hiking',serverUrl:null,fetchImpl:f,doc:null,storage:memStore()});
  await p.open();assert.equal(p.state.net,'local');assert.equal(f.calls.length,0);assert.equal(p.state.rows[0].count,null);
 });
+test('공개 파일이 꺼짐이면 서버 카드에 \'서버가 꺼져 있어요\'(등산·흡연장 모두 serverOff를 넘김)',()=>{
+ const sp=read('../src/server-pick.js');
+ assert.match(sp,/serverOff\?'서버가 꺼져 있어요':'서버 주소가 없어요'/);assert.match(sp,/지금은 서버가 꺼져 있어요/);
+ for(const f of ['../src/hiking-server-pick.js','../src/lounge/multi-ui.js'])assert.match(read(f),/serverOff:currentChoice\(\)\.source==='file-off'/,f);
+});
 test('서버 모드: 열면 /health를 받고 5초마다 다시, 닫으면 멈춘다',async()=>{
  let n=3;const f=okFetch(()=>HEALTH(n++));const tm=fakeTimers();
  const p=createServerPick({experience:'hiking',serverUrl:'wss://srv.example/',fetchImpl:f,doc:null,storage:memStore(),setTimer:tm.set,clearTimer:tm.clear});
@@ -115,7 +120,8 @@ test('모양: 줄·단추·닫기 44px 이상, 입력 16px(iOS 확대 방지), �
 });
 test('연결: 등산은 산 고르기 다음·HUD 👋, 흡연장은 👥 단추·로딩 뒤, 옛 주소는 건너뜀',()=>{
  const pick=read('../src/mountain-pick.js'),hp=read('../src/hiking-server-pick.js'),lui=read('../src/lounge/multi-ui.js'),lmain=read('../src/lounge/main.js');
- assert.match(pick,/hikingPickMode\(\)==='show'\)hikingServerPick\(\)\.open\(\{closable:false\}\)/);
+ assert.match(pick,/hikingPickMode\(\)==='show'\)serverReady\.then\(\(\)=>hikingServerPick\(\)\.open\(\{closable:false\}\)\)/); // 서버 주소(공개 파일)를 고른 뒤 연다
+ assert.match(lmain,/await serverReady;\nconst multi=createLoungeMulti/);
  assert.match(hp,/experience:'hiking'/);assert.match(hp,/__hikingMultiJoin=detail/);
  assert.match(lui,/createServerPick\(\{experience:'smoking'/);assert.ok(!/name="room"/.test(lui),'흡연장 방 이름 칸 없음');
  assert.match(lmain,/serverPickMode\(location\.search,!!navigator\.webdriver\)/);assert.match(lmain,/multiUi\.open\(\{closable:false\}\)/);

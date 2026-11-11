@@ -5,6 +5,7 @@
 import './server-pick.css';
 import {createServerPick,serverPickMode} from './server-pick.js';
 import {multiServerUrl} from './multi-transport.js';
+import {currentChoice} from './server-link.js';
 import {START_EVENT} from './loading.js';
 
 let pick=null;
@@ -13,7 +14,7 @@ export const hikingServerUrl=()=>multiServerUrl(location.search,import.meta.env.
 export const hikingPickMode=()=>serverPickMode(location.search,!!navigator.webdriver);
 export function hikingServerPick(){
  if(pick)return pick;
- pick=createServerPick({experience:'hiking',serverUrl:hikingServerUrl(),
+ pick=createServerPick({experience:'hiking',serverUrl:hikingServerUrl(),serverOff:currentChoice().source==='file-off',
   onJoin(d){const detail={room:d.room,name:d.name,server:d.server};window.__hikingMultiJoin=detail;window.dispatchEvent(new CustomEvent('hiking:multi-join',{detail}));startHike();},
   onSolo({left}){if(left)window.dispatchEvent(new CustomEvent('hiking:multi-leave'));startHike();}});
  return pick;

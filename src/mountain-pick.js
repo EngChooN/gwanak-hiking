@@ -2,7 +2,7 @@
 // 로딩은 뒤에서 그대로 진행한다(메모리는 예전과 같음). '▶ 오르기'가 출발 신호('hiking:start')를 보낸다.
 // 이 모듈은 main.js보다 먼저 실행되어 수동 시작(data-start-mode=manual)을 걸어 둔다.
 // 건너뛰기: ?pick=off, 자동화 브라우저(navigator.webdriver)는 ?pick=on일 때만 보인다(기존 점검 스크립트가 그대로 돌게).
-import './server-link-pin.js';   // 맨 먼저: 주소에 ?server= 붙이기(카드로 와도 링크로 와도 같은 서버)
+import {serverReady} from './server-link-pin.js';   // 맨 먼저: 서버 주소 고르기 시작(공개 파일 multi-server.json을 새로 받음). 서버 창은 끝난 뒤 연다
 import './free-settings.css';
 import {MOUNTAINS,formatEta} from './mountains.js';
 import {SEASON_LABEL,SEASON_ICON} from './season.js';
@@ -99,7 +99,7 @@ export function mountMountainPick(doc=document,win=window){
   if(root.classList.contains('leaving'))return;
   root.classList.add('leaving');doc.documentElement.classList.remove('pk-open');
   nick.value=savePickName(nick.value); // '혼자 걷기'를 골라도 이름은 남는다(나중에 👋 함께 걷기에서 씀)
-  if(hikingPickMode()==='show')hikingServerPick().open({closable:false});
+  if(hikingPickMode()==='show')serverReady.then(()=>hikingServerPick().open({closable:false}));
   else{window.__hikingStartRequested=true;win.dispatchEvent(new CustomEvent(START_EVENT));}
   setTimeout(()=>root.remove(),450);
  }
@@ -122,6 +122,6 @@ if(typeof document!=='undefined'){
  mountFreeSettingsHud();
  if(pickEnabled()){document.documentElement.dataset.startMode='manual';mountMountainPick();}
  // 산 고르기를 건너뛰어도(?pick=off, 점검 스크립트 + ?serverpick=on) 서버 고르기 창이 출발 문이 된다
- else if(hikingPickMode()==='show'){document.documentElement.dataset.startMode='manual';hikingServerPick().open({closable:false});}
+ else if(hikingPickMode()==='show'){document.documentElement.dataset.startMode='manual';serverReady.then(()=>hikingServerPick().open({closable:false}));}
  applyHudTime();
 }

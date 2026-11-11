@@ -77,6 +77,7 @@ npm test               # 단위 테스트 (node --test tests/*.test.mjs, 2026-11
 npm run test:e2e       # Playwright, toon 프로젝트 하나
 npm run build          # vite build + scripts/copy-assets.mjs
 npm run server         # 함께 걷기 서버(기본 8787, 환경 변수는 docs/멀티-서버-운영안내.md)
+npm run multi:up       # 대표 맥에서 서버 + Quick Tunnel + 공개 파일 multi-server.json 올리기(Ctrl+C면 '꺼짐')
 npm run deploy -- --dry  # 빌드·크기 점검만
 npm run deploy         # gh-pages 브랜치에 강제 push (대표 지시가 있을 때만)
 ```
@@ -132,6 +133,7 @@ npm run deploy         # gh-pages 브랜치에 강제 push (대표 지시가 있
 
 | 날짜 | 결정 | 근거 문서 |
 |---|---|---|
+| 11-11 | 함께 걷기 서버 주소를 사이트가 알아서 찾음(대표 결정: 당분간 내 맥 + Quick Tunnel, 링크에 `?server=` 붙이지 않음): `npm run multi:up`(서버·`cloudflared tunnel --url`·`caffeinate`, `ALLOWED_ORIGINS`=engchoon.github.io+로컬)이 터널 주소를 gh-pages 맨 위 `multi-server.json`에 이 파일 하나만 커밋해 push(`scripts/multi-publish.mjs`, partial clone), Ctrl+C면 `{state:'off'}`. 사이트 순서 `?server=` → 빌드 변수 → 공개 파일(`?t=` 매번 새로) → 기억한 값(파일 못 받을 때만), 꺼짐이면 '서버가 꺼져 있어요'·옛 trycloudflare `?server=`는 파일 주소로 바꾸고 주소창에서 뺌, 주소창에 붙이기·허브 카드 링크 붙이기 없앰. `npm run deploy`는 이 파일을 이어 붙임. 점검 `scripts/verify-server-file.mjs` | 변경기록-2026-11-11-서버주소-공개파일.md |
 | 11-10 | 멀티 상호작용 상대에게 보이기(등산·흡연장): 공통 행동 상태 `act`(`ACT_SCHEMA`·`sanitizeAct`, 흡연장 `p·b·can·sip` / 등산 `p·g·sf·x·n·v`)를 바뀔 때만 보내고, 서버가 마지막 값을 기억해 입장·`j`·resume 때 다시 줌. 흡연장은 자세·캔 그리기를 `spots.js` `createPoser`로 빼서 상대 몸에도 같은 코드, 다른 사람이 차지한 자리는 피함(벤치 ±0.42m·난간 ±2.7m). 등산은 `src/multi-act.js`·원격 `createHikerActs`(quiet). '대표만 눌림'은 누르기 결함이 아니라 상대 화면에 안 보인 것(재현 9/9 눌림). 점검 `scripts/verify-multi-interactions.mjs`·`verify-multi-act-hiking.mjs` | 변경기록-2026-11-10-멀티-상호작용.md |
 | 11-09 | 입장 흐름: 허브 → 체험 카드 → (등산) 산 고르기 → **서버 카드 전체 화면**(`server-pick.js` `entry`, 허브 카드와 같은 모양·인원 5초 갱신·꽉 참 비활성·닉네임·혼자 하기) → 입장. 게임 안 서버 바꾸기도 같은 카드(`switch`), full 거절 시 카드 화면으로 돌아와 '방금 꽉 찼어요'. `/health` 실패·서버 주소 없음은 '서버에 연결할 수 없어요' 카드 + 혼자 하기만. `?multi=`는 고르기를 건너뛰되 같은 방 키 | 변경기록-2026-11-09-서버카드-입장흐름.md |
 | 11-08 | 함께 걷기 '먼저 있던 사람이 안 보임' 수정(등산·흡연장): 서버는 resume 때 마지막 자리·담배 상태 복구·같은 토큰 이중 접속은 같은 ID로 이어 받고 옛 연결 닫음·이름 묻기 `j`에 자리도 다시 줌·빈 방/`gwanak-room-1`은 첫 서버 방. 클라이언트는 숨은 탭도 워커 타이머로 1초 자리·3초 이름(`createBackgroundTimer`), 처음 보는 사람에게 바로 인사, 시간 초과는 `createPresence`(로딩·숨김 뒤 첫 프레임 보류, 서버 모드 20초·내 컴퓨터 5초). 칩: 서버 없음 `💻 … 이 브라우저 창끼리만`, 목록 밖 방 `🟡 다른 방 · n명`. 점검 `scripts/verify-multi-visibility.mjs` | 변경기록-2026-11-08-멀티-안보임.md |

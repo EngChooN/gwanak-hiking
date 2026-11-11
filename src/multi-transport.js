@@ -2,6 +2,7 @@
 // 1) 브라우저 창·탭 사이: BroadcastChannel(같은 브라우저, 같은 주소). 내 컴퓨터 시제품용.
 // 2) 가짜 방(createLoopbackHub): 한 프로세스 안에서 N명을 흉내. 지연·유실을 넣을 수 있어 측정에 쓴다.
 import {createChatLimiter,sanitizeChat} from './multi-protocol.js';
+import {currentServer} from './server-link.js';
 //  채널 이름 `gwanak-multi:체험:방`. 등산은 예전 채널 `gwanak-multi:방`을 그대로 쓴다(옛 탭과 이어지게). 방 이름의 ':'는 빼서 겹치지 않게 한다.
 //  채팅 c는 서버가 없으니 여기서 서버와 같은 규칙을 흉내 낸다: 보낼 때 속도 제한(넘으면 내게 {t:'c-limit'})·정리 뒤 내게도 되돌려 주고, 받은 글도 다시 정리한다.
 //  채팅을 보낼 때는 {t:'c',id:내ID,text}처럼 id를 붙여야 한다(서버는 id를 무시하고 자기가 정한 ID를 쓴다).
@@ -94,10 +95,11 @@ export function createBackgroundTimer(fn,ms=1000,{Worker:W=globalThis.Worker,set
  if(!worker){handle=si(fn,ms);handle?.unref?.();}
  return {stop(){worker?.terminate();worker=null;if(handle!=null)ci(handle);handle=null;}};
 }
-// 서버 주소: 주소창 ?server=wss://… 이 먼저, 없으면 빌드 변수 VITE_MULTI_SERVER_URL, 그래도 없으면 null(= BroadcastChannel).
+// 서버 주소: 주소창 ?server=wss://… 이 먼저, 없으면 빌드 변수 VITE_MULTI_SERVER_URL, 그다음 server-link.js가 고른 값(공개 파일·기억한 값),
+// 그래도 없으면 null(= BroadcastChannel). 고른 값은 server-link-pin.js의 serverReady가 끝난 뒤에 채워진다.
 // http(s)://로 적어도 ws(s)://로 바꾼다(터널 주소를 그대로 붙여 넣어도 되게). ?server=off는 빌드 변수를 꺼 BroadcastChannel로.
 export function multiServerUrl(search='',envUrl=''){
- const q=new URLSearchParams(search),raw=(q.has('server')?q.get('server'):envUrl)||'';
+ const q=new URLSearchParams(search),raw=(q.has('server')?q.get('server'):envUrl||currentServer())||'';
  if(!raw||raw==='off'||raw==='local')return null;
  let u=raw.trim();if(/^https?:\/\//i.test(u))u=u.replace(/^http/i,'ws');else if(!/^wss?:\/\//i.test(u))u=`wss://${u}`;
  try{return new URL(u).href;}catch{return null;}

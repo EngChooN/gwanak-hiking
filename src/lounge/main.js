@@ -1,7 +1,7 @@
 // 온라인 흡연장 — 온라인 시리즈 2. 그래픽은 온라인 등산의 카툰 파이프라인(src/toon/**)을, 캐릭터는 동동이(src/toon/link-hiker.js)를 그대로 쓴다.
 // 이 파일: 렌더러·카툰 후처리·하늘·시간대 빛, 내 아바타 이동(키보드·떠다니는 조이스틱)·3인칭 카메라, 옥상·NPC·흡연·HUD 연결.
 // 다른 모듈과는 window 'lounge:*' 이벤트와 ctx 객체로만 주고받는다.
-import '../server-link-pin.js';   // 맨 먼저: 주소에 ?server= 붙이기(카드로 와도 링크로 와도 같은 서버)
+import {serverReady} from '../server-link-pin.js';   // 맨 먼저: 서버 주소 고르기 시작(공개 파일 multi-server.json을 새로 받음). 같이 피우기는 끝난 뒤 만든다
 import * as THREE from 'three';
 import {createToonStyle} from '../toon/index.js';
 import {composeEnvironment,sunPosition,moonPosition} from '../daytime.js';
@@ -154,6 +154,7 @@ const sceneCtl=createScene({setTime:m=>{timeState.mode=m;applyEnvironment();},di
 const spots=createSpots({ctx,scene:sceneCtl,query:q,goTo(spot){autoWalk=spot;}}); // 난간 기대기·벤치 앉기·캔커피 단추와 자세
 const moment=createMoment({audio,reduced:matchMedia('(prefers-reduced-motion: reduce)').matches}); // 첫 모금 연출(카메라·가장자리 색·주변 소리)
 // 같이 피우기(실시간 멀티): ?multi=방(기본 옥상-1)&server=ws://… 로 바로 참가, 아니면 HUD '👥 같이 피우기'.
+await serverReady;
 const multi=createLoungeMulti({ctx,spots,envUrl:import.meta.env.VITE_MULTI_SERVER_URL});ctx.multi=multi;
 const multiUi=installLoungeMultiUi({multi,ctx,hud});
 // 처음 온 사람(로비 카드가 떠 있음)은 닉네임을 정한 뒤에 들어간다 — 서버 이름은 접속할 때 정해지므로. 주소에 &name=이 있으면 바로.
