@@ -3,7 +3,7 @@
 /* 상태 칩: 위 가운데(PC·가로). 세로는 진행 카드·시점 칩 아래 왼쪽. 알림(multi-toast 40)·진행 카드보다 위. */
 .me-chip{position:fixed;z-index:45;left:50%;top:calc(env(safe-area-inset-top,0px) + var(--top,20px));transform:translateX(-50%);display:flex;align-items:center;gap:8px;max-width:min(60vw,420px);min-height:44px;padding:0 16px 0 14px;border:0;border-radius:22px;background:var(--paper2);color:var(--ink);box-shadow:var(--lift),var(--soft);font:800 13px var(--nb-font,system-ui);cursor:pointer;white-space:nowrap}
 .me-chip[hidden]{display:none}
-.me-chip i{font-style:normal;font-size:15px}.me-chip .me-chip-t{overflow:hidden;text-overflow:ellipsis}
+.me-chip i{font-style:normal;font-size:15px}.me-chip .me-chip-t{overflow:hidden;text-overflow:ellipsis;flex:none} /* 인원(연결됨 · 2명)은 늘 보이고 긴 설명(small)이 줄어든다 */
 .me-chip small{font-weight:600;font-size:11.5px;color:var(--ink2);overflow:hidden;text-overflow:ellipsis}
 .me-chip[data-tone=ok]{box-shadow:var(--lift),var(--soft),inset 0 0 0 2px var(--go)}
 .me-chip[data-tone=warn]{box-shadow:var(--lift),var(--soft),inset 0 0 0 2px var(--mid)}
@@ -17,5 +17,5 @@
  .me-chip small{display:none}
 }
 @media (orientation:portrait){
- .me-chip{left:calc(env(safe-area-inset-left,0px) + 14px);top:calc(env(safe-area-inset-top,0px) + 254px);transform:none;max-width:calc(100vw - 28px);min-width:44px;padding:0 14px 0 12px}
+ .me-chip{left:calc(env(safe-area-inset-left,0px) + 14px);top:calc(env(safe-area-inset-top,0px) + 254px);transform:none;max-width:calc(100vw - 150px);min-width:44px;padding:0 14px 0 12px} /* 오른쪽에 💬·👥 단추(56px씩) 자리를 남긴다 */
 }

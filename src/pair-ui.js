@@ -51,9 +51,12 @@ export function installPairUI({doc=document,win=window,now=()=>Date.now()}={}){
   if(ref){const r=ref.getBoundingClientRect();btn.style.left=`${Math.round(r.right+8)}px`;btn.style.top=`${Math.round(r.top+(r.height-44)/2)}px`;return;}
   btn.style.left=btn.style.top='';
  }
+ // 연결 칩 폭이 바뀌면(상태 글이 바뀜) 💬가 먼저 옮겨진 뒤 다음 프레임에 따라간다(전에는 처음 자리에 남아 진행 카드 위에 겹쳤음, 11-08)
+ const ro=win.ResizeObserver?new win.ResizeObserver(()=>win.requestAnimationFrame(placeBtn)):null;
  function renderBtn(){
   btn.hidden=!joined;btn.classList.toggle('on',sheetOpen);btn.setAttribute('aria-expanded',String(sheetOpen));
   countEl.hidden=!people.length;countEl.textContent=String(people.length);placeBtn();
+  for(const e of [doc.querySelector('.me-chip'),doc.querySelector('.hc-btn')])if(e&&ro&&!e._pwObserved){ro.observe(e);e._pwObserved=true;}
  }
  function setSheet(on){
   sheetOpen=!!on&&joined;sheet.hidden=!sheetOpen;body.classList.toggle('pw-open',sheetOpen);

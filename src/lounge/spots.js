@@ -11,7 +11,7 @@
 import * as THREE from 'three';
 import {legTargets} from '../hiker-ik.js';
 import {part} from '../toon/concept-kit.js';
-import {finishTrailModel} from '../toon/trail-props.js';
+import {finishTrailModel,BENCH} from '../toon/trail-props.js';
 import {SCENES} from './scene.js';
 
 export const SPOT_RANGE=Object.freeze({rail:1.2,bench:1.5,vending:1.6,ashtray:1.6});
@@ -37,6 +37,8 @@ export function blocked(colliders,x,z,r=R){
 }
 // 난간 기대기 자리: 가까운 둘레에서 경계 안쪽 inset에 서서 바깥(난간)을 본다. 앞이 막힌 곳(부스·계단실·화분)은 건너뛴다.
 // range: 이 거리 안의 난간만. free(x,z): 다른 동동이가 서 있지 않은지(없으면 장애물만 본다). 막혔으면 난간을 따라 0.45·0.9m 옆자리를 찾는다.
+// 막힌 난간 지점 옆으로 찾아보는 거리(m). 같이 피우기에서 옆 사람이 기대 있으면 그 옆으로 간다(전에는 ±0.9m만 봐서 다른 쪽 난간까지 11m를 걸어갔다, 11-10).
+const RAIL_STEPS=[0,.45,-.45,.9,-.9,1.35,-1.35,1.8,-1.8,2.25,-2.25,2.7,-2.7];
 export function railSpot(rooftop,x,z,range=SPOT_RANGE.rail,free=null){
  const b=rooftop.bounds,ins=rooftop.rail?.inset??.22,m=ins+.25;
  const cx=clamp(x,b.minX+m,b.maxX-m),cz=clamp(z,b.minZ+m,b.maxZ-m);
@@ -45,7 +47,7 @@ export function railSpot(rooftop,x,z,range=SPOT_RANGE.rail,free=null){
   {x:b.minX+ins,z:cz,heading:Math.PI/2,n:[-1,0]},{x:b.maxX-ins,z:cz,heading:-Math.PI/2,n:[1,0]},
  ].map(s=>({...s,d:Math.hypot(s.x-x,s.z-z)})).sort((p,q)=>p.d-q.d);
  for(const s of list){if(s.d>range)break;
-  for(const o of [0,.45,-.45,.9,-.9]){
+  for(const o of RAIL_STEPS){
    const t={...s,x:s.n[0]?s.x:clamp(s.x+o,b.minX+m,b.maxX-m),z:s.n[0]?clamp(s.z+o,b.minZ+m,b.maxZ-m):s.z};t.d=Math.hypot(t.x-x,t.z-z);
    if(t.d<=range&&!blocked(rooftop.colliders,t.x,t.z)&&(!free||free(t.x,t.z)))return {kind:'rail',...t};
   }}
@@ -93,21 +95,15 @@ function makeCan(toonify){
  finishTrailModel(g,toonify,{shadow:true});return g;
 }
 
-// ctx: main.js ctx(THREE·toon·world·rooftop·player·smoker·dispatch). goTo({x,z,heading,done}): main.js 자동 이동. scene: scene.js createScene 결과.
-export function createSpots({ctx,player=ctx.player,smoker=ctx.smoker,rooftop=ctx.rooftop,world=ctx.world,toon=ctx.toon,goTo,scene=null,query=null,ui=true,camera=ctx.camera}){
- const dispatch=ctx.dispatch??((type,detail)=>globalThis.dispatchEvent(new CustomEvent(type,{detail})));
- // 다른 동동이·장애물이 그 자리를 차지했는지: main.js collide(나는 빼고 민다)가 자리를 옮기면 차지된 것
- //  (collide는 정확히 같은 점에 선 동동이는 밀지 못하므로 3cm 옆 점도 함께 본다)
- const free=(x,z)=>!ctx.collide||[[0,0],[.03,0],[0,.03]].every(([ox,oz])=>{const c=ctx.collide(x+ox,z+oz);return Math.hypot(c.x-x-ox,c.z-z-oz)<.05;});
- const send=(spot,state,extra={})=>dispatch('lounge:spot',{id:player.id,spot,state,...extra});
- const model=player.hiker.model,root=player.root,rig=poseRig(model);
+// 자세·캔 그리기(뼈 덧씌우기). 내 동동이와 같은 방 다른 사람 동동이(multi.js, 11-10)가 같은 코드를 쓴다.
+// S: {pose,w,last,spot,can:{held,sips,sipN,next,sip,drop}} — 내 것은 createSpots가, 다른 사람 것은 받은 행동 상태(act)로 multi.js가 채운다.
+// auto: 캔을 저절로 마실지(내 것만. 다른 사람은 받은 한 모금 횟수 sip으로만 마신다). 반환: pose(dt) — avatar.extra 맨 앞에 넣는다.
+export function createPoser({S,avatar,rooftop,world,toon,smokeState=()=>'idle',auto=true,onChange=()=>{}}){
+ const model=avatar.hiker.model,root=avatar.root,rig=poseRig(model);
  const skeleton=model.getObjectByName('ToonHiker_Body')?.skeleton,face=model.userData?.face;
  const headInv=skeleton&&rig.head?skeleton.boneInverses[skeleton.bones.indexOf(rig.head)]:null;
- const S={pose:'stand',w:0,spot:null,anchor:null,pending:null,near:null,glide:null,notice:null,
-  can:{held:false,sips:0,next:0,sip:-1,drop:null}};
  const mq=()=>model.getWorldQuaternion(new Q());
  const dirM=(x,y,z)=>new V3(x,y,z).applyQuaternion(mq()).normalize(); // 모델 공간(앞 +Z, 왼쪽 +X) → 월드
- const smokeState=()=>smoker?.status?.()?.state??'idle';
  const mouth=()=>{
   if(headInv&&face?.mouth)return new V3().fromArray(face.mouth.p).applyMatrix4(new THREE.Matrix4().multiplyMatrices(rig.head.matrixWorld,headInv));
   return wpos(rig.head??model).addScaledVector(dirM(0,0,1),.2).addScaledVector(UP,-.05);
@@ -161,16 +157,16 @@ export function createSpots({ctx,player=ctx.player,smoker=ctx.smoker,rooftop=ctx
  function holdCan(dt,F,L){
   const c=S.can;
   // 자판기에서 떨어지는 캔 → 잠깐 놓였다가 손으로
-  if(c.drop){const d=c.drop;d.t+=dt;const o=rooftop.spots?.vending?.outlet??{x:player.x,y:.3,z:player.z};
+  if(c.drop){const d=c.drop;d.t+=dt;const o=rooftop.spots?.vending?.outlet??{x:root.position.x,y:.3,z:root.position.z};
    if(d.t<DROP.fall){const k=d.t/DROP.fall,bounce=k<.75?(1-(k/.75)**2)*.32:Math.sin((k-.75)/.25*Math.PI)*.03;fall.visible=true;fall.position.set(o.x,o.y-.02+bounce,o.z);fall.rotation.set(0,0,k<.75?0:.3*(1-k));}
    else if(d.t<DROP.fall+DROP.wait){fall.position.set(o.x,o.y-.02,o.z);fall.rotation.set(0,0,0);}
    else if(d.t<DROP.fall+DROP.wait+DROP.fly){const k=smooth((d.t-DROP.fall-DROP.wait)/DROP.fly);fall.position.lerpVectors(new V3(o.x,o.y-.02,o.z),handCenter('Left'),k);}
-   else{fall.visible=false;c.drop=null;c.held=true;c.sips=0;c.next=SIP.first;c.sip=-1;render();}
+   else{fall.visible=false;c.drop=null;c.held=true;c.sips=0;c.next=SIP.first;c.sip=-1;onChange();}
   }
   if(!c.held){can.visible=false;return;}
   const st=smokeState(),busyMouth=st==='inhale',lighting=st==='lighting';
   // 가끔 마신다(담배를 빨아들이는 중에는 기다린다)
-  if(c.sip<0){c.next-=dt;if(c.next<=0&&!busyMouth&&!lighting){c.sip=0;}}
+  if(c.sip<0&&auto){c.next-=dt;if(c.next<=0&&!busyMouth&&!lighting){c.sip=0;c.sipN=(c.sipN+1)&0xffff;}}
   let k=0;if(c.sip>=0){c.sip+=dt;const p=c.sip/SIP.secs;k=p<.3?smooth(p/.3):p>.75?1-smooth((p-.75)/.25):1;
    if(c.sip>=SIP.secs){c.sip=-1;c.sips++;c.next=SIP.every[0]+Math.random()*(SIP.every[1]-SIP.every[0]);k=0;}}
   if(lighting){can.visible=false;return;} // 라이터를 켜는 왼손에는 캔을 숨긴다
@@ -183,7 +179,55 @@ export function createSpots({ctx,player=ctx.player,smoker=ctx.smoker,rooftop=ctx
   can.quaternion.setFromAxisAngle(L,-1.15*k); // 마실 때 캔 위쪽을 입 쪽(뒤)으로 기울인다
   can.updateMatrixWorld(true);
  }
- player.extra.unshift(pose);
+ return {pose,can,fall,rig,dispose(){world.remove(can);world.remove(fall);}};
+}
+
+// 다른 사람 자세 상태 S에 받은 행동 상태 a({p,b,can,sip}, multi-protocol ACT_SCHEMA.smoking)를 넣는다(11-10).
+//  자세는 바뀔 때만(빠질 때 섞이도록 last를 남김), 캔은 1(뽑는 중)이면 자판기에서 떨어지는 장면부터, 2(들고 있음)를 처음 받으면(중간 입장) 바로 손에,
+//  한 모금 횟수 sip이 늘면 한 모금(처음 받은 값은 기준으로만 둔다).
+export const newPoseState=()=>({pose:'stand',w:0,last:null,spot:null,can:{held:false,sips:0,sipN:0,next:0,sip:-1,drop:null,seen:null}});
+export function applyRemoteAct(S,a,rooftop){
+ if(!S||!a)return S;
+ const p=a.p??'stand';
+ if(p!==S.pose){
+  if(p!=='stand')S.last=p;
+  S.pose=p;
+  if(p==='sit'){const i=Number.isInteger(a.b)?a.b:0,b=rooftop?.spots?.benches?.[i];S.spot=b?{kind:'bench',index:i,...b}:{kind:'bench',index:i,seat:{y:BENCH.seatY}};}
+  else if(p==='lean')S.spot=null; // 난간 쪽 = 그 사람이 바라보는 쪽(lean이 몸 앞 방향을 쓴다)
+ }
+ const c=S.can,want=a.can??0;
+ if(want===1&&!c.drop){c.held=false;c.drop={t:0};c.sip=-1;}
+ else if(want===2&&!c.held&&!c.drop){c.held=true;c.sip=-1;}
+ else if(want===0){c.held=false;c.drop=null;c.sip=-1;}
+ if(Number.isInteger(a.sip)){if(c.seen!==null&&a.sip!==c.seen&&c.held&&c.sip<0)c.sip=0;c.seen=a.sip;}
+ return S;
+}
+// 내 행동 상태(보낼 것): 자세·앉은 벤치·캔·한 모금 횟수
+export function actOf(S){
+ const a={p:S.pose,can:S.can.drop?1:S.can.held?2:0,sip:S.can.sipN&0xffff};
+ if(S.pose==='sit'&&Number.isInteger(S.spot?.index))a.b=S.spot.index;
+ return a;
+}
+
+// ctx: main.js ctx(THREE·toon·world·rooftop·player·smoker·dispatch). goTo({x,z,heading,done}): main.js 자동 이동. scene: scene.js createScene 결과.
+export function createSpots({ctx,player=ctx.player,smoker=ctx.smoker,rooftop=ctx.rooftop,world=ctx.world,toon=ctx.toon,goTo,scene=null,query=null,ui=true,camera=ctx.camera}){
+ const dispatch=ctx.dispatch??((type,detail)=>globalThis.dispatchEvent(new CustomEvent(type,{detail})));
+ // 다른 동동이·장애물이 그 자리를 차지했는지: main.js collide(나는 빼고 민다)가 자리를 옮기면 차지된 것
+ //  (collide는 정확히 같은 점에 선 동동이는 밀지 못하므로 3cm 옆 점도 함께 본다)
+ // 같은 방 다른 사람(같이 피우기, 11-10)이 서 있거나 앉은 자리도 차지된 것으로 본다(ctx.multi.occupied). 전에는 두 사람이 같은 난간 지점·같은 좌판에 겹쳐 섰다.
+ const taken=(x,z,r=.36)=>!!ctx.multi?.occupied?.(x,z,r);
+ const free=(x,z)=>!taken(x,z)&&(!ctx.collide||[[0,0],[.03,0],[0,.03]].every(([ox,oz])=>{const c=ctx.collide(x+ox,z+oz);return Math.hypot(c.x-x-ox,c.z-z-oz)<.05;}));
+ // 벤치(길이 1.5m): 가운데에 누가 앉아 있으면 왼쪽·오른쪽 자리(±0.42m)에 앉는다. 셋 다 차면 null.
+ const seatFor=spot=>{const s=spot.seat,ax=-Math.cos(s.heading),az=Math.sin(s.heading);
+  for(const o of [0,.42,-.42]){const x=s.x+ax*o,z=s.z+az*o;if(!taken(x,z,.3))return o?{...spot,seat:{...s,x,z},x:spot.x+ax*o,z:spot.z+az*o}:spot;}
+  return null;};
+ const send=(spot,state,extra={})=>dispatch('lounge:spot',{id:player.id,spot,state,...extra});
+ const S={pose:'stand',w:0,spot:null,anchor:null,pending:null,near:null,glide:null,notice:null,
+  can:{held:false,sips:0,sipN:0,next:0,sip:-1,drop:null}};
+ const smokeState=()=>smoker?.status?.()?.state??'idle';
+ const poser=createPoser({S,avatar:player,rooftop,world,toon,smokeState,onChange:()=>render()});
+ const {can}=poser;
+ player.extra.unshift(poser.pose);
 
  // 짧은 알림: HUD 알림 자리(.lg-toast)를 같이 쓴다(hud.js는 그대로). 노드 테스트에서는 S.notice에만 남는다.
  let toastH=0;
@@ -193,7 +237,7 @@ export function createSpots({ctx,player=ctx.player,smoker=ctx.smoker,rooftop=ctx
  // ── 할 일
  function begin(kind,spot){
   S.pending=null;
-  if(kind==='sit'){const s=spot.seat;player.x=s.x;player.z=s.z;player.heading=s.heading;player.root.position.set(s.x,0,s.z);}
+  if(kind==='sit'){const seat=seatFor(spot);if(!seat){toast('벤치에 자리가 없어요');send('bench','fail',{reason:'taken'});render();return;}spot=seat;const s=spot.seat;player.x=s.x;player.z=s.z;player.heading=s.heading;player.root.position.set(s.x,0,s.z);}
   else player.heading=spot.heading;
   S.pose=kind;S.last=kind;S.spot=spot;S.anchor={x:player.x,z:player.z};
   send(kind==='sit'?'bench':'rail','enter',kind==='sit'?{index:spot.index}:{});render();
@@ -235,7 +279,7 @@ export function createSpots({ctx,player=ctx.player,smoker=ctx.smoker,rooftop=ctx
   coffee(){const vm=rooftop.spots?.vending;if(!vm||buying())return false;
    const far=Math.hypot(vm.x-player.x,vm.z-player.z)>WALK.arrive;walkThen({kind:'vending',...vm},buy);if(far)toast('자판기로 걸어가요');return true;},
   // 한 모금(C 키): 캔을 들고 있고, 담배를 빨거나 불 붙이는 중이 아니면 바로 마신다
-  sip(){const c=S.can,st=smokeState();if(!c.held||c.sip>=0||st==='inhale'||st==='lighting')return false;c.sip=0;return true;},
+  sip(){const c=S.can,st=smokeState();if(!c.held||c.sip>=0||st==='inhale'||st==='lighting')return false;c.sip=0;c.sipN=(c.sipN+1)&0xffff;return true;},
   stand,
   dropCan(){if(!S.can.held)return false;S.can.held=false;can.visible=false;render();return true;},
   // 대상 위 표시를 눌렀을 때(멀리서도): kind = 'bench'|'rail'|'vending'|'ashtray', index = 벤치·재떨이 번호
@@ -409,6 +453,8 @@ export function createSpots({ctx,player=ctx.player,smoker=ctx.smoker,rooftop=ctx
   update,act,
   lean:act.lean,sit:act.sit,coffee:act.coffee,go:act.go,sip:act.sip,stand:act.stand,dropCan:act.dropCan,
   get pose(){return S.pose;},
+  // 같이 피우기로 보낼 행동 상태(multi.js가 바뀔 때만 보낸다)
+  act:()=>actOf(S),
   status(){const P=S.pending;return {pose:S.pose,w:+S.w.toFixed(2),near:S.near?.kind??null,primary:primary(),notice:S.notice,
    pending:P?{to:P.spot.kind,d:+Math.hypot(P.spot.x-player.x,P.spot.z-player.z).toFixed(2),t:+P.t.toFixed(1),waited:+P.wait.toFixed(1),stall:+P.stall.toFixed(1)}:null,
    can:{held:S.can.held,dropping:!!S.can.drop,sips:S.can.sips,sipping:S.can.sip>=0}};},

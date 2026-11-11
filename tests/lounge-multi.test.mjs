@@ -130,7 +130,7 @@ test('두 사람: 서로 보이고(위치·이름) 채팅이 한 번씩만, 담�
  await sleep(40);
  const sm=B.created[0].smoker;
  assert.deepEqual(sm.calls,['start','light']);assert.equal(sm.state,'smoking');
- assert.equal(A.multi.status().stats.smokesSent,3,'들어올 때 1번(idle) + 바뀐 상태 2번');
+ assert.equal(A.multi.status().stats.smokesSent,4,'들어올 때 1번(idle) + 처음 본 B에게 1번(11-08) + 바뀐 상태 2번');
  // 자리 옮기기(순간 이동)는 FLAG.jump
  const raw=[];spy=new BroadcastChannel(broadcastChannelName('smoking','시험방'));spy.onmessage=e=>raw.push(e.data);
  A.player.x=6;A.player.z=4;await tick([A,B],120,3);
@@ -154,7 +154,7 @@ test('늦게 들어온 사람도 지금 담배 상태를 받고, 소식 없는 �
  assert.deepEqual(B.created[0]?.smoker.calls,['start','light']);
  // A가 조용히 사라지면(창 닫힘) 시간 초과로 빠진다
  A.multi.dispose();
- B.clock.t+=MULTI.timeout+1;B.multi.update(.1);
+ for(let i=0;i<(MULTI.timeout+1)*10;i++){B.clock.t+=.1;B.multi.update(.1);} // 루프가 도는 동안 소식이 끊김(한 번에 건너뛰면 '내가 멈췄다 깨어남'으로 보고 보류)
  assert.equal(B.multi.people().length,0);
  B.multi.dispose();
 });

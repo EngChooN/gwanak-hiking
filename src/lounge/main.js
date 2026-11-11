@@ -162,7 +162,7 @@ const afterIntro=fn=>{if(!profile.seenIntro){const h=setInterval(()=>{if(profile
 const pickMode=serverPickMode(location.search,!!navigator.webdriver);
 if(multi.params.auto){const go=()=>multi.join({room:multi.params.room,name:multi.params.name??''});
  if(multi.params.name===null)afterIntro(go);else go();}
-else if(pickMode==='show'&&multiUi)afterIntro(()=>{if(!multi.joined)multiUi.open({closable:false});});
+else if(pickMode==='show'&&multiUi){if(!multi.joined)multiUi.open({closable:false});} // 로비 카드보다 먼저: 허브 → 체험 → 서버 카드 → 입장(11-08). 첫 방문 닉네임은 서버 카드 칸에서 받는다
 
 // ── 크기·화질
 function resize(){const w=innerWidth,h=innerHeight,dpr=Math.min(devicePixelRatio,mobile?1.5:2);camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setPixelRatio(dpr);renderer.setSize(w,h);toon.pipeline.resize(mobile?1:2,w,h,dpr);}

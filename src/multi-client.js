@@ -13,23 +13,26 @@ import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {clone as cloneSkinned} from 'three/addons/utils/SkeletonUtils.js';
 import {createRealisticHiker} from './realistic-hiker.js';
-import {NET,TIERS,GESTURES,FLAG,encodeState,decodeState,createInterpolator,classify,nearestWithin,selfieSpot,createSocial,createModeration,REPORT_REASONS,sanitizeName,anonymousName,PAIR,PAIR_TEXT,createPairClient} from './multi-protocol.js';
+import {NET,TIERS,GESTURES,FLAG,encodeState,decodeState,createInterpolator,classify,nearestWithin,selfieSpot,createSocial,createModeration,REPORT_REASONS,sanitizeName,anonymousName,PAIR,PAIR_TEXT,createPairClient,PRESENCE,createPresence,sanitizeAct} from './multi-protocol.js';
 import {pairGuide,projectNear} from './pair-walk.js';
-import {createBroadcastTransport,createLoopbackHub,createWebSocketTransport} from './multi-transport.js';
+import {createBroadcastTransport,createLoopbackHub,createWebSocketTransport,createBackgroundTimer} from './multi-transport.js';
 import {LIMITS} from './device-profile.js';
 import {applyGesture,boneSet} from './multi-gestures.js';
 import {createSimCrowd} from './multi-sim.js';
+import {createHikerActs,ACT_SECONDS} from './toon/hiker-acts.js';
+import {hikingAct,createActSender,remoteActPlan,remoteBody,frameFromSpot} from './multi-act.js';
 import './multi-ui.css';
 
 const COLORS=[0xd9534f,0x3b82c4,0x4caf6a,0xe0a030,0x9b59b6,0x16a5a5,0xd2691e,0x7a8b2e];
 const hash=s=>{let h=2166136261;for(const c of String(s)){h^=c.charCodeAt(0);h=Math.imul(h,16777619);}return h>>>0;};
 const el=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e;};
 
-export async function mountMultiplayer({scene,camera,hikerUrl,prepareGltf=null,night,groundHeight,local,search=location.search,command,onSelfieShot,room:roomArg=null,name:nameArg=null,serverUrl=null}){
+export async function mountMultiplayer({scene,camera,hikerUrl,prepareGltf=null,night,groundHeight,local,search=location.search,command,onSelfieShot,room:roomArg=null,name:nameArg=null,serverUrl=null,toonify=null}){
  const q=new URLSearchParams(search),simN=Number(q.get('sim'))||0;
  // 모델 GLB를 먼저 읽는다: 서버 연결을 그 뒤에 열어야 첫 메시지(welcome)를 놓치지 않는다.
  const raw=await new GLTFLoader().loadAsync(hikerUrl),gltf=prepareGltf?prepareGltf(raw):raw;
- let room=roomArg||q.get('multi')||'gwanak-room-1';
+ // 방 이름이 없으면(?multi= 빈 값) 서버 고르기의 첫 서버와 같은 방(전에는 gwanak-room-1이라 서버 고르기로 온 사람과 갈렸음, 11-08)
+ let room=roomArg||q.get('multi')||'관악산-1';
  let myId=Math.random().toString(36).slice(2,10),myName=sanitizeName(nameArg??q.get('name'),anonymousName(myId));
  // 모델로 그릴 사람 수: PC 4명·휴대폰 2명(device-profile.js), ?fullcap=N이면 그 값
  const fullCap=Number(q.get('fullcap'))||LIMITS.multiFullCap||TIERS.fullCap,tiers={...TIERS,fullCap};
@@ -38,10 +41,12 @@ export async function mountMultiplayer({scene,camera,hikerUrl,prepareGltf=null,n
  const hub=simN?createLoopbackHub({latency:Number(q.get('latency'))||60,jitter:20,loss:Number(q.get('loss'))||0}):null;
  const transport=hub?hub.join():serverUrl?createWebSocketTransport(serverUrl,{experience:'hiking',room,name:myName}):createBroadcastTransport(room,undefined,{experience:'hiking'});
  const viaServer=transport.kind==='server';
+ // 있는지 판단: 서버 모드는 서버가 나감을 알려 주므로 길게, 내 루프가 멈췄다 돌아온 첫 프레임은 판단 보류(PRESENCE)
+ const presence=createPresence({timeout:viaServer?PRESENCE.serverTimeout:PRESENCE.localTimeout});
  const roster=new Map();             // id → {id,name,color,interp,gesture,sessionRole,lastSeen,hiker,...}
- let seq=0,sendAcc=0,lastAnnounce=-Infinity,tagsOn=true,frozenUntil=0,shotDone=false,lastSent=null,disposed=false;
+ let seq=0,sendAcc=0,lastSendAt=-Infinity,lastGreet=-Infinity,lastAnnounce=-Infinity,tagsOn=true,frozenUntil=0,shotDone=false,lastSent=null,disposed=false;
  let netState=viaServer?transport.status:'online',statusSig='';
- const stats={sent:0,received:0,bytesOut:0,decoded:0,avatarsDrawn:0,capsules:0,hidden:0,frame:0,jumps:0,animalsSent:0,animalsReceived:0,chatsSent:0,chatsReceived:0};
+ const stats={sent:0,received:0,bytesOut:0,decoded:0,avatarsDrawn:0,capsules:0,hidden:0,frame:0,jumps:0,animalsSent:0,animalsReceived:0,chatsSent:0,chatsReceived:0,actsSent:0,actsReceived:0};
  const send=m=>{stats.sent++;stats.bytesOut+=JSON.stringify(m).length;transport.send(m);};
  const peerPos=id=>{const r=roster.get(id),s=r?.sample;return s&&{x:s.x,z:s.z,zone:s.zone};};
  const social=createSocial({id:()=>myId,send,position:peerPos,mine:()=>local.position(),blocked:id=>moderation.isBlocked(id)});
@@ -67,7 +72,7 @@ export async function mountMultiplayer({scene,camera,hikerUrl,prepareGltf=null,n
  function makeAvatar(){
   const sc=cloneSkinned(gltf.scene),h=createRealisticHiker({scene:sc,animations:gltf.animations});
   sc.traverse(o=>{if(o.isMesh)o.castShadow=false;});
-  const entry={hiker:h,bones:boneSet(h.model),assigned:null,walkPhase:0,prevY:null,slope:0,heading:null};
+  const entry={hiker:h,bones:boneSet(h.model),assigned:null,walkPhase:0,prevY:null,slope:0,heading:null,acts:null,applied:null};
   h.scene.visible=false;scene.add(h.scene);pool.push(entry);return entry;
  }
  for(let i=0;i<fullCap;i++)makeAvatar();
@@ -113,7 +118,7 @@ export async function mountMultiplayer({scene,camera,hikerUrl,prepareGltf=null,n
  function endSession(){frozenUntil=0;if(local.gadget()!=='none')command('gadget-off');say('같이 셀카를 마쳤어요');}
 
  // ── 수신
- function dropPlayer(id){const r=roster.get(id);if(!r)return;if(r.entry){r.entry.assigned=null;r.entry.hiker.scene.visible=false;}tagEls.get(id)?.root.remove();tagEls.delete(id);roster.delete(id);}
+ function dropPlayer(id){const r=roster.get(id);if(!r)return;if(r.entry){r.entry.assigned=null;r.entry.hiker.scene.visible=false;r.entry.acts?.cancel();r.entry.applied=null;}tagEls.get(id)?.root.remove();tagEls.delete(id);roster.delete(id);}
  // 연결 상태 알림: 패널이 닫혀 있어도 보이게 화면 위 알림으로 띄운다. 끊긴 동안(다시 연결 중·꽉 참)은 계속 띄워 두고, 다시 붙으면 잠깐 알린다.
  // 산디자인 HUD(src/multi-entry-ui.js)가 상태를 직접 그리면(body[data-multi-entry]) 이 알림은 띄우지 않는다.
  const sticky=text=>{netToast=true;toast.textContent=text;toast.classList.add('on');clearTimeout(toastTimer);};
@@ -124,23 +129,27 @@ export async function mountMultiplayer({scene,camera,hikerUrl,prepareGltf=null,n
  if(viaServer&&netState!=='online')showNet(netState);
  const offMessage=transport.onmessage((m,at)=>{
   stats.received++;
-  if(m?.t==='welcome'){myId=m.id;room=m.room;myName=m.name;hiddenSelf=!!m.h;pairEvents(pair.reset());announce(true);emitStatus();return;}
+  if(m?.t==='welcome'){myId=m.id;room=m.room;myName=m.name;hiddenSelf=!!m.h;pairEvents(pair.reset());announce(true);sendAct(true);emitStatus();return;}
   if(typeof m?.t==='string'&&m.t.startsWith('pair:')){pairEvents(pair.handle(m,Date.now()));return;}
   if(m?.t==='moved'){hiddenSelf=!!m.h||hiddenSelf;room=m.room;for(const id of [...roster.keys()])dropPlayer(id);say('다른 방으로 옮겼어요');emitStatus();return;}
   if(m?.t==='report-ok')return;
   if(m?.t==='c-limit'){window.dispatchEvent(new CustomEvent('hiking:chat-limit',{detail:{reason:'rate'}}));return;}
   if(m?.t==='c'){onChat(m);return;}
   if(!m||m.id===myId)return;
+  // 행동 상태(11-10): 자세·기구·동작. 모르는 사람이면 목록에 넣고 인사(위치는 서버가 같이 준다)
+  if(m.t==='act'){const a=sanitizeAct('hiking',m.a);if(!a)return;stats.actsReceived++;
+   const known=roster.has(m.id),r=roster.get(m.id)??(roster.size<NET.maxRoster?addPlayer(m.id):null);if(!r)return;if(!known)greetNew();
+   if(a.p==='tea'&&r.act?.p!=='tea')r.teaSince=performance.now()/1000;r.act=a;return;}
   if(m.t==='a'){stats.animalsReceived++;window.dispatchEvent(new CustomEvent('hiking:animal-remote',{detail:{zone:m.zone,slot:m.slot,i:m.i,kind:m.kind,at:m.at,x:m.x,z:m.z,from:m.id}}));return;}
   if(m.t==='s'){
    const d=decodeState(m);if(!d)return;stats.decoded++;
    let r=roster.get(d.id);
-   if(!r){if(roster.size>=NET.maxRoster)return;r=addPlayer(d.id);announce(true);}
+   if(!r){if(roster.size>=NET.maxRoster)return;r=addPlayer(d.id);greetNew();}
    r.lastSeen=performance.now()/1000;r.flags=d.flags;if(!viaServer)pairEvents(pair.peerSeen(d.id));
    if(moderation.isBlocked(d.id))return;
    r.interp.push(r.lastSeen,d);return;
   }
-  if(m.t==='j'){const r=roster.get(m.id)??(roster.size<NET.maxRoster?addPlayer(m.id):null);if(r){r.name=sanitizeName(m.n,anonymousName(m.id));r.tagHidden=!!m.h;r.lastSeen=performance.now()/1000;}return;}
+  if(m.t==='j'){const known=roster.has(m.id),r=roster.get(m.id)??(roster.size<NET.maxRoster?addPlayer(m.id):null);if(r&&!known)greetNew();if(r){r.name=sanitizeName(m.n,anonymousName(m.id));r.tagHidden=!!m.h;r.lastSeen=performance.now()/1000;}return;}
   // 나가기 b: 내 컴퓨터 모드는 동행을 바로 끝낸다. 서버 모드는 서버가 정한다(끊김이면 pair:wait 뒤 60초 유예라 여기서 끝내면 안 됨).
   if(m.t==='b'){if(!viaServer)pairEvents(pair.peerGone(m.id,Date.now(),{explicit:true}));dropPlayer(m.id);return;}
   social.handle(m,performance.now()/1000,(from,kind,now)=>{const r=roster.get(from);if(r){r.gesture={kind,from:now,until:now+GESTURES[kind].seconds};say(`${r.name}님이 ${kind==='wave'?'손을 흔들어요':'인사했어요'}`);}});
@@ -164,6 +173,21 @@ export async function mountMultiplayer({scene,camera,hikerUrl,prepareGltf=null,n
   const r={id,name:anonymousName(id),color:COLORS[hash(id)%COLORS.length],interp:createInterpolator(),gesture:null,lastSeen:performance.now()/1000,sample:null,flags:0,entry:null};
   roster.set(id,r);return r;
  }
+ // 처음 보는 사람이 오면 내 이름과 지금 자리를 바로 보낸다. 메시지 처리는 숨은 탭에서도 돌므로, 숨은 채 가만히 있는 사람도 새로 온 사람에게 보인다(11-08).
+ function greetNew(){const t=performance.now()/1000;if(t-lastGreet<.3)return;lastGreet=t;announce(true);sendState();sendAct(true);}
+ // 내 행동 상태: 바뀔 때만(force = 처음 보는 사람·다시 접속). 서버는 마지막 값을 기억해 새로 온 사람·이름 묻기·resume 때 다시 준다.
+ const actSender=createActSender();
+ function sendAct(force=false){const a=actSender.next(local.act?hikingAct(local.act()):null,force);if(a){stats.actsSent++;send({t:'act',id:myId,a});}}
+ // 내 위치 한 번 보내기(10Hz 전송·숨은 탭 알림·처음 보는 사람 인사가 같이 씀)
+ function sendState(){
+  // 즐길거리에 들른 동안은 몸이 실제로 있는 자리(소품 앞)를 보낸다(길 위 자리를 보내면 상대 화면에서는 길에 서서 동작함)
+  const p=local.shown?.()??local.position();if(!p)return;
+  // 0.1초에 2m 넘게 옮겼으면(구간 이동·같이 셀카 자리 옮김) 순간이동 표시를 붙인다 — 서버는 표시 없는 순간이동(여유 2m + 12m/s)을 버린다. 달리기는 0.1초에 0.4m 안팎.
+  const jump=lastSent&&(lastSent.zone!==p.zone||Math.hypot(p.x-lastSent.x,p.z-lastSent.z)>2);if(jump)stats.jumps++;lastSent={zone:p.zone,x:p.x,z:p.z};lastSendAt=performance.now()/1000;
+  send(encodeState(myId,seq=(seq+1)&0xffff,p,{speed:local.speed(),flags:(local.sit()?FLAG.sit:0)|(local.run()?FLAG.run:0)|(jump?FLAG.jump:0)|(local.walk?.().auto?FLAG.auto:0)}));
+ }
+ // 숨은 탭 알림: 그리기 루프(update)가 멈춰도 1초마다 마지막 자리, 3초마다 이름을 다시 보낸다(상대 화면에서 시간 초과로 지워지지 않게)
+ const beat=createBackgroundTimer(()=>{if(disposed)return;const t=performance.now()/1000;if(t-lastSendAt>=PRESENCE.heartbeatMs/1000)sendState();if(t-lastAnnounce>3)announce();sendAct();},PRESENCE.heartbeatMs);
  function announce(force=false){const now=performance.now()/1000;if(!force&&now-lastAnnounce<1)return;lastAnnounce=now;send({t:'j',id:myId,n:myName});}
  const onPageHide=()=>{try{transport.send({t:'b',id:myId});}catch{}};
  announce(true);addEventListener('pagehide',onPageHide);
@@ -269,11 +293,11 @@ export async function mountMultiplayer({scene,camera,hikerUrl,prepareGltf=null,n
  const pos=new THREE.Vector3();
  function assign(rows,now){
   const want=new Set(rows.map(r=>r.p.id));
-  for(const e of pool)if(e.assigned&&!want.has(e.assigned)){const prev=roster.get(e.assigned);if(prev)prev.entry=null;e.assigned=null;e.hiker.scene.visible=false;}
+  for(const e of pool)if(e.assigned&&!want.has(e.assigned)){const prev=roster.get(e.assigned);if(prev)prev.entry=null;e.assigned=null;e.hiker.scene.visible=false;e.acts?.cancel();e.applied=null;}
   for(const r of rows){
    const p=roster.get(r.p.id);if(p.entry)continue;
    const e=pool.find(x=>!x.assigned);if(!e)break;
-   e.assigned=p.id;p.entry=e;e.prevY=null;e.walkPhase=0;e.heading=null;e.hiker.scene.visible=true;
+   e.assigned=p.id;p.entry=e;e.prevY=null;e.walkPhase=0;e.heading=null;e.hiker.scene.visible=true;e.acts?.cancel();e.applied=null;
   }
  }
  function driveAvatar(r,dt,now){
@@ -284,13 +308,34 @@ export async function mountMultiplayer({scene,camera,hikerUrl,prepareGltf=null,n
   const horizontal=s.speed*dt;
   if(e.prevY!==null&&horizontal>1e-4)e.slope+=(THREE.MathUtils.clamp((y-e.prevY)/horizontal,-1,1)-e.slope)*.2;else if(!s.moving)e.slope*=.9;
   e.prevY=y;
-  const sit=!!(r.flags&FLAG.sit),run=!!(r.flags&FLAG.run),step=.7*(run?1.16:1);
+  const run=!!(r.flags&FLAG.run),step=.7*(run?1.16:1);
   e.walkPhase+=horizontal/step;
   const inSession=social.state.session&&(social.state.session.requester===r.id||social.state.session.partner===r.id),asRequester=inSession&&social.state.session.requester===r.id;
   const surface=(x,z)=>groundHeight(x,z);
-  h.update({clip:!s.moving?'Idle':e.slope>.15?'Climb':'Walk',distance:e.walkPhase,stride:1,stepLength:step,idleSeconds:now,slope:e.slope,pose:sit?'sit':'stand',running:run,speed:s.speed,dt,surfaceHeight:surface,gadget:asRequester?'phone':'none',selfie:asRequester});
-  h.ground({s:0,lateral:0,moving:s.moving,phase:e.walkPhase,floorHeight:()=>y,sample:()=>null,surfaceHeight:surface,pose:sit?'sit':'stand'});
+  // 자세·기구는 받은 act(11-10). act가 아직 없으면 옛 위치 flags의 앉음 그대로.
+  const body=remoteBody(r.act,{sitFlag:!!(r.flags&FLAG.sit),teaSince:r.teaSince??null,now,session:asRequester});
+  h.update({clip:!s.moving?'Idle':e.slope>.15?'Climb':'Walk',distance:e.walkPhase,stride:1,stepLength:step,idleSeconds:now,slope:e.slope,pose:body.pose,teaProgress:body.teaProgress,running:run,speed:s.speed,dt,surfaceHeight:surface,gadget:body.gadget,selfie:body.selfie});
+  h.ground({s:0,lateral:0,moving:s.moving,phase:e.walkPhase,floorHeight:()=>y,sample:()=>null,surfaceHeight:surface,pose:body.pose});
+  remoteActs(e,r,s,y,dt);
+  e.drawn={p:body.pose,g:body.gadget,sf:body.selfie?1:0,x:e.acts?.active?.name??null,tea:+body.teaProgress.toFixed(2)};
   poseOverride(e,r,now,inSession&&!asRequester);
+ }
+ // 받은 동작(즐길거리·헥헥·쥐·초콜릿)을 원격 몸에 같은 코드(hiker-acts, quiet = 말풍선·소리·도장 없음)로 재생한다.
+ // 소품 자리 행렬은 내 화면에 그 소품이 만들어져 있으면 그것(local.propFor), 없으면 상대가 서 있는 자리·방향으로 다시 세운다.
+ function remoteActs(e,r,s,y,dt){
+  const plan=remoteActPlan(e.applied,r.act,e.acts?.active?.name??null);
+  if(plan.start){
+   try{e.acts??=createHikerActs(e.hiker,{toonify,world:scene,quiet:true});}catch(err){console.warn('원격 동작 준비 실패',err);e.applied=plan.applied;return;}
+   const acts=e.acts,d=acts.defs[plan.start],prop=local.propFor?.(plan.start,s.x,s.z)??null;
+   let frame=prop?.frame??null;
+   if(!frame){const f=d?.spot?frameFromSpot(d,{x:s.x,z:s.z,heading:s.heading}):null;
+    frame=f?new THREE.Matrix4().compose(new THREE.Vector3(f.x,groundHeight(f.x,f.z),f.z),new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),f.yaw),new THREE.Vector3(1,1,1)):acts.bodyFrame();}
+   acts.start(plan.start,{frame,target:prop?.target??null,auto:false,groundY:(x,z)=>groundHeight(x,z),local:plan.start==='pet-cat'?[0,0,-.5]:[0,0,0],holdSeconds:ACT_SECONDS[plan.start]});
+  }
+  if(plan.stop)e.acts?.stop();
+  for(let i=0;i<plan.press;i++)e.acts?.press();
+  e.applied=plan.applied;
+  if(e.acts)e.acts.apply(dt,{moving:!!s.moving});
  }
  function poseOverride(e,r,now,asPartner){
   let g=r.gesture&&now<r.gesture.until?r.gesture:null;
@@ -324,13 +369,12 @@ export async function mountMultiplayer({scene,camera,hikerUrl,prepareGltf=null,n
   if(sim)sim.update(performance.now(),dt);
   hub?.pump(performance.now());
   // 전송 10Hz
-  // 0.1초에 2m 넘게 옮겼으면(구간 이동·같이 셀카 자리 옮김) 순간이동 표시를 붙인다 — 서버는 표시 없는 순간이동(여유 2m + 12m/s)을 버린다. 달리기는 0.1초에 0.4m 안팎.
-  sendAcc+=dt;if(sendAcc>=1/NET.sendHz){sendAcc%=1/NET.sendHz;const p=local.position();if(p){
-   const jump=lastSent&&(lastSent.zone!==p.zone||Math.hypot(p.x-lastSent.x,p.z-lastSent.z)>2);if(jump)stats.jumps++;lastSent={zone:p.zone,x:p.x,z:p.z};
-   send(encodeState(myId,seq=(seq+1)&0xffff,p,{speed:local.speed(),flags:(local.sit()?FLAG.sit:0)|(local.run()?FLAG.run:0)|(jump?FLAG.jump:0)|(local.walk?.().auto?FLAG.auto:0)}));}}
+  sendAcc+=dt;if(sendAcc>=1/NET.sendHz){sendAcc%=1/NET.sendHz;sendState();}
+  sendAct();
   if(t-lastAnnounce>3)announce();
-  // 오래 조용한 사람 정리
-  for(const r of [...roster.values()])if(t-r.lastSeen>NET.timeout){if(!viaServer)pairEvents(pair.peerGone(r.id,Date.now()));dropPlayer(r.id);}
+  // 오래 조용한 사람 정리(내 루프가 멈췄다 돌아온 첫 프레임은 보류 — createPresence)
+  presence.frame(t);
+  for(const r of [...roster.values()])if(presence.expired(r.lastSeen,t)){if(!viaServer)pairEvents(pair.peerGone(r.id,Date.now()));dropPlayer(r.id);}
   for(const r of roster.values())r.sample=moderation.isBlocked(r.id)?null:r.interp.sample(t);
   const players=[...roster.values()].filter(r=>r.sample).map(r=>({id:r.id,x:r.sample.x,z:r.sample.z}));
   const cls=classify(players,camera.position,{tiers});
@@ -339,7 +383,7 @@ export async function mountMultiplayer({scene,camera,hikerUrl,prepareGltf=null,n
   // 모델이 아닌 사람은 캡슐(밤 조명 쪽 자리표시)로
   const capsule=cls.capsule.map(row=>{const r=roster.get(row.p.id),s=r.sample;return {x:s.x,y:groundHeight(s.x,s.z),z:s.z,heading:s.heading,color:r.color,lamp:true};});
   night?.setOthers(capsule);
-  for(const e of pool)if(e.assigned&&!cls.avatar.some(row=>row.p.id===e.assigned)){roster.get(e.assigned)&&(roster.get(e.assigned).entry=null);e.assigned=null;e.hiker.scene.visible=false;}
+  for(const e of pool)if(e.assigned&&!cls.avatar.some(row=>row.p.id===e.assigned)){roster.get(e.assigned)&&(roster.get(e.assigned).entry=null);e.assigned=null;e.hiker.scene.visible=false;e.acts?.cancel();e.applied=null;}
   stats.avatarsDrawn=cls.avatar.length;stats.capsules=capsule.length;stats.hidden=cls.hidden;
   // 이름표
   for(const x of tagEls.values())x.seen=false;
@@ -373,7 +417,7 @@ export async function mountMultiplayer({scene,camera,hikerUrl,prepareGltf=null,n
   if(social.state.session)social.cancelSession();
   pair.cancel();pair.decline();pair.end();pairGuideNow=null;
   removeEventListener('hiking:pair-offer',onPairOffer);for(const [k,f] of pairCmds)removeEventListener(k,f);
-  onPageHide();offMessage?.();offStatus?.();
+  onPageHide();beat.stop();offMessage?.();offStatus?.();
   removeEventListener('pagehide',onPageHide);removeEventListener('keydown',onKey);removeEventListener('hiking:animal-startle',onAnimal);removeEventListener('hiking:chat-send',onChatSend);
   transport.close();
   for(const e of pool){scene.remove(e.hiker.scene);e.hiker.dispose?.();}pool.length=0;
@@ -382,7 +426,7 @@ export async function mountMultiplayer({scene,camera,hikerUrl,prepareGltf=null,n
   netState='offline';emitStatus(true);pairState(true);
  }
  emitStatus(true);pairState(true);
- const info=()=>({id:myId,name:myName,room,transport:transport.kind,status:netState,roster:[...roster.values()].map(r=>({id:r.id,name:r.name,x:r.sample?.x,z:r.sample?.z,heading:r.sample?.heading,speed:r.sample?.speed,moving:r.sample?.moving,model:!!r.entry,gesture:r.gesture&&performance.now()/1000<r.gesture.until?r.gesture.kind:null,blocked:moderation.isBlocked(r.id)})),stats:{...stats},hub:hub?.stats??null,social:{session:social.state.session,incoming:social.state.incoming,outgoing:social.state.outgoing,log:social.state.log.slice(-12)},fullCap,pool:pool.length,moderation:moderation.data,sim:sim?.info()??null,server:viaServer?transport.info:null,pair:{...pair.view(),hidden:hiddenSelf,guide:pairGuideNow&&{mode:pairGuideNow.mode,near:pairGuideNow.near,distance:pairGuideNow.distance,lead:pairGuideNow.lead,laneTarget:pairGuideNow.laneTarget,pace:pairGuideNow.pace,waiting:pairGuideNow.waiting},log:pairLog.slice(-12)}});
+ const info=()=>({id:myId,name:myName,room,transport:transport.kind,status:netState,roster:[...roster.values()].map(r=>({id:r.id,name:r.name,x:r.sample?.x,z:r.sample?.z,heading:r.sample?.heading,speed:r.sample?.speed,moving:r.sample?.moving,model:!!r.entry,act:r.act??null,drawnAct:r.entry?.drawn??null,gesture:r.gesture&&performance.now()/1000<r.gesture.until?r.gesture.kind:null,blocked:moderation.isBlocked(r.id)})),stats:{...stats},hub:hub?.stats??null,social:{session:social.state.session,incoming:social.state.incoming,outgoing:social.state.outgoing,log:social.state.log.slice(-12)},fullCap,pool:pool.length,moderation:moderation.data,sim:sim?.info()??null,server:viaServer?transport.info:null,pair:{...pair.view(),hidden:hiddenSelf,guide:pairGuideNow&&{mode:pairGuideNow.mode,near:pairGuideNow.near,distance:pairGuideNow.distance,lead:pairGuideNow.lead,laneTarget:pairGuideNow.laneTarget,pace:pairGuideNow.pace,waiting:pairGuideNow.waiting},log:pairLog.slice(-12)}});
  // 머리 위 말풍선용 화면 위치: 내 id는 내 몸, 그 밖에는 원격 아바타(차단·카메라 뒤·화면 밖이면 visible:false). 채팅 HUD(hiking-chat-ui.js)가 매 프레임 부른다.
  const headV=new THREE.Vector3();
  function screenPos(id){

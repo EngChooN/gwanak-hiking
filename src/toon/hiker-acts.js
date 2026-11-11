@@ -26,7 +26,8 @@ export const LIFT_REPS=10;      // 역기 득근 게이지 칸
 const eul=new THREE.Euler();
 const rot=(vec,[x=0,y=0,z=0])=>vec.clone().applyEuler(eul.set(x,y,z,'XYZ'));
 
-export function createHikerActs(hiker,{toonify,world}){
+// quiet: 다른 사람 몸(함께 걷기 원격 아바타, multi-client.js)에 같은 동작을 재생할 때. 말풍선(hiking:trail-say)·사건(hiking:trail — 도장·소리)을 내 화면에 내지 않는다(11-10).
+export function createHikerActs(hiker,{toonify,world,quiet=false}){
  const model=hiker.model,root=hiker.scene,rest=model.userData.restPose,face=model.userData.face;
  const B=n=>model.getObjectByName('mixamorig'+n),bones=Object.fromEntries(POSE.map(n=>[n,B(n)]));
  const restOf=new Map(POSE.map(n=>{const r=rest['mixamorig'+n];return [bones[n],{q:new Q().fromArray(r.q),p:new V3().fromArray(r.p)}];}));
@@ -103,10 +104,10 @@ export function createHikerActs(hiker,{toonify,world}){
  let hose=null;const hoseMesh=()=>{if(!hose){const src=trailPropTemplate('airgun',toonify).getObjectByName('hose-rest');hose=new THREE.Mesh(new THREE.BufferGeometry(),src.material);const l=new THREE.Mesh(hose.geometry,lineMat(.0036));l.userData.outline=true;hose.add(l);hose.userData.outlineMesh=l;world.add(hose);}return hose;};
  const fx=[];const effect=(kind,{p,life=1,update})=>{while(fx.length>=(LIMITS.trailEffects??60))world.remove(fx.shift().o); // 휴대폰 상한(device-profile.js)
  const o=makeTrailProp(kind,toonify);o.position.copy(p);o.scale.setScalar(.001);world.add(o);fx.push({o,t:0,life,update});update?.(o,0);return o;};
- const say=(text,{at='head',kind='',seconds=2.2}={})=>window.dispatchEvent(new CustomEvent('hiking:trail-say',{detail:{text,kind,seconds,at}}));
+ const say=(text,{at='head',kind='',seconds=2.2}={})=>quiet?undefined:window.dispatchEvent(new CustomEvent('hiking:trail-say',{detail:{text,kind,seconds,at}}));
  // 문구는 src/trail-lines.js의 자리 이름으로 고른다(같은 자리에서 바로 전 문구는 피함).
  const line=id=>{const l=pickLine(id);if(l)say(l.text,{at:l.at,kind:l.kind,seconds:l.seconds});};
- const event=(type,detail={})=>window.dispatchEvent(new CustomEvent('hiking:trail',{detail:{type,...detail}}));
+ const event=(type,detail={})=>quiet?undefined:window.dispatchEvent(new CustomEvent('hiking:trail',{detail:{type,...detail}}));
 
  // ── 동작 정의. pose(t,P,a) = 바인드 자세에서 세우는 몸짓, place(t,a) = 모델 강체 변환(소품 공간), extras(t,a) = 모자·소품·효과.
  // a.frame = 소품 월드 행렬, a.spot = 소품 공간 서는 자리 [x,z], a.facing = 소품 공간 바라보는 각.

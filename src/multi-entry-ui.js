@@ -22,8 +22,11 @@ export function statusView(d={}){
  const local=d.transport==='local',n=Math.max(0,Number(d.count)||0),where=roomLabel(d.room||'');
  switch(d.state){
   case 'connecting':return {tone:'wait',ic:'⏳',text:'연결 중…',sub:where,action:null};
+  // 서버 주소가 없거나(이 창끼리만) 서버 목록 밖 방(옛 ?multi=방 링크)이면 분명히 알린다(11-08 '상대가 안 보임' 운영 원인)
   case 'online':return local
-   ?{tone:'local',ic:'💻',text:`내 컴퓨터 모드 · ${n||1}명`,sub:'서버 없이 이 브라우저 창끼리만 만나요',action:null}
+   ?{tone:'local',ic:'💻',text:`내 컴퓨터 모드 · ${n||1}명`,sub:'서버 없음 · 이 브라우저 창끼리만(다른 기기 ✕)',action:null}
+   :d.room&&!findServer('hiking',d.room)
+   ?{tone:'warn',ic:'🟡',text:`다른 방 · ${n||1}명`,sub:`'${d.room}' · 서버 고르기와 따로`,action:null}
    :{tone:'ok',ic:'🟢',text:`연결됨 · ${n||1}명`,sub:where,action:null};
   case 'reconnecting':return {tone:'warn',ic:'🔄',text:'다시 연결 중…',sub:'혼자 걷기는 계속돼요',action:null};
   case 'offline':return {tone:'bad',ic:'⚠',text:'끊김',sub:'혼자 걷기는 계속돼요',action:'retry'};

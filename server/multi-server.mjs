@@ -71,7 +71,7 @@ export function startServer(env=process.env,{quiet=false,now=()=>Date.now()}={})
     if(!greeted){ // 첫 메시지는 {t:'hello',exp?,room,name,resume?}. exp(체험 id)가 없으면 등산(옛 클라이언트)
      if(m?.t!=='hello'){conn.close(1008,'hello first');return;}
      greeted=true;
-     const r=rooms.join({experience:m.exp,room:m.room,name:m.name,resume:typeof m.resume==='string'?m.resume.slice(0,64):null,ipKey:key,send:s=>conn.sendText(s)});
+     const r=rooms.join({experience:m.exp,room:m.room,name:m.name,resume:typeof m.resume==='string'?m.resume.slice(0,64):null,ipKey:key,send:s=>conn.sendText(s),kick:()=>{client=null;conn.close(4000,'replaced');}});
      if(r.reason==='experience'){conn.sendText(JSON.stringify({t:'reject',reason:'experience'}));conn.close(1008,'unknown experience');say('reject-experience',{});return;}
      if(!r.ok){conn.sendText(JSON.stringify({t:'full',reason:r.reason}));conn.close(1013,'full');return;}
      client=r.client;return;

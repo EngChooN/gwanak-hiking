@@ -15,6 +15,19 @@ export const NET=Object.freeze({
  cooldown:Object.freeze({hello:3,wave:3,selfie:15}), // 같은 종류 반복 제한(초)
  maxRoster:60          // 한 방 최대 인원(설계 상한)
 });
+// 있는지 판단(2026-11-08 '먼저 있던 사람이 안 보임' 수정).
+//  localTimeout: 내 컴퓨터 모드(BroadcastChannel)는 나감 알림을 놓칠 수 있어 소식이 끊기면 이 시간 뒤 뺀다.
+//  serverTimeout: 서버 모드는 서버가 나감(b)을 알려 주고 3초마다 이름 목록을 주므로 훨씬 길게 둔다(목록 여러 번을 놓쳤을 때만).
+//  heartbeatMs: 그리기 루프가 멈춰도(숨은 탭) 이 간격으로 마지막 자리·이름을 다시 보낸다(워커 타이머).
+//  wakeGap: 내 루프가 이만큼(초) 넘게 멈췄다 돌아온 첫 프레임은 시간 초과를 판단하지 않는다(로딩·숨은 탭 동안 받은 사람을 바로 지우던 결함).
+export const PRESENCE=Object.freeze({localTimeout:NET.timeout,serverTimeout:20,heartbeatMs:1000,wakeGap:1});
+export function createPresence({timeout=NET.timeout,gap=PRESENCE.wakeGap}={}){
+ let last=null,woke=-Infinity;
+ return {
+  frame(t){if(last===null||t-last>gap)woke=t;last=t;},
+  expired(lastSeen,t){return t-Math.max(lastSeen,woke)>timeout;}
+ };
+}
 export const GESTURES=Object.freeze({hello:{seconds:2.2},wave:{seconds:3}});
 // 이름표 단계(설계: 20m 안 이름 / 20~60m 작은 점 / 60m 밖 없음). 동시에 보이는 수에도 상한을 둔다.
 export const TIERS=Object.freeze({name:20,dot:60,fullAvatar:30,fullCap:4,capsuleRange:160,capsuleCap:100,nameCap:8,dotCap:20});
@@ -49,6 +62,26 @@ export function createChatLimiter({gapMs=CHAT.gapMs,windowMs=CHAT.windowMs,windo
 // 흡연장 담배 상태(다른 사람 화면용) {t:'lounge:smoke',state,lit}. state는 src/lounge/smoke.js가 내는 상태 이름(go()·trick)만.
 export const SMOKE_STATES=Object.freeze(['idle','out','ready','lighting','smoking','inhale','exhale','flick','finished','dispose','done','trick']);
 export function sanitizeSmoke(m){return m&&SMOKE_STATES.includes(m.state)&&typeof m.lit==='boolean'?{state:m.state,lit:m.lit}:null;}
+// 행동 상태 act(2026-11-10 '내 상호작용이 상대에게 안 보임' 수정): 자세·소품·동작을 상대 화면에 그리기 위한 '지금 상태' 한 덩어리.
+// {t:'act',id,a:{…}} — 바뀔 때만 보내고, 서버는 사람마다 마지막 a를 기억해 새로 온 사람·이름 묻기(j)·다시 접속(resume)에 다시 준다(담배 상태와 같은 방식).
+// 체험마다 받는 칸이 다르다(목록 밖 칸·값은 버림). 칸 값은 enum 배열, 'int'(0~65535 정수), 'id'(영문 소문자·숫자·- 24자, 빈 값 허용).
+//  흡연장: p 자세(stand·lean·sit) · b 벤치 번호(앉을 때) · can 캔커피(0 없음·1 뽑는 중·2 들고 있음) · sip 한 모금 횟수(늘면 받는 쪽이 한 모금 마심)
+//  등산: p 자세(stand·sit·tea) · g 기구(none·binoculars·phone) · sf 셀카(0·1) · x 지금 동작 id(스트레칭·즐길거리·이모트 등, 없으면 '') · n 동작 횟수(같은 동작을 다시 시작하면 늘어남) · v 동작 보조 값(int)
+export const ACT_SCHEMA=Object.freeze({
+ smoking:Object.freeze({p:Object.freeze(['stand','lean','sit']),b:'int',can:Object.freeze([0,1,2]),sip:'int'}),
+ hiking:Object.freeze({p:Object.freeze(['stand','sit','tea']),g:Object.freeze(['none','binoculars','phone']),sf:Object.freeze([0,1]),x:'id',n:'int',v:'int'})
+});
+export function sanitizeAct(exp,a){
+ const sc=ACT_SCHEMA[exp];if(!sc||!a||typeof a!=='object'||Array.isArray(a))return null;
+ const out={};
+ for(const [k,rule] of Object.entries(sc)){
+  if(!(k in a))continue;const v=a[k];
+  if(rule==='int'){if(Number.isInteger(v)&&v>=0&&v<=0xffff)out[k]=v;}
+  else if(rule==='id'){if(typeof v==='string'&&/^[a-z0-9-]{0,24}$/.test(v))out[k]=v;}
+  else if(rule.includes(v))out[k]=v;
+ }
+ return Object.keys(out).length?out:null;
+}
 const r2=v=>Math.round(v*100)/100;
 // 위치 메시지(약 10회/초). 고도 y는 보내지 않는다 — 받는 쪽이 같은 지형에서 직접 구한다.
 export function encodeState(id,seq,p,extra={}){
@@ -186,8 +219,8 @@ export function parseExperience(raw){
  return typeof raw==='string'&&EXPERIENCES.includes(raw)?raw:null;
 }
 // 체험별로 서버가 받는 메시지 종류(hello 뒤). 목록 밖 종류는 버린다(다른 체험 메시지가 섞이지 않게).
-// 공통 = 이름 묻기 j·신고·나가기 b·채팅 c. 등산은 위치·인사·동물·같이 셀카, 흡연장은 위치 s·담배 상태 lounge:smoke(docs/멀티-서버-운영안내.md §3-1).
-const COMMON_MESSAGES=['j','report','b','c'];
+// 공통 = 이름 묻기 j·신고·나가기 b·채팅 c·행동 상태 act(11-10). 등산은 위치·인사·동물·같이 셀카, 흡연장은 위치 s·담배 상태 lounge:smoke(docs/멀티-서버-운영안내.md §3-1).
+const COMMON_MESSAGES=['j','report','b','c','act'];
 export const EXPERIENCE_MESSAGES=Object.freeze({
  hiking:Object.freeze([...COMMON_MESSAGES,'s','g','a','sr','sa','sd','se','pair:offer','pair:accept','pair:decline','pair:cancel','pair:end']),
  smoking:Object.freeze([...COMMON_MESSAGES,'s','lounge:smoke'])

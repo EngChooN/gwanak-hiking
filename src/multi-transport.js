@@ -83,6 +83,17 @@ export function createWebSocketTransport(url,{experience='hiking',room='gwanak-r
   close(){closed=true;clearTimer(timer);const w=ws;if(w){try{w.close(1000,'bye');}catch{}}else setState('offline');ws=null;if(w)setState('offline');}
  };
 }
+// 숨은 탭에서도 도는 타이머(2026-11-08). 탭을 숨기면 requestAnimationFrame이 멈추고 일반 타이머도 1초~1분으로 늦춰지므로
+// 워커 타이머를 먼저 쓰고, 못 쓰면 setInterval(node 시험에서는 unref로 프로세스를 붙잡지 않음). {stop()}을 돌려준다.
+export function createBackgroundTimer(fn,ms=1000,{Worker:W=globalThis.Worker,setInterval:si=globalThis.setInterval,clearInterval:ci=globalThis.clearInterval}={}){
+ let worker=null,handle=null;
+ if(W&&globalThis.Blob&&globalThis.URL?.createObjectURL){
+  try{const url=URL.createObjectURL(new Blob([`setInterval(()=>postMessage(0),${ms|0})`],{type:'text/javascript'}));worker=new W(url);URL.revokeObjectURL(url);worker.onmessage=()=>fn();
+   worker.onerror=()=>{worker?.terminate();worker=null;handle=si(fn,ms);};}catch{worker=null;}
+ }
+ if(!worker){handle=si(fn,ms);handle?.unref?.();}
+ return {stop(){worker?.terminate();worker=null;if(handle!=null)ci(handle);handle=null;}};
+}
 // 서버 주소: 주소창 ?server=wss://… 이 먼저, 없으면 빌드 변수 VITE_MULTI_SERVER_URL, 그래도 없으면 null(= BroadcastChannel).
 // http(s)://로 적어도 ws(s)://로 바꾼다(터널 주소를 그대로 붙여 넣어도 되게). ?server=off는 빌드 변수를 꺼 BroadcastChannel로.
 export function multiServerUrl(search='',envUrl=''){

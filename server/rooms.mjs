@@ -12,7 +12,7 @@
 // 같이 등산하기(11-08 동행, 등산만): 쌍 상태를 메모리에만 둔다. 한 사람은 제안 하나(보냄·받음) 또는 쌍 하나만, 제안 30초 만료(=저절로 거절),
 //  거절·만료 뒤 같은 사람에게 60초 재제안 금지, 제안은 10초에 1번, 숨김 상태는 제안 불가, 끊기면(소켓) 60초 유예 → resume으로 같은 ID가 돌아오면 이어 붙임,
 //  나가기(b)·다른 방 이동·숨김은 바로 끝. 규격은 src/multi-protocol.js PAIR·createPairClient 위 주석.
-import {sanitizeName,anonymousName,REPORT_REASONS,GESTURES,FLAG,parseExperience,messageAllowed,CHAT,sanitizeChat,createChatLimiter,sanitizeSmoke,SERVERS,EXPERIENCES,findServer,serverRoomName,PAIR} from '../src/multi-protocol.js';
+import {sanitizeName,anonymousName,REPORT_REASONS,GESTURES,FLAG,parseExperience,messageAllowed,CHAT,sanitizeChat,createChatLimiter,sanitizeSmoke,sanitizeAct,SERVERS,EXPERIENCES,findServer,serverRoomName,PAIR} from '../src/multi-protocol.js';
 
 export const ROOM_DEFAULTS=Object.freeze({
  maxPerRoom:20,           // 한 방 최대 인원
@@ -44,6 +44,12 @@ export function sanitizeRoom(raw,fallback='gwanak-room-1'){
  const s=[...String(raw??'').normalize('NFC').replace(/[^0-9A-Za-z가-힣_-]/g,'')].slice(0,24).join('');
  return s||fallback;
 }
+// 옛 기본 방 이름(?multi= 값이 비었을 때 클라이언트가 붙이던 이름). 서버 목록이 있는 체험에서는 첫 서버 방과 같은 방으로 본다.
+export const LEGACY_DEFAULT_ROOM='gwanak-room-1';
+export function defaultRoom(experience,raw,servers=SERVERS){
+ const r=sanitizeRoom(raw,'');const first=servers[experience]?.[0]?.room;
+ return first&&(!r||r===LEGACY_DEFAULT_ROOM)?first:r||LEGACY_DEFAULT_ROOM;
+}
 // 'base-3' → 'base' (자동으로 붙인 번호만 뗀다)
 export const roomBase=room=>room.replace(/-\d{1,3}$/,'');
 // 방 키: 체험 id + ':' + 방 이름. 방 이름에는 ':'가 들어갈 수 없어(sanitizeRoom) 겹치지 않는다.
@@ -66,7 +72,7 @@ export function createRooms(opts={}){
  const ghosts=new Map();           // resume 토큰 → {id, experience, room(방 이름), hiddenUntil, avoid, at}
  const hiddenByIp=new Map();       // ipKey → until (메모리만)
  const reportLog=[...(opts.initialReports??[])];
- const stats={pairOffers:0,pairDenied:0,pairs:0,pairEnds:0,joined:0,chats:0,chatLimited:0,smokes:0,badExperience:0,wrongExperience:0,full:0,stateAccepted:0,rateDropped:0,teleportRejected:0,resynced:0,jumps:0,relayed:0,animals:0,animalDup:0,reports:0,hidden:0,invalid:0,snapshots:0};
+ const stats={replaced:0,pairOffers:0,pairDenied:0,pairs:0,pairEnds:0,joined:0,chats:0,chatLimited:0,smokes:0,acts:0,badExperience:0,wrongExperience:0,full:0,stateAccepted:0,rateDropped:0,teleportRejected:0,resynced:0,jumps:0,relayed:0,animals:0,animalDup:0,reports:0,hidden:0,invalid:0,snapshots:0};
 
  // 동행: pairs id→상대 id(양쪽), offers id→제안(보낸 쪽·받는 쪽 둘 다 같은 객체), declines '보낸>받은'→재제안 가능 시각, lastOffer id→마지막 제안 시각, away id→유예 끝 시각
  const pairs=new Map(),offers=new Map(),declines=new Map(),lastOffer=new Map(),away=new Map();
@@ -84,10 +90,16 @@ export function createRooms(opts={}){
  function enter(c,roomName){
   const room=roomOf(c.experience,roomName);c.room=room;room.members.set(c.id,c);
   // 새로 온 사람에게 지금 있는 사람 이름과 마지막 자리, 다른 사람에게 새로 온 사람 이름
-  for(const m of room.members.values())if(m!==c){send(c,nameRow(m));if(m.state)send(c,{t:'snap',p:[m.state]});if(m.smoke)send(c,{t:'lounge:smoke',id:m.id,...m.smoke});}
+  for(const m of room.members.values())if(m!==c){send(c,nameRow(m));if(m.state)send(c,{t:'snap',p:[m.state]});if(m.smoke)send(c,{t:'lounge:smoke',id:m.id,...m.smoke});if(m.act)send(c,{t:'act',id:m.id,a:m.act});}
   toRoom(room,nameRow(c),c);
+  // resume으로 돌아온 사람은 끊기 전 마지막 자리·담배 상태를 바로 알린다(숨은 탭이 다시 붙으면 새 위치를 안 보내 '이름만 있고 안 보임'이던 결함, 11-08)
+  if(c.state)toRoom(room,{t:'snap',p:[c.state]},c);
+  if(c.smoke)toRoom(room,{t:'lounge:smoke',id:c.id,...c.smoke},c);
+  if(c.act)toRoom(room,{t:'act',id:c.id,a:c.act},c);
  }
  function exit(c){const room=c.room;if(!room)return;room.members.delete(c.id);toRoom(room,{t:'b',id:c.id});c.room=null;if(!room.members.size)rooms.delete(room.key);}
+ // 같은 사람이 새 연결로 갈아탈 때: 방 사람들에게 '나감'을 알리지 않고 옛 연결만 뗀다(같은 ID로 곧 다시 들어온다)
+ function detach(c){clients.delete(c.id);const room=c.room;if(room){room.members.delete(c.id);c.room=null;if(!room.members.size)rooms.delete(room.key);}}
  const countIp=k=>{let n=0;for(const c of clients.values())if(c.ipKey===k)n++;return n;};
  const bucket=(arr,t,limit)=>{while(arr.length&&t-arr[0]>=1000)arr.shift();if(arr.length>=limit)return false;arr.push(t);return true;};
 
@@ -154,22 +166,33 @@ export function createRooms(opts={}){
  }
  // 접속: {experience,room,name,resume,ipKey,send} → {ok:true,client} | {ok:false,reason:'full'|'ip'|'experience'}
  // experience가 없으면(옛 클라이언트) 'hiking', 허용 목록 밖이면 'experience'로 거절.
- function join({experience,room,name,resume=null,ipKey='',send:out}){
+ // 접속: {experience,room,name,resume,ipKey,send,kick?} → {ok:true,client} | {ok:false,reason:'full'|'ip'|'experience'}
+ //  kick(): 같은 resume 토큰으로 새 연결이 오면 옛 연결을 닫을 때 부른다(서버가 소켓 close를 넘긴다).
+ function join({experience,room,name,resume=null,ipKey='',send:out,kick=null}){
   const t=now(),exp=parseExperience(experience);
   if(!exp){stats.badExperience++;return {ok:false,reason:'experience'};}
   for(const [k,g] of ghosts)if(t-g.at>o.resumeMs)ghosts.delete(k);
+  // 옛 연결이 아직 살아 있는데 같은 토큰으로 다시 붙음(휴대폰 망 전환·화면 꺼짐으로 서버가 끊김을 아직 모름):
+  //  옛 연결을 떼고 같은 ID로 이어 받는다. 전에는 새 ID를 받아 같은 사람이 둘(하나는 멈춘 채 최대 40초) 보였다(11-08).
+  const live=resume?[...clients.values()].find(x=>x.token===resume&&x.experience===exp):null;
+  if(live){
+   ghosts.set(resume,{id:live.id,experience:exp,room:live.room?.name??null,hiddenUntil:live.hiddenUntil,avoid:live.avoid,state:live.state,smoke:live.smoke,act:live.act,at:t});
+   pairLeave(live,true,t);detach(live);stats.replaced++;try{live.kick?.();}catch{}
+  }
   if(clients.size>=o.maxClients){stats.full++;return {ok:false,reason:'full'};}
   if(ipKey&&countIp(ipKey)>=o.maxPerIp){stats.full++;return {ok:false,reason:'ip'};}
   // 다른 체험의 resume 토큰은 쓰지 않는다(ID·방을 체험 사이로 옮기지 않음)
   const ghost=resume&&ghosts.get(resume)?.experience===exp?ghosts.get(resume):null;if(ghost)ghosts.delete(resume);
-  const asked=sanitizeRoom(room),base=roomBase(asked),srv=findServer(exp,asked,servers);
+  // 방 이름이 비었거나 옛 기본 방(gwanak-room-1)이면 그 체험의 첫 서버 방으로(?multi= 빈 링크와 서버 고르기가 다른 방으로 갈리던 결함, 11-08)
+  const asked=defaultRoom(exp,room,servers),base=roomBase(asked),srv=findServer(exp,asked,servers);
   // 서버 방은 정원이 차면 바로 거절(다른 방으로 넘기지 않음)
   if(srv&&sizeOf(exp,serverRoomName(srv.room))>=o.maxPerRoom){stats.full++;return {ok:false,reason:'full'};}
   let id=ghost&&!clients.has(ghost.id)?ghost.id:idGen();while(clients.has(id))id=idGen();
-  const token=tokenGen();
-  const c={id,token,ipKey,experience:exp,server:srv?.id??null,send:out,name:'',room:null,state:null,last:null,lastJumpAt:-Infinity,rejectSince:null,stateTimes:[],otherTimes:[],chatLimit:createChatLimiter(),recentChat:[],smoke:null,
+  const token=tokenGen(),back=ghost&&id===ghost.id;
+  const c={id,token,ipKey,experience:exp,server:srv?.id??null,send:out,kick,name:'',room:null,state:back?ghost.state??null:null,last:null,lastJumpAt:-Infinity,rejectSince:null,stateTimes:[],otherTimes:[],chatLimit:createChatLimiter(),recentChat:[],smoke:back?ghost.smoke??null:null,act:back?ghost.act??null:null,
    hiddenUntil:Math.max(ghost?.hiddenUntil??0,ipKey?hiddenByIp.get(ipKey)??0:0),avoid:ghost?.avoid??null,
    hidden(){return now()<this.hiddenUntil;}};
+  // c.last(순간이동 검사 기준)는 비워 둔다: 끊긴 동안 자동 걷기로 멀리 갔어도 돌아온 첫 위치를 그대로 받는다(전과 같음)
   c.name=sanitizeName(name,anonymousName(id,exp),o.banned);
   const target=srv?serverRoomName(srv.room):pickRoom(exp,base,{prefer:ghost&&roomBase(ghost.room)===base?ghost.room:null,avoid:c.hidden()?c.avoid:null});
   if(!target){stats.full++;return {ok:false,reason:'full'};}
@@ -180,9 +203,9 @@ export function createRooms(opts={}){
   return {ok:true,client:c};
  }
  function leave(c,{keep=true}={}){
-  if(!clients.has(c.id))return;
+  if(clients.get(c.id)!==c)return; // 이미 나갔거나 새 연결이 같은 ID를 이어 받음(옛 소켓이 늦게 닫힌 것)
   clients.delete(c.id);
-  if(keep&&c.room)ghosts.set(c.token,{id:c.id,experience:c.experience,room:c.room.name,hiddenUntil:c.hiddenUntil,avoid:c.avoid,at:now()});
+  if(keep&&c.room)ghosts.set(c.token,{id:c.id,experience:c.experience,room:c.room.name,hiddenUntil:c.hiddenUntil,avoid:c.avoid,state:c.state,smoke:c.smoke,act:c.act,at:now()});
   pairLeave(c,keep&&!!c.room,now());
   exit(c);
  }
@@ -216,13 +239,16 @@ export function createRooms(opts={}){
   return true;
  }
  function message(c,m,t=now()){
-  if(!clients.has(c.id)||!m||typeof m!=='object'||typeof m.t!=='string'){stats.invalid++;return;}
+  if(clients.get(c.id)!==c||!m||typeof m!=='object'||typeof m.t!=='string'){stats.invalid++;return;}
   if(!messageAllowed(c.experience,m.t)){stats.wrongExperience++;return;} // 이 체험에서 열지 않은 종류(다른 체험 메시지)
   if(m.t==='s'){acceptState(c,m,t);return;}
   if(!bucket(c.otherTimes,t,o.otherRate)){stats.rateDropped++;return;}
   const room=c.room;if(!room)return;
   switch(m.t){
-   case 'j':for(const x of room.members.values())if(x!==c)send(c,nameRow(x));return;   // 모르는 사람이 보일 때 클라이언트가 묻는다
+   // 이름 묻기(클라이언트가 3초마다·모르는 사람이 보일 때). 이름과 함께 마지막 자리·담배 상태도 다시 준다:
+   //  받는 쪽이 목록에서 빠졌다가 이름으로만 다시 넣은 사람(가만히 있거나 숨은 탭이라 새 위치가 안 옴)도 그려지게(11-08)
+   case 'j':{const p=[];for(const x of room.members.values())if(x!==c){send(c,nameRow(x));if(x.state)p.push(x.state);if(x.smoke)send(c,{t:'lounge:smoke',id:x.id,...x.smoke});if(x.act)send(c,{t:'act',id:x.id,a:x.act});}
+    if(p.length)send(c,{t:'snap',p});return;}
    case 'c':{ // 채팅
     if(!c.chatLimit.allow(t)){stats.chatLimited++;send(c,{t:'c-limit'});return;}
     const text=sanitizeChat(typeof m.text==='string'?m.text.slice(0,CHAT.max*4):'',o.chatBanned);
@@ -232,6 +258,9 @@ export function createRooms(opts={}){
    case 'lounge:smoke':{ // 흡연장 담배 상태
     const sm=sanitizeSmoke(m);if(!sm){stats.invalid++;return;}
     c.smoke=sm;stats.smokes++;toRoom(room,{t:'lounge:smoke',id:c.id,...sm},c);return;}
+   case 'act':{ // 행동 상태(11-10): 자세·소품·동작. 체험별 칸만 받아 기억하고 다른 사람에게 중계
+    const a=sanitizeAct(c.experience,m.a);if(!a){stats.invalid++;return;}
+    c.act=a;stats.acts++;toRoom(room,{t:'act',id:c.id,a},c);return;}
    case 'g':if(GESTURES[m.k]){stats.relayed++;toRoom(room,{t:'g',id:c.id,k:m.k},c);}return;
    case 'a':{ // 동물 놀람 {zone,slot,i,kind,at,x?,z?}
     if(!short(m.zone,40)||!Number.isInteger(m.slot)||!Number.isInteger(m.i)||m.i<0||m.i>999||!ANIMAL_KINDS.includes(m.kind)){stats.invalid++;return;}

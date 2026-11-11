@@ -326,6 +326,11 @@ export function createTrailWorld({scene,camera,hiker,landscape,toonify,auto,soun
    const b=props.filter(s=>s.kind==='bench'&&s.obj).map(s=>{const f=new THREE.Matrix4().compose(new V3(s.x,s.y,s.z),new THREE.Quaternion().setFromAxisAngle(new V3(0,1,0),s.yaw),new V3(1,1,1));const p=acts.spotOf('bench-sit',f);return {s,d:Math.hypot(p.x-pos[0],p.z-pos[2])};}).sort((a,b)=>a.d-b.d)[0];
    if(!b||b.d>R.benchSit)return false;return play('bench-sit',b.s.id,{from:pos,auto:false});},
   play:(act,id,o={})=>play(act,id,{from:lastPos,...o}),
+  // 함께 걷기 원격 동작용(11-10): 이 화면에 만들어진 소품 중 act의 서는 자리가 (x,z)에서 0.6m 안인 것 → {frame,target}. 없으면 null(원격 쪽이 자리로 다시 세움)
+  propFor(act,x,z){const d=acts.defs[act];if(!d?.spot)return null;let best=null;
+   for(const s of props){if(!s.obj||Math.hypot(s.x-x,s.z-z)>8)continue;s.obj.updateMatrixWorld(true);const child=d.frameChild&&s.obj.getObjectByName(d.frameChild),o=child||s.obj;
+    if(d.frameChild&&!child)continue;const sp=acts.spotOf(act,o.matrixWorld),dd=Math.hypot(sp.x-x,sp.z-z);if(dd<.6&&(!best||dd<best.d))best={d:dd,frame:o.matrixWorld.clone(),target:s.obj};}
+   return best&&{frame:best.frame,target:best.target};},
   stop:()=>{if(active?.stage==='act')acts.stop();},
   // 검수용: 들르기·동작을 바로 그만둔다(제자리)
   reset(){acts.cancel();if(active?.wasAuto)auto.set(true);active=null;},

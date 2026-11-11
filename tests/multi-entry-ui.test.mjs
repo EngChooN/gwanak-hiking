@@ -12,7 +12,8 @@ test('상태 5가지 + 내 컴퓨터 모드가 모두 칩 모양을 가진다', 
  for(const s of STATES){const v=statusView({state:s,room:'관악산-1',count:3,transport:'server'});assert.ok(v&&v.text&&v.ic&&v.tone,s);}
  const local=statusView({state:'online',room:'x',count:2,transport:'local'});
  assert.equal(local.tone,'local');assert.match(local.text,/내 컴퓨터 모드/);
- assert.equal(statusView({state:'online',room:'x',count:3,transport:'server'}).text,'연결됨 · 3명');
+ assert.equal(statusView({state:'online',room:'관악산',count:3,transport:'server'}).text,'연결됨 · 3명');
+ assert.equal(statusView({state:'online',room:'x',count:3,transport:'server'}).text,'다른 방 · 3명','서버 목록 밖 방은 다른 방으로 표시(11-08)');
  assert.equal(statusView({state:'nope'}),null);assert.equal(statusView(),null);
 });
 test('꽉 참은 서버 다시 고르기(action other, 방금 꽉 찼어요), 끊김은 다시 시도(retry)', () => {

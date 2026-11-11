@@ -63,7 +63,7 @@ test('닉네임: 12자, 저장값(gwanak-multi-name)을 다시 쓰고 고를 때
  const q=createServerPick({experience:'smoking',serverUrl:null,storage:memStore(),doc:null,defaultName:'옥상고양이'});assert.equal(q.state.name,'옥상고양이');
  assert.equal(PICK_LABELS.smoking.solo,'혼자 피우기');assert.equal(PICK_LABELS.hiking.solo,'혼자 걷기');
 });
-test('내 컴퓨터 모드(서버 주소 없음): /health를 받지 않고 서버 줄은 고를 수 있다',async()=>{
+test('서버 주소 없음: /health를 받지 않고(화면은 연결할 수 없어요 카드 + 혼자 하기만) 상태는 local',async()=>{
  const f=okFetch(HEALTH());const p=createServerPick({experience:'hiking',serverUrl:null,fetchImpl:f,doc:null,storage:memStore()});
  await p.open();assert.equal(p.state.net,'local');assert.equal(f.calls.length,0);assert.equal(p.state.rows[0].count,null);
 });
@@ -106,7 +106,8 @@ test('실제 서버(정원 2): 창이 읽는 /health로 인원과 꽉 참이 맞
 });
 test('모양: 줄·단추·닫기 44px 이상, 입력 16px(iOS 확대 방지), 안전 영역, 가로 휴대폰 두 칸',()=>{
  const css=read('../src/server-pick.css');
- assert.match(css,/\.sp-row\{[^}]*min-height:56px/);assert.match(css,/\.sp-solo\{[^}]*min-height:48px/);
+ assert.match(css,/\.sp-row\{[^}]*min-height:92px/);assert.match(css,/\.sp-go\{[^}]*min-height:44px/);assert.match(css,/data-mode=entry\]\{[^}]*background:var\(--paper2/); // 서버 카드(허브 카드 모양)·입장 전 불투명 전체 화면
+ assert.match(css,/\.sp-solo\{[^}]*min-height:48px/);
  assert.match(css,/\.sp-x\{[^}]*width:44px;height:44px/);assert.match(css,/\.sp-name input\{[^}]*min-height:44px[^}]*font:700 16px/);
  for(const side of ['top','right','bottom','left'])assert.ok(css.includes(`safe-area-inset-${side}`),side);
  assert.match(css,/orientation:landscape\) and \(max-height:540px\)\{[^]*grid-template-areas/);
@@ -118,4 +119,11 @@ test('연결: 등산은 산 고르기 다음·HUD 👋, 흡연장은 👥 단추
  assert.match(hp,/experience:'hiking'/);assert.match(hp,/__hikingMultiJoin=detail/);
  assert.match(lui,/createServerPick\(\{experience:'smoking'/);assert.ok(!/name="room"/.test(lui),'흡연장 방 이름 칸 없음');
  assert.match(lmain,/serverPickMode\(location\.search,!!navigator\.webdriver\)/);assert.match(lmain,/multiUi\.open\(\{closable:false\}\)/);
+});
+test('입장 카드: 서버마다 카드 하나(그림·이름·n/정원·꽉 참), 입장 전은 entry 모드, 게임 안·full 거절은 카드 화면 복귀',()=>{
+ const src=read('../src/server-pick.js');
+ assert.match(src,/ART\[L\.art\]/);assert.match(src,/class="sp-go"/);assert.match(src,/data-mode/);
+ assert.match(src,/!current&&\(!closable\|\|note==='full'\)\?'entry':'switch'/);
+ const lmain=read('../src/lounge/main.js');
+ assert.ok(!/afterIntro\(\(\)=>\{if\(!multi\.joined\)multiUi\.open/.test(lmain),'흡연장은 로비 카드보다 먼저 서버 카드');
 });

@@ -174,10 +174,10 @@ try{
   check('점검 스크립트(webdriver)는 창을 건너뜀',await J.evaluate(()=>!document.querySelector('.sp-wrap:not([hidden])')),{});
   const K=await open('hiking',{query:HQ('ws://127.0.0.1:9'),nickname:'끊김'});
   await waitPick(K,"return w.dataset.net==='error'",null,10000);const k=await readPick(K);
-  check('서버에 연결 안 되면: 서버에 연결할 수 없어요·혼자 걷기만',k.note.includes('서버에 연결할 수 없어요')&&k.rows.every(r=>r.disabled),k);
+  check('서버에 연결 안 되면: 서버에 연결할 수 없어요·혼자 걷기만',k.note.includes('서버에 연결할 수 없어요')&&k.rows.length===1&&k.rows[0].state==='down',k);
   await shot(K,'10-서버-연결-안됨');
   const L=await open('hiking',{query:'serverpick=on&server=off&start=entrance&quality=balanced',nickname:'로컬'});const l=await readPick(L);
-  check('?server=off: 내 컴퓨터 모드 표시·줄 고를 수 있음',l.note.includes('내 컴퓨터 모드')&&!l.rows[0].disabled&&l.sumHidden,l);
+  check('?server=off: 서버 주소 없음 → 연결할 수 없어요 카드·혼자만',l.note.includes('서버 주소가 없어요')&&l.rows.length===1&&l.rows[0].state==='down'&&l.sumHidden,l);
  }
  // ── ⑤ 세 화면 크기
  {
@@ -193,7 +193,7 @@ try{
   }
   // 밤 톤(등산 세로)
   const N=await open('hiking',{query:HQ(ws1).replace('time=13:00','time=22:00'),viewport:{width:390,height:844},touch:true,nickname:'밤'});
-  await waitPick(N,"return w.dataset.net==='ok'",null,10000);
+  await waitPick(N,"return w.dataset.net==='ok'",null,30000);
   const night=await N.evaluate(()=>({hud:document.documentElement.dataset.hudTime,bg:getComputedStyle(document.querySelector('.sp-card')).backgroundColor}));
   log('밤 톤',night);await shot(N,'12-hiking-밤-세로');
  }

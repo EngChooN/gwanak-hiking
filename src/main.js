@@ -379,14 +379,20 @@ function pairHere(){
 }
 function multiLocal(){
  return {nudge:pairNudge,here:pairHere,sample,minS:ROUTE_MIN_S,maxS:route.length,walk:()=>({auto:!!state.auto,moving,steering:pairSteer,base:pairPace>0?speed/pairPace:speed}),
-  position:()=>playerPosition(state,walkingGround),setPosition:pos=>{state.auto=false;state.running=false;if(pos.zone==='route'){const r=Number.isFinite(pos.s)?{s:pos.s,lateral:pos.lateral??0}:projectToRoute(pos.x,pos.z,0);return setPlayerPosition(state,{zone:'route',s:r.s,lateral:r.lateral},walkingGround);}return setPlayerPosition(state,pos,walkingGround);},speed:()=>speed,sit:()=>state.pose!=='stand',run:()=>!!state.running,gadget:()=>state.gadget??'none',selfie:()=>selfieActive(state),place:(s,l)=>positionAt(s,l,walkingGround)};
+  position:()=>playerPosition(state,walkingGround),setPosition:pos=>{state.auto=false;state.running=false;if(pos.zone==='route'){const r=Number.isFinite(pos.s)?{s:pos.s,lateral:pos.lateral??0}:projectToRoute(pos.x,pos.z,0);return setPlayerPosition(state,{zone:'route',s:r.s,lateral:r.lateral},walkingGround);}return setPlayerPosition(state,pos,walkingGround);},speed:()=>speed,sit:()=>state.pose!=='stand',run:()=>!!state.running,gadget:()=>state.gadget??'none',selfie:()=>selfieActive(state),place:(s,l)=>positionAt(s,l,walkingGround),
+  // 함께 걷기 행동 상태(11-10, src/multi-act.js): 자세·기구·셀카·지금 동작(즐길거리 hiker-acts 또는 스트레칭 같은 산길 행동)
+  act:()=>({pose:state.pose,gadget:state.gadget??'none',selfie:selfieActive(state),trail:trail?.acts.active?{name:trail.acts.active.name,state:trail.acts.active.state,reps:trail.acts.active.reps??0}:null,action:interaction?.action??null}),
+  // 즐길거리에 들른 동안 몸이 실제로 있는 자리(trail-world override). 평소엔 null → 위치 그대로
+  shown:()=>{const tp=trail?.override();if(!tp)return null;return {...playerPosition(state,walkingGround),x:tp.position[0],z:tp.position[2],heading:tp.heading};},
+  // 원격 동작의 소품(내 화면에 만들어진 것): 상대가 서 있는 자리와 맞는 소품 행렬·물체
+  propFor:(act,x,z)=>trail?.propFor?.(act,x,z)??null};
 }
 async function joinMulti({room=null,name=null}={}){
  if(multi&&(!room||room===multi.room))return multi;
  if(multi)leaveMulti();
  multiStatus({state:'connecting',room:room||'',count:0,transport:multiServer?'server':'local'});
  const {mountMultiplayer}=await import('./multi-client.js');
- multi=await mountMultiplayer({scene,camera,night,hikerUrl,prepareGltf:prepareToonHikerGltf,groundHeight:(x,z)=>walkingGround.height(x,z,false),command,room,name,serverUrl:multiServer,local:multiLocal()});
+ multi=await mountMultiplayer({scene,camera,night,hikerUrl,prepareGltf:prepareToonHikerGltf,groundHeight:(x,z)=>walkingGround.height(x,z,false),command,room,name,serverUrl:multiServer,local:multiLocal(),toonify:toon?.toonify??null});
  window.hiking.multi=()=>multi?.info()??null;window.hiking.multiApi=multi;return multi;
 }
 function leaveMulti(){if(!multi)return;multi.dispose();multi=null;window.hiking.multiApi=null;}
