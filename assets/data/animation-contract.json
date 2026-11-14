@@ -1,0 +1,35 @@
+{
+  "height": 1.7,
+  "origin": "발바닥 중앙",
+  "forward": "-Z",
+  "mode": "in-place articulated rigid nodes",
+  "clips": {
+    "Idle": {
+      "stride": 0,
+      "cycleSteps": 0
+    },
+    "Walk": {
+      "stride": 0.7,
+      "cycleSteps": 2
+    },
+    "Climb": {
+      "stride": 0.55,
+      "cycleSteps": 2,
+      "policy": "계단에서는 다음 단 중심 간 3D 거리로 stride를 교체; 한 단당 한 번 발소리"
+    },
+    "SidestepLeft": {
+      "stride": 0.5,
+      "cycleSteps": 2
+    },
+    "SidestepRight": {
+      "stride": 0.5,
+      "cycleSteps": 2
+    }
+  },
+  "timing": "각 clip은 1초 정규화 주기. action.timeScale = 실제이동속도 / (stride * 2); step 이벤트마다 0.5주기. Root 이동은 게임이 담당.",
+  "limitations": [
+    "발 접지 IK 없음; 실제 계단 충돌·발 접지 최종 검증 대기",
+    "고정 관절 저폴리 캐릭터; skin/skeleton 리타게팅 대상 아님",
+    "기존 이동 코드의 step 이벤트에 연결해야 함"
+  ]
+}

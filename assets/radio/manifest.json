@@ -1,0 +1,260 @@
+{
+ "version": 1,
+ "about": "관악산 FM 소리 목록(같은 출처 assets/radio/ 파일만). 화면의 '♪ 곡 정보'·「소리 출처」와 src/radio-tracks.js가 이 파일 하나를 읽는다. 파일을 더하면 여기 한 줄을 더하고 data/자료-출처-이용조건-기록표.md에도 적는다. 길이(duration, 초)는 afinfo로 잰 값.",
+ "channels": {
+  "calm": {
+   "freq": 91.9,
+   "name": "잔잔한 음악",
+   "mode": "playlist",
+   "crossfade": 1.5,
+   "tracks": [
+    {
+     "id": "morning",
+     "title": "Morning",
+     "artist": "Kevin MacLeod",
+     "file": "919-calm/morning.mp3",
+     "duration": 153.313,
+     "license": "CC BY 4.0",
+     "page": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN2300003",
+     "credit": "\"Morning\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 http://creativecommons.org/licenses/by/4.0/"
+    },
+    {
+     "id": "evening",
+     "title": "Evening",
+     "artist": "Kevin MacLeod",
+     "file": "919-calm/evening.mp3",
+     "duration": 186.253,
+     "license": "CC BY 4.0",
+     "page": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN2300002",
+     "credit": "\"Evening\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 http://creativecommons.org/licenses/by/4.0/"
+    },
+    {
+     "id": "windswept",
+     "title": "Windswept",
+     "artist": "Kevin MacLeod",
+     "file": "919-calm/windswept.mp3",
+     "duration": 208.344,
+     "license": "CC BY 4.0",
+     "page": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100757",
+     "credit": "\"Windswept\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 http://creativecommons.org/licenses/by/4.0/"
+    },
+    {
+     "id": "fresh-air",
+     "title": "Fresh Air",
+     "artist": "Kevin MacLeod",
+     "file": "919-calm/fresh-air.mp3",
+     "duration": 294.06,
+     "license": "CC BY 4.0",
+     "page": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1500084",
+     "credit": "\"Fresh Air\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 http://creativecommons.org/licenses/by/4.0/"
+    },
+    {
+     "id": "reawakening",
+     "title": "Reawakening",
+     "artist": "Kevin MacLeod",
+     "file": "919-calm/reawakening.mp3",
+     "duration": 214.073,
+     "license": "CC BY 4.0",
+     "page": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1400017",
+     "credit": "\"Reawakening\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 http://creativecommons.org/licenses/by/4.0/"
+    },
+    {
+     "id": "dream-culture",
+     "title": "Dream Culture",
+     "artist": "Kevin MacLeod",
+     "file": "919-calm/dream-culture.mp3",
+     "duration": 214.361,
+     "license": "CC BY 4.0",
+     "page": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1300046",
+     "credit": "\"Dream Culture\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 http://creativecommons.org/licenses/by/4.0/"
+    },
+    {
+     "id": "wholesome",
+     "title": "Wholesome",
+     "artist": "Kevin MacLeod",
+     "file": "919-calm/wholesome.mp3",
+     "duration": 363.807,
+     "license": "CC BY 4.0",
+     "page": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900022",
+     "credit": "\"Wholesome\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 http://creativecommons.org/licenses/by/4.0/"
+    },
+    {
+     "id": "healing",
+     "title": "Healing",
+     "artist": "Kevin MacLeod",
+     "file": "919-calm/healing.mp3",
+     "duration": 378.139,
+     "license": "CC BY 4.0",
+     "page": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200048",
+     "credit": "\"Healing\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 http://creativecommons.org/licenses/by/4.0/"
+    }
+   ],
+   "credit": "\"Morning\", \"Evening\", \"Windswept\", \"Fresh Air\", \"Reawakening\", \"Dream Culture\", \"Wholesome\", \"Healing\"\nKevin MacLeod (incompetech.com)\nLicensed under Creative Commons: By Attribution 4.0\nhttp://creativecommons.org/licenses/by/4.0/"
+  },
+  "guide": {
+   "freq": 95.5,
+   "name": "산 날씨·등산 안내",
+   "mode": "captions",
+   "dir": "955-guide/",
+   "jingle": null,
+   "gapSeconds": [
+    15,
+    25
+   ],
+   "about": "녹음 파일이 생기면 lines[].file에 '955-guide/<id>.ogg'처럼 파일 이름만 적으면 소리가 붙는다(없으면 자막 + 낮은 톤). 대본: docs/radio-design.md §5",
+   "lines": [
+    {
+     "id": "clear-day",
+     "text": "관악산 FM입니다. 지금 산은 하늘이 맑아요. 그늘진 길에서는 숨을 한 번 크게 쉬어 보세요. 서두를 일 없는 하루, 발걸음은 가볍게 가요.",
+     "file": null
+    },
+    {
+     "id": "cloud-day",
+     "text": "구름이 천천히 능선을 지나가고 있어요. 햇볕이 약해서 걷기 좋은 날씨죠. 물 한 모금 챙기고, 오늘도 한 걸음씩 올라가 봐요.",
+     "file": null
+    },
+    {
+     "id": "rain-light",
+     "text": "지금 산에는 비가 내리고 있어요. 젖은 길은 미끄러우니 발밑을 먼저 보고 걸어 주세요. 빗소리와 함께하는 길, 오늘만의 풍경이에요.",
+     "file": null
+    },
+    {
+     "id": "rain-heavy",
+     "text": "빗줄기가 꽤 굵어졌어요. 바위 길은 특히 조심하고, 쉬어 갈 곳에서는 잠깐 숨을 돌려 가요. 서두르지 않아도 산은 그 자리에 있어요.",
+     "file": null
+    },
+    {
+     "id": "fog",
+     "text": "산에 안개가 내려앉았어요. 시야가 짧아졌으니 멀리 보지 말고 눈앞의 길만 천천히 따라가세요. 안개 속의 고요함을 즐겨 보세요.",
+     "file": null
+    },
+    {
+     "id": "snow-winter",
+     "text": "눈 내리는 소리, 들리시나요? 사각사각 눈 밟는 소리가 오늘의 박자예요. 손은 따뜻하게, 걸음은 천천히 가요.",
+     "file": null
+    },
+    {
+     "id": "dusk",
+     "text": "하늘이 붉게 물들기 시작했어요. 서울이 불빛으로 천천히 바뀌는 시간이죠. 걸음을 멈추고 잠깐 하늘을 올려다봐도 좋아요.",
+     "file": null
+    },
+    {
+     "id": "night",
+     "text": "지금은 밤이에요. 산은 낮보다 더 조용하고, 별빛이 길을 비춰 줘요. 발밑을 살피며 천천히, 오늘 밤도 안전하게 걸어요.",
+     "file": null
+    },
+    {
+     "id": "summit-near",
+     "text": "정상이 가까워졌어요. 조금만 더 가면 연주대예요. 숨이 차도 괜찮아요, 여기까지 온 걸음이 이미 대단한걸요.",
+     "file": null
+    },
+    {
+     "id": "spring",
+     "text": "봄이 산에 닿았어요. 길가에 꽃잎이 날리고 새소리가 가까워졌네요. 오늘은 사진 한 장 담아 가도 좋겠어요.",
+     "file": null
+    },
+    {
+     "id": "summer",
+     "text": "숲이 짙은 초록으로 가득해요. 그늘에서는 바람이 시원하니 잠깐 쉬어 가기 좋아요. 물은 넉넉히, 걸음은 천천히요.",
+     "file": null
+    },
+    {
+     "id": "autumn",
+     "text": "단풍이 한창인 산이에요. 발밑에서 바스락 낙엽 소리가 나면 그게 오늘의 리듬이에요. 천천히, 알록달록한 길을 걸어요.",
+     "file": null
+    },
+    {
+     "id": "wind",
+     "text": "능선에는 바람이 꽤 불고 있어요. 모자는 꼭 눌러 쓰고, 바위 가까이에서는 중심을 낮춰 걸어 주세요.",
+     "file": null
+    },
+    {
+     "id": "long-walk",
+     "text": "한참을 걸어오셨네요. 어깨 힘을 조금 빼고, 숨을 길게 내쉬어 볼까요? 쉬는 것도 등산의 일부예요.",
+     "file": null
+    },
+    {
+     "id": "fm-id",
+     "text": "이곳은 관악산 FM 95.5. 산의 날씨와 길 이야기를 전해 드려요. 지금 이 소리는 게임 속에서만 들리는 방송이에요.",
+     "file": null
+    }
+   ],
+   "credit": "멘트·징글: 관악산 FM 자작(녹음 전에는 자막과 합성한 낮은 톤)"
+  },
+  "nature": {
+   "freq": 99.1,
+   "name": "숲과 바람",
+   "mode": "layers",
+   "crossfade": 3,
+   "tracks": [
+    {
+     "id": "819351-wind-macclesfield",
+     "title": "숲 바람(중간 세기)",
+     "artist": "JW_Audio",
+     "file": "991-forest-wind/819351-wind-macclesfield.mp3",
+     "duration": 274.512,
+     "layer": "wind",
+     "license": "CC0",
+     "page": "https://freesound.org/people/JW_Audio/sounds/819351/",
+     "credit": "JW_Audio / Freesound (CC0)"
+    },
+    {
+     "id": "524203-wind-forest-04",
+     "title": "숲 바람 04",
+     "artist": "FilmmakersManual",
+     "file": "991-forest-wind/524203-wind-forest-04.mp3",
+     "duration": 55.536,
+     "layer": "wind",
+     "license": "CC0",
+     "page": "https://freesound.org/people/FilmmakersManual/sounds/524203/",
+     "credit": "FilmmakersManual / Freesound (CC0)"
+    },
+    {
+     "id": "679109-birds-morning-forest",
+     "title": "아침 숲 새소리",
+     "artist": "IlMotografo",
+     "file": "991-forest-wind/679109-birds-morning-forest.mp3",
+     "duration": 91.037,
+     "layer": "wind",
+     "license": "CC0",
+     "page": "https://freesound.org/people/IlMotografo/sounds/679109/",
+     "credit": "IlMotografo / Freesound (CC0)"
+    },
+    {
+     "id": "474835-forest-morning",
+     "title": "숲의 아침",
+     "artist": "Kirschsaft",
+     "file": "991-forest-wind/474835-forest-morning.mp3",
+     "duration": 61.701,
+     "layer": "wind",
+     "license": "CC0",
+     "page": "https://freesound.org/people/Kirschsaft/sounds/474835/",
+     "credit": "Kirschsaft / Freesound (CC0)"
+    },
+    {
+     "id": "869104-stream-dolomites",
+     "title": "산골 계곡물",
+     "artist": "bassimat",
+     "file": "991-forest-wind/869104-stream-dolomites.mp3",
+     "duration": 418.704,
+     "layer": "water",
+     "license": "CC0",
+     "page": "https://freesound.org/people/bassimat/sounds/869104/",
+     "credit": "bassimat / Freesound (CC0)"
+    },
+    {
+     "id": "588180-mountain-river",
+     "title": "산 강물",
+     "artist": "Auxide_Audio",
+     "file": "991-forest-wind/588180-mountain-river.mp3",
+     "duration": 50.016,
+     "layer": "water",
+     "license": "CC0",
+     "page": "https://freesound.org/people/Auxide_Audio/sounds/588180/",
+     "credit": "Auxide_Audio / Freesound (CC0)"
+    }
+   ],
+   "credit": "소리: JW_Audio, FilmmakersManual, IlMotografo, Kirschsaft, bassimat, Auxide_Audio (Freesound, CC0)"
+  }
+ }
+}
