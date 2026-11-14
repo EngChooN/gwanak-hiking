@@ -1,4 +1,4 @@
-// 함께 걷기 서버 주소 고르기(2026-11-11 대표 지시: 그냥 https://engchoon.github.io/gwanak-hiking/ 로 들어와 서버 카드만 누르면 붙게).
+// 함께 걷기 서버 주소 고르기(2026-11-11 대표 지시: 그냥 https://engchoon.github.io/ai-office-world/ 로 들어와 서버 카드만 누르면 붙게).
 // 서버는 대표 맥 + Cloudflare Quick Tunnel이라 켤 때마다 주소가 바뀐다. 그래서 `npm run multi:up`이 지금 주소를
 // gh-pages 맨 위 multi-server.json({state:'on',url:'wss://…',updated})에 올리고, 사이트는 들어올 때마다 그 파일을 새로 받는다.
 // 고르는 순서: ?server= → 빌드 변수 VITE_MULTI_SERVER_URL → 공개 파일 → 기억한 값(파일을 못 받았을 때만).

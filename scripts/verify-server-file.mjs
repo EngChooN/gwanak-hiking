@@ -1,15 +1,15 @@
 // 주소에 ?server= 없이 서버 카드로 들어와 서로 보이는지(2026-11-11, 공개 파일 multi-server.json).
 // 미리 `npm run multi:up`(실제 서버 + 터널)을 켜 두고 실행한다.
-//   로컬:  BASE_PATH=/gwanak-hiking/ npm run build 뒤 dist/multi-server.json을 지금 주소로 써 두고
-//          PAGE_URL=http://127.0.0.1:4173/gwanak-hiking node scripts/verify-server-file.mjs   (npm run preview:pages)
-//   배포본: PAGE_URL=https://engchoon.github.io/gwanak-hiking node scripts/verify-server-file.mjs
+//   로컬:  BASE_PATH=/ai-office-world/ npm run build 뒤 dist/multi-server.json을 지금 주소로 써 두고
+//          PAGE_URL=http://127.0.0.1:4173/ai-office-world node scripts/verify-server-file.mjs   (npm run preview:pages)
+//   배포본: PAGE_URL=https://engchoon.github.io/ai-office-world node scripts/verify-server-file.mjs
 // 확인: ① 두 브라우저(B는 옛 터널 주소를 기억하고 있음) 모두 공개 파일 주소로 붙음 ② 서버 카드에 인원 숫자 ③ 누르면 입장·서로 보임
 //       ④ 주소창에 ?server=가 생기지 않음 ⑤ 옛 터널 주소가 붙은 링크로 와도 공개 파일 주소로 붙고 주소창에서 빠짐. 등산·흡연장 둘 다.
 // 결과 artifacts/server-file-2026-11-11/(report.json·캡처). 하나라도 실패하면 종료 코드 1.
 import {chromium} from '@playwright/test';
 import {mkdirSync,writeFileSync} from 'node:fs';
 
-const pageUrl=(process.env.PAGE_URL??'http://127.0.0.1:4173/gwanak-hiking').replace(/\/$/,'');
+const pageUrl=(process.env.PAGE_URL??'http://127.0.0.1:4173/ai-office-world').replace(/\/$/,'');
 const dir=process.env.OUT??'artifacts/server-file-2026-11-11';mkdirSync(dir,{recursive:true});
 const OLD='wss://old-dead-tunnel.trycloudflare.com';
 const file=await (await fetch(`${pageUrl}/multi-server.json?t=${Date.now()}`,{cache:'no-store'})).json();

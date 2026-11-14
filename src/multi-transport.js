@@ -38,7 +38,7 @@ export function createLoopbackHub({latency=40,jitter=15,loss=0,seed=1}={}){
  return hub;
 }
 // 3) 서버(createWebSocketTransport): 직접 만든 함께 걷기 서버(server/multi-server.mjs)에 브라우저 WebSocket으로 붙는다.
-//  - 첫 메시지 {t:'hello',exp,room,name,resume}(exp = 체험 id 'hiking'|'smoking', 서버가 방을 체험별로 나눈다) → 서버가 {t:'welcome',id,room,…}로 임시 ID와 실제 방(20명이 차면 방이름-2)을 알려 준다.
+//  - 첫 메시지 {t:'hello',exp,room,name,resume}(exp = 체험 id 'hiking'|'smoking', 서버가 방을 체험별로 나눈다) → 서버가 {t:'welcome',id,room,…}로 임시 ID와 실제 방(30명이 차면 방이름-2, 서버 목록의 방은 full)을 알려 준다.
 //  - 서버의 10Hz 묶음 {t:'snap',p:[…],n:[…]}은 풀어서 한 줄씩(위치 's', 이름 'j') 넘긴다 → multi-client.js는 BroadcastChannel 때와 같은 메시지를 받는다.
 //  - 끊기면 0.5초부터 두 배씩(최대 15초, ±20% 흔들기) 다시 붙는다. 다시 붙을 때 resume 토큰을 보내 60초 안이면 같은 ID·같은 방이다.
 //  - 상태 onstatus(fn): 'connecting'(처음) · 'online' · 'reconnecting' · 'offline'(close 뒤·서버가 체험 id를 거절 {t:'reject'}) · 'full'(서버 꽉 참, 30초 뒤 다시 시도).

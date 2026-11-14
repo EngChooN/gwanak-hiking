@@ -1,4 +1,4 @@
-// 흡연장 소리. 외부 파일 없이 전부 Web Audio로 합성한다(런타임 외부 접속 없음).
+// 흡연장 소리. 라이터·들숨·날숨·담배 타는 지직·캔커피는 녹음 파일(public/sounds/lounge/, 11-13), 나머지와 파일을 못 불러왔을 때는 Web Audio 합성(런타임 외부 접속 없음).
 // 효과음: 라이터 딸깍·불꽃, 들이마시기, 내뿜기, 재 털기, 꽁초 톡, 매너 도장 쿵, 채팅 톡 + 은은한 도심 배경음(차 소리 웅웅·가끔 지나가는 차·바람).
 // 온라인 등산처럼 첫 사용자 입력(터치·클릭·키) 전에는 AudioContext를 만들지 않는다(아이폰 사파리 제한 → 입력 전에는 소리 없음).
 // play(name,{at:{x,z},gain}) — at을 주면 내 아바타와의 거리만큼 작게·좌우로(NPC 담배 소리).
@@ -15,10 +15,40 @@ export const sizzleGain=draw=>draw>.02?Math.min(.06,.012+.048*Math.min(1,draw)):
 // 거리 → 크기(0~1). 1m 안은 그대로, 반경 밖은 0, 사이는 제곱으로 줄인다.
 export function distanceGain(d,radius=HEAR_RADIUS){if(!Number.isFinite(d))return 1;if(d<=1)return 1;if(d>=radius)return 0;const k=1-(d-1)/(radius-1);return k*k;}
 
-export function createLoungeAudio({muted=false}={}){
+// ── 녹음 파일(11-13, public/sounds/lounge/, 목록 docs/흡연장/소리목록-2026-11-13.md). unlock 뒤 한 번만 불러와 버퍼를 만든다.
+// 파일이 아직 없거나 못 불러오면 아래 합성 소리(SFX)로 대신한다. 크기(gain)는 소리목록의 시작값(귀로 조정 전 추정).
+export const LOUNGE_FILES=Object.freeze({
+ 'lighter-open':'lighter-open.mp3','lighter-strike':'lighter-strike.mp3','cig-burn':'cig-burn.flac','inhale':'inhale.mp3',
+ 'exhale-short':'exhale-short.mp3','exhale-mid':'exhale-mid.mp3','exhale-long':'exhale-long.mp3',
+ 'vending-button':'vending-button.mp3','can-drop':'can-drop.mp3','can-open':'can-open.mp3'});
+// 캔커피 순서(초): 버튼 → 캔이 떨어져 닿는 순간(spots.js DROP.fall .45의 75% ≈ .34) → 손에 온 뒤(fall+wait+fly = 1.1) 따기
+export const CAN_SEQ=Object.freeze({button:0,drop:.3,open:1.2});
+// 라이터: 뚜껑 → .2초 뒤 휠. lighter-strike는 .12초쯤 '화'라서 '화'가 .32초(합성 flame과 같은 자리) — smoke.js가 불꽃이 보이기 .32초 전에 부른다.
+export const LIGHTER_LEAD=.32;
+const EXHALE_FILE={light:'exhale-short',sweet:'exhale-mid',deep:'exhale-long'};
+// 소리 이름 → [파일, 시작(초), 크기]. quality가 필요한 exhale은 함수.
+export function fileCues(name,quality){
+ switch(name){
+  case 'lighter':return [['lighter-open',0,1],['lighter-strike',.2,1]]; // strike는 시작값 .8에서 1로(11-13 브라우저 측정: 재 털기보다 6dB 작았음)
+  case 'inhale':return [['inhale',0,.35]];
+  case 'exhale':{const f=EXHALE_FILE[quality]??EXHALE_FILE.light;return [[f,0,.5]];}
+  case 'can':return [['vending-button',CAN_SEQ.button,.5],['can-drop',CAN_SEQ.drop,.8],['can-open',CAN_SEQ.open,.8]];
+  default:return null;
+ }
+}
+// 담배 타는 지직(cig-burn 반복) 크기: 안 들이마시면 0, 들이마실수록 커져 최대 .15
+export const burnGain=draw=>draw>.02?Math.min(.15,.04+.11*Math.min(1,draw)):0;
+export const PITCH_SPREAD=.03; // 같은 소리를 다시 낼 때 음높이 ±3%
+const fetchBytes=url=>fetch(url).then(r=>{if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.arrayBuffer();});
+const baseUrl=()=>{try{return import.meta.env?.BASE_URL??'/';}catch{return '/';}};
+
+export function createLoungeAudio({muted=false,base=`${baseUrl()}sounds/lounge/`,load=fetchBytes,random=Math.random}={}){
  let ctx=null,master=null,sfx=null,amb=null,noise=null,brown=null,unlocked=false;
  const listener={x:0,z:0,yaw:0};
- const stats={played:0,skipped:0,byName:{}};
+ const stats={played:0,skipped:0,file:0,synth:0,byName:{}};
+ const buffers=new Map(),loadErrors=[];let loading=null; // 버퍼는 이름마다 한 번만 만든다(휴대폰 메모리)
+ const lastPlayed=new Set(); // 한 번 낸 파일 이름(두 번째부터 음높이를 흔든다)
+ const burn={src:null,g:null,level:0}; // cig-burn 반복
  const amb$={nodes:null,nextCar:4,nextWind:2,level:0,duck:1,duckTo:1,duckLeft:0,sizzle:null,tick:0};
  let lastQuality=null; // 가장 최근 lounge:smoke의 quality(내쉬는 숨 길이를 정한다)
  // 이벤트로 받는 소리: 담배 내뿜기 quality, 자판기 캔 따기(lounge:spot {spot:'vending',state:'use'})
@@ -34,10 +64,24 @@ export function createLoungeAudio({muted=false}={}){
    // 너무 큰 소리를 막는 부드러운 압축
    const comp=ctx.createDynamicsCompressor();comp.threshold.value=-18;comp.ratio.value=3;master.connect(comp).connect(ctx.destination);
    sfx=ctx.createGain();sfx.gain.value=.9;sfx.connect(master);amb=ctx.createGain();amb.gain.value=0;amb.connect(master);
-   noise=makeNoise('white');brown=makeNoise('brown');startAmbient();}
+   noise=makeNoise('white');brown=makeNoise('brown');startAmbient();preload();}
   if(ctx.state==='suspended')ctx.resume();
   unlocked=true;
  }
+ // 파일 미리 불러오기: fetch → decodeAudioData. 실패한 파일은 errors에 남기고 합성으로 대신한다.
+ function preload(){
+  if(loading||!ctx)return loading;
+  loading=Promise.all(Object.entries(LOUNGE_FILES).map(([name,file])=>Promise.resolve().then(()=>load(base+file)).then(bytes=>ctx.decodeAudioData(bytes))
+   .then(buf=>{buffers.set(name,buf);if(name==='cig-burn')startBurn();},err=>{loadErrors.push(`${file}: ${err?.message??err}`);})));
+  return loading;
+ }
+ const hasAll=cues=>!!cues&&cues.every(([n])=>buffers.has(n));
+ function playFile(dest,t0,cues){
+  for(const [n,dt,g] of cues){const s=ctx.createBufferSource(),gn=ctx.createGain();s.buffer=buffers.get(n);
+   s.playbackRate.value=lastPlayed.has(n)?1+(random()*2-1)*PITCH_SPREAD:1;lastPlayed.add(n);
+   gn.gain.value=g;s.connect(gn).connect(dest);s.start(t0+dt);}
+ }
+ function startBurn(){if(!ctx||burn.src)return;const s=ctx.createBufferSource(),g=ctx.createGain();s.buffer=buffers.get('cig-burn');s.loop=true;g.gain.value=0;s.connect(g).connect(sfx);s.start(now());burn.src=s;burn.g=g;}
  for(const e of unlockEvents)window.addEventListener(e,unlock,{passive:true});
 
  function makeNoise(kind){const n=ctx.sampleRate*2,b=ctx.createBuffer(1,n,ctx.sampleRate),d=b.getChannelData(0);let last=0;
@@ -99,7 +143,11 @@ export function createLoungeAudio({muted=false}={}){
   if(at){const dx=at.x-listener.x,dz=at.z-listener.z;g*=distanceGain(Math.hypot(dx,dz));if(g<.01){stats.skipped++;return false;}
    // 듣는 사람(카메라는 몸 뒤) 기준 좌우: 오른쪽 벡터 = (cos yaw, -sin yaw)
    const d=Math.hypot(dx,dz)||1;pan=Math.max(-.8,Math.min(.8,(dx*Math.cos(listener.yaw)-dz*Math.sin(listener.yaw))/d*.8));}
-  const bus=ctx.createGain();bus.gain.value=g;bus.connect(sfx);f(out(bus,pan),now()+.005,{quality,far:!!at});setTimeout(()=>bus.disconnect(),4000);
+  const bus=ctx.createGain();bus.gain.value=g;bus.connect(sfx);const dest=out(bus,pan),t0=now()+.005;
+  const q=quality??lastQuality,cues=fileCues(name,q);
+  if(hasAll(cues)){playFile(dest,t0,cues);stats.file++;if(name==='exhale'&&!at){const L=exhaleLen(q);duck(.35,L.hold+L.release*.6);}}
+  else{f(dest,t0,{quality,far:!!at});stats.synth++;}
+  setTimeout(()=>bus.disconnect(),4000);
   stats.played++;stats.byName[name]=(stats.byName[name]??0)+1;return true;
  }
 
@@ -127,7 +175,10 @@ export function createLoungeAudio({muted=false}={}){
   amb$.duck+=(amb$.duckTo-amb$.duck)*Math.min(1,dt*(amb$.duckTo<amb$.duck?6:1.2)); // 빨리 작아지고 천천히 돌아온다
   if(!ctx||!amb$.nodes||ctx.state!=='running')return;
   const night=env?.night??0;
-  if(amb$.sizzle){const g=muted?0:sizzleGain(draw);amb$.sizzle.sg.gain.setTargetAtTime(g,now(),.06);amb$.sizzle.sf.frequency.setTargetAtTime(2800+draw*1000,now(),.1);
+  if(burn.g){ // 녹음 지직이 있으면 합성 치이익은 쉰다. 들이마시기 시작할 때마다 음높이를 조금 흔든다.
+   const g=muted?0:burnGain(draw);if(g>0&&burn.level===0)burn.src.playbackRate.setValueAtTime(1+(random()*2-1)*PITCH_SPREAD,now());
+   if(g!==burn.level)burn.g.gain.setTargetAtTime(g,now(),.06);burn.level=g;amb$.sizzle?.sg.gain.setTargetAtTime(0,now(),.06);}
+  else if(amb$.sizzle){const g=muted?0:sizzleGain(draw);amb$.sizzle.sg.gain.setTargetAtTime(g,now(),.06);amb$.sizzle.sf.frequency.setTargetAtTime(2800+draw*1000,now(),.1);
    if(g>0&&draw>.15){amb$.tick-=dt;if(amb$.tick<=0){amb$.tick=.06+Math.random()*.1;crackle(sfx,now(),.05,20,.02+.02*draw);}}}
   // 밤에는 차 소리가 줄고 바람이 조금 커진다
   const want=muted?0:.55*amb$.duck;amb$.level+=(want-amb$.level)*Math.min(1,dt*(amb$.duck<1?6:.8)); // 처음에는 천천히 들어온다
@@ -142,6 +193,8 @@ export function createLoungeAudio({muted=false}={}){
 
  return {play,setMuted,update,unlock,resume:unlock,duck,
   get muted(){return muted;},
-  status(){return {context:ctx?.state??'입력 대기',muted,unlocked,ambient:+amb$.level.toFixed(2),...stats,byName:{...stats.byName}};},
-  dispose(){for(const e of unlockEvents)window.removeEventListener(e,unlock);window.removeEventListener('lounge:smoke',onSmoke);window.removeEventListener('lounge:spot',onSpot);ctx?.close();}};
+  status(){return {context:ctx?.state??'입력 대기',muted,unlocked,ambient:+amb$.level.toFixed(2),...stats,byName:{...stats.byName},
+   files:{loaded:buffers.size,total:Object.keys(LOUNGE_FILES).length,errors:[...loadErrors],burn:+burn.level.toFixed(3)}};},
+  ready:()=>loading, // 파일 불러오기가 끝나면 풀리는 약속(시험·점검용, 입력 전이면 null)
+  dispose(){try{burn.src?.stop();}catch{}for(const e of unlockEvents)window.removeEventListener(e,unlock);window.removeEventListener('lounge:smoke',onSmoke);window.removeEventListener('lounge:spot',onSpot);ctx?.close();}};
 }

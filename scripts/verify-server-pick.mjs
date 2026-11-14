@@ -1,7 +1,7 @@
 // 서버 고르기 창 두 브라우저 확인(2026-11-08, 기획서 「서버 고르기 창」 완료 기준).
 // 이 스크립트가 직접 띄운다: 함께 걷기 서버 2개(정원 20 = MULTI_PORT 기본 8790, 정원 2 = 다음 포트) + vite 개발 서버(PORT 기본 5198, PAGE_URL로 바꿈).
-//  ① 등산: 브라우저 A·B가 창에서 '관악산 1서버'를 골라 같은 서버 입장 → 창 인원 0→1, HUD 👋로 다시 연 창 2/20명·지금 여기 → 서로 보임 → 채팅 왕복
-//  ② 흡연장: 브라우저 C·D가 로딩 뒤 뜬 창에서 '옥상 1서버' → 인원 0→1, 👥로 다시 연 창 2/20명 → 서로 보임 → 채팅
+//  ① 등산: 브라우저 A·B가 창에서 '관악산 1서버'를 골라 같은 서버 입장 → 창 인원 0→1, HUD 👋로 다시 연 창 2/30명·지금 여기 → 서로 보임 → 채팅 왕복
+//  ② 흡연장: 브라우저 C·D가 로딩 뒤 뜬 창에서 '옥상 1서버' → 인원 0→1, 👥로 다시 연 창 2/30명 → 서로 보임 → 채팅
 //  ③ 정원 2 서버: 2명이 찬 뒤 창에 '꽉 참'(고를 수 없음), 3번째 접속은 full 거절, 창을 연 사이 꽉 차면 '방금 꽉 찼어요'로 다시 고르기
 //  ④ 산 고르기 → 서버 고르기 순서, 옛 주소 ?multi=관악산-1은 창 없이 1서버, 서버에 연결 안 되면 혼자 걷기만
 //  ⑤ 세 화면 크기(390×844·844×390·1920×1080) 캡처, 버튼 44px 이상·화면 안
@@ -64,14 +64,14 @@ try{
  // ── ① 등산 두 브라우저
  {
   const A=await open('hiking',{query:HQ(ws1),nickname:'하늘'});
-  await rowIs(A,'0 / 20명');const a0=await readPick(A);
-  check('등산 창: 처음 0/20명·합계 0',a0.rows[0].name==='관악산 1서버'&&a0.rows[0].n==='0 / 20명'&&a0.here==='0'&&a0.total==='0'&&a0.solo.includes('혼자 걷기')&&!a0.closable,a0);
+  await rowIs(A,'0 / 30명');const a0=await readPick(A);
+  check('등산 창: 처음 0/30명·합계 0',a0.rows[0].name==='관악산 1서버'&&a0.rows[0].n==='0 / 30명'&&a0.here==='0'&&a0.total==='0'&&a0.solo.includes('혼자 걷기')&&!a0.closable,a0);
   await shot(A,'01-등산-창-처음-0명');
   await choose(A,'하늘');
   await A.waitForFunction(()=>window.hiking?.started&&window.hiking.multi?.()?.status==='online',null,{timeout:180000});
   const B=await open('hiking',{query:HQ(ws1),nickname:'바다'});
-  await rowIs(B,'1 / 20명');const b1=await readPick(B);
-  check('등산 창: 한 명 들어오면 1/20명·지금 접속 1',b1.rows[0].n==='1 / 20명'&&b1.here==='1'&&b1.total==='1',b1);
+  await rowIs(B,'1 / 30명');const b1=await readPick(B);
+  check('등산 창: 한 명 들어오면 1/30명·지금 접속 1',b1.rows[0].n==='1 / 30명'&&b1.here==='1'&&b1.total==='1',b1);
   await shot(B,'02-등산-창-1명');
   await choose(B,'바다');
   await B.waitForFunction(()=>window.hiking?.started&&window.hiking.multi?.()?.status==='online'&&window.hiking.multi().roster.length>=1,null,{timeout:180000});
@@ -79,10 +79,10 @@ try{
   const welA=await A.evaluate(()=>window.__wsIn.find(m=>m.t==='welcome')),welB=await B.evaluate(()=>window.__wsIn.find(m=>m.t==='welcome'));
   const ia=await A.evaluate(()=>window.hiking.multi()),ib=await B.evaluate(()=>window.hiking.multi());
   check('등산 같은 서버·서로 보임',welA.server==='1'&&welB.server==='1'&&welA.room===welB.room&&ia.roster.some(r=>r.name==='바다')&&ib.roster.some(r=>r.name==='하늘'),{A:welA,B:welB,A본사람:ia.roster.map(r=>r.name),B본사람:ib.roster.map(r=>r.name)});
-  // HUD 👋 버튼으로 다시 열면 2/20명·지금 여기
+  // HUD 👋 버튼으로 다시 열면 2/30명·지금 여기
   await A.evaluate(()=>document.querySelector('.me-entry').click());
-  await rowIs(A,'2 / 20명',9000);const a2=await readPick(A);
-  check('등산 HUD 👋로 다시 연 창: 2/20명·지금 여기·나가기 단추',a2.rows[0].tag==='지금 여기'&&a2.rows[0].disabled&&a2.here==='2'&&a2.closable&&a2.solo.includes('나가서'),a2);
+  await rowIs(A,'2 / 30명',9000);const a2=await readPick(A);
+  check('등산 HUD 👋로 다시 연 창: 2/30명·지금 여기·나가기 단추',a2.rows[0].tag==='지금 여기'&&a2.rows[0].disabled&&a2.here==='2'&&a2.closable&&a2.solo.includes('나가서'),a2);
   await shot(A,'03-등산-HUD에서-다시연-창-2명');
   await A.click('.sp-wrap:not([hidden]) .sp-x');
   const chip=await A.evaluate(()=>{const c=document.querySelector('.me-chip');return {hidden:c.hidden,text:c.textContent};});
@@ -103,20 +103,20 @@ try{
  // ── ② 흡연장 두 브라우저
  {
   const C=await open('smoking',{query:SQ(ws1),nickname:'미나'});
-  await rowIs(C,'0 / 20명');const c0=await readPick(C);
-  check('흡연장 창(로딩 뒤): 0/20명·전체에는 등산 1명',c0.rows[0].name==='옥상 1서버'&&c0.here==='0'&&c0.total==='1'&&c0.solo.includes('혼자 피우기'),c0);
+  await rowIs(C,'0 / 30명');const c0=await readPick(C);
+  check('흡연장 창(로딩 뒤): 0/30명·전체에는 등산 1명',c0.rows[0].name==='옥상 1서버'&&c0.here==='0'&&c0.total==='1'&&c0.solo.includes('혼자 피우기'),c0);
   await shot(C,'05-흡연장-창-처음');
   await choose(C,'미나');await C.waitForFunction(()=>window.lounge.multi.state==='online',null,{timeout:15000});
   const D=await open('smoking',{query:SQ(ws1),nickname:'지훈'});
-  await rowIs(D,'1 / 20명');const d1=await readPick(D);
-  check('흡연장 창: 1/20명·전체 2',d1.here==='1'&&d1.total==='2',d1);
+  await rowIs(D,'1 / 30명');const d1=await readPick(D);
+  check('흡연장 창: 1/30명·전체 2',d1.here==='1'&&d1.total==='2',d1);
   await choose(D,'지훈');await D.waitForFunction(()=>window.lounge.multi.state==='online',null,{timeout:15000});
   await C.waitForFunction(()=>window.lounge.multi.people().some(p=>p.name==='지훈'),null,{timeout:15000});
   const pc=await C.evaluate(()=>window.lounge.multi.people().map(p=>p.name)),pd=await D.evaluate(()=>window.lounge.multi.people().map(p=>p.name));
   const wc=await C.evaluate(()=>window.__wsIn.find(m=>m.t==='welcome')),wd=await D.evaluate(()=>window.__wsIn.find(m=>m.t==='welcome'));
   check('흡연장 같은 서버·서로 보임',wc.server==='1'&&wd.server==='1'&&pc.includes('지훈')&&pd.includes('미나'),{C:pc,D:pd,welcome:[wc,wd]});
-  await C.click('.lg-mp-btn');await rowIs(C,'2 / 20명',9000);const c2=await readPick(C);
-  check('흡연장 👥로 다시 연 창: 2/20명·지금 여기',c2.rows[0].tag==='지금 여기'&&c2.here==='2'&&c2.total==='3'&&c2.solo.includes('나가서 혼자 피우기'),c2);
+  await C.click('.lg-mp-btn');await rowIs(C,'2 / 30명',9000);const c2=await readPick(C);
+  check('흡연장 👥로 다시 연 창: 2/30명·지금 여기',c2.rows[0].tag==='지금 여기'&&c2.here==='2'&&c2.total==='3'&&c2.solo.includes('나가서 혼자 피우기'),c2);
   await shot(C,'06-흡연장-👥에서-다시연-창-2명');
   await C.click('.sp-wrap:not([hidden]) .sp-x');
   await C.evaluate(()=>{const f=document.querySelector('.lg-form'),i=f.querySelector('input');document.querySelector('.lg-chat')?.classList.add('open');i.value='옥상 1서버 반가워요';f.requestSubmit();});
@@ -133,13 +133,14 @@ try{
   const E=await open('hiking',{query:HQ(ws2),nickname:'셋째'});
   await rowIs(E,'2 / 2명');const e2=await readPick(E);
   check('정원 2: 창에 꽉 참·고를 수 없음',e2.rows[0].tag==='꽉 참'&&e2.rows[0].disabled&&e2.rows[0].state==='full',e2);
+  check('서버 셋(11-13): 1서버가 차도 2·3서버는 열려 있음',e2.rows.length===3&&e2.rows.map(r=>r.name).join()==='관악산 1서버,관악산 2서버,관악산 3서버'&&!e2.rows[1].disabled&&!e2.rows[2].disabled&&e2.rows[1].n==='0 / 2명',e2.rows);
   await shot(E,'08-정원2-꽉참');
   // 창을 연 사이 꽉 참: 한 명 나가 1/2가 보일 때 다른 사람이 먼저 들어오고, 그다음 고르면 '방금 꽉 찼어요'
   raw[0].close();await rowIs(E,'1 / 2명',9000);
   // 닉네임을 먼저 넣고, 다른 사람이 들어온 직후 5초 갱신 전에 바로 누른다(갱신이 먼저 오면 줄이 꽉 참으로 바뀌어 못 누름)
   await E.fill('.sp-wrap:not([hidden]) input','셋째');
   const r4=await hello('관악산-1');
-  await E.evaluate(()=>document.querySelector('.sp-wrap:not([hidden]) .sp-row:not([disabled])')?.click());
+  await E.evaluate(()=>document.querySelector('.sp-wrap:not([hidden]) .sp-row')?.click());
   await waitPick(E,"return w.querySelector('.sp-note').textContent.includes('방금 꽉 찼어요')",null,180000);
   const e3=await readPick(E);
   check('창을 연 사이 꽉 참 → 방금 꽉 찼어요·다시 고르기',r4.t==='welcome'&&e3.note.includes('방금 꽉 찼어요')&&e3.rows[0].n==='2 / 2명'&&e3.rows[0].disabled,e3);
@@ -150,6 +151,8 @@ try{
   await hello('옥상-1','smoking');await hello('옥상-1','smoking');
   const F=await open('smoking',{query:SQ(ws2),nickname:'넷째'});await rowIs(F,'2 / 2명');const f2=await readPick(F);
   check('흡연장 정원 2: 꽉 참',f2.rows[0].tag==='꽉 참'&&f2.rows[0].disabled,f2);
+  const r5=await hello('관악산-2'),r6=await hello('관악산-3');
+  check('2·3서버로 들어가면 각자 다른 방',r5.t==='welcome'&&r5.server==='2'&&r5.room==='관악산-2'&&r6.server==='3'&&r6.room==='관악산-3',{r5,r6});
   for(const w of raw)w.close();
  }
  // ── ④ 흐름·옛 주소·연결 실패

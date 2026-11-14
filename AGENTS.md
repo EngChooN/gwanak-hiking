@@ -17,7 +17,7 @@
 - **옛 주소 유지:** 루트 `/`에 등산 옵션(`multi`·`server`·`start`·`season`·`time`·`weather`·`pick`·`dev` 등, 목록은 `src/hub/legacy-redirect.js`의 `HIKING_PARAMS`)이 붙어 오면 쿼리·해시 그대로 `/hiking/`로 `location.replace` 합니다. 공유했던 `/?multi=방&server=…` 주소가 계속 됩니다.
 - **에셋은 한 벌:** `public/`·`assets/`를 세 페이지가 같이 씁니다. 코드에서 에셋 주소는 늘 `${import.meta.env.BASE_URL}assets/…`처럼 BASE_URL 기준으로 씁니다(페이지가 하위 폴더라 상대 경로 `assets/…`는 깨집니다).
 - **공용 코드도 한 벌:** `src/lounge/` 밖의 파일(`src/toon/**`·`hiker-*`·`daytime`·`device-profile` 등)은 등산 원본이고 흡연장이 그대로 import 합니다. 공용 파일을 고치면 **등산과 흡연장 둘 다** 테스트·캡처로 확인하세요.
-- 배포는 지금처럼 GitHub Pages 하나(`…/gwanak-hiking/` 허브, `…/hiking/`, `…/smoking/`). 저장소 이름 변경(예: `online-metaverse`)은 주소가 바뀌므로 대표 결정 뒤로 미뤘습니다.
+- 배포는 GitHub Pages 하나(`…/ai-office-world/` 허브, `…/hiking/`, `…/smoking/`). **저장소 이름은 11-14 대표 결정으로 `gwanak-hiking` → `ai-office-world`**(옛 주소는 이동 페이지 없이 끊김). 내 맥의 작업 폴더 이름 `~/gwanak-hiking`과 저장 키(`gwanak-hiking:v1` 등)는 그대로 둡니다(바꾸면 사용자 기록이 사라짐).
 - 원래 흡연장 폴더 `~/online-smoking`은 지우지 않고 남겨 두었습니다(대표가 정리). 앞으로 흡연장 작업은 이 저장소에서 합니다.
 
 ## 1. 무엇을 만드는가 (온라인 등산)
@@ -27,7 +27,7 @@
 - 그래픽은 **카툰 한 가지**입니다. 낮은 「젤다: 야생의 숨결」, 노을·밤은 「너의 이름은」 느낌입니다. 실사 모드는 2026-11-06에 없앴습니다.
 - 주인공은 카툰 등산객 **동동이**입니다. 1.0m, 2.1등신이고 벙거지·빨간 목도리·주황 바람막이·청록 큰 배낭을 갖췄습니다. 복장 고르기는 없앴습니다.
 - 경로는 실제 GPX 337점(위경도·평활 고도)입니다. 전체 약 5.1km이고, 모델 기준 전체 걸리는 시간은 150분입니다. 1m = Three.js 1단위, 북쪽 = −z입니다.
-- 배포 주소는 https://engchoon.github.io/gwanak-hiking/ 입니다. 대표가 혼자 휴대폰(아이폰 사파리)으로 들어가 확인하는 용도입니다.
+- 배포 주소는 https://engchoon.github.io/ai-office-world/ 입니다(11-14까지는 …/gwanak-hiking/). 대표가 혼자 휴대폰(아이폰 사파리)으로 들어가 확인하는 용도입니다.
 
 ## 2. 사람과 역할 (AI Office)
 
@@ -86,7 +86,7 @@ npm run deploy         # gh-pages 브랜치에 강제 push (대표 지시가 있
 - **점검 스크립트(Playwright)에서는 산 고르기 화면이 자동으로 빠집니다**(navigator.webdriver). 산 고르기를 찍으려면 `?pick=on`을 붙입니다. `scripts/verify-free-settings.mjs`가 산 고르기·도장·자유 설정을 검사합니다.
 - 브라우저 콘솔의 `window.hiking`에 진단 함수가 있습니다. `hiking.memory()`, `hiking.loadTiming()` 등을 쓸 수 있습니다.
 - 화면 확인 스크립트는 `scripts/capture-*.mjs`(등산 주소는 `/hiking/…`; 허브·등산·흡연장을 한 번에 찍는 `scripts/capture-metaverse.mjs`, 흡연장 `scripts/capture-smoking.mjs`), `scripts/verify-mobile-buttons.mjs`, `scripts/measure-mobile-memory.mjs`, `scripts/measure-first-load.mjs`에 있습니다. 결과는 `artifacts/`에 둡니다.
-- GitHub 원격은 `git@github-personal:EngChooN/gwanak-hiking.git`입니다(개인 계정 SSH 별칭). 저장소 생성 같은 계정 작업은 대표가 웹에서 합니다.
+- GitHub 원격은 `https://github.com/EngChooN/ai-office-world`입니다(11-14 이름 변경). 저장소 생성 같은 계정 작업은 대표가 웹에서 합니다.
 - 런타임에 외부 지도·CDN·사진 서비스에 접속하지 않습니다.
 
 ## 6. 코드 지도
@@ -133,6 +133,8 @@ npm run deploy         # gh-pages 브랜치에 강제 push (대표 지시가 있
 
 | 날짜 | 결정 | 근거 문서 |
 |---|---|---|
+| 11-14 | 저장소·사이트 이름 `gwanak-hiking` → `ai-office-world`(대표 결정, 체험이 여럿이라). 주소 `engchoon.github.io/ai-office-world/` · `/hiking/` · `/smoking/`, 옛 주소는 끊음(이동 페이지 없음). 같은 도메인이라 저장 기록·설정은 그대로, 저장 키 이름은 안 바꿈. 릴스 엔딩·인스타 본문도 새 주소. GitHub 이름 바꾸기는 대표가 웹에서 | 변경기록-2026-11-14-저장소이름-변경.md |
+| 11-13 | 함께 걷기 서버를 체험마다 3개·정원 30명으로(대표 지시): `SERVERS` 등산 `관악산-1·2·3`·흡연장 `옥상-1·2·3`(1서버 방 키는 예전 그대로 `hiking:관악산`, 2·3서버는 `hiking:관악산-2`·`-3`), `SERVER_MAX`·`maxPerRoom`·`MAX_PER_ROOM` 30. `multi:up`은 `TRUST_PROXY=1`·`HOST=127.0.0.1`(전에는 터널 뒤 모두 127.0.0.1이라 같은 곳 32명 제한에 전체가 묶였음). 서버 고르기 창은 높이 540px 이하에서 줄을 납작하게. 꽉 찬 방 한 사람 약 23KB/s, 6서버 만원이면 맥 업로드 약 34Mbps | 변경기록-2026-11-13-서버3개-정원30.md |
 | 11-11 | 함께 걷기 서버 주소를 사이트가 알아서 찾음(대표 결정: 당분간 내 맥 + Quick Tunnel, 링크에 `?server=` 붙이지 않음): `npm run multi:up`(서버·`cloudflared tunnel --url`·`caffeinate`, `ALLOWED_ORIGINS`=engchoon.github.io+로컬)이 터널 주소를 gh-pages 맨 위 `multi-server.json`에 이 파일 하나만 커밋해 push(`scripts/multi-publish.mjs`, partial clone), Ctrl+C면 `{state:'off'}`. 사이트 순서 `?server=` → 빌드 변수 → 공개 파일(`?t=` 매번 새로) → 기억한 값(파일 못 받을 때만), 꺼짐이면 '서버가 꺼져 있어요'·옛 trycloudflare `?server=`는 파일 주소로 바꾸고 주소창에서 뺌, 주소창에 붙이기·허브 카드 링크 붙이기 없앰. `npm run deploy`는 이 파일을 이어 붙임. 점검 `scripts/verify-server-file.mjs` | 변경기록-2026-11-11-서버주소-공개파일.md |
 | 11-10 | 멀티 상호작용 상대에게 보이기(등산·흡연장): 공통 행동 상태 `act`(`ACT_SCHEMA`·`sanitizeAct`, 흡연장 `p·b·can·sip` / 등산 `p·g·sf·x·n·v`)를 바뀔 때만 보내고, 서버가 마지막 값을 기억해 입장·`j`·resume 때 다시 줌. 흡연장은 자세·캔 그리기를 `spots.js` `createPoser`로 빼서 상대 몸에도 같은 코드, 다른 사람이 차지한 자리는 피함(벤치 ±0.42m·난간 ±2.7m). 등산은 `src/multi-act.js`·원격 `createHikerActs`(quiet). '대표만 눌림'은 누르기 결함이 아니라 상대 화면에 안 보인 것(재현 9/9 눌림). 점검 `scripts/verify-multi-interactions.mjs`·`verify-multi-act-hiking.mjs` | 변경기록-2026-11-10-멀티-상호작용.md |
 | 11-09 | 입장 흐름: 허브 → 체험 카드 → (등산) 산 고르기 → **서버 카드 전체 화면**(`server-pick.js` `entry`, 허브 카드와 같은 모양·인원 5초 갱신·꽉 참 비활성·닉네임·혼자 하기) → 입장. 게임 안 서버 바꾸기도 같은 카드(`switch`), full 거절 시 카드 화면으로 돌아와 '방금 꽉 찼어요'. `/health` 실패·서버 주소 없음은 '서버에 연결할 수 없어요' 카드 + 혼자 하기만. `?multi=`는 고르기를 건너뛰되 같은 방 키 | 변경기록-2026-11-09-서버카드-입장흐름.md |
@@ -214,6 +216,9 @@ npm run deploy         # gh-pages 브랜치에 강제 push (대표 지시가 있
 ### 흡연장 결정 기록
 | 날짜 | 결정 |
 |---|---|
+| 11-14 | 앉을 때 다리(대표 지적 "다리 없는 사람처럼 보임", 2차 11-14b): 등산 bench-sit 값·흔들림 그대로(오른쪽 -1.15·왼쪽 -0.75 앞으로 들고 `sin(t·3.8)·.22`로 달랑달랑, `SIT_LEG`, 위상은 사람마다 다름). 엉덩이를 좌판 앞쪽 12cm로 당겨(`SIT.back` -.12) 신발이 앞 가장자리 밖으로. 앉을 때 카메라 `SEAT_CAM` = 정면 25°·거리 2.8·pitch .22, 옥상 밖이면 반대쪽(수평 pitch .05는 신발이 몸에 겹쳐 안 됨). 점검 `OUT_DIR=… node scripts/verify-lounge-sit-age.mjs`. `변경기록-2026-11-14-흡연장-앉기-다리.md` |
+| 11-13 | 앉기·일어나기·입장 안내: 벤치 앉기는 엉덩이 좌판+0.06·등받이 쪽 기댐(다리는 11-14에 앞으로 뻗음으로 바뀜)(동동이 다리 약 13cm라 발은 바닥에 안 닿음 — 등산 bench-sit와 같은 높이), NPC도 같은 `createPoser`, 앉으면 카메라 앞 비스듬히 3.4m(`main.js` `SEAT_CAM`). 내 자리 머리 위 표시 없앰 → 손 단추 줄 맨 앞 `↩ 일어나기`/`난간에서 떨어지기`(E 키). 첫 입장 안내(`age-gate.js`, 연디자인 문구): 이름보다 먼저, 연 나이 19 미만 막음·저장 안 함, 성인만 localStorage `lounge.age`(서버로 안 보냄), 설정에서 다시 보기, webdriver는 `?age=on`일 때만. 점검 `tests/lounge-age-sit.test.mjs`·`scripts/verify-lounge-sit-age.mjs`. `변경기록-2026-11-13-흡연장-앉기-입장안내.md` |
+| 11-13 | 라이터·들숨·날숨·담배 타는 지직·캔커피는 녹음 파일(`public/sounds/lounge/`, CC0)로 냄. `audio.js`가 unlock 뒤 한 번만 불러오고, 한 소리에 필요한 파일이 하나라도 없으면 그 소리는 합성으로 대체. 캔은 버튼 0 → 덜컹 0.3 → 따기 1.2초(`spots.js` `DROP`), 라이터는 불꽃 0.32초 전에 불러 '화'를 맞춤. 점검 `tests/lounge-audio-files.test.mjs`·`scripts/verify-lounge-sound.mjs`. `변경기록-2026-11-13-흡연장-소리.md` |
 | 11-08 | 의견 보내기: 흡연장은 ⚙️ 설정 창 맨 아래 `💌 의견 보내기`와 「상황」 패널 맨 아래 같은 단추(둘 다 `lounge:feedback-open`, 카드는 hud.js가 공용 `src/feedback.js`로 설치). HUD에 새 단추를 늘리지 않음 |
 | 11-08 | 옛 폴더 `~/online-smoking`에서만 했던 모바일 HUD 재배치·할 일 걷기 수정·대상 위 표시(`spots.js/.css`·`hud.js/.css`)와 담배 소리(`audio.js`·`smoke.js`)를 이 저장소로 합침(같이 피우기 줄은 살림). 「상황」 단추는 PC = 위 오른쪽 줄 아래, 휴대폰 = 오른쪽 가장자리 가운데라 `multi.css`의 옛 가로 규칙(상황 줄을 160px 왼쪽으로)은 지움. 대상 위 표시는 「상황」 단추와 겹치면 왼쪽으로 비킴. 걷기 실패는 `lounge:spot {state:'fail'}` + 알림. 측정 `scripts/hud-cover.mjs`(5173 `/smoking/`) |
 | 11-08 | 같이 피우기(실시간 멀티) 연결: 흡연장 쪽 코드는 `src/lounge/multi.js`·`multi-ui.js`에 모음. 상대 옷은 ID로 결정적 선택(옷은 아직 안 보냄), 받는 쪽이 같은 smoke.js로 담배를 그림, 내 글은 서버 되돌림을 다시 그리지 않음, NPC 각본 대사는 안 보냄, NPC는 그대로 4명·사람 채팅에 가끔(0.3·12초) 대답, 상태 칩은 👥 단추가 겸함 |

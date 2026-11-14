@@ -1,7 +1,8 @@
 // 옥상에서 할 일(B5): 난간에 기대기·벤치에 앉기·자판기 캔커피. 상황 고르기(B6) 단추와 패널도 여기서 직접 만든다(hud.js는 건드리지 않는다).
 // 자세는 동동이 원본(src/toon/**, realistic-hiker.js)을 고치지 않고, 원래 동작이 끝난 뒤(player.extra 맨 앞, 흡연 팔보다 먼저) 뼈 회전을 덧씌워 만든다.
 // - 기대기: 난간 쪽을 보고 상체를 앞으로 숙이고, 두 팔을 들어 콘크리트 턱 윗면에 올린다.
-// - 앉기: 동동이는 다리가 짧아(1.0m·2.1등신) 좌판(0.44m)에 앉으면 발이 뜬다 → 「벤치에 걸터앉기」: 몸을 좌판 높이로 올리고 허벅지는 앞으로, 정강이는 아래로 늘어뜨린다.
+// - 앉기: 동동이는 다리가 짧아(허벅지·정강이 각 약 6cm) 좌판(0.44m)에 앉으면 발이 바닥에 닿지 않는다(온라인 등산 벤치 앉기 'bench-sit'도 같은 높이에 발이 뜬다).
+//   엉덩이를 좌판에 붙여 등받이 쪽으로 조금 들어가 기대고, 허벅지는 앞으로·정강이는 아래로(무릎 약 90도)·발바닥은 평평하게 둔다(11-13).
 // - 캔커피: 옥상 어디서든 「캔커피 뽑기」를 누르면 자판기까지 걸어가 뽑는다. 꺼내는 곳으로 캔이 떨어지고, 담배 안 든 손(왼손)에 툰 재질 캔을 들고
 //   가끔 저절로 마시며, 「한 모금」 단추(C 키)로 원할 때 마신다(커담 = 커피 한 모금 + 담배 한 모금).
 // 상태가 바뀌면 'lounge:spot' {id:'me', spot:'rail'|'bench'|'vending'|'ashtray', state:'enter'|'leave'|'use'|'fail'}를 보낸다(fail = 길이 막힘·자리 없음, 알림도 띄움).
@@ -20,9 +21,11 @@ export const WALK=Object.freeze({arrive:.35,stall:1,near:.8,extra:4,away:.5});
 export const MARK=Object.freeze({show:15,far:7}); // 대상 위 표시: 15m 안만, 7m 밖은 작은 점
 export const POSE_BLEND=.35;                 // 자세가 들어가고 빠지는 시간(초)
 export const SEAT_PAD=.06;                   // 좌판 위 골반 높이(허벅지 두께)
+export const SIT=Object.freeze({back:-.12,lean:.16}); // 앉기: 좌판 안쪽으로 들어가 앉는 거리(m, 음수 = 앞쪽으로 당겨 앉아 신발이 좌판 앞 가장자리 밖으로 나온다), 등받이 쪽으로 기대는 허리 각(rad)
+export const SIT_LEG=Object.freeze({right:1.15,left:.75}); // 등산 bench-sit과 같은 다리 들기(rad)
 export const SIP=Object.freeze({first:1.2,every:[9,15],secs:1.6}); // 캔: 첫 모금까지(쥐자마자 한 모금 — 뽑은 게 보이게), 다음 저절로 마실 때까지, 한 모금 길이(초)
 export const CAN=Object.freeze({r:.034,h:.1,body:'#8a5a3c',band:'#f6efdc',top:'#b9bec0'}); // 캔커피(갈색·크림 띠). 동동이 키 1.0m 기준, 담배처럼 실제보다 조금 굵은 만화 크기
-const DROP=Object.freeze({fall:.45,wait:.35,fly:.3});
+export const DROP=Object.freeze({fall:.45,wait:.35,fly:.3}); // 캔이 떨어짐·놓여 있음·손으로 날아옴(초). 소리 순서 audio.js CAN_SEQ가 이 값에 맞춤
 const R=.2,UP=new THREE.Vector3(0,1,0),V3=THREE.Vector3,Q=THREE.Quaternion;
 const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
 const smooth=t=>{t=clamp(t,0,1);return t*t*(3-2*t);};
@@ -83,7 +86,7 @@ function blend(bones,w,fn){
 }
 export function poseRig(model){
  const B=n=>model.getObjectByName('mixamorig'+n)??null;
- const side=s=>({arm:[B(s+'Arm'),B(s+'ForeArm'),B(s+'Hand')],leg:[B(s+'UpLeg'),B(s+'Leg'),B(s+'Foot')]});
+ const side=s=>({arm:[B(s+'Arm'),B(s+'ForeArm'),B(s+'Hand')],leg:[B(s+'UpLeg'),B(s+'Leg'),B(s+'Foot')],toe:B(s+'ToeBase')});
  return {hips:B('Hips'),spine:['Spine','Spine1','Spine2'].map(B).filter(Boolean),head:B('Head'),Left:side('Left'),Right:side('Right')};
 }
 
@@ -119,22 +122,27 @@ export function createPoser({S,avatar,rooftop,world,toon,smokeState=()=>'idle',a
   const want=S.pose==='stand'?0:1;S.w+=(want-S.w)*Math.min(1,dt/POSE_BLEND*2.2);if(Math.abs(want-S.w)<.002)S.w=want;
   const w=smooth(S.w),F=dirM(0,0,1),L=dirM(1,0,0);
   const kind=S.pose!=='stand'?S.pose:S.last;
-  if(w>0&&kind==='sit')sit(w,F,L);
+  if(w>0&&kind==='sit')sit(w,F,L,dt);
   if(w>0&&kind==='lean')lean(w,F,L);
   holdCan(dt,F,L);
  }
- function sit(w,F,L){
+ function sit(w,F,L,dt){
+  const dn=(th,b)=>F.clone().multiplyScalar(Math.sin(-th)).addScaledVector(UP,-Math.cos(th)).addScaledVector(L,b).normalize(); // hiker-acts P.leg와 같은 방향: 아래(0,-1,0)를 X축으로 th만큼 돌린 것
   const seat=S.spot?.seat??{y:.44};
   const hipsH=rig.hips?wpos(rig.hips).y-root.position.y:.4;
-  root.position.y+=(seat.y+SEAT_PAD-hipsH)*w;root.updateMatrixWorld(true);
-  // 등받이에 살짝 기대 상체를 뒤로
-  blend(rig.spine,w,()=>turnWorld(rig.spine[0],L,-.1));
+  // 엉덩이를 좌판에 붙이고(골반 = 좌판 + 허벅지 두께), 좌판 안쪽(등받이 쪽)으로 조금 들어가 앉는다
+  root.position.y+=(seat.y+SEAT_PAD-hipsH)*w;root.position.addScaledVector(F,-SIT.back*w);root.updateMatrixWorld(true);
+  // 등받이에 살짝 기댄다: 허리를 뒤로, 목은 반쯤 되돌려 앞을 본다
+  blend([...rig.spine,rig.head],w,()=>{turnWorld(rig.spine[0],L,-SIT.lean);turnWorld(rig.head,L,SIT.lean*.6);});
+  // 다리: 등산 'bench-sit'(src/toon/hiker-acts.js)과 같은 값·같은 흔들림. 오른쪽 -1.15(+sw*.6)·왼쪽 -0.75(-sw)만큼 앞으로 들고 달랑달랑(sw=sin(t*3.8)*.22). 사람마다 위상이 달라 NPC끼리 박자가 겹치지 않는다.
+  S.swingT??=Math.random()*6;S.swingT+=dt*3.8;const sw=Math.sin(S.swingT)*.22*w;
   for(const [s,x] of [['Left',1],['Right',-1]]){
-   const [up,mid,end]=rig[s].leg;if(!up||!mid)continue;
+   const [up,mid,end]=rig[s].leg,toe=rig[s].toe;if(!up||!mid)continue;
+   const th=x<0?-SIT_LEG.right+sw*.6:-SIT_LEG.left-sw,d=dn(th,x*.05);
    blend([up,mid,end],w,()=>{
-    const hp=wpos(up),kp=wpos(mid);aim(up,kp.clone().sub(hp),F.clone().multiplyScalar(.98).addScaledVector(UP,-.12).addScaledVector(L,x*.12));
-    if(!end)return;const k2=wpos(mid),fp=wpos(end),len=k2.distanceTo(fp),dy=clamp((k2.y-.04)/Math.max(len,1e-3),0,1);
-    aim(mid,fp.clone().sub(k2),UP.clone().multiplyScalar(-dy).addScaledVector(F,Math.sqrt(1-dy*dy)+.08)); // 발이 바닥에 닿으면 앞으로 뻗는다
+    const hp=wpos(up),len=hp.distanceTo(wpos(mid))+(end?wpos(mid).distanceTo(wpos(end)):0);
+    limb([up,mid,end],hp.clone().addScaledVector(d,len*.96),UP.clone().multiplyScalar(-Math.sin(th)).addScaledVector(F,Math.cos(th)));
+    if(toe&&end){const f2=wpos(end),tp=wpos(toe);aim(end,tp.sub(f2),F.clone().addScaledVector(UP,.3).addScaledVector(L,x*.12));}
    });
    // 손은 허벅지 위(캔 든 왼손은 holdCan이 정한다)
    if(s==='Left'&&S.can.held)continue;
@@ -215,7 +223,7 @@ export function createSpots({ctx,player=ctx.player,smoker=ctx.smoker,rooftop=ctx
  // 다른 동동이·장애물이 그 자리를 차지했는지: main.js collide(나는 빼고 민다)가 자리를 옮기면 차지된 것
  //  (collide는 정확히 같은 점에 선 동동이는 밀지 못하므로 3cm 옆 점도 함께 본다)
  // 같은 방 다른 사람(같이 피우기, 11-10)이 서 있거나 앉은 자리도 차지된 것으로 본다(ctx.multi.occupied). 전에는 두 사람이 같은 난간 지점·같은 좌판에 겹쳐 섰다.
- const taken=(x,z,r=.36)=>!!ctx.multi?.occupied?.(x,z,r);
+ const taken=(x,z,r=.36)=>!!ctx.multi?.occupied?.(x,z,r)||(ctx.npcs?.avatars??[]).some(a=>Math.hypot(a.x-x,a.z-z)<r);
  const free=(x,z)=>!taken(x,z)&&(!ctx.collide||[[0,0],[.03,0],[0,.03]].every(([ox,oz])=>{const c=ctx.collide(x+ox,z+oz);return Math.hypot(c.x-x-ox,c.z-z-oz)<.05;}));
  // 벤치(길이 1.5m): 가운데에 누가 앉아 있으면 왼쪽·오른쪽 자리(±0.42m)에 앉는다. 셋 다 차면 null.
  const seatFor=spot=>{const s=spot.seat,ax=-Math.cos(s.heading),az=Math.sin(s.heading);
@@ -340,18 +348,22 @@ export function createSpots({ctx,player=ctx.player,smoker=ctx.smoker,rooftop=ctx
   let sig='';
   function renderDock(){
    const cur=scene?.current?SCENES[scene.current]:null;
-   const s=JSON.stringify([S.can.held,cur?.id]);if(s===sig)return;sig=s;
+   const s=JSON.stringify([S.can.held,cur?.id,S.pose]);if(s===sig)return;sig=s;
    dock.innerHTML=scene?btn('scene',cur?cur.icon:'🕐',cur?cur.label:'상황 고르기','',' aria-haspopup="dialog"'):'';
-   hand.innerHTML=S.can.held?btn('sip','☕','한 모금','',' title="C"')+btn('dropCan','🗑','캔 버리기','sec'):'';
+   // 앉음·기댐: 일어나기는 머리 위가 아니라 이 손 단추 줄 맨 앞(종이색 보조 단추, E 키). 머리 위 표시는 얼굴을 가려서 뺐다(11-13)
+   const up=S.pose==='sit'?btn('stand','↩','일어나기','sec stand',' title="E"'):S.pose==='lean'?btn('stand','↩','난간에서 떨어지기','sec stand',' title="E"'):'';
+   hand.innerHTML=up+(S.can.held?btn('sip','☕','한 모금','',' title="C"')+btn('dropCan','🗑','캔 버리기','sec'):'');
   }
   // ── 대상 위 표시: 0.2초마다 목록·상태를 정하고(바뀔 때만 글을 다시 쓴다 — 누르는 사이 단추가 다시 그려져 클릭이 사라지지 않게), 매 프레임 화면 좌표로 옮긴다
-  const LIFT={vending:2.05,bench:1.0,rail:1.2,ashtray:1.05};
+  const LIFT={vending:2.05,bench:1.0,benchBusy:1.55,rail:1.2,ashtray:1.05};
+  const seatBusy=s=>{const ax=-Math.cos(s.heading),az=Math.sin(s.heading);return [0,.42,-.42].some(o=>taken(s.x+ax*o,s.z+az*o,.3));};
   const els=new Map();let targets=[];
   function targetList(){
    const px=player.x,pz=player.z,list=[],sp=rooftop.spots??{};
-   const add=(kind,index,x,z,ax,az)=>{const d=Math.hypot(x-px,z-pz);if(d<=MARK.show)list.push({key:kind+index,kind,index,x:ax??x,z:az??z,d});};
+   const add=(kind,index,x,z,ax,az,lift=LIFT[kind])=>{const d=Math.hypot(x-px,z-pz);if(d<=MARK.show)list.push({key:kind+index,kind,index,x:ax??x,z:az??z,d,lift});};
    if(sp.vending)add('vending',0,sp.vending.x,sp.vending.z,sp.vending.outlet?.x,(sp.vending.outlet?.z??sp.vending.z)-.1);
-   (sp.benches??[]).forEach((b,i)=>add('bench',i,b.x,b.z,b.seat?.x,b.seat?.z));
+   // 다른 사람·NPC가 앉아 있는 벤치는 표시를 앉은 머리 위로 올린다(좌판 위 1.0m는 앉은 얼굴 높이)
+   (sp.benches??[]).forEach((b,i)=>add('bench',i,b.x,b.z,b.seat?.x,b.seat?.z,b.seat&&seatBusy(b.seat)?LIFT.benchBusy:LIFT.bench));
    (sp.ashtrays??[]).forEach((a,i)=>add('ashtray',i,a.x,a.z,a.at?.x,a.at?.z));
    const r=S.pose==='lean'&&S.spot?S.spot:railSpot(rooftop,px,pz,MARK.show,free);
    if(r){const ins=rooftop.rail?.inset??.22;add('rail',0,r.x,r.z,r.x+r.n[0]*(ins+.1),r.z+r.n[1]*(ins+.1));}
@@ -359,7 +371,7 @@ export function createSpots({ctx,player=ctx.player,smoker=ctx.smoker,rooftop=ctx
   }
   function markState(t){
    const mine=(t.kind==='bench'&&S.pose==='sit'&&S.spot?.index===t.index)||(t.kind==='rail'&&S.pose==='lean');
-   if(mine)return {st:'act',icon:'↩',label:t.kind==='rail'?'난간에서 떨어지기':'일어나기'};
+   if(mine)return null; // 내가 앉은 벤치·기댄 난간: 일어나기는 아래 손 단추 줄에 있다(머리 위 표시는 얼굴을 가림)
    const busy=t.kind==='vending'&&buying(),going=S.pending&&S.pending.spot.kind===t.kind&&(S.pending.spot.index??0)===t.index;
    const near=t.d<=SPOT_RANGE[t.kind];
    const L={vending:['🥫','캔커피 뽑기'],bench:['🪑','걸터앉기'],rail:['🧍','난간에 기대기'],ashtray:['🚏','재떨이']}[t.kind];
@@ -387,7 +399,7 @@ export function createSpots({ctx,player=ctx.player,smoker=ctx.smoker,rooftop=ctx
   function placeMarks(){
    if(!camera||!els.size)return;const W=innerWidth,H=innerHeight,pad=8;
    const dr=dock.childElementCount?dock.getBoundingClientRect():null; // 「상황」 단추 자리
-   for(const o of els.values()){const t=o.t;pv.set(t.x,LIFT[t.kind],t.z).project(camera);
+   for(const o of els.values()){const t=o.t;pv.set(t.x,t.lift,t.z).project(camera);
     const hide=pv.z>1||Math.abs(pv.x)>1.15||Math.abs(pv.y)>1.15;o.el.style.visibility=hide?'hidden':'';if(hide)continue;
     if(!o.w){o.w=o.el.offsetWidth;o.h=o.el.offsetHeight;}
     // 화면 가장자리를 넘으면 안쪽으로 붙인다(위 수첩·설정 줄 아래, 아래 단추 묶음 위까지)

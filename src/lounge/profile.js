@@ -35,3 +35,18 @@ export function attachRecord({profile,save,dispatch,onStamp,playerId='me',win=gl
  win.addEventListener('lounge:smoke',on);
  return ()=>win.removeEventListener('lounge:smoke',on);
 }
+
+// ── 입장 안내·출생연도 확인(11-13, docs/흡연장/입장안내-2026-11-13.md): 이 브라우저 localStorage 'lounge.age'에만 {y,ok,at}. 서버로 보내지 않는다.
+//  연 나이(올해 − 태어난 해)가 19 이상이면 들어간다. 미성년은 저장하지 않아 다시 열면 또 묻는다.
+export const AGE_KEY='lounge.age',MIN_AGE=19;
+// 숫자 4자리이고 1900~올해이면 그 해, 아니면 null
+export function parseBirthYear(v,year=new Date().getFullYear()){const s=String(v??'').trim();if(!/^\d{4}$/.test(s))return null;const y=+s;return y>=1900&&y<=year?y:null;}
+export const isAdultYear=(y,year=new Date().getFullYear())=>Number.isInteger(y)&&year-y>=MIN_AGE;
+export function loadAgeCheck(store=globalThis.localStorage){try{const r=JSON.parse(store?.getItem(AGE_KEY)||'null');return r&&r.ok===true&&Number.isInteger(r.y)?r:null;}catch{return null;}}
+// 한 번 확인한 성인이면 true(해가 바뀌어도 성인은 계속 성인)
+export const agePassed=(store=globalThis.localStorage,year=new Date().getFullYear())=>{const r=loadAgeCheck(store);return !!r&&isAdultYear(r.y,year);};
+export function saveAgeCheck(y,store=globalThis.localStorage,now=new Date()){
+ if(!isAdultYear(y,now.getFullYear()))return false;
+ const at=new Date(now.getTime()+9*3600e3).toISOString().slice(0,10);
+ try{store?.setItem(AGE_KEY,JSON.stringify({y,ok:true,at}));return true;}catch{return false;}
+}

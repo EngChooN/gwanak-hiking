@@ -46,3 +46,12 @@
  .sp-panel h3{margin-bottom:6px}.sp-keep{margin-top:6px}
 }
 @media (prefers-reduced-motion:reduce){.sp-mood{transition:none}}
+
+/* 앉기·기대기 중: 일어나기/떨어지기는 아래 손 단추 줄 맨 앞에 — 보조(종이색) 단추(연디자인 입장안내-2026-11-13.md §3) */
+.lg-dock .sp-hand .stand{background:var(--paper2);border-color:var(--edge);box-shadow:var(--lift);min-width:44px;min-height:44px}
+.lg-dock .sp-hand .stand .sp-i{font-size:18px}
+@media (max-height:540px),(max-width:600px){
+ .lg-dock .sp-hand:has(.stand ~ .lg-btn) .stand{padding:0;width:44px}
+ .lg-dock .sp-hand:has(.stand ~ .lg-btn) .stand .sp-t{display:none}
+ .lg-dock .sp-hand .stand:only-child{width:auto;padding:0 12px}.lg-dock .sp-hand .stand:only-child .sp-t{display:inline} /* 캔이 없으면 폭이 남으니 글까지(hud.css 휴대폰 .sec 규칙보다 먼저) */
+}

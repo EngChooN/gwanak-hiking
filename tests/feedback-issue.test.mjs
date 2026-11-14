@@ -11,11 +11,11 @@ const fakeWin=(over={})=>({
  innerWidth:390,innerHeight:844,devicePixelRatio:3,matchMedia:q=>({matches:q==='(pointer:coarse)'}),...over});
 const parse=url=>{const u=new URL(url);return {u,title:u.searchParams.get('title'),body:u.searchParams.get('body'),labels:u.searchParams.get('labels')};};
 
-test('주소는 gwanak-hiking 저장소의 새 이슈 페이지이고 title·body·labels를 미리 채운다',()=>{
+test('주소는 ai-office-world 저장소의 새 이슈 페이지이고 title·body·labels를 미리 채운다',()=>{
  const url=buildIssueUrl({exp:'smoking',kind:'bug',text:'담배가 안 켜져요',info:[['체험','smoking']]});
  const {u,title,body,labels}=parse(url);
- assert.equal(`${u.origin}${u.pathname}`,'https://github.com/EngChooN/gwanak-hiking/issues/new');
- assert.equal(REPO_URL,'https://github.com/EngChooN/gwanak-hiking');
+ assert.equal(`${u.origin}${u.pathname}`,'https://github.com/EngChooN/ai-office-world/issues/new');
+ assert.equal(REPO_URL,'https://github.com/EngChooN/ai-office-world');
  assert.deepEqual([...u.searchParams.keys()],['title','body','labels']);
  assert.equal(title,'[흡연장] 🐞 담배가 안 켜져요');
  assert.equal(labels,'feedback,bug,smoking');

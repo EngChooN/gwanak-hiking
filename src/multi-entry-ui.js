@@ -2,7 +2,7 @@
 // 연결 코드(multi-client.js·main.js)와는 window 이벤트로만 만난다.
 //  - 보냄(서버 고르기 창이 보냄): 'hiking:multi-join' {room,name,server} · 'hiking:multi-leave'
 //  - 받음: 'hiking:multi-status' {state:'connecting'|'online'|'reconnecting'|'offline'|'full', room, count, transport:'server'|'local'}
-//  - 'full'(서버 정원 20명이 방금 참)이 오면 나가기를 보내고 서버 고르기 창을 '방금 꽉 찼어요'로 다시 띄운다.
+//  - 'full'(서버 정원 30명이 방금 참)이 오면 나가기를 보내고 서버 고르기 창을 '방금 꽉 찼어요'로 다시 띄운다.
 // 색·글꼴은 등산 수첩 토큰(hud-notebook.css의 낮·노을·밤)을 따른다. 사양: docs/함께걷기-HUD-입구-디자인.md
 import {findServer} from './multi-protocol.js';
 export const DEFAULT_ROOM='관악산-1';

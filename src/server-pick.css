@@ -75,6 +75,25 @@
  .sp-head{grid-area:head}.sp-sum{grid-area:sum}.sp-note{grid-area:note}.sp-list{grid-area:list;align-content:start}.sp-name{grid-area:name;align-self:end}.sp-solo{grid-area:solo;align-self:start}
  .sp-head h2{font-size:16px}
 }
+/* 낮은 화면(가로 휴대폰·키보드가 올라온 세로): 서버가 체험마다 3개(11-13)라 줄을 납작하게 — 이름·인원은 왼쪽, 들어가기는 오른쪽, 막대는 아래 한 줄.
+   서버 셋과 닉네임·혼자 단추가 스크롤 없이 한 화면에 들어오게 한다 */
+@media (max-height:540px){
+ .sp-row{min-height:60px;grid-template-columns:24% 1fr}
+ .sp-art svg{min-height:56px}
+ .sp-row-body{grid-template-columns:1fr auto;grid-template-areas:"name go" "n go" "bar bar";gap:2px 8px;padding:6px 10px}
+ .sp-row-name{grid-area:name;font-size:16px}.sp-row-n{grid-area:n;font-size:13px}.sp-bar{grid-area:bar;height:5px;margin-top:3px}
+ .sp-go{grid-area:go;align-self:center;padding:0 12px;font-size:14px}
+ .sp-list{gap:6px}
+ .sp-tag{right:auto;left:4px;top:4px;font-size:11px;padding:3px 5px}
+}
+@media (orientation:portrait) and (max-height:540px){
+ .sp-lead{display:none}
+ .sp-wrap[data-mode=entry] .sp-head h2{font-size:20px}
+ .sp-wrap[data-mode=entry] .sp-card{gap:6px;padding-top:0}
+ .sp-name small{display:none}
+ .sp-wrap{padding-top:calc(env(safe-area-inset-top,0px) + 8px);padding-bottom:calc(env(safe-area-inset-bottom,0px) + 8px)}
+ .sp-row-body{padding:4px 10px}.sp-list{gap:4px}
+}
 /* 가로 휴대폰에 키보드가 올라온 높이(약 260px 이하): 합계를 제목 줄로 올리고, 닉네임 설명 글을 접어 닉네임 칸·혼자 단추가 키보드 위에 같이 보이게 한다 */
 @media (orientation:landscape) and (max-height:260px){
  .sp-wrap{padding:calc(env(safe-area-inset-top,0px) + 4px) calc(env(safe-area-inset-right,0px) + 12px) calc(env(safe-area-inset-bottom,0px) + 4px) calc(env(safe-area-inset-left,0px) + 12px)}
@@ -84,6 +103,7 @@
  .sp-name small{display:none}
  .sp-row{min-height:72px}.sp-row-body{padding:6px 10px;gap:3px}.sp-bar{height:5px}.sp-art svg{min-height:60px}
  .sp-solo{min-height:44px}
+ .sp-list{max-height:calc(100vh - 56px);max-height:calc(100dvh - 56px);overflow:auto;overscroll-behavior:contain} /* 서버 셋이 다 안 들어가면 목록만 안에서 스크롤 */
  .sp-wrap[data-mode=entry] .sp-card{padding:0;gap:4px 12px}.sp-wrap[data-mode=entry] .sp-head h2{font-size:16px}.sp-lead{display:none}.sp-art svg{min-height:48px}.sp-row{min-height:64px}
 }
 @media (prefers-reduced-motion:no-preference){.sp-card{animation:sp-in .22s ease-out}@keyframes sp-in{from{transform:translateY(8px);opacity:0}}}

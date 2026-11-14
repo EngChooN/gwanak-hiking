@@ -1,0 +1,10 @@
+{
+ "_설명": "릴스 풍경 장면 자리(docs/릴스-장면위치.md). capture-reels-shots.mjs와 촬영 스크립트가 같이 읽는다. s=코스 3D 거리(m, 0=일주문 앞 포장길 시작, 끝 5067), lateral=옆 이동(m, +왼쪽), start=plaza|summit(s 대신), view=first|third, bearing=카메라 절대 방위(도, 북 0·동 90), pitch=카메라 위아래(도, +위), time=서울 HH:MM(촬영 날짜 기준 해 위치), weather=clear|cloud|overcast|rain|snow|fog, season=spring|summer|autumn|winter, bino=쌍안경 확대 단계(없으면 안 씀)",
+ "hook-summit-dusk": {"label": "① 정상 노을 전망(훅)", "start": "summit", "view": "first", "bearing": 300, "pitch": -4, "time": "17:10", "weather": "clear", "season": "autumn"},
+ "gate-entrance": {"label": "② 입구 광장·일주문", "start": "plaza", "view": "third", "pitch": -4, "time": "12:30", "weather": "clear", "season": "autumn"},
+ "valley-forest": {"label": "③ 계곡 숲길", "s": 1500, "lateral": 0, "view": "third", "yawFromRoute": 35, "pitch": -8, "time": "11:00", "weather": "clear", "season": "autumn"},
+ "deck-stairs": {"label": "④ 깔딱고개 나무계단", "s": 3900, "lateral": 0, "view": "third", "yawFromRoute": 0, "pitch": 2, "time": "11:00", "weather": "clear", "season": "autumn"},
+ "rock-cliff": {"label": "⑤ 능선 아래 바위 절벽", "s": 4850, "lateral": 0, "view": "third", "yawFromRoute": 35, "pitch": 6, "time": "15:30", "weather": "clear", "season": "autumn"},
+ "ridge-east": {"label": "⑥ 능선(동쪽 도시 원경)", "s": 4950, "lateral": 0, "view": "third", "yawFromRoute": -90, "pitch": -6, "time": "15:30", "weather": "clear", "season": "autumn"},
+ "summit-city-night": {"label": "⑦ 정상 서울 야경", "start": "summit", "view": "first", "bearing": 345.6, "pitch": -3, "time": "20:30", "weather": "clear", "season": "autumn"}
+}

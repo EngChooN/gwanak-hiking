@@ -113,3 +113,40 @@
 }
 @media (max-width:420px){.lg-note{width:176px}.lg-note .big{font-size:19px}.lg-btn{padding:0 10px;font-size:13px}.lg-dock .lg-btn{flex:0 0 auto}}
 @media (prefers-reduced-motion:reduce){.lg-bub,.lg-toast{transition:none}.lg-note .lg-stamp{animation:none}}
+
+/* 입장 안내(처음 한 번, age-gate.js) — 연디자인 docs/흡연장/입장안내-2026-11-13.md 값 그대로. 수첩 종이 톤, 단추 44px 이상.
+   로딩 화면(50)·서버 카드(130)보다 먼저 보여야 해서 #app 밖 body에 fixed·140으로 띄운다. 설정 「다시 보기」는 .lg-modal 안에 같은 카드. */
+.lg-age{position:fixed;inset:0;z-index:140;display:grid;place-items:start center;box-sizing:border-box;overflow:auto;pointer-events:auto;background:var(--paper2);font-family:var(--nb-font);color:var(--ink);
+ padding:calc(var(--st) + 12px) calc(var(--sr) + 12px) calc(var(--sb) + 12px) calc(var(--sl) + 12px);touch-action:pan-y}
+.lg-age button,.lg-age input{font:inherit;color:inherit}
+.lg-age-card{position:relative;box-sizing:border-box;width:min(440px,100%);margin:auto 0;padding:16px 16px 18px 18px;border-radius:6px 16px 16px 6px;border-left:6px solid var(--stamp);
+ background:var(--paper);box-shadow:var(--lift),0 12px 34px rgba(30,20,5,.3);display:grid;gap:10px;pointer-events:auto;text-align:left}
+.lg-age-card h1{margin:0;font-size:24px;font-weight:900;letter-spacing:-.03em;padding-right:56px}
+.lg-age-card .sub{margin:0;font-size:13px;color:var(--ink2);font-weight:700}
+.lg-age-seal{position:absolute;right:14px;top:12px;transform:rotate(-8deg);border:3px solid var(--stamp);color:var(--stamp);border-radius:10px;padding:1px 8px;font-size:15px;font-weight:900;opacity:.9}
+.lg-age-list{margin:0;padding:0;list-style:none;display:grid;gap:6px}
+.lg-age-list li{display:grid;grid-template-columns:24px 1fr;gap:8px;align-items:start;padding:8px 10px;border-radius:10px;background:var(--paper2);border:2px dashed var(--rule);font-size:14px;font-weight:700;line-height:1.45}
+.lg-age-list b{width:22px;height:22px;border-radius:50%;background:var(--stamp);color:#fff;font-size:13px;display:grid;place-items:center}
+.lg-age-card a{color:var(--accent);font-weight:900;text-decoration:underline;display:inline-block;min-height:44px;line-height:44px;margin:-14px 0} /* 전화 링크 누르는 자리 44px */
+.lg-age-form{display:grid;gap:10px}
+.lg-age-field{display:grid;gap:4px;font-size:12px;font-weight:800;color:var(--ink2)}
+.lg-age-field input{box-sizing:border-box;width:100%;min-height:48px;padding:0 12px;border-radius:12px;border:2px solid var(--edge);background:var(--paper2);font:900 20px var(--nb-font);letter-spacing:.08em;text-align:center;-webkit-user-select:text;user-select:text} /* 16px 이상: iOS 확대 방지 */
+.lg-age-field input[aria-invalid=true]{border-color:var(--stamp)}
+.lg-age-field small{font-weight:600;font-size:12px}
+.lg-age-err{margin:0;color:var(--stamp);font-size:13px;font-weight:800}
+.lg-age-err:empty{display:none}
+.lg-age-check{display:flex;align-items:center;gap:10px;min-height:48px;padding:0 10px;border-radius:12px;background:var(--paper2);border:2px solid var(--rule);font-size:14px;font-weight:800;cursor:pointer}
+.lg-age-check input{width:24px;height:24px;margin:0;accent-color:var(--stamp)}
+.lg-age-card .lg-btn.primary{width:100%;min-height:48px;font-size:16px}
+.lg-age-card .lg-btn.ghost{width:100%;background:transparent;box-shadow:none}
+.lg-age-block h1{color:var(--stamp)}
+.lg-modal .lg-age-card{margin:auto}
+/* 휴대폰 가로: 공지 왼쪽, 입력 오른쪽 */
+@media (orientation:landscape) and (max-height:540px){
+ .lg-age{place-items:start center}
+ .lg-age-card{width:min(720px,100%);margin:0;grid-template-columns:1fr 1fr;gap:8px 14px;padding:10px 14px 12px 16px}
+ .lg-age-card>h1,.lg-age-card>.sub{grid-column:1/-1}
+ .lg-age-block>.lg-btn{grid-column:1/-1}
+ .lg-age-list{grid-column:1}.lg-age-form{grid-column:2;display:grid;gap:8px;align-content:start}
+ .lg-age-card h1{font-size:20px}
+}

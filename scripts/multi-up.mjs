@@ -62,7 +62,9 @@ async function main(){
 
  // 1. 서버
  const origins=[SITE,...LOCAL].join(',');
- const server=spawn(process.execPath,[join(ROOT,'server/multi-server.mjs')],{cwd:ROOT,env:{...process.env,PORT:String(PORT),ALLOWED_ORIGINS:origins},stdio:['ignore','inherit','inherit']});
+ // 터널 뒤라 모든 접속이 127.0.0.1로 보인다: TRUST_PROXY=1로 CF-Connecting-IP를 세고(안 켜면 같은 곳 32명 제한에 전체가 묶임, 11-13),
+ // 그 머리글을 아무나 꾸미지 못하게 서버는 이 맥 안(127.0.0.1)에서만 기다린다(터널이 127.0.0.1로 붙음)
+ const server=spawn(process.execPath,[join(ROOT,'server/multi-server.mjs')],{cwd:ROOT,env:{...process.env,PORT:String(PORT),HOST:'127.0.0.1',TRUST_PROXY:'1',ALLOWED_ORIGINS:origins},stdio:['ignore','inherit','inherit']});
  kids.push(server);server.on('exit',c=>stop(`서버가 꺼짐(코드 ${c})`,1));
  if(!await waitHealth(`http://127.0.0.1:${PORT}/health`,15000)){say('서버가 켜지지 않았습니다');return stop('서버 시작 실패',1);}
  say(`서버 켜짐: http://127.0.0.1:${PORT} · 허용 주소 ${origins}`);
@@ -90,7 +92,7 @@ async function main(){
  // 4. 공개 파일
  if(publish){
   try{publishServerFile(current,{log:m=>say(m)});}catch(e){say('공개 파일을 올리지 못했습니다:',String(e.stderr||e.message).trim());return stop('공개 파일 실패',1);}
-  say('1분쯤 뒤(GitHub Pages 반영) https://engchoon.github.io/gwanak-hiking/ 의 서버 카드에 인원이 뜹니다');
+  say('1분쯤 뒤(GitHub Pages 반영) https://engchoon.github.io/ai-office-world/ 의 서버 카드에 인원이 뜹니다');
   // 누가 배포(npm run deploy)로 파일을 덮었거나 지웠으면 다시 올린다
   checkTimer=setInterval(()=>{
    if(stopping)return;

@@ -1,6 +1,6 @@
 // 흡연장 멀티 화면: 위 오른쪽 '👥 같이 피우기' 단추(참가하면 연결 상태 칩으로 바뀜) → 서버 고르기 창(src/server-pick.js, 등산과 공용), 다른 사람 머리 위 이름표, 알림.
 // 연결 쪽(multi.js)과는 반환 객체(join·leave·people·avatarOf)와 'lounge:multi-status'·'lounge:multi-note' 이벤트로만 만난다.
-// 서버 고르기(11-08): 방 이름 칸은 없앴다. 서버가 full(정원 20명)로 거절하면 나간 뒤 창을 '방금 꽉 찼어요'로 다시 띄운다.
+// 서버 고르기(11-08): 방 이름 칸은 없앴다. 서버가 full(정원 30명)로 거절하면 나간 뒤 창을 '방금 꽉 찼어요'로 다시 띄운다.
 // 모양은 hud.css(「등산 수첩」 종이 톤, 단추 44px 이상) + multi.css + ../server-pick.css.
 import './multi.css';
 import '../server-pick.css';

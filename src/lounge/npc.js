@@ -6,6 +6,7 @@
 import {NPC_PROFILES,IDLE_LINES,SMOKE_LINES,MANNER_LINES,EMOTE_LINES,REPLIES,FALLBACK_REPLIES,NPC_CHATTER,
  LIGHT_LINES,OFFER_LINES,SYNC_LINES,TRICK_LINES,COUGH_LINES,TOPICS} from './lines.js';
 import {CIG_KINDS} from './smoke-feel.js';
+import {createPoser,newPoseState} from './spots.js';
 const pick=a=>a[Math.floor(Math.random()*a.length)];
 const rnd=(a,b)=>a+Math.random()*(b-a);
 const WALK=1.37*.8;
@@ -41,9 +42,12 @@ export async function createNpcs(ctx){
   ctx.world.add(a.root);
   const sm=ctx.createSmoker(a,{isPlayer:false});
   a.extra.push(dt=>sm.apply?.(dt,{moving:a.moving}));
+  // 벤치에 앉는 자세는 내 동동이·같이 피우는 사람과 같은 코드(spots.js createPoser, 11-13). 전에는 벤치 앞에 서 있기만 했다.
+  const S=newPoseState(),poser=a.hiker?.model?createPoser({S,avatar:a,rooftop:ctx.rooftop,world:ctx.world,toon:ctx.toon,smokeState:()=>sm.status?.()?.state??'idle',auto:false}):null;
+  if(poser)a.extra.unshift(poser.pose);
   const home=spots.spawn,ang=idx*1.4+.4;
   a.place(home.x+Math.cos(ang)*(1.5+idx*.5),home.z-1.5+Math.sin(ang)*1.2,rnd(-3,3));
-  npcs.push({p,a,sm,state:'idle',t:rnd(.5,3),target:null,spot:null,puffs:0,sayT:rnd(6,16),steps:0,stuck:0});
+  npcs.push({p,a,sm,S,state:'idle',t:rnd(.5,3),target:null,spot:null,puffs:0,sayT:rnd(6,16),steps:0,stuck:0});
   idx++;
  }
  const byId=Object.fromEntries(npcs.map(n=>[n.p.id,n]));
@@ -72,9 +76,13 @@ export async function createNpcs(ctx){
   }
   goto(n,randomSpot(),'idle');
  }
- const release=n=>{if(n.spot){taken.delete(n.spot);n.spot=null;}};
+ const release=n=>{standUp(n);if(n.spot){taken.delete(n.spot);n.spot=null;}};
+ // 벤치: 좌판 위(가운데)로 옮겨 앉고, 일어나면 좌판 앞 자리로 돌아온다
+ function sitDown(n){const s=n.spot.seat,a=n.a;a.x=s.x;a.z=s.z;a.heading=s.heading;n.S.pose='sit';n.S.last='sit';n.S.spot={kind:'bench',...n.spot};n.sitAt={x:n.spot.x,z:n.spot.z};n.t=rnd(10,22);} // 앉으면 조금 오래 쉰다(서 있기 1.5~4초는 앉자마자 일어나 보였다)
+ function standUp(n){if(n.S.pose!=='sit')return;n.S.pose='stand';if(n.sitAt){n.a.x=n.sitAt.x;n.a.z=n.sitAt.z;n.sitAt=null;}}
  // 한 걸음(충돌 포함). 움직인 거리를 돌려준다.
  function walkStep(n,tx,tz,dt){
+  standUp(n); // 앉아 있다가 불 빌려주러 가거나 자리를 뜨면 먼저 일어난다
   const a=n.a,dx=tx-a.x,dz=tz-a.z,d=Math.hypot(dx,dz);if(d<1e-6)return 0;
   const sp=Math.min(d,WALK*dt),want={x:a.x+dx/d*sp,z:a.z+dz/d*sp},got=collide(want.x,want.z,a),moved=Math.hypot(got.x-a.x,got.z-a.z);
   n.stuck=moved<sp*.3?n.stuck+dt:0;
@@ -86,7 +94,8 @@ export async function createNpcs(ctx){
   if(n.state==='help'){helpStep(n,dt);return;}
   if(n.state==='walk'){
    const d=Math.hypot(n.target.x-a.x,n.target.z-a.z);
-   if(d<.15||n.stuck>2.5){a.update(dt,{moved:0});if(n.target.heading!==undefined)a.heading=n.target.heading;n.state=n.next??'idle';n.t=rnd(1.5,4);n.puffs=0;n.lit=false;return;}
+   if(d<.15||n.stuck>2.5){a.update(dt,{moved:0});if(n.target.heading!==undefined)a.heading=n.target.heading;n.state=n.next??'idle';n.t=rnd(1.5,4);n.puffs=0;n.lit=false;
+    if(n.state==='sit'&&n.spot?.seat)sitDown(n);return;}
    walkStep(n,n.target.x,n.target.z,dt);return;
   }
   a.update(dt,{moved:0});
@@ -286,6 +295,6 @@ export async function createNpcs(ctx){
   },
   borrowLight,offerCig,offerFrom,acceptCig,declineCig,startTopic,choose,
   get scene(){return scene;},
-  status(){return npcs.map(n=>({id:n.p.id,name:n.p.name,state:n.state,stage:n.stage??null,x:+n.a.x.toFixed(2),z:+n.a.z.toFixed(2),outfit:n.a.outfit,help:n.help?.mode??null}));},
+  status(){return npcs.map(n=>({id:n.p.id,name:n.p.name,state:n.state,pose:n.S?.pose??null,stage:n.stage??null,x:+n.a.x.toFixed(2),z:+n.a.z.toFixed(2),outfit:n.a.outfit,help:n.help?.mode??null}));},
  };
 }

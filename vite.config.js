@@ -1,6 +1,6 @@
 import {defineConfig} from 'vite';
 import {resolve} from 'node:path';
-// GitHub Pages 하위 경로 배포는 BASE_PATH=/gwanak-hiking/ 로 빌드한다(scripts/deploy-pages.mjs). 기본은 '/'.
+// GitHub Pages 하위 경로 배포는 BASE_PATH=/ai-office-world/ 로 빌드한다(scripts/deploy-pages.mjs). 기본은 '/'.
 const base=process.env.BASE_PATH||'/';
 // 다중 페이지(2026-11-08 메타버스 통합): / 허브 · /hiking/ 온라인 등산 · /smoking/ 온라인 흡연장.
 // 세 페이지 모두 같은 base를 쓰므로 에셋(public·assets)은 `${import.meta.env.BASE_URL}assets/…`로 한 벌을 같이 받는다.

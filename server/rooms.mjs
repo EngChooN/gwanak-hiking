@@ -1,6 +1,6 @@
 // 함께 걷기 방 로직(순수 모듈: 소켓·파일·타이머 없음). 서버(multi-server.mjs)가 join/message/leave/tick을 부르고,
 // 보낼 글은 각 사람의 send(str)로, 신고 기록은 reports.append(rec)로 내보낸다. 시험(tests/multi-rooms.test.mjs)은 이 파일만 부른다.
-// 정한 기본값(2026-11-08 기획서): 방 20명(차면 방이름-2, -3 …), 위치 메시지 초당 15회 초과 버림, 순간이동 거부(구간 이동 표시 FLAG.jump는 1초에 1번 허용),
+// 정한 기본값(2026-11-08 기획서, 정원은 11-13에 30명): 방 30명(차면 방이름-2, -3 …), 위치 메시지 초당 15회 초과 버림, 순간이동 거부(구간 이동 표시 FLAG.jump는 1초에 1번 허용),
 // 10Hz 스냅샷 묶음, 인사·셀카 중계, 동물 놀람 중계, 신고(서로 다른 3명 → 24시간 이름표 숨김·다른 방으로 재배정).
 // 체험 구분(11-08): 방 키는 `체험:방이름`(hiking:관악산-1, smoking:옥상-1). 같은 방 이름이라도 체험이 다르면 다른 방이고, 꽉 참·-2 규칙·신고·속도 제한은 체험별 방 안에서 그대로다.
 // 채팅(11-08 공통 c): 80자·제어/방향 문자 제거·금칙어 ***(chatBanned), 2초 1번·10초 4번(넘으면 {t:'c-limit'}), 보낸 사람 포함 같은 방에 {t:'c',id,text}.
@@ -15,7 +15,7 @@
 import {sanitizeName,anonymousName,REPORT_REASONS,GESTURES,FLAG,parseExperience,messageAllowed,CHAT,sanitizeChat,createChatLimiter,sanitizeSmoke,sanitizeAct,SERVERS,EXPERIENCES,findServer,serverRoomName,PAIR} from '../src/multi-protocol.js';
 
 export const ROOM_DEFAULTS=Object.freeze({
- maxPerRoom:20,           // 한 방 최대 인원
+ maxPerRoom:30,           // 한 방 최대 인원(11-13 대표 지시 20 → 30)
  maxClients:400,          // 서버 전체 동시 접속(넘으면 'full')
  maxPerIp:32,             // 같은 ipKey 동시 접속(같은 와이파이 여러 사람을 생각해 넉넉히)
  stateRate:15,            // 위치 메시지 초당 상한

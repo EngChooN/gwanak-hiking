@@ -7,8 +7,8 @@ const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
 
 test('옛 주소 ?multi=&server=는 쿼리 그대로 /hiking/로 간다',()=>{
  assert.equal(legacyHikingTarget('?multi=방&server=wss%3A%2F%2Fa.example','', '/'),'/hiking/?multi=방&server=wss%3A%2F%2Fa.example');
- assert.equal(legacyHikingTarget('?start=summit&time=12:00','#x','/gwanak-hiking/'),'/gwanak-hiking/hiking/?start=summit&time=12:00#x');
- assert.equal(legacyHikingTarget('?dev','', '/gwanak-hiking'),'/gwanak-hiking/hiking/?dev');
+ assert.equal(legacyHikingTarget('?start=summit&time=12:00','#x','/ai-office-world/'),'/ai-office-world/hiking/?start=summit&time=12:00#x');
+ assert.equal(legacyHikingTarget('?dev','', '/ai-office-world'),'/ai-office-world/hiking/?dev');
 });
 test('기획 지정 등산 옵션 8개는 모두 넘긴다',()=>{
  for(const k of ['multi','server','start','season','time','weather','pick','dev']){

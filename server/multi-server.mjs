@@ -4,7 +4,7 @@
 //  PORT             기다릴 포트(기본 8787)          HOST            기다릴 주소(기본 0.0.0.0)
 //  DATA_DIR         신고 기록(reports.jsonl) 폴더(기본 ./data-multi). 90일 지난 줄은 시작할 때·하루마다 지운다
 //  ALLOWED_ORIGINS  허용할 페이지 주소(쉼표). 비우면 모두 허용(경고 출력). Origin 머리말이 없는 접속(앱·시험 도구)은 허용
-//  MAX_PER_ROOM(20) MAX_CLIENTS(400) MAX_PER_IP(32) BANNED_WORDS(쉼표, 이름 금칙어) TRUST_PROXY(1이면 X-Forwarded-For·CF-Connecting-IP를 접속 수 제한에 씀)
+//  MAX_PER_ROOM(30) MAX_CLIENTS(400) MAX_PER_IP(32) BANNED_WORDS(쉼표, 이름 금칙어) TRUST_PROXY(1이면 X-Forwarded-For·CF-Connecting-IP를 접속 수 제한에 씀)
 //  BANNED_CHAT_WORDS(쉼표, 채팅 금칙어 — 기본 목록 파일 server/chat-banned-words.txt에 더함. 파일이 없으면 빈 목록)  CHAT_BANNED_FILE(기본 목록 파일 경로를 바꿀 때)
 // 주소: GET /health → 200 {ok,rooms,clients,total(=clients, 전체 접속),uptime,experiences:{hiking:{rooms,clients},smoking:{…}},servers:{hiking:[{id,name,count,max}],smoking:[…]}}
 //  servers는 서버 고르기 창(src/server-pick.js)이 5초마다 읽는다. CORS는 *. 그 밖의 경로로 WebSocket 업그레이드를 받는다(경로는 보지 않음).
@@ -45,7 +45,7 @@ export function startServer(env=process.env,{quiet=false,now=()=>Date.now()}={})
  const chatBanned=loadChatBanned(env);
  const secret=randomBytes(32),ipKey=ip=>ip?createHmac('sha256',secret).update(ip).digest('base64url').slice(0,16):'';
  const rooms=createRooms({now,initialReports,
-  maxPerRoom:Number(env.MAX_PER_ROOM)||20,maxClients:Number(env.MAX_CLIENTS)||400,maxPerIp:Number(env.MAX_PER_IP)||32,banned:list(env.BANNED_WORDS),chatBanned:chatBanned.words,
+  maxPerRoom:Number(env.MAX_PER_ROOM)||30,maxClients:Number(env.MAX_CLIENTS)||400,maxPerIp:Number(env.MAX_PER_IP)||32,banned:list(env.BANNED_WORDS),chatBanned:chatBanned.words,
   reports:{append:rec=>{appendFileSync(reportFile,JSON.stringify(rec)+'\n');say('report',{room:rec.room,reason:rec.reason});}}});
  const started=now();
  const server=http.createServer((req,res)=>{

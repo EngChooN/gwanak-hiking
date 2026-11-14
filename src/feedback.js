@@ -5,7 +5,7 @@
 //  - 화면: installFeedback({exp,openEvent,state}) → {open,close,isOpen}. 열린 동안 키 입력·조이스틱을 막는다(body.fb-open).
 //    나중에 멀티 서버로 직접 받게 되면 buildIssueText만 서버로 보내면 된다.
 
-export const REPO_URL='https://github.com/EngChooN/gwanak-hiking';
+export const REPO_URL='https://github.com/EngChooN/ai-office-world';
 export const MAX_BODY=6000; // 주소 길이가 넘치지 않게(GitHub·브라우저 주소 한도 안)
 export const MAX_TEXT=500;
 export const TITLE_LEN=40;

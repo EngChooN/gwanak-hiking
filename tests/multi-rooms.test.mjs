@@ -16,12 +16,12 @@ function setup(opts={}){
 }
 const state=(x,y,extra={})=>({t:'s',q:1,z:0,x,y,h:0,v:1,f:0,...extra});
 
-test('방 배정: 20명이 차면 21번째는 방이름-2, 나가면 빈자리를 다시 쓴다',()=>{
+test('방 배정: 30명이 차면 31번째는 방이름-2, 나가면 빈자리를 다시 쓴다',()=>{
  const {rooms,join}=setup();
- const cs=Array.from({length:21},(_,i)=>join(`사람${i}`));
- assert.equal(cs.filter(c=>c.room.name==='산').length,20);
- assert.equal(cs[20].room.name,'산-2');
- assert.equal(cs[20].inbox[0].t,'welcome');assert.equal(cs[20].inbox[0].room,'산-2');assert.equal(cs[20].inbox[0].max,20);
+ const cs=Array.from({length:31},(_,i)=>join(`사람${i}`));
+ assert.equal(cs.filter(c=>c.room.name==='산').length,30);
+ assert.equal(cs[30].room.name,'산-2');
+ assert.equal(cs[30].inbox[0].t,'welcome');assert.equal(cs[30].inbox[0].room,'산-2');assert.equal(cs[30].inbox[0].max,30);
  rooms.leave(cs[3]);
  assert.equal(join('새사람').room.name,'산','빈자리');
  // 방이름-2로 들어와도 기본 이름(산)부터 채운다
@@ -262,17 +262,18 @@ test('같이 셀카 자리 옮김: 코스 전체에서 가장 가까운 지점�
 });
 
 // ── 서버 고르기(11-08): SERVERS 표의 방은 꽉 차면 -2로 넘기지 않고 full ──
-test('서버 방(관악산-1 → hiking:관악산): 20명이 차면 21번째는 full, 다른 방 이름은 기존 -2 규칙',()=>{
+test('서버 방(관악산-1 → hiking:관악산): 30명이 차면 31번째는 full, 다른 방 이름은 기존 -2 규칙',()=>{
  const {rooms,join}=setup();
- const cs=Array.from({length:20},(_,i)=>join(`사람${i}`,'관악산-1'));
+ const cs=Array.from({length:30},(_,i)=>join(`사람${i}`,'관악산-1'));
  assert.ok(cs.every(c=>c.room.key==='hiking:관악산'),'서버 쪽 방 키는 기존 규칙대로 끝 -1을 뗀다');
  assert.equal(cs[0].inbox[0].server,'1');assert.equal(cs[0].inbox[0].room,'관악산');
- const r=join('스물한번째','관악산-1');assert.deepEqual(r,{ok:false,reason:'full'});
+ const r=join('서른한번째','관악산-1');assert.deepEqual(r,{ok:false,reason:'full'});
  assert.equal(rooms.info().rooms.some(x=>x.name==='관악산-2'),false,'-2 방이 생기지 않음');
- // 옛 주소의 다른 번호(관악산-3)·끝 번호 없는 이름도 같은 서버로 보고 거절
- assert.equal(join('옛주소','관악산-3').reason,'full');assert.equal(join('번호없음','관악산').reason,'full');
+ // 목록에 없는 번호(관악산-7)·끝 번호 없는 이름도 같은 서버로 보고 거절, 2·3서버(관악산-2·-3)는 따로 비어 있다(11-13)
+ assert.equal(join('옛주소','관악산-7').reason,'full');assert.equal(join('번호없음','관악산').reason,'full');
+ const two=join('2서버','관악산-2'),three=join('3서버','관악산-3');assert.equal(two.room.key,'hiking:관악산-2');assert.equal(three.room.key,'hiking:관악산-3');assert.equal(three.inbox[0].server,'3');
  // 서버 목록 밖 방은 그대로 넘긴다
- for(let i=0;i<20;i++)join(`b${i}`,'우리끼리');assert.equal(join('b20','우리끼리').room.name,'우리끼리-2');
+ for(let i=0;i<30;i++)join(`b${i}`,'우리끼리');assert.equal(join('b30','우리끼리').room.name,'우리끼리-2');
  // 한 명 나가면 다시 들어갈 수 있다
  rooms.leave(cs[0]);assert.equal(join('빈자리','관악산-1').room.key,'hiking:관악산');
  assert.equal(rooms.stats.full,3);
@@ -282,7 +283,8 @@ test('흡연장 서버(옥상-1 → smoking:옥상)도 같은 규칙, 체험마�
  join('a','옥상-1',{experience:'smoking'});join('b','옥상-1',{experience:'smoking'});
  assert.equal(join('c','옥상-1',{experience:'smoking'}).reason,'full');
  assert.equal(join('등산','옥상-1').room.key,'hiking:옥상','등산의 옥상 방은 서버 목록 밖 → 따로');
- assert.deepEqual(rooms.serverCounts(),{hiking:[{id:'1',name:'관악산 1서버',count:0,max:2}],smoking:[{id:'1',name:'옥상 1서버',count:2,max:2}]});
+ const row=(n,id,count)=>({id,name:`${n} ${id}서버`,count,max:2});
+ assert.deepEqual(rooms.serverCounts(),{hiking:[row('관악산','1',0),row('관악산','2',0),row('관악산','3',0)],smoking:[row('옥상','1',2),row('옥상','2',0),row('옥상','3',0)]});
 });
 test('서버 방에서 신고로 숨겨지면 다른 방으로 옮기지 않고 이름만 숨긴다(넘길 서버가 없음)',()=>{
  const {rooms,join}=setup();

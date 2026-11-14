@@ -1,5 +1,5 @@
 // 함께 걷기 서버 주소 공개 파일(multi-server.json)을 gh-pages 브랜치 맨 위에 올린다. 사이트 전체를 다시 빌드·배포하지 않는다.
-// 사이트(src/server-link.js)는 들어올 때마다 …/gwanak-hiking/multi-server.json?t=… 을 새로 받아 서버 주소를 찾는다.
+// 사이트(src/server-link.js)는 들어올 때마다 …/ai-office-world/multi-server.json?t=… 을 새로 받아 서버 주소를 찾는다.
 // 방법: node_modules/.cache/gwanak-pages.git(맨 저장소, 파일 내용 없이 목록만 받는 partial clone)에서
 //       지금 gh-pages 커밋의 목록 + 새 파일 하나로 커밋을 만들어 push(강제 아님). 작업 폴더·main 브랜치는 건드리지 않는다.
 // 사용: node scripts/multi-publish.mjs wss://xxxx.trycloudflare.com   (켜짐)

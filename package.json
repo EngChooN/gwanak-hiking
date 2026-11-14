@@ -1,5 +1,5 @@
 {
-  "name": "gwanak-hiking",
+  "name": "ai-office-world",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -7,8 +7,8 @@
     "dev": "vite --host 127.0.0.1",
     "build": "vite build && node scripts/copy-assets.mjs",
     "preview": "vite preview --host 127.0.0.1",
-    "build:pages": "BASE_PATH=/gwanak-hiking/ npm run build",
-    "preview:pages": "BASE_PATH=/gwanak-hiking/ vite preview --host 127.0.0.1 --port 4173",
+    "build:pages": "BASE_PATH=/ai-office-world/ npm run build",
+    "preview:pages": "BASE_PATH=/ai-office-world/ vite preview --host 127.0.0.1 --port 4173",
     "deploy": "node scripts/deploy-pages.mjs",
     "simulate": "node scripts/simulate.mjs",
     "test": "node --test tests/*.test.mjs",
@@ -21,7 +21,8 @@
     "server": "node server/multi-server.mjs",
     "multi:server": "node server/multi-server.mjs",
     "multi:up": "node scripts/multi-up.mjs",
-    "multi:publish": "node scripts/multi-publish.mjs"
+    "multi:publish": "node scripts/multi-publish.mjs",
+    "reels": "node scripts/reels.mjs"
   },
   "dependencies": {
     "three": "^0.180.0"

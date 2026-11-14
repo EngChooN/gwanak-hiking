@@ -13,8 +13,8 @@ test('카드는 등산·흡연장 2개, id가 겹치지 않는다',()=>{
 test('링크는 BASE_PATH 기준 /hiking/·/smoking/',()=>{
  const [h,s]=EXPERIENCES;
  assert.equal(experienceHref(h,'/'),'/hiking/');assert.equal(experienceHref(s,'/'),'/smoking/');
- assert.equal(experienceHref(h,'/gwanak-hiking/'),'/gwanak-hiking/hiking/');
- assert.equal(experienceHref(s,'/gwanak-hiking'),'/gwanak-hiking/smoking/');
+ assert.equal(experienceHref(h,'/ai-office-world/'),'/ai-office-world/hiking/');
+ assert.equal(experienceHref(s,'/ai-office-world'),'/ai-office-world/smoking/');
 });
 test('카드 HTML에 링크·제목이 있고 기록은 있을 때만 도장이 붙는다',()=>{
  const [h]=EXPERIENCES;

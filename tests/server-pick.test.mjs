@@ -14,15 +14,17 @@ const memStore=(init={})=>{const m=new Map(Object.entries(init));return {getItem
 // 가짜 타이머: run()으로 걸린 것 하나씩 실행
 function fakeTimers(){const q=new Map();let n=0;return {set:(fn,ms)=>{q.set(++n,{fn,ms});return n;},clear:id=>q.delete(id),
  get pending(){return [...q.values()];},async runRefresh(){const e=[...q.entries()].find(([,v])=>v.ms===REFRESH_MS);if(!e)return false;q.delete(e[0]);await e[1].fn();return true;}};}
-const HEALTH=(h=3,s=1,max=20)=>({ok:true,total:h+s,servers:{hiking:[{id:'1',name:'관악산 1서버',count:h,max}],smoking:[{id:'1',name:'옥상 1서버',count:s,max}]}});
+const HEALTH=(h=3,s=1,max=30)=>({ok:true,total:h+s,servers:{hiking:[{id:'1',name:'관악산 1서버',count:h,max}],smoking:[{id:'1',name:'옥상 1서버',count:s,max}]}});
 const okFetch=body=>{const calls=[];const f=async(url)=>{calls.push(url);const b=typeof body==='function'?body():body;return {ok:true,status:200,json:async()=>b};};f.calls=calls;return f;};
 
-test('서버 목록 표: 체험마다 1서버, 정원 20, 서버 쪽 방 이름은 기존 규칙(끝 -1 뗌)',()=>{
- assert.deepEqual(SERVERS.hiking,[{id:'1',name:'관악산 1서버',room:'관악산-1'}]);
- assert.deepEqual(SERVERS.smoking,[{id:'1',name:'옥상 1서버',room:'옥상-1'}]);
- assert.equal(SERVER_MAX,20);assert.ok(Object.isFrozen(SERVERS.hiking));
+test('서버 목록 표: 체험마다 3서버(11-13), 정원 30, 서버 쪽 방 이름은 기존 규칙(끝 -1 뗌)',()=>{
+ assert.deepEqual(SERVERS.hiking,[{id:'1',name:'관악산 1서버',room:'관악산-1'},{id:'2',name:'관악산 2서버',room:'관악산-2'},{id:'3',name:'관악산 3서버',room:'관악산-3'}]);
+ assert.deepEqual(SERVERS.smoking,[{id:'1',name:'옥상 1서버',room:'옥상-1'},{id:'2',name:'옥상 2서버',room:'옥상-2'},{id:'3',name:'옥상 3서버',room:'옥상-3'}]);
+ assert.equal(SERVER_MAX,30);assert.ok(Object.isFrozen(SERVERS.hiking));
  assert.equal(serverRoomName('관악산-1'),'관악산');assert.equal(serverRoomName('관악산-2'),'관악산-2');
- for(const r of ['관악산-1','관악산','관악산-3'])assert.equal(findServer('hiking',r)?.id,'1',r);
+ for(const r of ['관악산-1','관악산','관악산-7'])assert.equal(findServer('hiking',r)?.id,'1',r);
+ assert.equal(findServer('hiking','관악산-2')?.id,'2');assert.equal(findServer('hiking','관악산-3')?.id,'3');assert.equal(findServer('smoking','옥상-3')?.id,'3');
+ assert.equal(serverRoomName('관악산-3'),'관악산-3','2·3서버 방은 1서버 방(관악산)과 다름');
  assert.equal(findServer('hiking','옥상-1'),null,'체험이 다르면 없음');assert.equal(findServer('smoking','옥상')?.name,'옥상 1서버');
  assert.equal(findServer('hiking','우리끼리'),null);assert.equal(findServer('hiking',''),null);
 });
@@ -38,12 +40,12 @@ test('창을 띄울지: 옛 주소 ?multi=는 건너뛰고 바로 1서버, 점�
  assert.equal(serverPickMode('',true),'skip');assert.equal(serverPickMode('?serverpick=on',true),'show');
  assert.equal(serverPickMode('?serverpick=off',false),'skip');assert.equal(serverPickMode('?server=off',false),'show');
 });
-test('서버 줄: n / 20명, 꽉 차면 full, 인원을 모르면 null',()=>{
- assert.deepEqual(pickRows('hiking',HEALTH(3)),[{id:'1',name:'관악산 1서버',room:'관악산-1',count:3,max:20,full:false}]);
- assert.equal(pickRows('hiking',HEALTH(20))[0].full,true);assert.equal(pickRows('hiking',HEALTH(2,0,2))[0].full,true,'정원은 서버가 준 max');
+test('서버 줄: n / 30명, 꽉 차면 full, 인원을 모르면 null',()=>{
+ assert.deepEqual(pickRows('hiking',HEALTH(3)),[{id:'1',name:'관악산 1서버',room:'관악산-1',count:3,max:30,full:false},{id:'2',name:'관악산 2서버',room:'관악산-2',count:0,max:30,full:false},{id:'3',name:'관악산 3서버',room:'관악산-3',count:0,max:30,full:false}]);
+ assert.equal(pickRows('hiking',HEALTH(30))[0].full,true);assert.equal(pickRows('hiking',HEALTH(2,0,2))[0].full,true,'정원은 서버가 준 max');
  assert.equal(pickRows('hiking',null)[0].count,null);assert.equal(pickRows('hiking',{servers:{hiking:[]}})[0].count,0,'서버가 줄을 안 주면 0명');
- assert.deepEqual(rowLabel(pickRows('hiking',HEALTH(3))[0]),{n:'3 / 20명',tag:'',state:'open'});
- assert.deepEqual(rowLabel(pickRows('hiking',HEALTH(20))[0]),{n:'20 / 20명',tag:'꽉 참',state:'full'});
+ assert.deepEqual(rowLabel(pickRows('hiking',HEALTH(3))[0]),{n:'3 / 30명',tag:'',state:'open'});
+ assert.deepEqual(rowLabel(pickRows('hiking',HEALTH(30))[0]),{n:'30 / 30명',tag:'꽉 참',state:'full'});
  assert.equal(rowLabel(pickRows('hiking',HEALTH(3))[0],{current:'1'}).tag,'지금 여기');
  assert.equal(rowLabel(pickRows('hiking',null)[0],{local:true}).state,'local');
  assert.equal(rowLabel(pickRows('hiking',null)[0]).state,'wait');

@@ -226,16 +226,16 @@ export const EXPERIENCE_MESSAGES=Object.freeze({
  smoking:Object.freeze([...COMMON_MESSAGES,'s','lounge:smoke'])
 });
 export const messageAllowed=(exp,type)=>EXPERIENCE_MESSAGES[exp]?.includes(type)??false;
-// 서버 목록(2026-11-08 서버 고르기). 체험마다 줄 하나 = 서버 하나 = 서버 쪽 방 하나. 줄을 더하면 서버 고르기 창에 서버가 늘어난다.
+// 서버 목록(2026-11-08 서버 고르기, 11-13 대표 지시로 체험마다 3서버·정원 30). 줄 하나 = 서버 하나 = 서버 쪽 방 하나. 줄을 더하면 서버 고르기 창에 서버가 늘어난다.
 // room은 주소 ?multi=와 같은 모양. 서버 쪽 방 이름은 기존 방 키 규칙대로 끝 '-1'을 뗀다(관악산-1 → hiking:관악산). 2서버부터는 그대로(관악산-2).
 // 서버 방은 꽉 차도 -2로 넘기지 않고 full로 거절한다(server/rooms.mjs). 정원은 SERVER_MAX(서버는 MAX_PER_ROOM으로 바꿀 수 있음).
-export const SERVER_MAX=20;
+export const SERVER_MAX=30;
 export const SERVERS=Object.freeze({
- hiking:Object.freeze([Object.freeze({id:'1',name:'관악산 1서버',room:'관악산-1'})]),
- smoking:Object.freeze([Object.freeze({id:'1',name:'옥상 1서버',room:'옥상-1'})])
+ hiking:Object.freeze(['1','2','3'].map(id=>Object.freeze({id,name:`관악산 ${id}서버`,room:`관악산-${id}`}))),
+ smoking:Object.freeze(['1','2','3'].map(id=>Object.freeze({id,name:`옥상 ${id}서버`,room:`옥상-${id}`})))
 });
 export const serverRoomName=room=>String(room).replace(/-1$/,'');
-// 방 이름(이미 정리된 것) → 그 방을 맡는 서버 줄. 정확히 같은 줄이 먼저, 없으면 끝 번호를 뗀 이름으로 찾는다(옛 주소 ?multi=관악산-3 → 1서버). 없으면 null.
+// 방 이름(이미 정리된 것) → 그 방을 맡는 서버 줄. 정확히 같은 줄이 먼저, 없으면 끝 번호를 뗀 이름으로 찾는다(목록에 없는 번호 ?multi=관악산-7 → 1서버). 없으면 null.
 export function findServer(experience,room,servers=SERVERS){
  const list=servers[experience]??[],r=String(room??'');if(!r)return null;
  return list.find(s=>s.room===r||serverRoomName(s.room)===r)??list.find(s=>serverRoomName(s.room)===r.replace(/-\d{1,3}$/,''))??null;

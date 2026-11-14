@@ -1,5 +1,5 @@
 // 함께 걷기 서버 통합 시험(2026-11-08): 127.0.0.1에 실제 서버를 띄우고 Node 내장 WebSocket 클라이언트로 붙는다.
-// 방 20명 제한(21명), 속도 제한, 순간이동, 신고 3명 숨김, 끊김·재접속(createWebSocketTransport), 서버 재시작, /health, 환경 변수, Origin 거부, 90일 정리.
+// 방 30명 제한(31명), 속도 제한, 순간이동, 신고 3명 숨김, 끊김·재접속(createWebSocketTransport), 서버 재시작, /health, 환경 변수, Origin 거부, 90일 정리.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import http from 'node:http';
@@ -35,16 +35,16 @@ test('/health: 200과 방 수·접속자 수',async()=>{
  }finally{await s.close();}
 });
 
-test('21명이 같은 방에 들어오면 20명 + 방이름-2, 서로 위치·인사가 보인다',async()=>{
+test('31명이 같은 방에 들어오면 30명 + 방이름-2, 서로 위치·인사가 보인다',async()=>{
  const {s,url}=await boot();
  try{
-  const cs=[];for(let i=0;i<21;i++)cs.push(await client(url,{room:'관악',name:`사람${i}`}));
-  assert.equal(cs.filter(c=>c.welcome.room==='관악').length,20);assert.equal(cs[20].welcome.room,'관악-2');
-  const ids=new Set(cs.map(c=>c.welcome.id));assert.equal(ids.size,21,'임시 ID는 모두 다름');
+  const cs=[];for(let i=0;i<31;i++)cs.push(await client(url,{room:'관악',name:`사람${i}`}));
+  assert.equal(cs.filter(c=>c.welcome.room==='관악').length,30);assert.equal(cs[30].welcome.room,'관악-2');
+  const ids=new Set(cs.map(c=>c.welcome.id));assert.equal(ids.size,31,'임시 ID는 모두 다름');
   cs[0].send({t:'s',q:1,z:1,x:10,y:20,h:.5,v:1,f:0});cs[0].send({t:'g',k:'hello'});
-  await until(()=>states(cs[19],cs[0].welcome.id).length&&cs[19].got.some(m=>m.t==='g'));
-  assert.deepEqual(states(cs[19],cs[0].welcome.id)[0],{t:'s',id:cs[0].welcome.id,q:1,z:1,x:10,y:20,h:.5,v:1,f:0});
-  await sleep(250);assert.equal(states(cs[20],cs[0].welcome.id).length,0,'다른 방(관악-2)에는 안 보임');
+  await until(()=>states(cs[29],cs[0].welcome.id).length&&cs[29].got.some(m=>m.t==='g'));
+  assert.deepEqual(states(cs[29],cs[0].welcome.id)[0],{t:'s',id:cs[0].welcome.id,q:1,z:1,x:10,y:20,h:.5,v:1,f:0});
+  await sleep(250);assert.equal(states(cs[30],cs[0].welcome.id).length,0,'다른 방(관악-2)에는 안 보임');
   // 한 명이 나가면 남은 사람에게 b, 빈자리에 새 사람이 들어간다
   const gone=cs[5].welcome.id;cs[5].w.close();await until(()=>cs[0].got.some(m=>m.t==='b'&&m.id===gone));
   const late=await client(url,{room:'관악',name:'늦게'});assert.equal(late.welcome.room,'관악');
@@ -225,14 +225,15 @@ test('서버 고르기: /health에 서버별 인원·정원과 total, 정원 2(M
  const health=async()=>(await fetch(`http://127.0.0.1:${port}/health`)).json();
  try{
   let h=await health();
-  assert.deepEqual(h.servers,{hiking:[{id:'1',name:'관악산 1서버',count:0,max:2}],smoking:[{id:'1',name:'옥상 1서버',count:0,max:2}]});assert.equal(h.total,0);
+  const rows=(n,c1=0)=>['1','2','3'].map(id=>({id,name:`${n} ${id}서버`,count:id==='1'?c1:0,max:2}));
+  assert.deepEqual(h.servers,{hiking:rows('관악산'),smoking:rows('옥상')});assert.equal(h.total,0);
   const a=await client(url,{room:'관악산-1',name:'하나',exp:'hiking'}),b=await client(url,{room:'관악산-1',name:'둘',exp:'hiking'});
   assert.equal(a.welcome.server,'1');assert.equal(b.welcome.room,'관악산');
   const c=await client(url,{room:'관악산-1',name:'셋',exp:'hiking'});
   assert.deepEqual(c.full,{t:'full',reason:'full'});await until(()=>c.closed);
   const d=await client(url,{room:'옥상-1',name:'흡연',exp:'smoking'});assert.equal(d.welcome.server,'1');
   h=await health();
-  assert.deepEqual(h.servers.hiking,[{id:'1',name:'관악산 1서버',count:2,max:2}]);assert.equal(h.servers.smoking[0].count,1);assert.equal(h.total,3);
+  assert.deepEqual(h.servers.hiking,rows('관악산',2));assert.equal(h.servers.smoking[0].count,1);assert.equal(h.total,3);
   assert.equal(h.rooms,2,'-2 방이 생기지 않음');
   // 전송 계층으로 붙어도 full 상태가 된다(창이 '방금 꽉 찼어요'를 띄우는 신호)
   const seen=[];const tr=createWebSocketTransport(url,{experience:'hiking',room:'관악산-1',name:'넷'});tr.onstatus(st=>seen.push(st));

@@ -7,6 +7,7 @@ import {quitStats,attachRecord,todayCigs} from './profile.js';
 import {CIG_KINDS,DRAW,cigKind,drawQuality} from './smoke-feel.js';
 import {installFeedback} from '../feedback.js';
 import {DONATE_URL} from '../donate.js';
+import {ageCardHtml} from './age-gate.js';
 
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const today=()=>new Date(Date.now()+9*3600e3).toISOString().slice(0,10); // 서울 날짜
@@ -201,6 +202,7 @@ export function createHud({ctx,npcs,smoker,audio,timeState,TIME_PRESETS,profile,
    <h2>소리</h2><div class="opts"><button class="lg-btn ${profile.muted?'':'on'}" data-a="mute">${profile.muted?'🔇 꺼짐':'🔊 켜짐'}</button></div>
    <h2>옷</h2><div class="lg-outfits">${Object.entries(OUTFITS).map(([k,o])=>`<button class="lg-btn ${k===profile.outfit?'on':''}" data-o="${k}">${esc(o.label)}</button>`).join('')}</div>
    <h2>내 정보</h2><div class="opts"><button class="lg-btn" data-a="info">✏️ 닉네임·금연 정보 고치기</button></div>
+   <h2>안내</h2><div class="opts"><button class="lg-btn" data-a="age">📋 입장 안내 다시 보기</button></div>
    <h2>의견</h2><div class="opts"><button class="lg-btn" data-a="feedback">💌 의견 보내기</button><a class="lg-btn" href="${DONATE_URL}" target="_blank" rel="noopener noreferrer" style="text-decoration:none;color:inherit">💗 후원하기</a></div></div>`;};
   draw();
   modal.onclick=e=>{
@@ -209,6 +211,7 @@ export function createHud({ctx,npcs,smoker,audio,timeState,TIME_PRESETS,profile,
    if(t.dataset.o){save({outfit:t.dataset.o});draw();return;}
    if(t.dataset.a==='mute'){save({muted:!profile.muted});renderSnd();draw();return;}
    if(t.dataset.a==='info'){lobby(true);return;}
+   if(t.dataset.a==='age'){modal.innerHTML=ageCardHtml('read');return;} // 읽기 모드: 공지 3줄 + 닫기(data-a=close)
    if(t.dataset.a==='feedback'){closeModal();window.dispatchEvent(new CustomEvent('lounge:feedback-open'));return;}
    if(t.dataset.a==='close')closeModal();
   };

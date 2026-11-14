@@ -15,6 +15,7 @@ import {rod,puff,finishTrailModel} from '../toon/trail-props.js';
 import {surfaceFrame} from '../toon/link-hiker.js';
 import {LIMITS} from '../device-profile.js';
 import {DRAW,CIG_KINDS,QUALITY,ROOF_WIND,cigKind,drawQuality,drawLevel,smokeAmount,exhalePuffs,puffRadius,puffLife} from './smoke-feel.js';
+import {LIGHTER_LEAD} from './audio.js';
 
 const {Vector3:V3,Quaternion:Q,Matrix4:M4,MathUtils}=THREE;
 const smooth=(a,b,x)=>{const t=MathUtils.clamp((x-a)/(b-a),0,1);return t*t*(3-2*t);};
@@ -27,6 +28,8 @@ const PASSIVE_BURN=1/420;                // 불 붙여 두기만 해도 7분이�
 const DRAW_FULL=.75,DRAW_TAIL=.3;        // 한 모금에서 처음 0.75초만 제대로 타고, 그 뒤로 길게 빨면 30% 속도로만 더 탄다(꾹 누르기가 담배를 다 태우지 않게)
 const BUSY=new Set(['lighting','inhale','exhale','flick']); // 이 동작 중에 온 단추는 끝난 뒤에 한다
 const LIGHTER_UP=.05;                    // 라이터를 장갑 위로 내놓는 높이(장갑 반지름 0.056에 묻히지 않게)
+export const FLAME_AT=.62;              // 내 라이터 불꽃이 보이기 시작하는 lighting 시각(초)
+const LEND_FLAME_AT=.55;                // 불 대 주기(lend)에서 불꽃이 보이는 시각(초)
 const BUTT_FLIGHT=.45;                  // 꽁초가 재떨이까지 날아가는 시간(초)
 // 담배 치수(m). 동동이 1.0m에 맞춘 만화 크기(실제보다 굵고 짧다).
 export const CIG=Object.freeze({r:.0095,filter:.024,paper:.066,ashMax:.026});
@@ -221,8 +224,9 @@ export function createSmoker(avatar,{toon,world,audio,isPlayer=true,profile=null
    switch(S.state){
     case 'out':pocket=bump(0,.25,.45,.85,t);show=t>.35;if(t>=T.out)go('ready');break;
     case 'ready':if(auto&&t>.6)api.light();break;
-    case 'lighting':toMouth=bump(0,.45,1.75,2.2,t);if(!S.borrowed){raiseL=bump(.25,.65,1.55,1.95,t);flame=bump(.62,.68,1.5,1.58,t);}
-     if(t>.62&&!S.borrowed)sound('lighter');if(t>1.05&&!S.lit){S.lit=true;S.heat=1;sound('inhale','light-inhale');}if(t>1.05)inhaling=bump(1.05,1.2,1.45,1.6,t);
+    case 'lighting':toMouth=bump(0,.45,1.75,2.2,t);if(!S.borrowed){raiseL=bump(.25,.65,1.55,1.95,t);flame=bump(FLAME_AT,FLAME_AT+.06,1.5,1.58,t);}
+     if(t>FLAME_AT-LIGHTER_LEAD&&!S.borrowed)sound('lighter'); // '화'가 불꽃이 보이는 순간(FLAME_AT)에 오게 미리 부른다
+     if(t>1.05&&!S.lit){S.lit=true;S.heat=1;sound('inhale','light-inhale');}if(t>1.05)inhaling=bump(1.05,1.2,1.45,1.6,t);
      if(t>=T.lighting){S.borrowed=false;go('smoking');S.nextPuff=1.2+Math.random()*1.5;}break;
     case 'smoking':if(auto){S.wait+=dt;if(S.wait>S.nextPuff){S.wait=0;S.nextPuff=3.5+Math.random()*3.5;if(S.ash>CIG.ashMax*.6&&Math.random()<.7)api.flick();else api.puff();}}break;
     case 'inhale':
@@ -248,8 +252,8 @@ export function createSmoker(avatar,{toon,world,audio,isPlayer=true,profile=null
    let lendTo=null,lendTip=0;
    if(S.lend){const Ld=S.lend;Ld.t+=dt;const k=Ld.t,n=Ld.len;lendTo=Ld.target?.()??null;
     if(Ld.mode==='tip')lendTip=lendTo?bump(.2,.7,n-.6,n-.2,k):0;
-    else if(lendTo){raiseL=Math.max(raiseL,bump(.15,.55,n-.6,n-.2,k));const f=bump(.55,.62,n-.8,n-.7,k);flame=Math.max(flame,f);
-     if(f>.05&&!Ld.clicked){Ld.clicked=true;audio?.play?.('lighter',isPlayer?{}:{at:root.position});}}
+    else if(lendTo){raiseL=Math.max(raiseL,bump(.15,.55,n-.6,n-.2,k));const f=bump(LEND_FLAME_AT,LEND_FLAME_AT+.07,n-.8,n-.7,k);flame=Math.max(flame,f);
+     if(k>LEND_FLAME_AT-LIGHTER_LEAD&&!Ld.clicked){Ld.clicked=true;audio?.play?.('lighter',isPlayer?{}:{at:root.position});}}
     if(k>=n)S.lend=null;}
    // 팔 섞기 비율: 담배를 든 동안 1, 버리고 나면 0으로
    const wantR=S.state==='idle'?0:1;S.wR=wantR>S.wR?Math.min(wantR,S.wR+dt/.3):Math.max(wantR,S.wR-dt/.35);

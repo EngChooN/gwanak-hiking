@@ -1,0 +1,94 @@
+[
+ {
+  "file": "lighter-open.mp3",
+  "seconds": 0.182,
+  "sampleRate": 44100,
+  "bytes": 2865,
+  "peakDb": -3.8,
+  "rmsDb": -31.5,
+  "from": "zipclick.flac"
+ },
+ {
+  "file": "lighter-strike.mp3",
+  "seconds": 0.82,
+  "sampleRate": 44100,
+  "bytes": 10702,
+  "peakDb": -3.4,
+  "rmsDb": -23.6,
+  "from": "0004.wav+0004.wav"
+ },
+ {
+  "file": "cig-burn.flac",
+  "seconds": 0.74,
+  "sampleRate": 44100,
+  "bytes": 56119,
+  "peakDb": -3,
+  "rmsDb": -22.8,
+  "loop": true,
+  "seam": 0.0164,
+  "from": "2133.wav"
+ },
+ {
+  "file": "inhale.mp3",
+  "seconds": 1.3,
+  "sampleRate": 44100,
+  "bytes": 16344,
+  "peakDb": -3.4,
+  "rmsDb": -18.4,
+  "from": "1405.wav"
+ },
+ {
+  "file": "exhale-short.mp3",
+  "seconds": 0.8,
+  "sampleRate": 44100,
+  "bytes": 10388,
+  "peakDb": -3.3,
+  "rmsDb": -19.1,
+  "from": "1405.wav"
+ },
+ {
+  "file": "exhale-mid.mp3",
+  "seconds": 1.7,
+  "sampleRate": 44100,
+  "bytes": 21359,
+  "peakDb": -3.3,
+  "rmsDb": -22.1,
+  "from": "1405.wav"
+ },
+ {
+  "file": "exhale-long.mp3",
+  "seconds": 2.3,
+  "sampleRate": 44100,
+  "bytes": 28569,
+  "peakDb": -3.2,
+  "rmsDb": -20.3,
+  "from": "1404.wav"
+ },
+ {
+  "file": "vending-button.mp3",
+  "seconds": 0.175,
+  "sampleRate": 44100,
+  "bytes": 2865,
+  "peakDb": -3.2,
+  "rmsDb": -15.9,
+  "from": "0176.wav+1417.wav"
+ },
+ {
+  "file": "can-drop.mp3",
+  "seconds": 0.75,
+  "sampleRate": 44100,
+  "bytes": 9761,
+  "peakDb": -3,
+  "rmsDb": -23.9,
+  "from": "0249.wav+0249.wav"
+ },
+ {
+  "file": "can-open.mp3",
+  "seconds": 0.642,
+  "sampleRate": 44100,
+  "bytes": 8507,
+  "peakDb": -3.6,
+  "rmsDb": -21.2,
+  "from": "0116.wav"
+ }
+]

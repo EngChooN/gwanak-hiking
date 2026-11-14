@@ -59,12 +59,12 @@ test('공개 파일 모양 읽기', ()=>{
  assert.equal(parseServerFile('wss://a'),null);
 });
 test('공개 파일 주소에 캐시 무력화 쿼리를 붙이고, 못 받으면 null', async()=>{
- assert.equal(serverFileUrl('/gwanak-hiking/',123),'/gwanak-hiking/multi-server.json?t=123');
+ assert.equal(serverFileUrl('/ai-office-world/',123),'/ai-office-world/multi-server.json?t=123');
  assert.equal(serverFileUrl('/x',5),'/x/multi-server.json?t=5');
  const seen=[];
- const ok=await fetchServerFile({base:'/gwanak-hiking/',now:7,fetchImpl:async(u,o)=>{seen.push([u,o.cache]);return {ok:true,json:async()=>({state:'on',url:'wss://z.trycloudflare.com'})};}});
+ const ok=await fetchServerFile({base:'/ai-office-world/',now:7,fetchImpl:async(u,o)=>{seen.push([u,o.cache]);return {ok:true,json:async()=>({state:'on',url:'wss://z.trycloudflare.com'})};}});
  assert.deepEqual(ok,{state:'on',url:'wss://z.trycloudflare.com'});
- assert.deepEqual(seen,[['/gwanak-hiking/multi-server.json?t=7','no-store']]);
+ assert.deepEqual(seen,[['/ai-office-world/multi-server.json?t=7','no-store']]);
  assert.equal(await fetchServerFile({fetchImpl:async()=>({ok:false,status:404})}),null);
  assert.equal(await fetchServerFile({fetchImpl:async()=>{throw new TypeError('network');}}),null);
  assert.equal(await fetchServerFile({fetchImpl:async()=>({ok:true,json:async()=>{throw new SyntaxError('html');}})}),null);
@@ -84,8 +84,8 @@ test('multiServerUrl은 ?server=·빌드 변수가 없으면 고른 값을 쓴�
 });
 test('옛 ?server=를 바꿨으면 주소창에서 뺀다(다른 옵션·해시는 그대로)', ()=>{
  let url=null;const hist={state:null,replaceState(_s,_t,u){url=u;}};
- assert.equal(dropStaleServerParam({loc:{pathname:'/gwanak-hiking/hiking/',search:'?server=wss://old.trycloudflare.com&season=winter',hash:'#a'},hist}),true);
- assert.equal(url,'/gwanak-hiking/hiking/?season=winter#a');
+ assert.equal(dropStaleServerParam({loc:{pathname:'/ai-office-world/hiking/',search:'?server=wss://old.trycloudflare.com&season=winter',hash:'#a'},hist}),true);
+ assert.equal(url,'/ai-office-world/hiking/?season=winter#a');
  assert.equal(dropStaleServerParam({loc:{pathname:'/p/',search:'',hash:''},hist}),false);
 });
 test('multi:up — 터널 주소 찾기·wss 바꾸기·공개 파일 내용', ()=>{

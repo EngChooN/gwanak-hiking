@@ -81,6 +81,8 @@ test('기대기: 걸어가지 않고 가장 가까운 난간 지점에 붙어 �
 });
 
 test('앉기: 좌판 높이로 걸터앉아 허벅지는 앞으로, 일어나면 좌판 앞에 선다',()=>{
+ // 앉으면 다리가 달랑달랑(위상 Math.random) — 시험은 위상을 0으로 고정해 늘 같은 자세를 본다.
+ const rnd=Math.random;Math.random=()=>0;try{
  const T=setup(BENCH.x,BENCH.z+1,Math.PI);T.run(.2);
  assert.equal(T.spots.status().near,'bench');
  assert.ok(T.spots.sit());T.arrive();
@@ -89,12 +91,13 @@ test('앉기: 좌판 높이로 걸터앉아 허벅지는 앞으로, 일어나면
  T.run(1.2);
  const hip=W(B(T.player,'Hips')),knee=W(B(T.player,'LeftLeg')),up=W(B(T.player,'LeftUpLeg')),foot=W(B(T.player,'LeftFoot'));
  assert.ok(Math.abs(hip.y-(.4375+SEAT_PAD))<.01,`골반이 좌판 위 ${hip.y.toFixed(3)}`);
- assert.ok(Math.abs(knee.y-up.y)<.06,'허벅지가 거의 수평');
- assert.ok(knee.z-up.z>.12,'무릎이 앞(+Z, 벤치 앞쪽)으로');
+ {const th=knee.clone().sub(up).normalize();assert.ok(th.y<.005&&th.y>-.95,`허벅지가 앞쪽 아래로 뻗음(등산 bench-sit 값, 달랑달랑 포함) ${th.y.toFixed(2)}`);}
+ assert.ok(knee.z-up.z>.05,'무릎이 앞(+Z, 벤치 앞쪽)으로');
  assert.ok(foot.y>=.02,'발이 바닥 아래로 빠지지 않는다');
  assert.ok(T.spots.stand());assert.equal(last('lounge:spot').state,'leave');
  assert.equal(T.player.z,BENCH.z+.6,'좌판 앞으로 일어선다');
  T.run(1);assert.ok(Math.abs(T.player.root.position.y)<1e-6&&T.spots.status().w===0,'자세가 다 풀린다');
+ }finally{Math.random=rnd;}
 });
 
 test('캔커피: 자판기 앞에서 누르면 캔이 떨어지고(use) 왼손에 들고 가끔 마신다, 버릴 수 있다',()=>{

@@ -20,8 +20,11 @@ import {createScene} from './scene.js';
 import {createLoungeMulti} from './multi.js';
 import {installLoungeMultiUi} from './multi-ui.js';
 import {serverPickMode} from '../server-pick.js';
+import {ageGate} from './age-gate.js';
 
 const q=new URLSearchParams(location.search);
+// 입장 안내·태어난 해(11-13): 로딩과 함께 맨 먼저 띄우고, 확인이 끝나야 HUD(로비)·서버 카드로 넘어간다. 한 번 확인하면 다시 묻지 않는다.
+const agePass=ageGate({query:q});
 const mobile=matchMedia('(pointer:coarse)').matches||/iPhone|iPad|Android/i.test(navigator.userAgent);
 if(mobile)document.body.classList.add('touch');
 const RIG_URL=`${import.meta.env.BASE_URL}assets/toon/models/hiker/HikerRig.glb`;
@@ -94,7 +97,7 @@ player.extra.push((dt)=>smoker.apply(dt,{moving:player.moving}));
 const NO_NPCS=Object.freeze({avatars:[],setCollide(){},update(){},social(){return null;},status(){return [];},scene:null});
 const ctx={THREE,scene,camera,renderer,toon,world,rooftop,audio,player,smoker,profile,mobile,dispatch,createAvatar:(o)=>createAvatar({rigUrl:RIG_URL,toon,...o}),createSmoker:(a,o={})=>createSmoker(a,{toon,world,audio,...o}),get env(){return env;}};
 setLoad('옥상 사람들 부르는 중…');
-const npcs=q.get('npc')==='1'?await createNpcs(ctx):NO_NPCS;ctx.npcsOn=npcs!==NO_NPCS;
+const npcs=q.get('npc')==='1'?await createNpcs(ctx):NO_NPCS;ctx.npcsOn=npcs!==NO_NPCS;ctx.npcs=npcs;
 
 // ── 충돌: 옥상 경계(상자) 안, 장애물(원·상자) 밖으로 민다. 다른 동동이와도 겹치지 않게.
 const R=.2;
@@ -116,6 +119,14 @@ const input=createInput({canvas:renderer.domElement,mobile});
 const cam={yaw:sp.heading,pitch:.28,dist:mobile?3.6:3.2,min:1.6,max:7,target:new THREE.Vector3()};
 input.onLook((dx,dy)=>{cam.yaw-=dx*.006;cam.pitch=THREE.MathUtils.clamp(cam.pitch+dy*.004,-.15,1.1);});
 input.onZoom(k=>{cam.dist=THREE.MathUtils.clamp(cam.dist*k,cam.min,cam.max);});
+// 벤치에 앉으면 카메라가 조금 물러나 앞 비스듬히에서 본다(11-13). 전에는 걸어온 방향 그대로라 벽쪽 벤치에서는 난간 밖에서 몸을 가리거나 큰 머리에 붙었다.
+const SEAT_CAM=Object.freeze({dist:2.8,yaw:.44,pitch:.22,lift:.0,secs:.6}); // 11-14b: 등산 시안처럼 거의 정면(25°)·낮은 눈높이 — 신발이 몸 앞으로 튀어나와 보이게
+let camTurn=null;
+addEventListener('lounge:spot',e=>{const d=e.detail??{};if(d.id!==player.id||d.spot!=='bench'||d.state!=='enter')return;
+ const front=player.heading+Math.PI,cur=Math.sin(cam.yaw-front)>=0?1:-1; // 지금 카메라가 있는 쪽으로 비스듬히, 그쪽 카메라가 옥상 밖(난간 너머)이 되면 반대쪽(다리가 옆에서 보이게 각도를 키운 11-14)
+ const b=rooftop.bounds,inside=sd=>{const y=front+sd*SEAT_CAM.yaw,cp=Math.cos(SEAT_CAM.pitch)*SEAT_CAM.dist,x=player.x+Math.sin(y)*cp,z=player.z+Math.cos(y)*cp;return x>b.minX&&x<b.maxX&&z>b.minZ&&z<b.maxZ;};
+ const side=inside(cur)||!inside(-cur)?cur:-cur;
+ camTurn={from:cam.yaw,to:front+side*SEAT_CAM.yaw,p0:cam.pitch,t:0};cam.dist=Math.max(cam.dist,SEAT_CAM.dist);});
 let autoWalk=null; // HUD "재떨이로 가기" 같은 자동 이동 목표 {x,z,done}
 function updatePlayer(dt){
  const mv=input.move(); // {forward,side,run}
@@ -136,14 +147,17 @@ function updatePlayer(dt){
 function updateCamera(dt){
  // 걸을 때는 카메라가 몸 뒤쪽으로 천천히 돌아온다(입력이 없을 때만). 서 있으면 그대로 둔다.
  if(player.moving&&!input.looking()&&!autoWalk){let d=player.root.rotation.y-cam.yaw;d=Math.atan2(Math.sin(d),Math.cos(d));cam.yaw+=d*(1-Math.exp(-dt*1.2));}
- cam.target.set(player.x,.62,player.z);
+ if(camTurn){if(input.looking())camTurn=null;else{camTurn.t+=dt;const k=THREE.MathUtils.smoothstep(camTurn.t/SEAT_CAM.secs,0,1);let d=camTurn.to-camTurn.from;d=Math.atan2(Math.sin(d),Math.cos(d));
+  cam.yaw=camTurn.from+d*k;cam.pitch=camTurn.p0+(SEAT_CAM.pitch-camTurn.p0)*k;if(k>=1)camTurn=null;}}
+ cam.target.set(player.x,.62+(spots?.pose==='sit'?SEAT_CAM.lift:0),player.z);
  const cp=Math.cos(cam.pitch),want=new THREE.Vector3(cam.target.x+Math.sin(cam.yaw)*cam.dist*cp,cam.target.y+Math.sin(cam.pitch)*cam.dist+.25,cam.target.z+Math.cos(cam.yaw)*cam.dist*cp);
  // 벽·부스에 카메라가 묻히지 않게 옥상 안쪽으로 당긴다(난간 밖 1m까지는 허용).
  const b=rooftop.bounds;want.x=THREE.MathUtils.clamp(want.x,b.minX-1.2,b.maxX+1.2);want.z=THREE.MathUtils.clamp(want.z,b.minZ-1.2,b.maxZ+1.2);want.y=Math.max(.35,Math.min(want.y,rooftop.ceilingAt?.(want.x,want.z)??99));
  camera.position.lerp(want,1-Math.exp(-dt*10));camera.lookAt(cam.target);
 }
 
-// ── HUD(수첩 톤 카드·채팅·흡연 버튼·로비)
+// ── HUD(수첩 톤 카드·채팅·흡연 버튼·로비) — 입장 안내를 통과한 뒤에 만든다(이름 정하기보다 안내가 먼저)
+await agePass;
 const hud=createHud({ctx,npcs,smoker,audio,timeState,TIME_PRESETS,profile,
  onProfile(p){Object.assign(profile,p);saveProfile(profile);if(p.outfit)player.setOutfit(p.outfit);if(p.nickname)player.name=p.nickname;if('muted' in p)audio.setMuted(p.muted);if(p.timeMode){timeState.mode=p.timeMode;}},
  goTo(spot){autoWalk=spot;},
